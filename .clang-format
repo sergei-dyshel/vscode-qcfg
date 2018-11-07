@@ -1,0 +1,6 @@
+Language:        JavaScript
+BasedOnStyle:    Google
+ColumnLimit:     80
+AllowShortLoopsOnASingleLine: false
+AllowShortBlocksOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: false
