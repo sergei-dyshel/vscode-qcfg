@@ -1,0 +1,50 @@
+{
+    "contributes": {
+        "commands": [
+            {
+                "command": "qcfg.selection.previous",
+                "title": "qcfg: Select previous selection"
+            },
+            {
+                "command": "qcfg.selection.expand",
+                "title": "qcfg: Expand selection"
+            },
+            {
+                "command": "qcfg.selection.selectSuperParent",
+                "title": "qcfg: Select super parent"
+            },
+            {
+                "command": "qcfg.selection.expand",
+                "title": "qcfg: Expand selection"
+            },
+            {
+                "command": "qcfg.selection.shrink",
+                "title": "qcfg: Shrink selection"
+            },
+            {
+                "command": "qcfg.selection.right",
+                "title": "qcfg: Move selection right"
+            },
+            {
+                "command": "qcfg.selection.left",
+                "title": "qcfg: Move selection left"
+            },
+            {
+                "command": "qcfg.selection.swapRight",
+                "title": "qcfg: Swap selected node with right sibling"
+            },
+            {
+                "command": "qcfg.selection.swapLeft",
+                "title": "qcfg: Swap selected node with left sibling"
+            },
+            {
+                "command": "qcfg.selection.extendRight",
+                "title": "qcfg: Extend selection right"
+            },
+            {
+                "command": "qcfg.selection.extendLeft",
+                "title": "qcfg: extend selection left"
+            }
+        ]
+    }
+}

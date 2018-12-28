@@ -1,14 +1,19 @@
 'use strict';
 
+import {TextEditor, window, commands} from 'vscode';
 import * as vscode from 'vscode';
 import {Position} from 'vscode';
 import * as clipboardy from 'clipboardy';
 
-import {offsetPosition, isLinewise, expandLinewise, trimWhitespace, selectRange} from './textUtils';
+import {offsetPosition, isLinewise, expandLinewise, trimWhitespace, selectRange, swapRanges} from './textUtils';
 import {Range} from 'vscode-languageclient';
+import {Logger, str} from './logging';
+import {getActiveTextEditor} from './utils';
+
+const log = new Logger('editing');
 
 function selectLines(...args: any[]) {
-  const editor = vscode.window.activeTextEditor;
+  const editor = getActiveTextEditor();
   if (editor.selections.length > 1)
     return;
 
@@ -24,7 +29,7 @@ function selectLines(...args: any[]) {
 }
 
 async function surroundWith(args: any[]) {
-  const editor = vscode.window.activeTextEditor;
+  const editor = getActiveTextEditor();
   const selection = editor.selection;
   if (selection.isEmpty)
     return;
@@ -49,28 +54,24 @@ async function surroundWith(args: any[]) {
 }
 
 function swapCursorAndAnchor(
-    editor: vscode.TextEditor, edit: vscode.TextEditorEdit, args: any[]) {
-  if (editor.selections.length > 1)
-    return;
-  const cursor = editor.selection.active;
-  const anchor = editor.selection.anchor;
-  if (cursor.isEqual(anchor))
-    return;
-
-  editor.selection = new vscode.Selection(cursor, anchor);
+    editor: TextEditor, edit: vscode.TextEditorEdit, args: any[]) {
+  editor.selections = editor.selections.map((sel) => {
+    return new vscode.Selection(sel.active, sel.anchor);
+  });
 }
 
 function cloneEditorBeside(...args: any[]): void {
+  log.assert(window.activeTextEditor);
+  const editor = window.activeTextEditor as TextEditor;
   const columns = new Set<vscode.ViewColumn>();
-  for (const editor of vscode.window.visibleTextEditors)
+  for (const editor of window.visibleTextEditors)
     if (editor.viewColumn)
       columns.add(editor.viewColumn);
 
   if (columns.size === 1) {
-    vscode.commands.executeCommand('workbench.action.splitEditor');
+    commands.executeCommand('workbench.action.splitEditor');
     return;
   }
-  const editor = vscode.window.activeTextEditor;
   let newColumn: vscode.ViewColumn;
   switch (editor.viewColumn) {
     case vscode.ViewColumn.One:
@@ -86,17 +87,17 @@ function cloneEditorBeside(...args: any[]): void {
   const visible = editor.visibleRanges[0];
   const pos = editor.selection.active;
   const doc = editor.document;
-  vscode.window.showTextDocument(doc, newColumn).then((newEditor) => {
+  window.showTextDocument(doc, newColumn).then((newEditor) => {
     newEditor.selection = new vscode.Selection(pos, pos);
     newEditor.revealRange(visible, vscode.TextEditorRevealType.InCenter);
   });
 }
 
 function smartPaste(
-    editor: vscode.TextEditor, edit: vscode.TextEditorEdit, args?: any[]) {
+    editor: TextEditor, edit: vscode.TextEditorEdit, args?: any[]) {
   const text = clipboardy.readSync();
   if (!text.endsWith('\n') || editor.selections.length > 1) {
-    vscode.commands.executeCommand('editor.action.clipboardPasteAction');
+    commands.executeCommand('editor.action.clipboardPasteAction');
     return;
   }
   const selection = editor.selection;
@@ -105,38 +106,40 @@ function smartPaste(
     const lineStart = new vscode.Position(cursor.line, 0);
     edit.replace(lineStart, text);
   } else if (selection.end.character === 0) {
-    vscode.commands.executeCommand('editor.action.clipboardPasteAction');
+    commands.executeCommand('editor.action.clipboardPasteAction');
   } else {
     selectLines();
-    vscode.commands.executeCommand('editor.action.clipboardPasteAction');
+    commands.executeCommand('editor.action.clipboardPasteAction');
   }
 }
 
 async function navigateBackToPreviousFile() {
-  const firstEditor = vscode.window.activeTextEditor;
+  const firstEditor = window.activeTextEditor;
   if (!firstEditor)
     return;
   let editor = firstEditor;
-  let selection: vscode.Selection;
+  let selection: vscode.Selection | undefined;
   while ((editor.document === firstEditor.document) &&
          (editor.selection !== selection)) {
     selection = editor.selection;
-    await vscode.commands.executeCommand('workbench.action.navigateBack');
-    editor = vscode.window.activeTextEditor;
+    await commands.executeCommand('workbench.action.navigateBack');
+    if (!window.activeTextEditor)
+          return;
+    editor = window.activeTextEditor;
   }
 }
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
-      vscode.commands.registerCommand('qcfg.selectLines', selectLines));
-  context.subscriptions.push(vscode.commands.registerTextEditorCommand(
+      commands.registerCommand('qcfg.selectLines', selectLines));
+  context.subscriptions.push(commands.registerTextEditorCommand(
       'qcfg.swapCursorAndAnchor', swapCursorAndAnchor));
-  context.subscriptions.push(vscode.commands.registerTextEditorCommand(
+  context.subscriptions.push(commands.registerTextEditorCommand(
       'qcfg.smartPaste', smartPaste));
-  context.subscriptions.push(vscode.commands.registerCommand(
+  context.subscriptions.push(commands.registerCommand(
       'qcfg.surroundWith', surroundWith));
-  context.subscriptions.push(vscode.commands.registerCommand(
+  context.subscriptions.push(commands.registerCommand(
       'qcfg.cloneEditorBeside', cloneEditorBeside));
-  context.subscriptions.push(vscode.commands.registerCommand(
+  context.subscriptions.push(commands.registerCommand(
       'qcfg.navigateBackToPreviousFile', navigateBackToPreviousFile));
 }

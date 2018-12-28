@@ -1,0 +1,166 @@
+{
+	"contributes": {
+		"commands": [
+			{
+				"command": "qcfg.tasks.build",
+				"title": "qcfg: Run build task"
+			},
+			{
+				"command": "qcfg.tasks.show",
+				"title": "qcfg: Show list of tasks"
+			}
+		],
+		"configuration": {
+			"properties": {
+				"qcfg.tasks.global": {
+					"type": "object",
+					"description": "Tasks in qcfg format",
+					"additionalProperties": {
+						"type": "object",
+						"properties": {
+							"command": {
+								"type": "string"
+							},
+							"reveal": {
+								"type": "string",
+								"enum": [
+									"focus",
+									"yes",
+									"no"
+								],
+								"default": "yes"
+							},
+							"clear": {
+								"type": "boolean",
+								"default": false
+							},
+							"onSuccess": {
+								"type": "string",
+								"default": "auto",
+								"enum": [
+									"none",
+									"auto",
+									"hide",
+									"dispose",
+									"show",
+									"notify"
+								]
+							},
+							"onFailure": {
+								"type": "string",
+								"default": "auto",
+								"enum": [
+									"none",
+									"auto",
+									"hide",
+									"dispose",
+									"show",
+									"notify"
+								]
+							},
+							"reindex": {
+								"type": "boolean",
+								"default": false
+							},
+							"build": {
+								"type": "boolean",
+								"default": false
+							},
+							"problemMatchers": {
+								"anyOf": [
+									{
+										"type": "array",
+										"items": {
+											"type": "string"
+										},
+										"default": []
+									},
+									{
+										"type": "string"
+									}
+								]
+							}
+						},
+						"required": [
+							"command"
+						]
+					}
+				},
+				"qcfg.tasks.workspace": {
+					"type": "object",
+					"description": "Tasks in qcfg format",
+					"additionalProperties": {
+						"type": "object",
+						"properties": {
+							"command": {
+								"type": "string"
+							},
+							"reveal": {
+								"type": "string",
+								"enum": [
+									"focus",
+									"yes",
+									"no"
+								],
+								"default": "yes"
+							},
+							"clear": {
+								"type": "boolean",
+								"default": false
+							},
+							"onSuccess": {
+								"type": "string",
+								"default": "auto",
+								"enum": [
+									"none",
+									"auto",
+									"hide",
+									"dispose",
+									"show",
+									"notify"
+								]
+							},
+							"onFailure": {
+								"type": "string",
+								"default": "auto",
+								"enum": [
+									"none",
+									"auto",
+									"hide",
+									"dispose",
+									"show",
+									"notify"
+								]
+							},
+							"reindex": {
+								"type": "boolean",
+								"default": false
+							},
+							"build": {
+								"type": "boolean",
+								"default": false
+							},
+							"problemMatchers": {
+								"anyOf": [
+									{
+										"type": "array",
+										"items": {
+											"type": "string"
+										},
+										"default": []
+									},
+									{
+										"type": "string"
+									}
+								]
+							}
+						},
+						"required": [
+							"command"
+						]
+					}
+				}
+			}
+		}
+	}
+}

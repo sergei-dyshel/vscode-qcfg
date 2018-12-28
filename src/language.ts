@@ -28,7 +28,7 @@ export function sendDidSave(document: vscode.TextDocument) {
 
     langClient.sendNotification('textDocument/didSave', params);
     const path = vscode.workspace.asRelativePath(document.fileName);
-    log.info(`Sent didSave for "${path}" to "${extname}`);
+    log.info(`Sent didSave for "${path}" to "${extension.id}`);
   }
 }
 

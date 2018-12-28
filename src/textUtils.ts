@@ -1,6 +1,7 @@
 'use strict';
 
 import {TextDocument, Position, Range, TextEditor, Selection} from 'vscode';
+import * as vscode from 'vscode';
 
 
 export function offsetPosition(
@@ -34,8 +35,11 @@ export function expandLinewise(range: Range) {
   return new Range(range.start.line, 0, range.end.line + 1, 0);
 }
 
-export function selectRange(editor: TextEditor, range: Range) {
-  editor.selection = new Selection(range.start, range.end);
+export function selectRange(editor: TextEditor, range: Range, reversed?: boolean) {
+  const anchor = reversed ? range.end : range.start;
+  const active = reversed ? range.start : range.end;
+  editor.selection = new Selection(anchor, active);
+  editor.revealRange(range);
 }
 
 export function trimWhitespace(document: TextDocument, range: Range)
@@ -50,6 +54,19 @@ export function trimWhitespace(document: TextDocument, range: Range)
 
 export function trimInner(document: TextDocument, range: Range) {
   return trimWhitespace(document, trimBrackets(document, range));
+}
+
+export function swapRanges(
+    editor: TextEditor, range1: Range, range2: Range) {
+  const document = editor.document;
+  return editor.edit((edit) => {
+    edit.replace(range1, document.getText(range2));
+    edit.replace(range2, document.getText(range1));
+    if (editor.selection.isEqual(range1))
+      selectRange(editor, range2);
+    else if (editor.selection.isEqual(range2))
+      selectRange(editor, range1);
+  });
 }
 
 const BRACKETS: Array<[string, string]> =

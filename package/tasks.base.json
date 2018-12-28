@@ -1,0 +1,82 @@
+{
+    "contributes": {
+        "configuration": {
+            "properties": {
+                "qcfg.tasks": {
+                    "type": "object",
+                    "description": "Tasks in qcfg format",
+                    "additionalProperties": {
+                        "type": "object",
+                        "properties": {
+                            "command": {
+                                "type": "string"
+                            },
+                            "reveal": {
+                                "type": "string",
+                                "enum": [
+                                    "focus",
+                                    "yes",
+                                    "no"
+                                ],
+                                "default": "yes"
+                            },
+                            "clear": {
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "onSuccess": {
+                                "type": "string",
+                                "default": "auto",
+                                "enum": [
+                                    "none",
+                                    "auto",
+                                    "hide",
+                                    "dispose",
+                                    "show",
+                                    "notify"
+                                ]
+                            },
+                            "onFailure": {
+                                "type": "string",
+                                "default": "auto",
+                                "enum": [
+                                    "none",
+                                    "auto",
+                                    "hide",
+                                    "dispose",
+                                    "show",
+                                    "notify"
+                                ]
+                            },
+                            "reindex": {
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "build": {
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "problemMatchers": {
+                                "anyOf": [
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "default": []
+                                    },
+                                    {
+                                        "type": "string"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": [
+                            "command"
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,10 +1,15 @@
 'use strict';
 
 import * as vscode from 'vscode';
+import {window} from 'vscode';
+
 import * as language from './language';
 import * as fileUtils from './fileUtils';
 import * as logging from './logging';
+import * as dialog from './dialog';
+import * as remoteControl from './remoteControl';
 import {DefaultDictionary, Queue} from 'typescript-collections';
+import {getActiveTextEditor} from './utils';
 
 const log = new logging.Logger('tasks');
 
@@ -33,6 +38,7 @@ interface Params {
   build?: boolean;
   problemMatchers?: string | string[];
   dedicatedPanel?: boolean;
+  clear?: boolean;
 }
 
 interface ParamsSet {
@@ -40,8 +46,8 @@ interface ParamsSet {
 }
 
 interface OneTimeContext {
-  resolve?: () => void;
-  reject?: (exitCode: number) => void;
+  resolve: () => void;
+  reject: (exitCode: number) => void;
   params: Params;
 }
 
@@ -74,7 +80,7 @@ export async function runOneTime(name: string, params: Params) {
     taskQueue.getValue(name).enqueue(params);
     return;
   }
-  dequeueOneTime(name, params);
+  return dequeueOneTime(name, params);
 }
 
 // taken from https://www.npmjs.com/package/es6-dynamic-template
@@ -85,19 +91,43 @@ function makeTemplate(templateString, templateVariables) {
 	return templateFunction(...values);
 }
 
+const SUBSTITUTE: {[name: string]: () => string} = {
+  'cursorWord': () => {
+    const editor = getActiveTextEditor();
+    const document = editor.document;
+    const range = document.getWordRangeAtPosition(editor.selection.active);
+    return document.getText(range);
+  }
+};
+
+function substituteVars(cmd: string) {
+  let prevCmd = cmd;
+  do {
+    prevCmd = cmd;
+    for (const varname of Object.keys(SUBSTITUTE)) {
+      const place = '${' + varname + '}';
+      const subs = SUBSTITUTE[varname]();
+      cmd = cmd.replace(place, subs);
+    }
+  } while (cmd !== prevCmd);
+  return cmd;
+}
+
 function createTask(label: string, params: Params): vscode.Task {
   const def: vscode.TaskDefinition = {type: 'qcfg', task: params};
-  const wsFolders = vscode.workspace.workspaceFolders;
-  const editor = vscode.window.activeTextEditor;
+  const wsFolders = log.assertNonNull<vscode.WorkspaceFolder[]>(
+      vscode.workspace.workspaceFolders);
+  const editor = window.activeTextEditor;
   let wsFolder: vscode.WorkspaceFolder;
   if (wsFolders.length === 1 || !editor) {
     wsFolder = wsFolders[0];
   } else {
     wsFolder = fileUtils.getDocumentRoot(editor.document).wsFolder;
   }
+  const environ = {QCFG_VSCODE_PORT: String(remoteControl.port)};
   const procExec = new vscode.ProcessExecution(
-      'bash-with-sleep.sh',
-      ['/bin/bash', '-c', params.command], {cwd: params.cwd});
+      'bash-with-sleep.sh', ['/bin/bash', '-c', substituteVars(params.command)],
+      {cwd: params.cwd, env: environ});
   const shellExec =
       new vscode.ShellExecution(params.command, {cwd: params.cwd});
   const task = new vscode.Task(
@@ -113,18 +143,23 @@ function createTask(label: string, params: Params): vscode.Task {
              vscode.TaskRevealKind.Never :
              vscode.TaskRevealKind.Always),
     panel: params.dedicatedPanel ? vscode.TaskPanelKind.Dedicated :
-                                   vscode.TaskPanelKind.Shared
+                                   vscode.TaskPanelKind.Shared,
+    clear: params.clear
   };
   if (params.build)
     task.group = vscode.TaskGroup.Build;
   return task;
 }
 
-function getAllTaskParams(): ParamsSet {
+function getConfiguredTaskParams(): ParamsSet {
   const conf = vscode.workspace.getConfiguration('qcfg');
   const global: ParamsSet = conf.get('tasks.global', {});
   const ws: ParamsSet = conf.get('tasks.workspace', {});
-  const all: ParamsSet = {...global, ...ws};
+  return {...global, ...ws};
+}
+
+function getAllTaskParams(): ParamsSet {
+  const all = getConfiguredTaskParams();
   for (const name of Object.keys(oneTimeTasks))
     all[name] = oneTimeTasks[name].params;
   return all;
@@ -157,18 +192,33 @@ function runBuildTask(): Thenable<any> {
   return vscode.commands.executeCommand('workbench.action.tasks.build');
 }
 
-function findTerminal(task: vscode.Task): vscode.Terminal {
-  let taskName = task.name;
+function findTerminal(task: vscode.Task): vscode.Terminal | undefined {
+  const taskName = task.name;
+  let wsTaskName = taskName;
+  const cands: string[] = [];
   if (typeof task.scope === 'object' && 'name' in task.scope) {
     const wsFolder: vscode.WorkspaceFolder = task.scope;
-        taskName = `${taskName} (${wsFolder.name})`;
+    wsTaskName = `${taskName} (${wsFolder.name})`;
   }
-  for (const term of vscode.window.terminals) {
-    // console.log('Terminal: ', term.name);
-    if (term.name === 'Task - ' + taskName ||
-        term.name === 'Task - qcfg: ' + taskName)
-      return term;
+  for (const name of [taskName, wsTaskName])
+    cands.push('Task - ' + name, 'Task - qcfg: ' + name);
+  for (const term of window.terminals) {
+    for (const cand of cands)
+      if (term.name === cand)
+        return term;
   }
+}
+
+function onStartTaskProcess(event: vscode.TaskProcessStartEvent)
+{
+  const task = event.execution.task;
+  log.info(`Task process ${task.name} started`);
+  const params = task.definition.task as Params;
+  if (!params)
+    return;
+  if (!params.reveal)
+    return;
+  vscode.commands.executeCommand('workbench.action.terminal.scrollToBottom');
 }
 
 function onEndTaskProcess(event: vscode.TaskProcessEndEvent) {
@@ -217,10 +267,10 @@ function onEndTaskProcess(event: vscode.TaskProcessEndEvent) {
           break;
         case EndAction.Notify:
           if (success)
-            vscode.window.showInformationMessage(
+            window.showInformationMessage(
                 `Task "${task.name}" finished`);
           else
-            vscode.window.showErrorMessage(`Task "${task.name}" failed`);
+            window.showErrorMessage(`Task "${task.name}" failed`);
           break;
       }
     } else {  // no terminal
@@ -239,7 +289,7 @@ function onTaskStart(event: vscode.TaskStartEvent) {
     return;
   if (task.isBackground)
     return;
-  const status = vscode.window.createStatusBarItem();
+  const status = window.createStatusBarItem();
   status.text = `$(tools)${name}`;
   status.show();
   runningTasks[name] = status;
@@ -260,14 +310,14 @@ function onTaskEnd(event: vscode.TaskEndEvent) {
     delete oneTimeTasks[name];
     const queue = taskQueue.getValue(name);
     if (!queue.isEmpty()) {
-      const params = queue.dequeue();
+      const params = queue.dequeue() as Params;
       dequeueOneTime(name, params);
     }
   }
 }
 
-export function activate(context: vscode.ExtensionContext) {
-  context.subscriptions.push(vscode.tasks.registerTaskProvider('qcfg', {
+function registerTaskProvider() {
+  return vscode.tasks.registerTaskProvider('qcfg', {
     provideTasks: () => {
       return getQcfgTasks();
     },
@@ -275,15 +325,25 @@ export function activate(context: vscode.ExtensionContext) {
         undefined {
           return undefined;
         }
-  }));
+  });
+}
+
+async function showTasks() {
+  const val = await dialog.inputWithHistory('temp');
+  if (val)
+    window.showInformationMessage(val);
+  // const allParams = getConfiguredTaskParams();
+  // const val = await dialog.selectFromList(Object.keys(allParams));
+  // window.showInformationMessage(val);
+}
+
+export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
-      vscode.commands.registerCommand('qcfg.tasks.build', runBuildTask));
-
-  context.subscriptions.push(
-      vscode.tasks.onDidEndTaskProcess(onEndTaskProcess));
-
-  context.subscriptions.push(vscode.tasks.onDidStartTask(onTaskStart));
-
-  context.subscriptions.push(vscode.tasks.onDidEndTask(onTaskEnd));
-
+      registerTaskProvider(),
+      vscode.commands.registerCommand('qcfg.tasks.build', runBuildTask),
+      vscode.commands.registerCommand('qcfg.tasks.show', showTasks),
+      vscode.tasks.onDidStartTaskProcess(onStartTaskProcess),
+      vscode.tasks.onDidEndTaskProcess(onEndTaskProcess),
+      vscode.tasks.onDidStartTask(onTaskStart),
+      vscode.tasks.onDidEndTask(onTaskEnd));
 }

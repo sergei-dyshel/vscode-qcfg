@@ -1,0 +1,30 @@
+{
+    "contributes": {
+        "commands": [
+            {
+                "command": "qcfg.selectLines",
+                "title": "qcfg: Select lines"
+            },
+            {
+                "command": "qcfg.swapCursorAndAnchor",
+                "title": "qcfg: Swap cursor and anchor"
+            },
+            {
+                "command": "qcfg.cloneEditorBeside",
+                "title": "qcfg: Clone editor to side"
+            },
+            {
+                "command": "qcfg.smartPaste",
+                "title": "qcfg: Smart paste"
+            },
+            {
+                "command": "qcfg.surroundWith",
+                "title": "qcfg: Surround text with..."
+            },
+            {
+                "command": "qcfg.navigateBackToPreviousFile",
+                "title": "qcfg: Navigate back to previous file"
+            }
+        ]
+    }
+}

@@ -1,0 +1,24 @@
+{
+    "contributes": {
+        "commands": [
+            {
+                "command": "qcfg.tasks.build",
+                "title": "qcfg: Run build task"
+            },
+            {
+                "command": "qcfg.tasks.show",
+                "title": "qcfg: Show list of tasks"
+            }
+        ],
+        "configuration": {
+            "properties": {
+                "qcfg.tasks.global": {
+                    "$import": "tasks.base.json#/contributes/configuration/properties/qcfg.tasks"
+                },
+                "qcfg.tasks.workspace": {
+                    "$import": "tasks.base.json#/contributes/configuration/properties/qcfg.tasks"
+                }
+            }
+        }
+    }
+}

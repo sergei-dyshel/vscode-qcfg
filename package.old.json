@@ -9,7 +9,7 @@
     "url": "https://github.com/sergei-dyshel/qyron-config.git"
   },
   "engines": {
-    "vscode": "^1.30.0"
+    "vscode": "^1.28.0"
   },
   "categories": [
     "Other"
@@ -120,6 +120,16 @@
     "configuration": {
       "title": "Qcfg configuration",
       "properties": {
+        "qcfg.alternate.mapping": {
+          "type": "object",
+          "description": "Mapping for alternate (header/source)",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
         "qcfg.tasks.global": {
           "type": "object",
           "description": "Tasks in qcfg format",
@@ -137,10 +147,6 @@
                   "no"
                 ],
                 "default": "yes"
-              },
-              "clear": {
-                "type": "boolean",
-                "default": false
               },
               "onSuccess": {
                 "type": "string",
@@ -175,18 +181,11 @@
                 "default": false
               },
               "problemMatchers": {
-                "anyOf": [
-                  {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    },
-                    "default": []
-                  },
-                  {
-                    "type": "string"
-                  }
-                ]
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "default": []
               }
             },
             "required": [
@@ -212,10 +211,6 @@
                 ],
                 "default": "yes"
               },
-              "clear": {
-                "type": "boolean",
-                "default": false
-              },
               "onSuccess": {
                 "type": "string",
                 "default": "auto",
@@ -266,16 +261,6 @@
             "required": [
               "command"
             ]
-          }
-        },
-        "qcfg.alternate.mapping": {
-          "type": "object",
-          "description": "Mapping for alternate (header/source)",
-          "additionalProperties": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
           }
         },
         "qcfg.autoSync.enabled": {
@@ -323,22 +308,23 @@
   },
   "dependencies": {
     "clipboardy": "^1.2.3",
+    "deepmerge": "^3.0.0",
+    "mergejson": "^1.1.0",
     "shlex": "^1.0.3",
     "superstring": "^2.3.4",
     "tree-sitter": "^0.13.16",
     "tree-sitter-cpp": "^0.13.8",
     "tree-sitter-python": "^0.13.4",
     "tree-sitter-typescript": "^0.13.6",
+    "ts-node": "^7.0.1",
     "typescript-collections": "^1.1.4"
   },
   "devDependencies": {
     "@types/clipboardy": "^1.1.0",
     "@types/mocha": "^2.2.42",
     "@types/node": "^8.10.25",
-    "deepmerge": "^3.0.0",
     "gts": "^0.8.0",
     "json-merger": "^1.0.1",
-    "ts-node": "^7.0.1",
     "tslint": "^5.8.0",
     "typescript": "~2.8.0",
     "vscode": "^1.1.21",

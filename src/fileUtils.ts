@@ -21,5 +21,5 @@ export const exists = util.promisify(fs.exists);
 
 export function existsInRoot(
     wsFolder: vscode.WorkspaceFolder, fileName: string) {
-  return exists(path.join(wsFolder.uri.fsPath, fileName.toString()));
+  return exists(path.join(wsFolder.uri.fsPath, fileName));
 }
