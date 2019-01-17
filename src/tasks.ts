@@ -34,6 +34,7 @@ interface Params {
   reveal?: Reveal;
   onSuccess?: EndAction;
   onFailure?: EndAction;
+  exitCodes?: number[];
   reindex?: boolean;
   build?: boolean;
   problemMatchers?: string | string[];
@@ -46,8 +47,8 @@ interface ParamsSet {
 }
 
 interface OneTimeContext {
-  resolve: () => void;
-  reject: (exitCode: number) => void;
+  resolve?: () => void;
+  reject?: (exitCode: number) => void;
   params: Params;
 }
 
@@ -57,7 +58,8 @@ const taskQueue =
 
 async function dequeueOneTime(name: string, params: Params)
 {
-  const context: OneTimeContext = {'params': params};
+  const context:
+      OneTimeContext = {'params': params};
   oneTimeTasks[name] = context;
   const tasks = await vscode.tasks.fetchTasks({'type': 'qcfg'});
   for (const task of tasks) {
@@ -125,13 +127,13 @@ function createTask(label: string, params: Params): vscode.Task {
     wsFolder = fileUtils.getDocumentRoot(editor.document).wsFolder;
   }
   const environ = {QCFG_VSCODE_PORT: String(remoteControl.port)};
-  const procExec = new vscode.ProcessExecution(
-      'bash-with-sleep.sh', ['/bin/bash', '-c', substituteVars(params.command)],
-      {cwd: params.cwd, env: environ});
-  const shellExec =
-      new vscode.ShellExecution(params.command, {cwd: params.cwd});
+  // const procExec = new vscode.ProcessExecution(
+  //     'bash-with-sleep.sh', ['/bin/bash', '-c', substituteVars(params.command)],
+  //     {cwd: params.cwd, env: environ});
+  const shellExec = new vscode.ShellExecution(
+      substituteVars(params.command), {cwd: params.cwd, env: environ});
   const task = new vscode.Task(
-      def, wsFolder, label, 'qcfg', procExec, params.problemMatchers || []);
+      def, wsFolder, label, 'qcfg', shellExec, params.problemMatchers || []);
   // const shellExec =
   //     new vscode.ShellExecution(params.command, {cwd: '${workspaceFolder}'});
   // const task = new vscode.Task(
@@ -227,10 +229,11 @@ function onEndTaskProcess(event: vscode.TaskProcessEndEvent) {
   console.log(`Ended task process with exit code ${event.exitCode}`, task);
 
   const params = task.definition.task as Params;
-  const success = (event.exitCode === 0);
+  const exitCodes = params.exitCodes || [0];
+  const success = exitCodes.includes(event.exitCode);
   if (params) {
     if (task.name in oneTimeTasks) {
-      log.info(`One time task ${task.name} process ended`);
+      log.info(`One time task "${task.name}" process ended`);
       const ctx = oneTimeTasks[task.name];
       if (success)
         ctx.resolve();
@@ -329,9 +332,15 @@ function registerTaskProvider() {
 }
 
 async function showTasks() {
-  const val = await dialog.inputWithHistory('temp');
+  // const val = await dialog.inputWithHistory('temp');
+  // if (val)
+  //   window.showInformationMessage(val);
+  const paramList = Object.entries(getConfiguredTaskParams());
+  const val = await dialog.selectFromListMru(
+      paramList, (pair) => ({label: pair[0], detail: pair[1].command}), 'tasks',
+      (pair) => pair[0]);
   if (val)
-    window.showInformationMessage(val);
+    window.showInformationMessage(val[0]);
   // const allParams = getConfiguredTaskParams();
   // const val = await dialog.selectFromList(Object.keys(allParams));
   // window.showInformationMessage(val);

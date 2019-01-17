@@ -14,16 +14,17 @@ import * as readOnlyProject from './readOnlyProject';
 import * as selectionHistory from './selectionHistory';
 import * as dialog from './dialog';
 import * as remoteControl from './remoteControl';
+import * as windowState from './windowState';
 import * as assert from 'assert';
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('Extension active');
+    logging.activate(context);
     tasks.activate(context);
     editing.activate(context);
     autoSync.activate(context);
     gtags.activate(context);
     saveAll.activate(context);
-    logging.activate(context);
     treeSitter.activate(context);
     alternate.activate(context);
     misc.activate(context);
@@ -31,6 +32,7 @@ export function activate(context: vscode.ExtensionContext) {
     selectionHistory.activate(context);
     dialog.activate(context);
     remoteControl.activate(context);
+    windowState.activate(context);
 }
 
 // this method is called when your extension is deactivated

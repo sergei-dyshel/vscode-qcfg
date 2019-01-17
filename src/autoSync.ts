@@ -5,6 +5,7 @@ import * as tasks from './tasks';
 import * as language from './language';
 import * as saveAll from './saveAll';
 import * as logging from './logging';
+import * as subprocess from './subprocess';
 import {setTimeoutPromise} from './utils';
 
 const log = new logging.Logger('autoSync');
@@ -39,7 +40,12 @@ async function onSaveAll(docs: saveAll.DocumentsInFolder) {
   const paths = docPaths.join(' ');
   const cmd = command.includes('{}') ? command.replace('{}', paths) :
                                        command + ' ' + paths;
-  await tasks.runOneTime('autoSync', {command: cmd});
+  try {
+    await subprocess.exec(cmd);
+  }
+  catch (err) {
+    vscode.window.showErrorMessage('autoSync failed');
+  }
   log.debug('Waiting before sending didSave to clients');
   await setTimeoutPromise(1000);
   for (const doc of docs.documents)

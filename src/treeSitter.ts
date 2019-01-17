@@ -214,18 +214,24 @@ function nodeHasRange(node: SyntaxNode, range: Range) {
   return nodeRange(node).isEqual(range);
 }
 
-function findContainingNode(node: SyntaxNode, range: Range): SyntaxNode {
+function findContainingNodeImpl(node: SyntaxNode, range: Range):
+    SyntaxNode | undefined {
   if (nodeHasRange(node, range))
     return node;
   for (let i = 0; i < node.childCount; ++i) {
     const child = node.child(i) as SyntaxNode;
-    const foundInChild = findContainingNode(child, range);
+    const foundInChild = findContainingNodeImpl(child, range);
     if (foundInChild)
       return foundInChild;
   }
   if (nodeContainsRange(node, range))
     return node;
-  return log.fatal(`${str(node)} does not contain ${str(range)}`);
+}
+
+function findContainingNode(node: SyntaxNode, range: Range) : SyntaxNode {
+  const contNode = findContainingNodeImpl(node, range);
+  return log.assertNonNull<SyntaxNode>(
+      contNode, `${str(node)} does not contain ${str(range)}`);
 }
 
 function findContainingChildren(
@@ -383,7 +389,7 @@ function getSuperParent(node: SyntaxNode) {
   let sParent: SyntaxNode | null;
   sParent = getProperParent(node);
   while (sParent) {
-    const parent = getProperParent(node);
+    const parent = getProperParent(sParent);
     if (!parent)
       return sParent;
     if (COMPOUND_NODE_TYPES.includes(parent.type))
