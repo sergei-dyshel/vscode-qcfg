@@ -2,9 +2,13 @@
 
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as logging from './logging';
 
 import * as fileUtils from './fileUtils';
+import {getActiveTextEditor} from './utils';
 import {window, workspace, commands} from 'vscode';
+
+const log = new logging.Logger('misc');
 
 function openOrCreateTerminal(name: string, cwd: string) {
   for (const terminal of window.terminals) {
@@ -18,13 +22,13 @@ function openOrCreateTerminal(name: string, cwd: string) {
 }
 
 function terminalInWorkspaceFolder() {
-  const document = window.activeTextEditor.document;
+  const document = getActiveTextEditor().document;
   const {wsFolder} = fileUtils.getDocumentRoot(document);
   openOrCreateTerminal(wsFolder.name, wsFolder.uri.fsPath);
 }
 
 function terminalInFileFolder() {
-  const document = window.activeTextEditor.document;
+  const document = getActiveTextEditor().document;
   const relPath = workspace.asRelativePath(document.fileName);
   const name = path.dirname(relPath) || 'root';
   openOrCreateTerminal(name, path.dirname(document.fileName));

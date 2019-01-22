@@ -5,7 +5,7 @@ import {window, workspace, commands} from 'vscode';
 import {TextEditor, Selection} from 'vscode';
 import {Logger, str} from './logging';
 import {Stack} from 'typescript-collections';
-import {registerCommand} from './utils';
+import {registerCommand, getActiveTextEditor} from './utils';
 
 type SelectionStack = Stack<Selection[]>;
 
@@ -54,8 +54,8 @@ function onDidChangeTextEditorSelection(event: vscode.TextEditorSelectionChangeE
     return;
   }
   const kind = event.kind;
-  const stack = history.get(editor);
-  const top = stack.peek();
+  const stack = log.assertNonNull(history.get(editor));
+  const top = log.assertNonNull(stack.peek());
   const selections = event.selections;
   if (selectionsEqual(top, selections))
     return;
@@ -70,18 +70,19 @@ function onDidChangeTextEditorSelection(event: vscode.TextEditorSelectionChangeE
 }
 
 function popSelection() {
-  const editor = window.activeTextEditor;
+  const editor = getActiveTextEditor();
   if (!history.has(editor))
     throw new Error(`selection not in stack`);
-  const stack = history.get(editor);
-  if (stack.isEmpty() || !selectionsEqual(stack.peek(), editor.selections)) {
+  const stack = log.assertNonNull(history.get(editor));
+  if (stack.isEmpty() ||
+      !selectionsEqual(log.assertNonNull(stack.peek()), editor.selections)) {
     resetByEditor(editor);
     throw new Error(`selection not synchronized`);
   }
   stack.pop();
   if (stack.isEmpty())
     throw new Error('No previous selection');
-  editor.selections = stack.peek();
+  editor.selections = log.assertNonNull(stack.peek());
 }
 
 export function activate(context: vscode.ExtensionContext) {

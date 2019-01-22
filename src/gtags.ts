@@ -12,21 +12,6 @@ import * as path from 'path';
 
 const log = new logging.Logger('gtags');
 
-async function onSave(document: vscode.TextDocument) {
-  const {wsFolder, relPath} = fileUtils.getDocumentRoot(document);
-  const hasGtags = await fileUtils.existsInRoot(wsFolder, 'GTAGS');
-  if (!hasGtags)
-    return;
-  try {
-    await tasks.runOneTime('gtags', {
-      command: 'global --single-update ' + relPath,
-      cwd: wsFolder.uri.fsPath
-    });
-  } catch (err) {
-    vscode.window.showErrorMessage('gtags update failed');
-  }
-}
-
 async function findGtagsDir(dir: string) {
   while (dir !== '/') {
     if (await fileUtils.exists(path.join(dir, 'GTAGS'))) {
@@ -61,9 +46,10 @@ async function onSaveAll(docs: saveAll.DocumentsInFolder) {
 }
 
 async function updateDB() {
-  for (const folder of vscode.workspace.workspaceFolders) {
+  for (const folder of (vscode.workspace.workspaceFolders || [])) {
     const path = folder.uri.fsPath;
     const gtagsDir = await findGtagsDir(path);
+
     if (!gtagsDir)
       continue;
     try {

@@ -32,7 +32,7 @@ function onDidSaveTextDocument(document: vscode.TextDocument) {
   log.info('onDidSaveTextDocument:', docPath);
 
   if (savedFiles.has(wsFolder))
-    savedFiles.get(wsFolder).push(document);
+    log.assertNonNull(savedFiles.get(wsFolder)).push(document);
   else
     savedFiles.set(wsFolder, [document]);
   timer = setTimeout(emit, 200);

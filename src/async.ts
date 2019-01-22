@@ -32,7 +32,7 @@ export class PromiseQueue {
   private runNext() {
     if (this.queue.length === 0 || this.busy)
       return;
-    const entry = this.queue.shift();
+    const entry = log.assertNonNull(this.queue.shift());
     this.debug(`starting "${entry.name}`);
     this.busy = true;
     try {

@@ -10,7 +10,7 @@ export function getDocumentRoot(document: vscode.TextDocument) {
   const wsPath = vscode.workspace.asRelativePath(document.fileName, true);
   const relPath = vscode.workspace.asRelativePath(document.fileName, false);
   const [wsDir] = wsPath.split(path.sep, 1);
-  for (const wsFolder of vscode.workspace.workspaceFolders) {
+  for (const wsFolder of (vscode.workspace.workspaceFolders || [])) {
     if (wsFolder.name === wsDir)
       return {wsFolder, relPath};
   }

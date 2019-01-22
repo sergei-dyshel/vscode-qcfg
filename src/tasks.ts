@@ -236,9 +236,9 @@ function onEndTaskProcess(event: vscode.TaskProcessEndEvent) {
       log.info(`One time task "${task.name}" process ended`);
       const ctx = oneTimeTasks[task.name];
       if (success)
-        ctx.resolve();
+        log.assertNonNull(ctx.resolve)();
       else
-        ctx.reject(event.exitCode);
+        log.assertNonNull(ctx.reject)(event.exitCode);
       return;
     }
     if (success && params.reindex)

@@ -8,14 +8,18 @@ import * as path from 'path';
 
 import * as shlex from 'shlex';
 
+import * as terminal from './terminal';
 import {Logger, str} from './logging';
 import * as fileUtils from './fileUtils';
+import {getActiveTextEditor} from './utils';
 
 const log = new Logger('remote');
 
 export let port = 48123;
 
-function parseNumber(s: string, default_?: number): number {
+function parseNumber(s: string | undefined): number | undefined;
+function parseNumber(s: string | undefined, default_: number): number;
+function parseNumber(s: string | undefined, default_?: number): number | undefined {
   if (s === undefined)
     return default_;
   const num = Number(s);
@@ -24,14 +28,17 @@ function parseNumber(s: string, default_?: number): number {
   return num;
 }
 
-async function handleOpen(folder?: string, location?: string) {
-  if (!path.isAbsolute(folder))
+async function handleOpen(location: string, folder: string) {
+  if (folder && !path.isAbsolute(folder))
     log.fatal(`"${folder}" is not absolute path`);
-  let wsFolder: vscode.WorkspaceFolder;
-  for (wsFolder of workspace.workspaceFolders)
-    if (wsFolder.uri.fsPath === folder)
+  let wsFolder: vscode.WorkspaceFolder | undefined;
+  let found = false;
+  for (wsFolder of (workspace.workspaceFolders || []))
+    if (wsFolder.uri.fsPath === folder) {
+      found = true;
       break;
-  if (!wsFolder) {
+    }
+  if (!wsFolder || !found) {
     log.info(`"${folder}" does not correspond to this workspace's folder`);
     return;
   }
@@ -51,20 +58,23 @@ async function handleOpen(folder?: string, location?: string) {
     if (!fileExists)
       log.fatal(`File "${file}" does not exist in "${wsFolder.name}"`);
   }
-  let editor = window.activeTextEditor;
-  let document = editor.document;
-  if (document.uri.fsPath !== fullPath) {
-    document = await workspace.openTextDocument(fullPath);
-    editor = await window.showTextDocument(document);
-  }
   const lineNo = parseNumber(line);
   const colNo = column === "" ? 1 : parseNumber(column, 1);
   if (lineNo === undefined)
     return;
   const pos = new vscode.Position(lineNo - 1, colNo - 1);
-  editor.selection = new vscode.Selection(pos, pos);
+
+  let editor = getActiveTextEditor();
+  let document = editor.document;
+  const selection = new vscode.Selection(pos, pos);
+  if (document.uri.fsPath !== fullPath) {
+    document = await workspace.openTextDocument(fullPath);
+    editor = await window.showTextDocument(document, {selection});
+    editor.show();
+    return;
+  }
+  editor.selection = selection;
   editor.revealRange(editor.selection);
-  editor.show();
 }
 
 function handleCmd(cmd: string) {
@@ -78,8 +88,11 @@ function handleCmd(cmd: string) {
   const args = parts.slice(1);
   switch (opcode) {
     case 'open':
-      handleOpen(...args);
+      log.assert(args.length === 2);
+      handleOpen(args[0], args[1]);
       break;
+    case 'terminalProcessExit':
+      terminal.processExit(args);
     default:
       log.error('Invalid opcode: ' + opcode);
   }

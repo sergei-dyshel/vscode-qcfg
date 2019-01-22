@@ -125,3 +125,10 @@ export async function selectFromListMru<T>(
   extContext.globalState.update(persistentKey, labels);
   return selected;
 }
+
+export async function selectStringFromListMru(
+    items: string[], persistentKey: string,
+    options?: vscode.QuickPickOptions): Promise<string|undefined> {
+  return selectFromListMru(
+      items, (label) => ({label}), persistentKey, (label) => label, options);
+}
