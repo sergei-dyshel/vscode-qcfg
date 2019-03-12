@@ -8,7 +8,7 @@ import * as logging from './logging';
 import * as subprocess from './subprocess';
 import {setTimeoutPromise} from './utils';
 
-const log = new logging.Logger('autoSync');
+const log = logging.Logger.create('autoSync');
 
 let enabled = false;
 let status: vscode.StatusBarItem;
@@ -41,10 +41,12 @@ async function onSaveAll(docs: saveAll.DocumentsInFolder) {
   const cmd = command.includes('{}') ? command.replace('{}', paths) :
                                        command + ' ' + paths;
   try {
-    await subprocess.exec(cmd);
+    await subprocess.exec(cmd, {cwd: docs.folder.uri.fsPath});
   }
   catch (err) {
-    vscode.window.showErrorMessage('autoSync failed');
+    const error = err as subprocess.ExecResult;
+    vscode.window.showErrorMessage(`autoSync failed with ${error.code}, ${
+        error.signal} stdout: ${error.stdout} stderr: ${error.stderr}`);
   }
   log.debug('Waiting before sending didSave to clients');
   await setTimeoutPromise(1000);

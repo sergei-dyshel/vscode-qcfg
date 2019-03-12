@@ -16,7 +16,7 @@ import {Context, getActiveTextEditor} from './utils';
 import {Logger, str} from './logging';
 import { DocumentColorRequest } from 'vscode-languageclient';
 
-const log = new Logger('tree');
+const log = Logger.create('tree');
 
 let status: vscode.StatusBarItem;
 
@@ -47,7 +47,7 @@ const languageConfig: {[language: string]: LanguageConfig} = {
   python: {parser: treeSitterPython},
   c: {parser: treeSitterCpp},
   cpp: {parser: treeSitterCpp},
-  typescript: {parser: treeSitterTypeScript}
+  typescript: {parser: treeSitterTypeScript},
 };
 
 function isSupportedLanguage(language: string) {

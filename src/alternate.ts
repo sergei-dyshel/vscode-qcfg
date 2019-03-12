@@ -9,7 +9,7 @@ import * as fs from 'fs';
 import * as logging from './logging';
 import {getActiveTextEditor} from './utils';
 
-const log = new logging.Logger('alternate');
+const log = logging.Logger.create('alternate');
 
 interface Mapping {
   [ext: string]: string[];

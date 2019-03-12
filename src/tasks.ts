@@ -11,7 +11,7 @@ import * as remoteControl from './remoteControl';
 import {DefaultDictionary, Queue} from 'typescript-collections';
 import {getActiveTextEditor} from './utils';
 
-const log = new logging.Logger('tasks');
+const log = logging.Logger.create('tasks');
 
 enum Reveal {
   Focus = 'focus',
@@ -36,7 +36,6 @@ interface Params {
   onFailure?: EndAction;
   exitCodes?: number[];
   reindex?: boolean;
-  build?: boolean;
   problemMatchers?: string | string[];
   dedicatedPanel?: boolean;
   clear?: boolean;
@@ -148,8 +147,6 @@ function createTask(label: string, params: Params): vscode.Task {
                                    vscode.TaskPanelKind.Shared,
     clear: params.clear
   };
-  if (params.build)
-    task.group = vscode.TaskGroup.Build;
   return task;
 }
 
@@ -180,18 +177,13 @@ function getQcfgTasks(): vscode.Task[] {
   return result;
 }
 
-function runBuildTask(): Thenable<any> {
-  const all = getAllTaskParams();
-  for (const label of Object.keys(all)) {
-    const params = all[label];
-    if (params.build)
-      return vscode.commands.executeCommand(
-          'workbench.action.tasks.runTask', 'qcfg: ' + label);
-
-    // XXX: executeTask not working (may be need to use fetchTAsks first)
-    //   return vscode.tasks.executeTask(createTask(label, params));
-  }
-  return vscode.commands.executeCommand('workbench.action.tasks.build');
+async function runBuildTask() {
+  const tasks = await vscode.tasks.fetchTasks();
+  for (const task of tasks)
+    if (task.group === vscode.TaskGroup.Build)
+      return vscode.commands.executeCommand('workbench.action.tasks.build');
+  return vscode.commands.executeCommand(
+      'workbench.action.tasks.runTask', 'qcfg: build');
 }
 
 function findTerminal(task: vscode.Task): vscode.Terminal | undefined {

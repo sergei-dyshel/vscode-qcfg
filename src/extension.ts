@@ -5,6 +5,7 @@ import * as tasks from './tasks';
 import * as editing from './editing';
 import * as autoSync from './autoSync';
 import * as gtags from './gtags';
+import * as ctags from './ctags';
 import * as saveAll from './saveAll';
 import * as logging from './logging';
 import * as treeSitter from './treeSitter';
@@ -15,15 +16,17 @@ import * as selectionHistory from './selectionHistory';
 import * as dialog from './dialog';
 import * as remoteControl from './remoteControl';
 import * as windowState from './windowState';
+import * as search from './search';
 import * as assert from 'assert';
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('Extension active');
-    logging.activate(context);
+    logging.activate(context); // must be first
     tasks.activate(context);
     editing.activate(context);
     autoSync.activate(context);
     gtags.activate(context);
+    ctags.activate(context);
     saveAll.activate(context);
     treeSitter.activate(context);
     alternate.activate(context);
@@ -33,6 +36,7 @@ export function activate(context: vscode.ExtensionContext) {
     dialog.activate(context);
     remoteControl.activate(context);
     windowState.activate(context);
+    search.activate(context);
 }
 
 // this method is called when your extension is deactivated

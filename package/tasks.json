@@ -62,10 +62,6 @@
 								"type": "boolean",
 								"default": false
 							},
-							"build": {
-								"type": "boolean",
-								"default": false
-							},
 							"problemMatchers": {
 								"anyOf": [
 									{
@@ -133,10 +129,6 @@
 								]
 							},
 							"reindex": {
-								"type": "boolean",
-								"default": false
-							},
-							"build": {
 								"type": "boolean",
 								"default": false
 							},

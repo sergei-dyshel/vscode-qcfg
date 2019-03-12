@@ -9,8 +9,9 @@
     "url": "https://github.com/sergei-dyshel/qyron-config.git"
   },
   "engines": {
-    "vscode": "^1.30.0"
+    "vscode": "^1.31.0"
   },
+  "enableProposedApi": true,
   "categories": [
     "Other"
   ],
@@ -29,8 +30,28 @@
         "title": "qcfg: Open terminal in current workspace folder"
       },
       {
+        "command": "qcfg.runCommand",
+        "title": "qcfg: Run command"
+      },
+      {
         "command": "qcfg.terminal.inFileFolder",
         "title": "qcfg: Open terminal in current file's folder"
+      },
+      {
+        "command": "qcfg.gtags.workspace",
+        "title": "qcfg: Show gtags for entire workspace"
+      },
+      {
+        "command": "qcfg.gtags.definition",
+        "title": "qcfg: Open gtags definition"
+      },
+      {
+        "command": "qcfg.search.word",
+        "title": "qcfg: Search current word in workspace"
+      },
+      {
+        "command": "qcfg.search.structField",
+        "title": "qcfg: Search current struct field in workspace"
       },
       {
         "command": "qcfg.tasks.build",
@@ -117,9 +138,41 @@
         "title": "qcfg: Navigate back to previous file"
       }
     ],
+    "keybindings": [
+      {
+        "key": "ctrl+shift+;",
+        "command": "qcfg.runCommand"
+      },
+      {
+        "key": "ctrl+u",
+        "command": "qcfg.gtags.workspace"
+      },
+      {
+        "key": "alt+d",
+        "command": "qcfg.gtags.definition"
+      },
+      {
+        "key": "alt+r",
+        "command": "qcfg.search.word",
+        "when": "editorFocus && !findWidgetVisible"
+      },
+      {
+        "key": "alt+shift+r",
+        "command": "qcfg.search.structField"
+      }
+    ],
     "configuration": {
       "title": "Qcfg configuration",
       "properties": {
+        "qcfg.log.level": {
+          "type": "string",
+          "description": "Log level",
+          "enum": [
+            "debug",
+            "info",
+            "warning"
+          ]
+        },
         "qcfg.tasks.global": {
           "type": "object",
           "description": "Tasks in qcfg format",
@@ -167,10 +220,6 @@
                 ]
               },
               "reindex": {
-                "type": "boolean",
-                "default": false
-              },
-              "build": {
                 "type": "boolean",
                 "default": false
               },
@@ -241,10 +290,6 @@
                 ]
               },
               "reindex": {
-                "type": "boolean",
-                "default": false
-              },
-              "build": {
                 "type": "boolean",
                 "default": false
               },
@@ -329,7 +374,8 @@
     "tree-sitter-cpp": "^0.13.11",
     "tree-sitter-python": "^0.13.6",
     "tree-sitter-typescript": "^0.13.6",
-    "typescript-collections": "^1.1.4"
+    "typescript-collections": "^1.1.4",
+    "re2": "^1.8.4"
   },
   "devDependencies": {
     "@types/clipboardy": "^1.1.0",

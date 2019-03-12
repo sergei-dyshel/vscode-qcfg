@@ -10,7 +10,7 @@ import {Range} from 'vscode-languageclient';
 import {Logger, str} from './logging';
 import {getActiveTextEditor} from './utils';
 
-const log = new Logger('editing');
+const log = Logger.create('editing');
 
 function selectLines(...args: any[]) {
   const editor = getActiveTextEditor();

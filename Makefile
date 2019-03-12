@@ -4,14 +4,16 @@ include $(d)/Makefile
 npm_pre_install:
 	npm install json-merger deepmerge ts-node
 
-npm_install:
-	npm_config_target=2.0.9 \
+npm_install: | package.json
+	npm_config_target=3.1.2 \
 	npm_config_disturl=https://atom.io/download/atom-shell \
+	JOBS=$(shell nproc) \
 	npm install
 
-npm_update:
-	npm_config_target=2.0.9 \
+npm_update: | package.json
+	npm_config_target=3.1.2 \
 	npm_config_disturl=https://atom.io/download/atom-shell \
+	JOBS=$(shell nproc) \
 	npm update
 
 install: | package.json

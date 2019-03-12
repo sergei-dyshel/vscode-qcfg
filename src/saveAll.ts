@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import * as fileUtils from './fileUtils';
 import * as logging from './logging';
 
-const log = new logging.Logger('saveAll');
+const log = logging.Logger.create('saveAll');
 
 export interface DocumentsInFolder {
   folder: vscode.WorkspaceFolder;

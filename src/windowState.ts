@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 
 import * as logging from './logging';
 
-const log = new logging.Logger('window');
+const log = logging.Logger.create('window');
 
 function windowStateChanged(state: vscode.WindowState)
 {

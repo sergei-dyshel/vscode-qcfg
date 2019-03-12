@@ -3,12 +3,13 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as logging from './logging';
+import {selectStringFromListMru} from './dialog';
 
 import * as fileUtils from './fileUtils';
 import {getActiveTextEditor} from './utils';
 import {window, workspace, commands} from 'vscode';
 
-const log = new logging.Logger('misc');
+const log = logging.Logger.create('misc');
 
 function openOrCreateTerminal(name: string, cwd: string) {
   for (const terminal of window.terminals) {
@@ -34,10 +35,18 @@ function terminalInFileFolder() {
   openOrCreateTerminal(name, path.dirname(document.fileName));
 }
 
+async function runCommand() {
+  const commands = await vscode.commands.getCommands();
+  const cmd = await selectStringFromListMru(commands, 'qcfg.runCommand');
+  if (cmd)
+    vscode.commands.executeCommand(cmd);
+}
+
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
       commands.registerCommand(
           'qcfg.terminal.inWorkspaceFolder', terminalInWorkspaceFolder),
       commands.registerCommand(
-          'qcfg.terminal.inFileFolder', terminalInFileFolder));
+          'qcfg.terminal.inFileFolder', terminalInFileFolder),
+      commands.registerCommand('qcfg.runCommand', runCommand));
 }

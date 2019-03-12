@@ -6,7 +6,17 @@ import * as logging from './logging';
 import * as vscode from 'vscode';
 import { extname } from 'path';
 
-const log = new logging.Logger('lang');
+const log = logging.Logger.create('lang');
+
+export function isLspActive() {
+  const extensions = ['cquery-project.cquery', 'ccls-project.ccls'];
+  for (const extName of extensions) {
+    const extension = vscode.extensions.getExtension(extName);
+    if (extension && extension.isActive)
+      return true;
+  }
+  return false;
+}
 
 export function sendDidSave(document: vscode.TextDocument) {
   const params: lc.DidSaveTextDocumentParams = {

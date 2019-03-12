@@ -6,8 +6,8 @@ import {workspace, window} from 'vscode';
 
 let outputChannel: vscode.OutputChannel;
 
-enum LogLevel {
-  Debug,
+export enum LogLevel {
+  Debug = 1,
   Info,
   Notice,
   Warning,
@@ -15,7 +15,9 @@ enum LogLevel {
   Fatal
 }
 
-const LOG_LEVEL_STRINGS = ['DEBUG', 'INFO', 'NOTICE', 'WARN', 'ERROR', 'FATAL'];
+const defaultLogLevel: LogLevel = LogLevel.Info;
+
+const LOG_LEVEL_STRINGS = ['', 'DEBUG', 'INFO', 'NOTICE', 'WARN', 'ERROR', 'FATAL'];
 
 export function str(x: any): string {
   switch (typeof x) {
@@ -71,15 +73,43 @@ function stringifyObject(x: object): string {
   }
 }
 
+export interface LoggerOptions {
+  instance?: string;
+  parent?: Logger;
+  level?: LogLevel;
+}
+
 export class Logger {
+  private constructor(private path: string, options?: LoggerOptions) {
+    if (options) {
+      this.parent = options.parent;
+      this.level = options.level;
+      this.instance = options.instance;
+    }
+  }
 
-  private module: string;
+  parent?: Logger;
+  level?: LogLevel;
+  instance?: string;
 
-  constructor(module: string) {
-    this.module = module;
+  static create(path: string, options?: LoggerOptions) {
+    return new Logger(path, options);
+  }
+
+  get fullPath(): string {
+    return (!this.parent || !this.parent.fullPath) ?
+        this.path :
+        `${this.parent.fullPath}.${this.path}`;
+  }
+
+  private resolveLevel(): LogLevel {
+    return this.level ||
+        (this.parent ? this.parent.resolveLevel() : defaultLogLevel);
   }
 
   private log(logLevel: LogLevel, ...args) {
+    if (logLevel < this.resolveLevel())
+      return;
     const msg = args.map(str).join(' ');
     const date = new Date();
     const dateStr = date.toLocaleTimeString(
@@ -87,10 +117,15 @@ export class Logger {
         {hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit'});
     const ms = String(date.getMilliseconds()).padStart(3, '0');
     const level = LOG_LEVEL_STRINGS[logLevel];
-    const line = `${dateStr}.${ms} ${level} [${this.module}] ${msg}`;
-    outputChannel.appendLine(line);
+    const instanceStr = this.instance ? `{${this.instance}} ` : '';
+    const line =
+        `${dateStr}.${ms} ${level} [${this.fullPath}] ${instanceStr}${msg}`;
+    if (outputChannel)
+      outputChannel.appendLine(line);
+    else
+      console.error('Using logging before activation');
     if (logLevel === LogLevel.Fatal) {
-      const errorMsg = `[${this.module}] ${msg}`;
+      const errorMsg = `[${this.fullPath}] ${msg}`;
       throw new Error(errorMsg);
     }
   }
@@ -121,6 +156,9 @@ export class Logger {
   assertNonNull<T>(val: T | undefined | null, ...args): T {
     this.assert(val !== undefined && val !== null, ...args);
     return val as T;
+  }
+  assertNull<T>(val: T | undefined | null, ...args) {
+    this.assert(val === undefined || val === null, ...args);
   }
 }
 

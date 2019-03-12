@@ -1,8 +1,14 @@
 'use strict';
 
 import * as child_process from 'child_process';
+import * as logging from './logging';
 
-interface ExecResult  {
+
+const moduleLog =
+    logging.Logger.create('subprocess');
+const log = moduleLog;
+
+export interface ExecResult  {
   code?: number;
   signal?: string;
   stdout: string;
@@ -12,11 +18,73 @@ interface ExecResult  {
 interface ExecOptions {
   cwd?: string;
   env?: {[name: string]: string};
+  maxBuffer?: number;
 }
 
-interface ExecError {
-  code: number;
-  signal?: number;
+export class Subprocess {
+  constructor(private command: string|string[], private options?: ExecOptions) {
+    if (typeof (command) === 'string')
+      this.process =
+          child_process.exec(command, options, this.callback.bind(this));
+    else
+      this.process = child_process.execFile(
+          command[0], command.slice(1), options, this.callback.bind(this));
+    this.log = logging.Logger.create(
+        'Subprocess', {parent: moduleLog, instance: `pid=${this.process.pid}`});
+    this.log.debug(`started command ${command}`);
+  }
+
+  result: ExecResult | undefined;
+  log: logging.Logger;
+
+  wait(): Promise<ExecResult> {
+    if (this.result)
+      return Promise.resolve(this.result);
+    if (this.waitingContext)
+      return this.promise!;
+    else {
+      this.promise = new Promise<ExecResult>((resolve, reject) => {
+        this.waitingContext = {resolve, reject};
+      });
+      return this.promise;
+    }
+  }
+
+  kill(signal = 'SIGTERM') {
+    this.log.debug(`killing with ${signal}`);
+    this.process.kill(signal);
+  }
+
+  private callback(error: Error|null, stdout: string, stderr: string) {
+    this.result = {stdout, stderr};
+    if (error instanceof Error) {
+      this.log.debug(`failed with message ${error.message}`);
+      if (this.waitingContext)
+        this.waitingContext.reject(this.result);
+      return;
+    }
+    const err = error as unknown as {code?: number, signal?: string};
+    if (err) {
+      this.result.code = err.code;
+      this.result.signal = err.signal;
+    }
+    if (error) {
+      this.log.debug(`failed with code ${err.code} signal ${err.signal}`);
+      if (this.waitingContext)
+        this.waitingContext.reject(this.result);
+    } else {
+      this.log.debug(`finished sucessfully`);
+      if (this.waitingContext)
+        this.waitingContext.resolve(this.result);
+    }
+  }
+
+  promise?: Promise<ExecResult>;
+  private waitingContext?: {
+    resolve: (result: ExecResult) => void,
+    reject: (result: ExecResult|Error) => void
+  };
+  private process: child_process.ChildProcess;
 }
 
 export async function exec(
@@ -38,9 +106,9 @@ export async function exec(
                 resolve(res);
             };
         if (typeof(command) === 'string')
-          child_process.exec(command, options, callback);
+          this.process = child_process.exec(command, options, callback);
         else
-          child_process.execFile(
+          this.process = child_process.execFile(
               command[0], command.slice(1), options, callback);
       });
 }

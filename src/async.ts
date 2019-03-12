@@ -1,7 +1,7 @@
 'use strict';
 import * as logging from './logging';
 
-const log = new logging.Logger('async');
+const log = logging.Logger.create('async');
 
 type Callback = () => Promise<void>;
 type Resolve = () => void;

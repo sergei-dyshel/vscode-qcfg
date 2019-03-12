@@ -6,7 +6,7 @@ import {Logger, str} from './logging';
 
 import {promisify} from 'util';
 
-const log = new Logger('tree');
+const log = Logger.create('tree');
 
 export const setTimeoutPromise = promisify(setTimeout);
 
@@ -56,4 +56,21 @@ export function registerCommand(
 
 export function getActiveTextEditor(): TextEditor {
   return log.assertNonNull(window.activeTextEditor, "No active text editor");
+}
+
+export interface CursorWordContext {
+  editor: vscode.TextEditor;
+  range: vscode.Range;
+  word: string;
+}
+
+export function getCursorWordContext(): CursorWordContext | undefined {
+  const editor = window.activeTextEditor;
+  if (!editor)
+    return;
+  const range = editor.document.getWordRangeAtPosition(editor.selection.active);
+  if (!range)
+    return;
+  const word = editor.document.getText(range);
+  return {editor, range, word};
 }

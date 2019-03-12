@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import {window, workspace, commands, Uri, QuickPickItem} from 'vscode';
 
 import {Logger, str} from './logging';
-const log = new Logger('dialog');
+const log = Logger.create('dialog');
 
 // export function selectFromList<T extends QuickPickItem>(
 //     items: T[], options?: vscode.QuickPickOptions): Thenable<T|undefined> {

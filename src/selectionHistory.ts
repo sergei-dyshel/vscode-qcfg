@@ -9,7 +9,7 @@ import {registerCommand, getActiveTextEditor} from './utils';
 
 type SelectionStack = Stack<Selection[]>;
 
-const log = new Logger('selectionHistory');
+const log = Logger.create('selectionHistory');
 const history = new Map<TextEditor, SelectionStack>();
 
 function resetByEditor(editor: TextEditor)

@@ -12,21 +12,11 @@ import * as terminal from './terminal';
 import {Logger, str} from './logging';
 import * as fileUtils from './fileUtils';
 import {getActiveTextEditor} from './utils';
+import {parseNumber} from './stringUtils';
 
-const log = new Logger('remote');
+const log = Logger.create('remote');
 
 export let port = 48123;
-
-function parseNumber(s: string | undefined): number | undefined;
-function parseNumber(s: string | undefined, default_: number): number;
-function parseNumber(s: string | undefined, default_?: number): number | undefined {
-  if (s === undefined)
-    return default_;
-  const num = Number(s);
-  if (isNaN(num) || s === "")
-    log.fatal(`${s} is not a number`);
-  return num;
-}
 
 async function handleOpen(location: string, folder: string) {
   if (folder && !path.isAbsolute(folder))
