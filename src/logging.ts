@@ -120,6 +120,10 @@ export class Logger {
     const instanceStr = this.instance ? `{${this.instance}} ` : '';
     const line =
         `${dateStr}.${ms} ${level} [${this.fullPath}] ${instanceStr}${msg}`;
+    if (logLevel === LogLevel.Warning)
+      vscode.window.showWarningMessage(msg);
+    else if (logLevel === LogLevel.Error)
+      vscode.window.showErrorMessage(msg);
     if (outputChannel)
       outputChannel.appendLine(line);
     else

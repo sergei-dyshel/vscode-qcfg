@@ -2,7 +2,7 @@
   "name": "vscode-qcfg",
   "displayName": "vscode-qcfg",
   "description": "My personal extension",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "QyRoN",
   "repository": {
     "type": "git",
@@ -52,6 +52,18 @@
       {
         "command": "qcfg.search.structField",
         "title": "qcfg: Search current struct field in workspace"
+      },
+      {
+        "command": "qcfg.colors.select",
+        "title": "qcfg: Select workspace color theme"
+      },
+      {
+        "command": "qcfg.colors.persist",
+        "title": "qcfg: Persist workspace color theme"
+      },
+      {
+        "command": "qcfg.colors.clear",
+        "title": "qcfg: Clear workspace color theme"
       }
     ],
     "keybindings": [
@@ -106,6 +118,22 @@
           "line": 2,
           "column": 4,
           "message": 6
+        }
+      },
+      {
+        "name": "gcc-relative",
+        "owner": "qcfg",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}"
+        ],
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
         }
       }
     ]

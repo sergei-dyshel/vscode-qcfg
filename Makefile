@@ -19,4 +19,4 @@ npm_update: | package.json
 install: | package.json
 	rm -rf *.vsix >/dev/null
 	vsce package
-	code --install-extension=$(shell ls *.vsix)
+	code --install-extension=`ls *.vsix`

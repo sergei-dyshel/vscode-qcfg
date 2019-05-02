@@ -171,7 +171,7 @@ function getQcfgTasks(): vscode.Task[] {
     try {
       result.push(createTask(label, all[label]));
     } catch (err) {
-      log.error(`Could not create qcfg task "${label}"`);
+      log.info(`Could not create qcfg task "${label}": ${err}`);
     }
   }
   return result;
