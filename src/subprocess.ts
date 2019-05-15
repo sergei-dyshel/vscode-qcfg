@@ -6,7 +6,6 @@ import * as logging from './logging';
 
 const moduleLog =
     logging.Logger.create('subprocess');
-const log = moduleLog;
 
 export interface ExecResult  {
   code?: number;
@@ -22,7 +21,7 @@ interface ExecOptions {
 }
 
 export class Subprocess {
-  constructor(private command: string|string[], private options?: ExecOptions) {
+  constructor(command: string|string[], options?: ExecOptions) {
     if (typeof (command) === 'string')
       this.process =
           child_process.exec(command, options, this.callback.bind(this));

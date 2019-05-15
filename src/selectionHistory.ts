@@ -1,9 +1,9 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import {window, workspace, commands} from 'vscode';
+import {window, workspace} from 'vscode';
 import {TextEditor, Selection} from 'vscode';
-import {Logger, str} from './logging';
+import {Logger} from './logging';
 import {Stack} from 'typescript-collections';
 import {registerCommand, getActiveTextEditor} from './utils';
 
@@ -21,7 +21,7 @@ function resetByEditor(editor: TextEditor)
 
 function onDidChangeTextDocument(event: vscode.TextDocumentChangeEvent) {
   const document = event.document;
-  for (const [editor, stack] of history) {
+  for (const [editor] of history) {
     if (editor.document === document)
       resetByEditor(editor);
   }

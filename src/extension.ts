@@ -18,6 +18,7 @@ import * as remoteControl from './remoteControl';
 import * as windowState from './windowState';
 import * as search from './search';
 import * as colorTheme from './colorTheme';
+import * as taskRunner from './taskRunner';
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('Extension active');
@@ -38,6 +39,7 @@ export function activate(context: vscode.ExtensionContext) {
     windowState.activate(context);
     search.activate(context);
     colorTheme.activate(context);
+    taskRunner.activate(context);
 }
 
 // this method is called when your extension is deactivated

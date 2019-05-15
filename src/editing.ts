@@ -5,14 +5,13 @@ import * as vscode from 'vscode';
 import {Position} from 'vscode';
 import * as clipboardy from 'clipboardy';
 
-import {offsetPosition, isLinewise, expandLinewise, trimWhitespace, selectRange, swapRanges} from './textUtils';
-import {Range} from 'vscode-languageclient';
-import {Logger, str} from './logging';
+import {offsetPosition, isLinewise, expandLinewise, trimWhitespace, selectRange} from './textUtils';
+import {Logger} from './logging';
 import {getActiveTextEditor} from './utils';
 
 const log = Logger.create('editing');
 
-function selectLines(...args: any[]) {
+function selectLines() {
   const editor = getActiveTextEditor();
   if (editor.selections.length > 1)
     return;
@@ -54,13 +53,13 @@ async function surroundWith(args: any[]) {
 }
 
 function swapCursorAndAnchor(
-    editor: TextEditor, edit: vscode.TextEditorEdit, args: any[]) {
+    editor: TextEditor) {
   editor.selections = editor.selections.map((sel) => {
     return new vscode.Selection(sel.active, sel.anchor);
   });
 }
 
-function cloneEditorBeside(...args: any[]): void {
+function cloneEditorBeside(): void {
   log.assert(window.activeTextEditor);
   const editor = window.activeTextEditor as TextEditor;
   const columns = new Set<vscode.ViewColumn>();
@@ -94,7 +93,7 @@ function cloneEditorBeside(...args: any[]): void {
 }
 
 function smartPaste(
-    editor: TextEditor, edit: vscode.TextEditorEdit, args?: any[]) {
+    editor: TextEditor, edit: vscode.TextEditorEdit) {
   const text = clipboardy.readSync();
   if (!text.endsWith('\n') || editor.selections.length > 1) {
     commands.executeCommand('editor.action.clipboardPasteAction');

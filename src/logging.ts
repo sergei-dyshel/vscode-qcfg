@@ -2,7 +2,7 @@
 
 import * as vscode from 'vscode';
 import * as treeSitter from 'tree-sitter';
-import {workspace, window} from 'vscode';
+import {workspace} from 'vscode';
 
 let outputChannel: vscode.OutputChannel;
 
@@ -15,7 +15,7 @@ export enum LogLevel {
   Fatal
 }
 
-const defaultLogLevel: LogLevel = LogLevel.Info;
+const defaultLogLevel: LogLevel = LogLevel.Debug;
 
 const LOG_LEVEL_STRINGS = ['', 'DEBUG', 'INFO', 'NOTICE', 'WARN', 'ERROR', 'FATAL'];
 
@@ -167,6 +167,6 @@ export class Logger {
 }
 
 
-export function activate(context: vscode.ExtensionContext) {
+export function activate(_context: vscode.ExtensionContext) {
   outputChannel = vscode.window.createOutputChannel('qcfg');
 }

@@ -1,11 +1,9 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import {window, workspace, TextEditor} from 'vscode';
+import {window, workspace} from 'vscode';
 import * as fileUtils from './fileUtils';
 import * as path from 'path';
-import * as util from 'util';
-import * as fs from 'fs';
 import * as logging from './logging';
 import {getActiveTextEditor} from './utils';
 

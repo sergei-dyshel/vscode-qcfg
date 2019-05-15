@@ -45,7 +45,7 @@ async function setSettingsTheme(theme: string | undefined)
   await conf.update(SECTION, theme, vscode.ConfigurationTarget.Workspace);
 }
 
-async function selectWorkspaceTheme(extContext: vscode.ExtensionContext)
+async function selectWorkspaceTheme(_extContext: vscode.ExtensionContext)
 {
   await setPersisted(false);
   vscode.window.showWarningMessage(
@@ -57,7 +57,7 @@ async function selectWorkspaceTheme(extContext: vscode.ExtensionContext)
   await commands.executeCommand('workbench.action.selectTheme');
 }
 
-async function persistWorkspaceTheme(extContext: vscode.ExtensionContext)
+async function persistWorkspaceTheme(_extContext: vscode.ExtensionContext)
 {
   if (isPersisted())
     vscode.window.showWarningMessage('Already persisted');
@@ -69,7 +69,7 @@ async function persistWorkspaceTheme(extContext: vscode.ExtensionContext)
   await setPersistedTheme(settingsTheme);
 }
 
-async function clearWorkspaceTheme(extContext: vscode.ExtensionContext)
+async function clearWorkspaceTheme(_extContext: vscode.ExtensionContext)
 {
   setSettingsTheme(undefined);
   setPersisted(false);

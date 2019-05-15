@@ -1,8 +1,9 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import {Disposable, window, workspace, commands, TextEditor} from 'vscode';
-import {Logger, str} from './logging';
+import {Disposable, window, commands, TextEditor} from 'vscode';
+import {Logger} from './logging';
+import {getDocumentWorkspaceFolder} from './fileUtils';
 
 import {promisify} from 'util';
 
@@ -54,8 +55,24 @@ export function registerCommand(
   return commands.registerCommand(command, warnOnException(callback), thisArg);
 }
 
+export function registerTemporaryCommand(callback: (...args: any[]) => any,
+thisArg?: any) {
+  const command = `qcfg.temp.${++tempCmdCounter}`;
+  const disposable = registerCommand(command, callback, thisArg);
+  return {command, disposable};
+}
+
+let tempCmdCounter = 0;
+
 export function getActiveTextEditor(): TextEditor {
   return log.assertNonNull(window.activeTextEditor, "No active text editor");
+}
+
+export function currentWorkspaceFolder(): vscode.WorkspaceFolder | undefined {
+  const editor = window.activeTextEditor;
+  if (!editor)
+    return;
+  return getDocumentWorkspaceFolder(editor.document);
 }
 
 export interface CursorWordContext {

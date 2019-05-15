@@ -47,12 +47,6 @@ const ctagsToVscodeKind: {[name: string]: SymbolKind} = {
   unknown: SymbolKind.File, // not good
 };
 
-function showTags() {
-  const editor = getActiveTextEditor();
-  const filePath = editor.document.fileName;
-
-}
-
 interface TagInfo {
   name: string;
   path: string;
@@ -68,14 +62,17 @@ async function getTags(
   const langConfig = languageConfigs[document.languageId];
   if (!langConfig)
       return [];
-  const {wsFolder, relPath} = getDocumentRoot(document);
+  const docRoot = getDocumentRoot(document);
+  if (!docRoot)
+      return [];
+  const {workspaceFolder, relativePath} = docRoot;
   const proc = new subprocess.Subprocess(
       [
         'ctags', '--sort=no',
         `--language-force=${langConfig.lang || document.languageId}`,
-        '--output-format=json', '--fields=*', relPath
+        '--output-format=json', '--fields=*', relativePath
       ],
-      {cwd: wsFolder.uri.fsPath, maxBuffer: 1 * 1024 * 1024});
+      {cwd: workspaceFolder.uri.fsPath, maxBuffer: 1 * 1024 * 1024});
   log.debug('Started');
   token.onCancellationRequested(() => {
     log.debug('Cancelled');
@@ -123,7 +120,6 @@ class DocumentSymbolProvider implements vscode.DocumentSymbolProvider {
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
-      vscode.commands.registerCommand('qcfg.ctags.show', showTags),
       vscode.languages.registerDocumentSymbolProvider(
           '*', new DocumentSymbolProvider()));
 }

@@ -2,14 +2,11 @@
 
 import * as vscode from 'vscode';
 import * as path from 'path';
-import * as logging from './logging';
 import {selectStringFromListMru} from './dialog';
 
 import * as fileUtils from './fileUtils';
 import {getActiveTextEditor} from './utils';
 import {window, workspace, commands} from 'vscode';
-
-const log = logging.Logger.create('misc');
 
 function openOrCreateTerminal(name: string, cwd: string) {
   for (const terminal of window.terminals) {
@@ -24,7 +21,7 @@ function openOrCreateTerminal(name: string, cwd: string) {
 
 function terminalInWorkspaceFolder() {
   const document = getActiveTextEditor().document;
-  const {wsFolder} = fileUtils.getDocumentRoot(document);
+  const {workspaceFolder: wsFolder} = fileUtils.getDocumentRootThrowing(document);
   openOrCreateTerminal(wsFolder.name, wsFolder.uri.fsPath);
 }
 

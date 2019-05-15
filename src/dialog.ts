@@ -1,10 +1,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import {window, workspace, commands, Uri, QuickPickItem} from 'vscode';
-
-import {Logger, str} from './logging';
-const log = Logger.create('dialog');
+import {window, Uri, QuickPickItem} from 'vscode';
 
 // export function selectFromList<T extends QuickPickItem>(
 //     items: T[], options?: vscode.QuickPickOptions): Thenable<T|undefined> {
@@ -19,7 +16,7 @@ export async function inputWithHistory(persistentKey: string):
   qp.items = qpItems;
   qp.buttons = [buttons.REMOVE];
 
-  const selected = await new Promise<string|undefined>((resolve, reject) => {
+  const selected = await new Promise<string|undefined>((resolve) => {
     const qp = window.createQuickPick();
     const qpItems: QuickPickItem[] = items.map((x) => ({label: x}));
     qp.items = qpItems;
@@ -54,7 +51,7 @@ export async function inputWithHistory(persistentKey: string):
       }
     });
     qp.onDidChangeValue(() => {
-      const exactLabel = qp.items.find((item, i, obj) => {
+      const exactLabel = qp.items.find((item) => {
         return item.label === qp.value;
       });
       if (!exactLabel && qp.value) {
@@ -69,7 +66,7 @@ export async function inputWithHistory(persistentKey: string):
   });
   if (!selected)
     return;
-  const newItems = items.filter((x, i, a) => x !== selected);
+  const newItems = items.filter((x) => x !== selected);
   newItems.unshift(selected);
   extContext.globalState.update(persistentKey, newItems);
   return selected;
@@ -124,6 +121,20 @@ export async function selectFromListMru<T>(
   labels.unshift(toPersistentLabel(selected));
   extContext.globalState.update(persistentKey, labels);
   return selected;
+}
+
+export interface ListSelectable {
+  toQuickPickItem: () => QuickPickItem;
+  toPersistentLabel: () => string;
+}
+
+
+export async function selectObjectFromListMru<T extends ListSelectable>(
+    items: T[], persistentKey: string,
+    options?: vscode.QuickPickOptions): Promise<T|undefined> {
+  return selectFromListMru(
+      items, (item: T) => item.toQuickPickItem(), persistentKey,
+      (item: T) => item.toPersistentLabel(), options);
 }
 
 export async function selectStringFromListMru(

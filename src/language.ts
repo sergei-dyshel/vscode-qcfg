@@ -4,7 +4,6 @@ import * as lc from 'vscode-languageclient';
 import * as logging from './logging';
 
 import * as vscode from 'vscode';
-import { extname } from 'path';
 
 const log = logging.Logger.create('lang');
 

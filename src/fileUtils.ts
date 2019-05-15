@@ -9,15 +9,29 @@ import * as logging from './logging';
 
 const log = logging.Logger.create('fileUtils');
 
+
 export function getDocumentRoot(document: vscode.TextDocument) {
   const wsPath = vscode.workspace.asRelativePath(document.fileName, true);
-  const relPath = vscode.workspace.asRelativePath(document.fileName, false);
+  const relativePath = vscode.workspace.asRelativePath(document.fileName, false);
   const [wsDir] = wsPath.split(path.sep, 1);
-  for (const wsFolder of (vscode.workspace.workspaceFolders || [])) {
-    if (wsFolder.name === wsDir)
-      return {wsFolder, relPath};
+  for (const workspaceFolder of (vscode.workspace.workspaceFolders || [])) {
+    if (workspaceFolder.name === wsDir)
+      return {workspaceFolder, relativePath};
   }
-  throw new Error("Could not detect workspace folder of document");
+  return;
+}
+
+export function getDocumentRootThrowing(document: vscode.TextDocument) {
+  return log.assertNonNull(
+      getDocumentRoot(document),
+      `Could not get workspace folder of ${document.fileName}`);
+}
+
+export function getDocumentWorkspaceFolder(document: vscode.TextDocument)
+{
+  const docRoot = getDocumentRoot(document);
+  if (docRoot)
+    return docRoot.workspaceFolder;
 }
 
 export const exists = util.promisify(fs.exists);
@@ -44,7 +58,7 @@ export async function openLocation(
     const lineText = document.lineAt(line0);
     col0 = lineText.text.indexOf(options.tag);
     if (col0 === -1) {
-      log.error(`Tag "${options.tag}" not found in ${filePath}:${options.line}`);
+      log.error(`Tag '${options.tag}' not found in ${filePath}:${options.line}`);
       col0 = 0;
     }
   }

@@ -14,7 +14,6 @@ import {trimInner, selectRange, offsetPosition, swapRanges} from './textUtils';
 import {Context, getActiveTextEditor} from './utils';
 
 import {Logger, str} from './logging';
-import { DocumentColorRequest } from 'vscode-languageclient';
 
 const log = Logger.create('tree');
 
@@ -50,10 +49,6 @@ const languageConfig: {[language: string]: LanguageConfig} = {
   typescript: {parser: treeSitterTypeScript},
 };
 
-function isSupportedLanguage(language: string) {
-  return language in languageConfig;
-}
-
 namespace Parsers {
   const parsers: {[language: string]: Parser} = {};
 
@@ -72,8 +67,6 @@ namespace Parsers {
   }
 }
 
-/* XXX: remove */
-const history: Range[] = [];
 let lastSelection: Range | null;
 
 class RangeDecorator {
@@ -117,7 +110,6 @@ namespace Trees {
     const parserAsync = parser as any as ParserWithAsync;
     const buf = new TextBuffer(document.getText());
     // providing previous tree crashes on E8 code
-    const prevTree = trees.get(document);
     const tree = await parserAsync.parseTextBuffer(
         buf, undefined, {syncOperationCount: 1000});
     // const tree = await parserAsync.parseTextBuffer(buf);
@@ -235,7 +227,7 @@ function findContainingNode(node: SyntaxNode, range: Range) : SyntaxNode {
 }
 
 function findContainingChildren(
-    document: TextDocument, root: SyntaxNode, range: Range) {
+    root: SyntaxNode, range: Range) {
   let parent: SyntaxNode = findContainingNode(root, range);
   let firstChild: SyntaxNode | undefined;
   let lastChild: SyntaxNode | undefined;
@@ -264,7 +256,7 @@ function findContainingChildren(
 }
 
 
-function childrenRange(editor: TextEditor, firstChild: SyntaxNode, lastChild: SyntaxNode): Range {
+function childrenRange(firstChild: SyntaxNode, lastChild: SyntaxNode): Range {
   const firstChildStart = point2pos(firstChild.startPosition);
   const lastChildEnd = point2pos(lastChild.endPosition);
   return new Range(firstChildStart, lastChildEnd);
@@ -274,7 +266,7 @@ function selectChildren(
     editor: TextEditor, firstChild: SyntaxNode, lastChild: SyntaxNode,
     reversed?: boolean) {
   selectAndRememberRange(
-      editor, childrenRange(editor, firstChild, lastChild), reversed);
+      editor, childrenRange(firstChild, lastChild), reversed);
   setStatusFromChildren(firstChild, lastChild);
 }
 
@@ -325,12 +317,12 @@ async function extendSelection(direction: Direction) {
   const tree = await Trees.get(document);
   if (!TreeMode.is())
     return;
-  const x = findContainingChildren(document, tree.rootNode, editor.selection);
+  const x = findContainingChildren(tree.rootNode, editor.selection);
   let parent: SyntaxNode  = x.parent;
   let firstChild: SyntaxNode | null = x.firstChild;
   let lastChild: SyntaxNode | null = x.firstChild;
   parent = parent;
-  const childRange = childrenRange(editor, firstChild, lastChild);
+  const childRange = childrenRange(firstChild, lastChild);
   if (!childRange.isEqual(selection)) {
     selectChildren(editor, firstChild, lastChild);
   } else {

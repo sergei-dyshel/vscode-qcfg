@@ -4,6 +4,8 @@
     "no-any": false,
     "curly": false,
     "no-namespace": false,
-    "switch-default": false
+    "switch-default": false,
+    "no-unused-variable": true,
+    "no-unused-expression": true
   }
 }

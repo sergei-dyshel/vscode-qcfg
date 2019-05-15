@@ -1,7 +1,6 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import * as tasks from './tasks';
 import * as language from './language';
 import * as saveAll from './saveAll';
 import * as logging from './logging';

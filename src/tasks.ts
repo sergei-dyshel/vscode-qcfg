@@ -1,19 +1,20 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import {window} from 'vscode';
+import {window, Task} from 'vscode';
 
 import * as language from './language';
 import * as fileUtils from './fileUtils';
 import * as logging from './logging';
 import * as dialog from './dialog';
 import * as remoteControl from './remoteControl';
-import {DefaultDictionary, Queue} from 'typescript-collections';
-import {getActiveTextEditor} from './utils';
+import {getActiveTextEditor, currentWorkspaceFolder} from './utils';
+import {mapObject, mapWithThrow} from './tsUtils';
+import {TaskRun, TaskCancelledError} from './taskRunner';
 
 const log = logging.Logger.create('tasks');
 
-enum Reveal {
+export enum Reveal {
   Focus = 'focus',
   Yes = 'yes',
   No = 'no'
@@ -28,8 +29,17 @@ enum EndAction {
   Notify = 'notify',
 }
 
+export enum Flag {
+  dedicatedPanel = 'dedicatedPanel',
+  clear = 'clear',
+  autoRestart = 'autoRestart',
+  reindex = 'reindex',
+  build = 'build',
+}
+
 interface Params {
   command: string;
+
   cwd?: string;
   reveal?: Reveal;
   onSuccess?: EndAction;
@@ -37,147 +47,127 @@ interface Params {
   exitCodes?: number[];
   reindex?: boolean;
   problemMatchers?: string | string[];
-  dedicatedPanel?: boolean;
-  clear?: boolean;
+  flags?: Flag[];
 }
 
 interface ParamsSet {
-  [label: string]: Params;
+  [label: string]: Params | string;
 }
 
-interface OneTimeContext {
-  resolve?: () => void;
-  reject?: (exitCode: number) => void;
-  params: Params;
-}
-
-const oneTimeTasks: {[name: string]: OneTimeContext} = {};
-const taskQueue =
-    new DefaultDictionary<string, Queue<Params>>(() => new Queue<Params>());
-
-async function dequeueOneTime(name: string, params: Params)
-{
-  const context:
-      OneTimeContext = {'params': params};
-  oneTimeTasks[name] = context;
-  const tasks = await vscode.tasks.fetchTasks({'type': 'qcfg'});
-  for (const task of tasks) {
-    console.log('Task', task.name);
-    if (task.name === name) {
-      console.log('One time task', task);
-      return new Promise((resolve, reject) => {
-        context.resolve = resolve;
-        context.reject = reject;
-        return vscode.tasks.executeTask(task);
-      });
-    }
-  }
-  // taskName = '';
-  // TODO: throw error
-}
 export async function runOneTime(name: string, params: Params) {
-  if (name in oneTimeTasks) {
-    log.info(`Task "${name} already running, queuing`);
-    taskQueue.getValue(name).enqueue(params);
-    return;
-  }
-  return dequeueOneTime(name, params);
+  const run = new QcfgTask(name, params);
+  await run.run();
 }
 
-// taken from https://www.npmjs.com/package/es6-dynamic-template
-function makeTemplate(templateString, templateVariables) {
-	const keys = Object.keys(templateVariables);
-  const values = Object.values(templateVariables);
-	const templateFunction = new Function(...keys, `return \`${templateString}\`;`);
-	return templateFunction(...values);
-}
-
-const SUBSTITUTE: {[name: string]: () => string} = {
+const SUBSTITUTE: {[name: string]: () => string | undefined} = {
   'cursorWord': () => {
     const editor = getActiveTextEditor();
     const document = editor.document;
     const range = document.getWordRangeAtPosition(editor.selection.active);
+    if (!range)
+      return undefined;
     return document.getText(range);
   }
 };
 
-function substituteVars(cmd: string) {
+type SubstituteMap = {
+  [name: string]: string | undefined
+};
+
+class InstantiationError extends Error {
+  constructor(message: string) { super(message); }
+}
+
+function substituteVars(cmd: string, substitute?: SubstituteMap): string {
   let prevCmd = cmd;
+  let numSubs = 0;
+  if (!substitute)
+    substitute = calcSubstitute();
   do {
     prevCmd = cmd;
-    for (const varname of Object.keys(SUBSTITUTE)) {
+    for (const varname of Object.keys(substitute)) {
       const place = '${' + varname + '}';
-      const subs = SUBSTITUTE[varname]();
+      const subs = substitute[varname];
+      if (!cmd.includes(place))
+        continue;
+      if (subs === undefined)
+        throw new InstantiationError(`Could not substitute var "${varname}"`);
       cmd = cmd.replace(place, subs);
+      ++numSubs;
     }
+    log.assert(numSubs < 10, `Did ${numSubs} for single command: ${cmd}`);
   } while (cmd !== prevCmd);
   return cmd;
 }
 
-function createTask(label: string, params: Params): vscode.Task {
-  const def: vscode.TaskDefinition = {type: 'qcfg', task: params};
+function createTask(
+    label: string, params: Params, substitute?: SubstituteMap): Task {
   const wsFolders = log.assertNonNull<vscode.WorkspaceFolder[]>(
       vscode.workspace.workspaceFolders);
   const editor = window.activeTextEditor;
   let wsFolder: vscode.WorkspaceFolder;
+  const def: vscode.TaskDefinition = {type: 'qcfg', task: params};
+  const flags: Flag[] = params.flags || [];
+
   if (wsFolders.length === 1 || !editor) {
     wsFolder = wsFolders[0];
   } else {
-    wsFolder = fileUtils.getDocumentRoot(editor.document).wsFolder;
+    // TODO: handle correctly
+    wsFolder =
+        fileUtils.getDocumentRootThrowing(editor.document).workspaceFolder;
   }
   const environ = {QCFG_VSCODE_PORT: String(remoteControl.port)};
   // const procExec = new vscode.ProcessExecution(
   //     'bash-with-sleep.sh', ['/bin/bash', '-c', substituteVars(params.command)],
   //     {cwd: params.cwd, env: environ});
   const shellExec = new vscode.ShellExecution(
-      substituteVars(params.command), {cwd: params.cwd, env: environ});
-  const task = new vscode.Task(
+      substituteVars(params.command, substitute),
+      {cwd: params.cwd, env: environ});
+  const task = new Task(
       def, wsFolder, label, 'qcfg', shellExec, params.problemMatchers || []);
   // const shellExec =
   //     new vscode.ShellExecution(params.command, {cwd: '${workspaceFolder}'});
-  // const task = new vscode.Task(
+  // const task = new Task(
   //     def, label, 'qcfg', shellExec, params.problemMatchers || []);
   task.presentationOptions = {
     focus: params.reveal === Reveal.Focus,
     reveal:
-        ((params.reveal === undefined || params.reveal === Reveal.No) ?
-             vscode.TaskRevealKind.Never :
-             vscode.TaskRevealKind.Always),
-    panel: params.dedicatedPanel ? vscode.TaskPanelKind.Dedicated :
-                                   vscode.TaskPanelKind.Shared,
-    clear: params.clear
+        ((params.reveal !== Reveal.No) ? vscode.TaskRevealKind.Always :
+                                         vscode.TaskRevealKind.Never),
+    panel: (flags.includes(Flag.dedicatedPanel)) ?
+        vscode.TaskPanelKind.Dedicated :
+        vscode.TaskPanelKind.Shared,
+    clear: (flags.includes(Flag.clear))
   };
+  if (flags.includes(Flag.build))
+    task.group = vscode.TaskGroup.Build;
   return task;
 }
 
-function getConfiguredTaskParams(): ParamsSet {
+function fetchQcfgTasks(): QcfgTask[] {
   const conf = vscode.workspace.getConfiguration('qcfg');
-  const global: ParamsSet = conf.get('tasks.global', {});
-  const ws: ParamsSet = conf.get('tasks.workspace', {});
-  return {...global, ...ws};
+  const globalTasks: ParamsSet = conf.get('tasks.global', {});
+  const workspaceTasks: ParamsSet = conf.get('tasks.workspace', {});
+  const all =  {...globalTasks, ...workspaceTasks};
+  const substitute = calcSubstitute();
+  return mapWithThrow(
+      Object.entries(all),
+      ([label, params]) =>
+          new QcfgTask(label, params, (label in workspaceTasks), substitute),
+      ([label, _], err: Error) => {
+        log.debug(`Could not instanatiate task ${label}: ${err.message}`);
+      });
 }
 
-function getAllTaskParams(): ParamsSet {
-  const all = getConfiguredTaskParams();
-  for (const name of Object.keys(oneTimeTasks))
-    all[name] = oneTimeTasks[name].params;
-  return all;
+function calcSubstitute() {
+  return mapObject(SUBSTITUTE, f => f());
 }
 
-function getQcfgTasks(): vscode.Task[] {
-  const all = getAllTaskParams();
-  const result: vscode.Task[] = [];
-  for (const label of Object.keys(all)) {
-    try {
-      result.push(createTask(label, all[label]));
-    } catch (err) {
-      log.info(`Could not create qcfg task "${label}": ${err}`);
-    }
-  }
-  return result;
-}
 
-async function runBuildTask() {
+let lastBuildTask: VscodeTask|undefined;
+
+
+async function runDefaultBuildTask() {
   const tasks = await vscode.tasks.fetchTasks();
   for (const task of tasks)
     if (task.group === vscode.TaskGroup.Build)
@@ -186,54 +176,94 @@ async function runBuildTask() {
       'workbench.action.tasks.runTask', 'qcfg: build');
 }
 
-function findTerminal(task: vscode.Task): vscode.Terminal | undefined {
-  const taskName = task.name;
-  let wsTaskName = taskName;
-  const cands: string[] = [];
-  if (typeof task.scope === 'object' && 'name' in task.scope) {
-    const wsFolder: vscode.WorkspaceFolder = task.scope;
-    wsTaskName = `${taskName} (${wsFolder.name})`;
+async function runLastBuildTask() {
+  if (lastBuildTask) {
+    await lastBuildTask.run();
+    return;
   }
-  for (const name of [taskName, wsTaskName])
-    cands.push('Task - ' + name, 'Task - qcfg: ' + name);
-  for (const term of window.terminals) {
-    for (const cand of cands)
-      if (term.name === cand)
-        return term;
-  }
+  await runDefaultBuildTask();
 }
 
-function onStartTaskProcess(event: vscode.TaskProcessStartEvent)
+class VscodeTask implements dialog.ListSelectable {
+  constructor(protected task: Task) {}
+
+  async run() {
+    this.taskRun = new TaskRun(this.task!);
+    await this.taskRun.start();
+    await this.taskRun.wait();
+  }
+
+  isBuild() {
+    return this.task.group === vscode.TaskGroup.Build;
+  }
+
+  protected tags(): string[] {
+    const tags: string[] = [];
+    if (this.isBuild())
+      tags.push('build');
+    if (this.task.source === 'Workspace')
+      tags.push('workspace');
+    if (this.task.isBackground)
+      tags.push('background');
+    return tags;
+  }
+
+  toQuickPickItem() {
+    const task = this.task;
+    let label = task.name;
+    if (task.source && task.source !== 'Workspace')
+      label = `${task.source}: ${label}`;
+    const scope = (task.scope && task.scope !== vscode.TaskScope.Global &&
+                   task.scope !== vscode.TaskScope.Workspace) ?
+        task.scope as vscode.WorkspaceFolder :
+        undefined;
+    if (scope && task.scope !== currentWorkspaceFolder())  // workspace folder
+      label = `${label} (${scope.name})`;
+      return {label, description: this.tags().join(', ')};
+  }
+
+  toPersistentLabel() {
+    return this.toQuickPickItem().label;
+  }
+
+  protected taskRun: TaskRun;
+}
+
+
+function expandparamsOrCmd(paramsOrCmd: Params | string): Params
 {
-  const task = event.execution.task;
-  log.info(`Task process ${task.name} started`);
-  const params = task.definition.task as Params;
-  if (!params)
-    return;
-  if (!params.reveal)
-    return;
-  vscode.commands.executeCommand('workbench.action.terminal.scrollToBottom');
+  return (typeof paramsOrCmd === 'string') ? {command: paramsOrCmd as string} :
+                                             (paramsOrCmd as Params);
 }
 
-function onEndTaskProcess(event: vscode.TaskProcessEndEvent) {
-  const task = event.execution.task;
-  log.info(`Task process ${task.name} ended with exit code ${event.exitCode}`);
-  console.log(`Ended task process with exit code ${event.exitCode}`, task);
+class QcfgTask extends VscodeTask{
+  constructor(
+      public label: string, paramsOrCmd: Params | string,
+      private fromWorkspace?: boolean, substitute?: SubstituteMap) {
+    super(createTask(label, expandparamsOrCmd(paramsOrCmd), substitute));
+    this.params = expandparamsOrCmd(paramsOrCmd);
+  }
 
-  const params = task.definition.task as Params;
-  const exitCodes = params.exitCodes || [0];
-  const success = exitCodes.includes(event.exitCode);
-  if (params) {
-    if (task.name in oneTimeTasks) {
-      log.info(`One time task "${task.name}" process ended`);
-      const ctx = oneTimeTasks[task.name];
-      if (success)
-        log.assertNonNull(ctx.resolve)();
-      else
-        log.assertNonNull(ctx.reject)(event.exitCode);
-      return;
+  async run() {
+    const runningTask = TaskRun.findRunningTask(this.task.name);
+    if (runningTask && this.params.flags &&
+        (this.params.flags.includes(Flag.autoRestart)))
+      await runningTask.cancel();
+
+    try {
+      await super.run();
     }
-    if (success && params.reindex)
+    catch (err) {
+      if (err instanceof TaskCancelledError)
+        return;
+      throw err;
+    }
+
+    const params = this.params;
+    const exitCodes = params.exitCodes || [0];
+    const success = exitCodes.includes(this.taskRun.exitCode!);
+    const term = this.taskRun.terminal;
+    if (success && params.flags && params.flags.includes(Flag.reindex))
       language.reindex();
     let action = success ? params.onSuccess : params.onFailure;
     if (action === EndAction.Auto || action === undefined) {
@@ -244,107 +274,79 @@ function onEndTaskProcess(event: vscode.TaskProcessEndEvent) {
             (params.reveal === Reveal.No) ? EndAction.Notify : EndAction.Show;
       }
     }
-    const term = findTerminal(task);
-    if (term) {
-      switch (action) {
-        case EndAction.None:
-          break;
-        case EndAction.Dispose:
+    if (!term)
+      return;
+
+    switch (action) {
+      case EndAction.None:
+        break;
+      case EndAction.Dispose:
+        if (window.activeTerminal === term) {
           term.dispose();
           vscode.commands.executeCommand('workbench.action.closePanel');
-          break;
-        case EndAction.Hide:
-          term.hide();
-          vscode.commands.executeCommand('workbench.action.closePanel');
-          break;
-        case EndAction.Show:
-          term.show();
-          break;
-        case EndAction.Notify:
-          if (success)
-            window.showInformationMessage(
-                `Task "${task.name}" finished`);
-          else
-            window.showErrorMessage(`Task "${task.name}" failed`);
-          break;
-      }
-    } else {  // no terminal
-      // TODO: log error
-    }
-  }
-}
-
-const runningTasks: {[name: string]: vscode.StatusBarItem} = {};
-
-function onTaskStart(event: vscode.TaskStartEvent) {
-  const task = event.execution.task;
-  const name = task.name;
-  log.info(`Started task "${name}"`);
-  if (name in runningTasks)
-    return;
-  if (task.isBackground)
-    return;
-  const status = window.createStatusBarItem();
-  status.text = `$(tools)${name}`;
-  status.show();
-  runningTasks[name] = status;
-}
-
-function onTaskEnd(event: vscode.TaskEndEvent) {
-  const task = event.execution.task;
-  const name = task.name;
-  log.info(`Ended task "${name}"`);
-
-  if (!(name in runningTasks))
-    return;
-
-  const status = runningTasks[name];
-  status.dispose();
-  delete runningTasks[name];
-  if (name in oneTimeTasks) {
-    delete oneTimeTasks[name];
-    const queue = taskQueue.getValue(name);
-    if (!queue.isEmpty()) {
-      const params = queue.dequeue() as Params;
-      dequeueOneTime(name, params);
-    }
-  }
-}
-
-function registerTaskProvider() {
-  return vscode.tasks.registerTaskProvider('qcfg', {
-    provideTasks: () => {
-      return getQcfgTasks();
-    },
-    resolveTask(_task: vscode.Task): vscode.Task |
-        undefined {
-          return undefined;
+        } else {
+          term.dispose();
         }
-  });
+        break;
+      case EndAction.Hide:
+        term.hide();
+        if (window.activeTerminal === term)
+          vscode.commands.executeCommand('workbench.action.closePanel');
+        break;
+      case EndAction.Show:
+        term.show();
+        break;
+      case EndAction.Notify:
+        if (success)
+          window.showInformationMessage(
+              `Task "${this.task.name}" finished`);
+        else
+          window.showErrorMessage(`Task "${this.task.name}" failed`);
+        break;
+    }
+
+  }
+
+  protected tags(): string[] {
+    const tags = super.tags();
+    if (this.fromWorkspace)
+      tags.push('workspace');
+    return tags;
+  }
+
+  private params: Params;
 }
 
 async function showTasks() {
-  // const val = await dialog.inputWithHistory('temp');
-  // if (val)
-  //   window.showInformationMessage(val);
-  const paramList = Object.entries(getConfiguredTaskParams());
-  const val = await dialog.selectFromListMru(
-      paramList, (pair) => ({label: pair[0], detail: pair[1].command}), 'tasks',
-      (pair) => pair[0]);
-  if (val)
-    window.showInformationMessage(val[0]);
-  // const allParams = getConfiguredTaskParams();
-  // const val = await dialog.selectFromList(Object.keys(allParams));
-  // window.showInformationMessage(val);
+  const qcfgTasks = fetchQcfgTasks();
+
+  const rawVscodeTasks = await vscode.tasks.fetchTasks();
+  const vscodeTasks = rawVscodeTasks.map(task => new VscodeTask(task));
+  const allTasks = [...qcfgTasks, ...vscodeTasks];
+  const anyTask = await dialog.selectObjectFromListMru(allTasks, 'tasks');
+  if (!anyTask)
+    return;
+  if (anyTask.isBuild())
+    lastBuildTask = anyTask;
+  anyTask.run();
+}
+
+function runQcfgTask(name: string)
+{
+  const tasks = fetchQcfgTasks();
+  for (const task of tasks) {
+    if (name === task.label) {
+      task.run();
+      return;
+    }
+  }
+  log.error(`Qcfg task "${name}" is not available`);
 }
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
-      registerTaskProvider(),
-      vscode.commands.registerCommand('qcfg.tasks.build', runBuildTask),
-      vscode.commands.registerCommand('qcfg.tasks.show', showTasks),
-      vscode.tasks.onDidStartTaskProcess(onStartTaskProcess),
-      vscode.tasks.onDidEndTaskProcess(onEndTaskProcess),
-      vscode.tasks.onDidStartTask(onTaskStart),
-      vscode.tasks.onDidEndTask(onTaskEnd));
+      vscode.commands.registerCommand('qcfg.tasks.build.last', runLastBuildTask),
+      vscode.commands.registerCommand('qcfg.tasks.build.default', runDefaultBuildTask),
+      vscode.commands.registerCommand('qcfg.tasks.runQcfg', runQcfgTask),
+      vscode.commands.registerCommand('qcfg.tasks.show', showTasks));
 }

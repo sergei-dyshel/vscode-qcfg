@@ -14,7 +14,6 @@ import * as readline from 'readline';
 import {isLspActive} from './language';
 import {getActiveTextEditor} from './utils';
 import {parseNumber, buildFuzzyPattern, splitWithRemainder, buildAbbrevPattern} from './stringUtils';
-import { chmod } from 'fs';
 import * as RE2 from 're2';
 
 const log = logging.Logger.create('gtags');
@@ -63,6 +62,8 @@ async function updateDB() {
     try {
       await tasks.runOneTime('gtags check', {
         command: 'q-gtags -c',
+        reveal: tasks.Reveal.No,
+        flags: [tasks.Flag.dedicatedPanel],
         cwd: gtagsDir,
         exitCodes: [0, 2],
       });

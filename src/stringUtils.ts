@@ -1,7 +1,6 @@
 'use strict';
 
-import {Logger, str} from './logging';
-import { join } from 'path';
+import {Logger} from './logging';
 
 const log = Logger.create('string');
 
@@ -24,8 +23,6 @@ export function buildFuzzyPattern(query: string): string {
 
 export function buildAbbrevPattern(query: string): string {
   const goodChars = query.replace(/\W/g, '');
-  const noAlpha = '';
-  const notUpper = '';
   const midPattern = goodChars.split('')
                          .map((ch) => {
                            if (ch.match(/[a-zA-Z]/)) {

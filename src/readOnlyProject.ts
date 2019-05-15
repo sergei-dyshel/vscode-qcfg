@@ -29,7 +29,7 @@ function updateStatus() {
     status.hide();
 }
 
-function onDidChangeTextDocument(event) {
+function onDidChangeTextDocument(_event) {
   if (!getState())
     return;
 

@@ -1,16 +1,17 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import {commands, TextSearchQuery, TextSearchOptions, Range} from 'vscode';
-import {Logger, str} from './logging';
-import {getActiveTextEditor, getCursorWordContext} from './utils';
+import {Range, TextSearchQuery} from 'vscode';
+import {commands} from 'vscode';
+import {Logger} from './logging';
+import {getCursorWordContext} from './utils';
 
 const log = Logger.create('search');
 
 async function searchInFiles(query: TextSearchQuery):
     Promise<vscode.Location[]> {
   const locations: vscode.Location[] = [];
-  const completion = await vscode.workspace.findTextInFiles(
+  await vscode.workspace.findTextInFiles(
       query, (match: vscode.TextSearchMatch) => {
         const ranges: Range[] = match.ranges instanceof Range ?
             [match.ranges] :
@@ -23,7 +24,7 @@ async function searchInFiles(query: TextSearchQuery):
 
 async function searchWord()
 {
-  const {editor, range, word} = log.assertNonNull(getCursorWordContext());
+  const {editor, word} = log.assertNonNull(getCursorWordContext());
   const query: TextSearchQuery = {pattern: word, isWordMatch: true};
   const locations = await searchInFiles(query);
   vscode.commands.executeCommand(
@@ -33,7 +34,7 @@ async function searchWord()
 
 async function searchStructField()
 {
-  const {editor, range, word} = log.assertNonNull(getCursorWordContext());
+  const {editor, word} = log.assertNonNull(getCursorWordContext());
   const query: TextSearchQuery = {
     pattern: '(->|\\.)' + word,
     isWordMatch: true,

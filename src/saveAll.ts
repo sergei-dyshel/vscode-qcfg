@@ -16,10 +16,8 @@ const savedFiles = new Map<vscode.WorkspaceFolder, vscode.TextDocument[]>();
 const emmiter = new vscode.EventEmitter<DocumentsInFolder>();
 export const onEvent: vscode.Event<DocumentsInFolder> = emmiter.event;
 
-let timer: NodeJS.Timer;
-
 function emit() {
-  savedFiles.forEach((documents, folder, map) => {
+  savedFiles.forEach((documents, folder, _map) => {
     const docsInFolder: DocumentsInFolder = {folder, documents};
     emmiter.fire(docsInFolder);
   });
@@ -27,7 +25,8 @@ function emit() {
 }
 
 function onDidSaveTextDocument(document: vscode.TextDocument) {
-  const {wsFolder} = fileUtils.getDocumentRoot(document);
+  const {workspaceFolder: wsFolder} =
+      fileUtils.getDocumentRootThrowing(document);
   const docPath = vscode.workspace.asRelativePath(document.fileName);
   log.info('onDidSaveTextDocument:', docPath);
 
@@ -35,7 +34,7 @@ function onDidSaveTextDocument(document: vscode.TextDocument) {
     log.assertNonNull(savedFiles.get(wsFolder)).push(document);
   else
     savedFiles.set(wsFolder, [document]);
-  timer = setTimeout(emit, 200);
+  setTimeout(emit, 200);
 }
 
 export function activate(context: vscode.ExtensionContext) {

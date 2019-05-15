@@ -1,7 +1,6 @@
 'use strict';
 
 import {TextDocument, Position, Range, TextEditor, Selection} from 'vscode';
-import * as vscode from 'vscode';
 
 
 export function offsetPosition(

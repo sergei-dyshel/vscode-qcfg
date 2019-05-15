@@ -1,74 +1,92 @@
 {
     "contributes": {
+        "taskDefinitions": [
+            {
+                "type": "qcfg"
+            }
+        ],
         "configuration": {
             "properties": {
                 "qcfg.tasks": {
                     "type": "object",
                     "description": "Tasks in qcfg format",
                     "additionalProperties": {
-                        "type": "object",
-                        "properties": {
-                            "command": {
-                                "type": "string"
-                            },
-                            "reveal": {
-                                "type": "string",
-                                "enum": [
-                                    "focus",
-                                    "yes",
-                                    "no"
-                                ],
-                                "default": "yes"
-                            },
-                            "clear": {
-                                "type": "boolean",
-                                "default": false
-                            },
-                            "onSuccess": {
-                                "type": "string",
-                                "default": "auto",
-                                "enum": [
-                                    "none",
-                                    "auto",
-                                    "hide",
-                                    "dispose",
-                                    "show",
-                                    "notify"
-                                ]
-                            },
-                            "onFailure": {
-                                "type": "string",
-                                "default": "auto",
-                                "enum": [
-                                    "none",
-                                    "auto",
-                                    "hide",
-                                    "dispose",
-                                    "show",
-                                    "notify"
-                                ]
-                            },
-                            "reindex": {
-                                "type": "boolean",
-                                "default": false
-                            },
-                            "problemMatchers": {
-                                "anyOf": [
-                                    {
+                        "anyOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "command": {
+                                        "type": "string"
+                                    },
+                                    "reveal": {
+                                        "type": "string",
+                                        "enum": [
+                                            "focus",
+                                            "yes",
+                                            "no"
+                                        ],
+                                        "default": "yes"
+                                    },
+                                    "flags": {
                                         "type": "array",
                                         "items": {
-                                            "type": "string"
-                                        },
-                                        "default": []
+                                            "type": "string",
+                                            "enum": [
+                                                "dedicatedPanel",
+                                                "clear",
+                                                "autoRestart",
+                                                "reindex",
+                                                "build"
+                                            ]
+                                        }
                                     },
-                                    {
-                                        "type": "string"
+                                    "onSuccess": {
+                                        "type": "string",
+                                        "default": "auto",
+                                        "enum": [
+                                            "none",
+                                            "auto",
+                                            "hide",
+                                            "dispose",
+                                            "show",
+                                            "notify"
+                                        ]
+                                    },
+                                    "onFailure": {
+                                        "type": "string",
+                                        "default": "auto",
+                                        "enum": [
+                                            "none",
+                                            "auto",
+                                            "hide",
+                                            "dispose",
+                                            "show",
+                                            "notify"
+                                        ]
+                                    },
+                                    "problemMatchers": {
+                                        "anyOf": [
+                                            {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                },
+                                                "default": []
+                                            },
+                                            {
+                                                "type": "string"
+                                            }
+                                        ]
                                     }
+                                },
+                                "required": [
+                                    "command"
                                 ]
+                            },
+                            {
+                                "type": "string",
+                                "description": "Command to run with default task params"
                             }
-                        },
-                        "required": [
-                            "command"
                         ]
                     }
                 }

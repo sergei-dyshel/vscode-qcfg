@@ -6,7 +6,9 @@
 		"outDir": "out",
 		"lib": [ "es2017" ],
 		"sourceMap": true,
-		"strictNullChecks": true
+		"strictNullChecks": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true
 	},
 	"exclude": [
 		"node_modules",

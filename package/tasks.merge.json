@@ -4,6 +4,18 @@
             {
                 "command": "qcfg.tasks.show",
                 "title": "qcfg: Show list of tasks"
+            },
+            {
+                "command": "qcfg.tasks.runQcfg",
+                "title": "qcfg: Run specific task"
+            },
+            {
+                "command": "qcfg.tasks.build.last",
+                "title": "qcfg: Run last build task"
+            },
+            {
+                "command": "qcfg.tasks.build.default",
+                "title": "qcfg: Run default build task"
             }
         ],
         "configuration": {
@@ -15,6 +27,20 @@
                     "$import": "tasks.base.json#/contributes/configuration/properties/qcfg.tasks"
                 }
             }
-        }
+        },
+        "keybindings": [
+            {
+                    "key": "alt+t",
+                    "command": "qcfg.tasks.show"
+            },
+            {
+                    "key": "ctrl+k ctrl+b",
+                    "command": "qcfg.tasks.build.last"
+            },
+            {
+                    "key": "ctrl+k ctrl+shift+b",
+                    "command": "qcfg.tasks.build.default"
+            }
+        ]
     }
 }

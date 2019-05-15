@@ -1,7 +1,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import {window, workspace, commands} from 'vscode';
+import {window, workspace} from 'vscode';
 
 import * as net from 'net';
 import * as path from 'path';
@@ -9,7 +9,7 @@ import * as path from 'path';
 import * as shlex from 'shlex';
 
 import * as terminal from './terminal';
-import {Logger, str} from './logging';
+import {Logger} from './logging';
 import * as fileUtils from './fileUtils';
 import {getActiveTextEditor} from './utils';
 import {parseNumber} from './stringUtils';
@@ -32,7 +32,7 @@ async function handleOpen(location: string, folder: string) {
     log.info(`"${folder}" does not correspond to this workspace's folder`);
     return;
   }
-  const [file, line = undefined, column = undefined, ...rest] =
+  const [file, line = undefined, column = undefined] =
       location.split(':');
   if (!file)
     log.fatal('Filename missing');
@@ -88,7 +88,7 @@ function handleCmd(cmd: string) {
   }
 }
 
-export function activate(context: vscode.ExtensionContext) {
+export function activate(_context: vscode.ExtensionContext) {
   const server = net.createServer((socket) => {
     socket.on('data', (data) => {
       handleCmd(data.toString());

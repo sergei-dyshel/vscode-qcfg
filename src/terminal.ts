@@ -3,7 +3,6 @@
 import * as vscode from 'vscode';
 import * as logging from './logging';
 import * as remoteControl from './remoteControl';
-import { toString } from 'typescript-collections/dist/lib/arrays';
 import {parseNumber} from './stringUtils';
 
 const log = logging.Logger.create('terminal');
@@ -15,7 +14,7 @@ interface TerminalProcessOptions {
   env?: {[name: string]: string|null};
 }
 
-class TerminalProcess {
+export class TerminalProcess {
   constructor(
       name: string, command: string|string[],
       readonly options?: TerminalProcessOptions) {
@@ -78,7 +77,7 @@ class TerminalProcess {
   };
 }
 
-export function processExit(args: string[])
+export function processExit(_args: string[])
 {
 
 }
