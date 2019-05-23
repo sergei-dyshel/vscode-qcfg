@@ -64,6 +64,22 @@
       {
         "command": "qcfg.colors.clear",
         "title": "qcfg: Clear workspace color theme"
+      },
+      {
+        "command": "qcfg.log.debug",
+        "title": "qcfg: Set log level to DEBUG"
+      },
+      {
+        "command": "qcfg.log.info",
+        "title": "qcfg: Set log level to INFO"
+      },
+      {
+        "command": "qcfg.log.trace",
+        "title": "qcfg: Set log level to TRACE"
+      },
+      {
+        "command": "qcfg.history.backward",
+        "title": "qcfg: Go backward in history"
       }
     ],
     "keybindings": [

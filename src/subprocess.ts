@@ -1,5 +1,6 @@
 'use strict';
 
+import * as vscode from 'vscode';
 import * as child_process from 'child_process';
 import * as logging from './logging';
 
@@ -7,21 +8,36 @@ import * as logging from './logging';
 const moduleLog =
     logging.Logger.create('subprocess');
 
-export interface ExecResult  {
-  code?: number;
-  signal?: string;
-  stdout: string;
-  stderr: string;
+export class ExecResult extends Error {
+  constructor(
+      public pid: number, public stdout: string, public stderr: string) {
+    super("");
+    this.name = 'ExecResult';
+    this.code = 0;
+    this.signal = "";
+    this.updateMessage();
+  }
+  code: number;
+  signal: string;
+
+  updateMessage() {
+    this.message =
+        `Process ${this.pid} exited with code: ${this.code}, signal: ${
+            this.signal}, stdout: ${this.stdout}, stder: ${this.stderr}`;
+  }
 }
 
-interface ExecOptions {
+interface ExecOptions extends child_process.ExecOptions,
+                              child_process.ExecFileOptions {
   cwd?: string;
   env?: {[name: string]: string};
   maxBuffer?: number;
+  allowedCodes?: number[];
+  statusBarMessage?: string;
 }
 
 export class Subprocess {
-  constructor(command: string|string[], options?: ExecOptions) {
+  constructor(command: string|string[], private options?: ExecOptions) {
     if (typeof (command) === 'string')
       this.process =
           child_process.exec(command, options, this.callback.bind(this));
@@ -30,23 +46,17 @@ export class Subprocess {
           command[0], command.slice(1), options, this.callback.bind(this));
     this.log = logging.Logger.create(
         'Subprocess', {parent: moduleLog, instance: `pid=${this.process.pid}`});
-    this.log.debug(`started command ${command}`);
+    this.log.trace(`started command ${command}`);
+    this.promise = new Promise<ExecResult>((resolve, reject) => {
+      this.waitingContext = {resolve, reject};
+    });
+    if (this.options && this.options.statusBarMessage)
+      vscode.window.setStatusBarMessage(
+          this.options.statusBarMessage, this.promise);
   }
 
-  result: ExecResult | undefined;
-  log: logging.Logger;
-
   wait(): Promise<ExecResult> {
-    if (this.result)
-      return Promise.resolve(this.result);
-    if (this.waitingContext)
-      return this.promise!;
-    else {
-      this.promise = new Promise<ExecResult>((resolve, reject) => {
-        this.waitingContext = {resolve, reject};
-      });
-      return this.promise;
-    }
+    return this.promise;
   }
 
   kill(signal = 'SIGTERM') {
@@ -55,59 +65,36 @@ export class Subprocess {
   }
 
   private callback(error: Error|null, stdout: string, stderr: string) {
-    this.result = {stdout, stderr};
-    if (error instanceof Error) {
-      this.log.debug(`failed with message ${error.message}`);
-      if (this.waitingContext)
-        this.waitingContext.reject(this.result);
-      return;
-    }
-    const err = error as unknown as {code?: number, signal?: string};
-    if (err) {
-      this.result.code = err.code;
-      this.result.signal = err.signal;
-    }
+    this.result = new ExecResult(this.process.pid, stdout, stderr);
     if (error) {
-      this.log.debug(`failed with code ${err.code} signal ${err.signal}`);
-      if (this.waitingContext)
+      const err = error as unknown as {code?: number, signal?: string};
+      this.result.code = err.code || 0;
+      this.result.signal = err.signal || "";
+      this.log.trace(`finished with code ${this.result.code} signal ${
+          this.result.signal}`);
+      if (!this.options || !this.options.allowedCodes ||
+          !this.options.allowedCodes.includes(this.result.code!)) {
         this.waitingContext.reject(this.result);
-    } else {
-      this.log.debug(`finished sucessfully`);
-      if (this.waitingContext)
+      } else {
         this.waitingContext.resolve(this.result);
+      }
+    } else {
+      this.log.trace(`finished sucessfully`);
+      this.waitingContext.resolve(this.result);
     }
   }
 
-  promise?: Promise<ExecResult>;
-  private waitingContext?: {
+  private result?: ExecResult;
+  private log: logging.Logger;
+  private promise: Promise<ExecResult>;
+  private waitingContext: {
     resolve: (result: ExecResult) => void,
     reject: (result: ExecResult|Error) => void
   };
   private process: child_process.ChildProcess;
 }
 
-export async function exec(
+export function exec(
     command: string|string[], options?: ExecOptions): Promise<ExecResult> {
-  return new Promise(
-      (resolve: (res: ExecResult) => void,
-       reject: (res: ExecResult) => void) => {
-        const callback =
-            (error: Error|null, stdout: string, stderr: string) => {
-              const res: ExecResult = {stdout, stderr};
-              const err = error as unknown as {code?: number, signal?: string};
-              if (err) {
-                res.code = err.code;
-                res.signal = err.signal;
-              }
-              if (error)
-                reject(res);
-              else
-                resolve(res);
-            };
-        if (typeof(command) === 'string')
-          this.process = child_process.exec(command, options, callback);
-        else
-          this.process = child_process.execFile(
-              command[0], command.slice(1), options, callback);
-      });
+  return new Subprocess(command, options).wait();
 }

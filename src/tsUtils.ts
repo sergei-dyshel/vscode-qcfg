@@ -14,6 +14,13 @@ export function If<T>(cond: any, ifTrue: () => T, ifFalse: () => T): T {
     return ifFalse();
 }
 
+export function mapNonNull<T, V>(
+    array: T[], func: (elem: T) => V | null | undefined): V[] {
+  return array.map(func)
+      .filter(x => (x !== null && x !== undefined))
+      .map(x => x!);
+}
+
 export function mapWithThrow<T, V>(
     array: T[], func: (elem: T) => V,
     handler?: (elem: T, err: Error) => (void)): V[] {

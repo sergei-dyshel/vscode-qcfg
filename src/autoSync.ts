@@ -5,7 +5,7 @@ import * as language from './language';
 import * as saveAll from './saveAll';
 import * as logging from './logging';
 import * as subprocess from './subprocess';
-import {setTimeoutPromise} from './utils';
+import {setTimeoutPromise} from './nodeUtils';
 
 const log = logging.Logger.create('autoSync');
 

@@ -7,7 +7,9 @@ import {workspace} from 'vscode';
 let outputChannel: vscode.OutputChannel;
 
 export enum LogLevel {
-  Debug = 1,
+  NoLog,
+  Trace,
+  Debug,
   Info,
   Notice,
   Warning,
@@ -15,9 +17,10 @@ export enum LogLevel {
   Fatal
 }
 
-const defaultLogLevel: LogLevel = LogLevel.Debug;
+let defaultLogLevel: LogLevel = LogLevel.Info;
 
-const LOG_LEVEL_STRINGS = ['', 'DEBUG', 'INFO', 'NOTICE', 'WARN', 'ERROR', 'FATAL'];
+const LOG_LEVEL_STRINGS =
+    ['', 'TRACE', 'DEBUG', 'INFO', 'NOTICE', 'WARN', 'ERROR', 'FATAL'];
 
 export function str(x: any): string {
   switch (typeof x) {
@@ -26,6 +29,16 @@ export function str(x: any): string {
     default:
       return '' + x;
   }
+}
+
+function stringifyTextEditor(editor: vscode.TextEditor)
+{
+    const doc = editor.document;
+    const relpath = workspace.asRelativePath(doc.fileName);
+    if (editor.viewColumn)
+      return `<${relpath}(${editor.viewColumn})}>`;
+    else
+      return `<${relpath}>`;
 }
 
 function stringifyObject(x: object): string {
@@ -37,10 +50,7 @@ function stringifyObject(x: object): string {
   }
   else if ('document' in x && 'viewColumn' in x) {
     // TextEditor
-    const editor = x as vscode.TextEditor;
-    const doc = editor.document;
-    const relpath = workspace.asRelativePath(doc.fileName);
-    return `<${relpath}>`;
+    return stringifyTextEditor(x as vscode.TextEditor);
   }
   else if (x instanceof vscode.Position) {
     const pos = x as vscode.Position;
@@ -66,7 +76,7 @@ function stringifyObject(x: object): string {
   }
   else if (x instanceof Array) {
     const arr = x as any[];
-    return arr.map(str).join(',');
+    return arr.map(str).join(', ');
   }
   else {
     return JSON.stringify(x);
@@ -134,6 +144,9 @@ export class Logger {
     }
   }
 
+  trace(...args) {
+    this.log(LogLevel.Trace, ...args);
+  }
   info(...args) {
     this.log(LogLevel.Info, ...args);
   }
@@ -166,7 +179,28 @@ export class Logger {
   }
 }
 
+function setLevel(level: LogLevel) {
+  return () => {
+    defaultLogLevel = level;
+    log.warn(`Log level set to ${LOG_LEVEL_STRINGS[defaultLogLevel]}`);
+  };
+}
 
-export function activate(_context: vscode.ExtensionContext) {
+let log: Logger;
+
+export function activate(context: vscode.ExtensionContext) {
   outputChannel = vscode.window.createOutputChannel('qcfg');
+  context.subscriptions.push(
+      vscode.commands.registerCommand(
+          'qcfg.log.toggleDebug', setLevel(LogLevel.Debug)),
+      vscode.commands.registerCommand(
+          'qcfg.log.toggleInfo', setLevel(LogLevel.Info)),
+      vscode.commands.registerCommand(
+          'qcfg.log.toggleTrace', setLevel(LogLevel.Trace)));
+
+          log = Logger.create('logging');
+  if ('VSCODE_QCFG_DEBUG' in process.env) {
+    defaultLogLevel = LogLevel.Debug;
+    log.info(`Detected as being debugged, setting log level to debug`);
+  }
 }

@@ -19,6 +19,7 @@ import * as windowState from './windowState';
 import * as search from './search';
 import * as colorTheme from './colorTheme';
 import * as taskRunner from './taskRunner';
+import * as history from './history';
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('Extension active');
@@ -40,6 +41,7 @@ export function activate(context: vscode.ExtensionContext) {
     search.activate(context);
     colorTheme.activate(context);
     taskRunner.activate(context);
+    history.activate(context);
 }
 
 // this method is called when your extension is deactivated

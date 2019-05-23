@@ -5,11 +5,7 @@ import {Disposable, window, commands, TextEditor} from 'vscode';
 import {Logger} from './logging';
 import {getDocumentWorkspaceFolder} from './fileUtils';
 
-import {promisify} from 'util';
-
 const log = Logger.create('tree');
-
-export const setTimeoutPromise = promisify(setTimeout);
 
 export namespace Context {
   const contexts = new Set<string>();
