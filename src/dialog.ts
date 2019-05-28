@@ -83,7 +83,7 @@ const buttons: {[name: string]: Button} = {};
 
 export function activate(context: vscode.ExtensionContext) {
   extContext = context;
-  buttons.REMOVE = new Button('icons/remove.svg', 'Remove');
+  buttons.REMOVE = new Button('icons/remove-dark.svg', 'Remove');
 }
 
 export async function selectFromList<T>(

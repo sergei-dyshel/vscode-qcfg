@@ -4,6 +4,7 @@ import {promisify} from 'util';
 
 export const setTimeoutPromise = promisify(setTimeout);
 export const setImmediatePromise = promisify(setImmediate);
+export const setIntervalPromise = promisify(setInterval);
 
 // TODO: unused
 export class Timer {

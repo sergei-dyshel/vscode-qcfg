@@ -1,16 +1,16 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import {window, Task} from 'vscode';
-
-import * as language from './language';
-import * as fileUtils from './fileUtils';
-import * as logging from './logging';
+import { Task, window } from 'vscode';
 import * as dialog from './dialog';
+import * as fileUtils from './fileUtils';
+import { getDocumentRoot } from './fileUtils';
+import * as language from './language';
+import * as logging from './logging';
 import * as remoteControl from './remoteControl';
-import {getActiveTextEditor, currentWorkspaceFolder} from './utils';
-import {mapObject, mapWithThrow} from './tsUtils';
-import {TaskRun, TaskCancelledError} from './taskRunner';
+import { TaskCancelledError, TaskRun } from './taskRunner';
+import { mapWithThrow } from './tsUtils';
+import { currentWorkspaceFolder } from './utils';
 
 const log = logging.Logger.create('tasks');
 
@@ -55,34 +55,49 @@ interface ParamsSet {
 }
 
 export async function runOneTime(name: string, params: Params) {
-  const run = new QcfgTask(name, params);
+  const run = new QcfgTask(name, params, new QcfgTaskContext());
   await run.run();
 }
 
-const SUBSTITUTE: {[name: string]: () => string | undefined} = {
-  'cursorWord': () => {
-    const editor = getActiveTextEditor();
+// TODO: remove export
+export class QcfgTaskContext {
+  constructor() {
+    const editor = window.activeTextEditor;
+    if (!editor)
+      return;
     const document = editor.document;
+    this.substitute.absoluteFile = document.fileName;
+    const root = getDocumentRoot(document);
+    if (!root)
+      return;
+    const {workspaceFolder, relativePath} = root;
+    this.workspaceFolder = workspaceFolder;
+    this.substitute.relativeFile = relativePath;
+    this.substitute.relativeFileNoExt = relativePath.replace(/\.[^/.]+$/, '');
+
     const range = document.getWordRangeAtPosition(editor.selection.active);
     if (!range)
-      return undefined;
-    return document.getText(range);
+      return;
+    this.substitute.cursorWord = document.getText(range);
   }
-};
+  readonly workspaceFolder?: vscode.WorkspaceFolder;
+  readonly substitute = new Substitute();
+}
 
-type SubstituteMap = {
-  [name: string]: string | undefined
-};
+class Substitute {
+  absoluteFile: string|undefined = undefined;
+  relativeFile: string|undefined = undefined;
+  relativeFileNoExt: string|undefined = undefined;
+  cursorWord: string|undefined = undefined;
+}
 
 class InstantiationError extends Error {
   constructor(message: string) { super(message); }
 }
 
-function substituteVars(cmd: string, substitute?: SubstituteMap): string {
+function substituteVars(cmd: string, substitute: Substitute): string {
   let prevCmd = cmd;
   let numSubs = 0;
-  if (!substitute)
-    substitute = calcSubstitute();
   do {
     prevCmd = cmd;
     for (const varname of Object.keys(substitute)) {
@@ -100,8 +115,8 @@ function substituteVars(cmd: string, substitute?: SubstituteMap): string {
   return cmd;
 }
 
-function createTask(
-    label: string, params: Params, substitute?: SubstituteMap): Task {
+function instantiateTask(
+    label: string, params: Params, context: QcfgTaskContext): Task {
   const wsFolders = log.assertNonNull<vscode.WorkspaceFolder[]>(
       vscode.workspace.workspaceFolders);
   const editor = window.activeTextEditor;
@@ -121,7 +136,7 @@ function createTask(
   //     'bash-with-sleep.sh', ['/bin/bash', '-c', substituteVars(params.command)],
   //     {cwd: params.cwd, env: environ});
   const shellExec = new vscode.ShellExecution(
-      substituteVars(params.command, substitute),
+      substituteVars(params.command, context.substitute),
       {cwd: params.cwd, env: environ});
   const task = new Task(
       def, wsFolder, label, 'qcfg', shellExec, params.problemMatchers || []);
@@ -137,7 +152,7 @@ function createTask(
     panel: (flags.includes(Flag.dedicatedPanel)) ?
         vscode.TaskPanelKind.Dedicated :
         vscode.TaskPanelKind.Shared,
-    clear: (flags.includes(Flag.clear))
+    clear: (flags.includes(Flag.clear) || flags.includes(Flag.build))
   };
   if (flags.includes(Flag.build))
     task.group = vscode.TaskGroup.Build;
@@ -149,23 +164,17 @@ function fetchQcfgTasks(): QcfgTask[] {
   const globalTasks: ParamsSet = conf.get('tasks.global', {});
   const workspaceTasks: ParamsSet = conf.get('tasks.workspace', {});
   const all =  {...globalTasks, ...workspaceTasks};
-  const substitute = calcSubstitute();
+  const context = new QcfgTaskContext();
   return mapWithThrow(
       Object.entries(all),
       ([label, params]) =>
-          new QcfgTask(label, params, (label in workspaceTasks), substitute),
+          new QcfgTask(label, params, context, (label in workspaceTasks)),
       ([label, _], err: Error) => {
         log.debug(`Could not instanatiate task ${label}: ${err.message}`);
       });
 }
 
-function calcSubstitute() {
-  return mapObject(SUBSTITUTE, f => f());
-}
-
-
 let lastBuildTask: VscodeTask|undefined;
-
 
 async function runDefaultBuildTask() {
   const tasks = await vscode.tasks.fetchTasks();
@@ -238,9 +247,9 @@ function expandparamsOrCmd(paramsOrCmd: Params | string): Params
 
 class QcfgTask extends VscodeTask{
   constructor(
-      public label: string, paramsOrCmd: Params | string,
-      private fromWorkspace?: boolean, substitute?: SubstituteMap) {
-    super(createTask(label, expandparamsOrCmd(paramsOrCmd), substitute));
+      public label: string, paramsOrCmd: Params|string,
+      context: QcfgTaskContext, private fromWorkspace?: boolean) {
+    super(instantiateTask(label, expandparamsOrCmd(paramsOrCmd), context));
     this.params = expandparamsOrCmd(paramsOrCmd);
   }
 
@@ -304,7 +313,6 @@ class QcfgTask extends VscodeTask{
           window.showErrorMessage(`Task "${this.task.name}" failed`);
         break;
     }
-
   }
 
   protected tags(): string[] {

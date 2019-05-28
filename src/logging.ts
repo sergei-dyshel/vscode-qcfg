@@ -140,6 +140,7 @@ export class Logger {
       console.error('Using logging before activation');
     if (logLevel === LogLevel.Fatal) {
       const errorMsg = `[${this.fullPath}] ${msg}`;
+      console.trace(errorMsg);
       throw new Error(errorMsg);
     }
   }
@@ -192,11 +193,11 @@ export function activate(context: vscode.ExtensionContext) {
   outputChannel = vscode.window.createOutputChannel('qcfg');
   context.subscriptions.push(
       vscode.commands.registerCommand(
-          'qcfg.log.toggleDebug', setLevel(LogLevel.Debug)),
+          'qcfg.log.debug', setLevel(LogLevel.Debug)),
       vscode.commands.registerCommand(
-          'qcfg.log.toggleInfo', setLevel(LogLevel.Info)),
+          'qcfg.log.info', setLevel(LogLevel.Info)),
       vscode.commands.registerCommand(
-          'qcfg.log.toggleTrace', setLevel(LogLevel.Trace)));
+          'qcfg.log.trace', setLevel(LogLevel.Trace)));
 
           log = Logger.create('logging');
   if ('VSCODE_QCFG_DEBUG' in process.env) {

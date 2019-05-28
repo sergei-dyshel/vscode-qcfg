@@ -7,7 +7,8 @@ import * as clipboardy from 'clipboardy';
 
 import {offsetPosition, isLinewise, expandLinewise, trimWhitespace, selectRange} from './textUtils';
 import {Logger} from './logging';
-import {getActiveTextEditor} from './utils';
+import {getActiveTextEditor, registerCommand} from './utils';
+import { forceNonTemporary, resetTemporary } from './history';
 
 const log = Logger.create('editing');
 
@@ -128,9 +129,23 @@ async function navigateBackToPreviousFile() {
   }
 }
 
+async function goToDefinition() {
+  forceNonTemporary();
+  await commands.executeCommand('editor.action.goToDeclaration');
+  resetTemporary();
+}
+
+async function peekReferences() {
+  forceNonTemporary();
+  await commands.executeCommand('editor.action.referenceSearch.trigger');
+  resetTemporary();
+}
+
 export function activate(context: vscode.ExtensionContext) {
+  context.subscriptions.push(registerCommand('qcfg.selectLines', selectLines));
   context.subscriptions.push(
-      commands.registerCommand('qcfg.selectLines', selectLines));
+      registerCommand('qcfg.goToDefinition', goToDefinition),
+      registerCommand('qcfg.peekReferences', peekReferences));
   context.subscriptions.push(commands.registerTextEditorCommand(
       'qcfg.swapCursorAndAnchor', swapCursorAndAnchor));
   context.subscriptions.push(commands.registerTextEditorCommand(

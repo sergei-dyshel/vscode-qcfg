@@ -24,6 +24,14 @@
             {
                 "command": "qcfg.navigateBackToPreviousFile",
                 "title": "qcfg: Navigate back to previous file"
+            },
+            {
+                "command": "qcfg.goToDefinition",
+                "title": "qcfg: Go to definition"
+            },
+            {
+                "command": "qcfg.peekReferences",
+                "title": "qcfg: Peek references"
             }
         ]
     }

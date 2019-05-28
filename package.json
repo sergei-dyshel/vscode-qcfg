@@ -82,6 +82,14 @@
         "title": "qcfg: Go backward in history"
       },
       {
+        "command": "qcfg.history.forward",
+        "title": "qcfg: Go forward in history"
+      },
+      {
+        "command": "qcfg.fuzzySearch",
+        "title": "qcfg: Fuzzy search lines"
+      },
+      {
         "command": "qcfg.tasks.show",
         "title": "qcfg: Show list of tasks"
       },
@@ -172,6 +180,14 @@
       {
         "command": "qcfg.navigateBackToPreviousFile",
         "title": "qcfg: Navigate back to previous file"
+      },
+      {
+        "command": "qcfg.goToDefinition",
+        "title": "qcfg: Go to definition"
+      },
+      {
+        "command": "qcfg.peekReferences",
+        "title": "qcfg: Peek references"
       }
     ],
     "keybindings": [
@@ -195,6 +211,34 @@
       {
         "key": "alt+shift+r",
         "command": "qcfg.search.structField"
+      },
+      {
+        "key": "ctrl+o",
+        "command": "workbench.action.navigateBack"
+      },
+      {
+        "key": "ctrl+shift+o",
+        "command": "qcfg.history.backward"
+      },
+      {
+        "key": "ctrl+i",
+        "command": "workbench.action.navigateForward"
+      },
+      {
+        "key": "ctrl+shift+i",
+        "command": "qcfg.history.forward"
+      },
+      {
+        "key": "ctrl+shift+-",
+        "command": "-workbench.action.navigateForward"
+      },
+      {
+        "key": "ctrl+alt+-",
+        "command": "-workbench.action.navigateBack"
+      },
+      {
+        "key": "ctrl+l",
+        "command": "qcfg.fuzzySearch"
       },
       {
         "key": "alt+t",
@@ -408,6 +452,23 @@
         }
       }
     },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "qcfg-views-container",
+          "title": "Qcfg Views Container",
+          "icon": "icons/view-container.png"
+        }
+      ]
+    },
+    "views": {
+      "qcfg-views-container": [
+        {
+          "id": "qcfgTreeView",
+          "name": "Qcfg tree view"
+        }
+      ]
+    },
     "problemMatchers": [
       {
         "name": "e8build",
@@ -440,6 +501,19 @@
           "severity": 4,
           "message": 5
         }
+      },
+      {
+        "name": "gcc-absolute",
+        "owner": "qcfg",
+        "fileLocation": "absolute",
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        }
       }
     ]
   },
@@ -461,14 +535,14 @@
   "dependencies": {
     "clipboardy": "^1.2.3",
     "node-loader": "^0.6.0",
-    "re2": "^1.8.4",
     "shlex": "^1.0.3",
     "superstring": "^2.3.4",
     "tree-sitter": "^0.13.23",
     "tree-sitter-cpp": "^0.13.11",
     "tree-sitter-python": "^0.13.6",
     "tree-sitter-typescript": "^0.13.6",
-    "typescript-collections": "^1.1.4"
+    "typescript-collections": "^1.1.4",
+    "re2": "^1.8.4"
   },
   "devDependencies": {
     "@types/clipboardy": "^1.1.0",

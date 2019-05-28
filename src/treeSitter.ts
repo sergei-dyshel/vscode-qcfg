@@ -1,7 +1,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import {window, workspace, commands} from 'vscode';
+import {window, workspace } from 'vscode';
 import {Range, TextDocument, Position, TextEditor} from 'vscode';
 import * as Parser from 'tree-sitter';
 import {SyntaxNode, Tree} from 'tree-sitter';
@@ -11,7 +11,7 @@ import * as treeSitterCpp from 'tree-sitter-cpp';
 import {TextBuffer} from 'superstring';
 
 import {trimInner, selectRange, offsetPosition, swapRanges} from './textUtils';
-import {Context, getActiveTextEditor} from './utils';
+import {Context, getActiveTextEditor, registerCommand} from './utils';
 
 import {Logger, str} from './logging';
 
@@ -448,24 +448,24 @@ export function activate(context: vscode.ExtensionContext) {
       workspace.onDidChangeTextDocument(clearMode),
       window.onDidChangeTextEditorSelection(onDidChangeTextEditorSelection),
       window.onDidChangeActiveTextEditor(clearMode),
-      commands.registerCommand(
+      registerCommand(
           'qcfg.selection.expand', () => expandSelection(false /* parent */)),
-      commands.registerCommand(
+      registerCommand(
           'qcfg.selection.selectSuperParent',
           () => expandSelection(true /* superParent */)),
-      commands.registerCommand('qcfg.selection.shrink', shrinkSelection),
-      commands.registerCommand(
+      registerCommand('qcfg.selection.shrink', shrinkSelection),
+      registerCommand(
           'qcfg.selection.left', () => selectSibling(Direction.Left)),
-      commands.registerCommand(
+      registerCommand(
           'qcfg.selection.right', () => selectSibling(Direction.Right)),
-      commands.registerCommand(
+      registerCommand(
           'qcfg.selection.extendLeft', () => extendSelection(Direction.Left)),
-      commands.registerCommand(
+      registerCommand(
           'qcfg.selection.extendRight', () => extendSelection(Direction.Right)),
-      commands.registerCommand(
+      registerCommand(
           'qcfg.selection.swapLeft',
           () => selectSibling(Direction.Left, true /* swap */)),
-      commands.registerCommand(
+      registerCommand(
           'qcfg.selection.swapRight',
           () => selectSibling(Direction.Right, true /* swap */)));
   status = window.createStatusBarItem();
