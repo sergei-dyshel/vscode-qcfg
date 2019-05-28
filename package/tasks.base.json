@@ -77,6 +77,20 @@
                                                 "type": "string"
                                             }
                                         ]
+                                    },
+                                    "when": {
+                                        "type": "object",
+                                        "description": "Condition when task is valid",
+                                        "properties": {
+                                            "fileExists": {
+                                                "type": "string",
+                                                "description": "File exists of given glob pattern"
+                                            },
+                                            "fileMatches": {
+                                                "type": "string",
+                                                "description": "Current file matches glob pattern"
+                                            }
+                                        }
                                     }
                                 },
                                 "required": [

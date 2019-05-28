@@ -9,8 +9,10 @@ import * as language from './language';
 import * as logging from './logging';
 import * as remoteControl from './remoteControl';
 import { TaskCancelledError, TaskRun } from './taskRunner';
-import { mapWithThrow } from './tsUtils';
+import { mapWithThrow, filterNonNull } from './tsUtils';
 import { currentWorkspaceFolder } from './utils';
+// import * as minimatch from 'minimatch';
+import * as glob from 'glob';
 
 const log = logging.Logger.create('tasks');
 
@@ -37,6 +39,11 @@ export enum Flag {
   build = 'build',
 }
 
+interface When {
+  fileExists?: string;
+  fileMatches?: string;
+}
+
 interface Params {
   command: string;
 
@@ -48,6 +55,8 @@ interface Params {
   reindex?: boolean;
   problemMatchers?: string | string[];
   flags?: Flag[];
+
+  when?: When;
 }
 
 interface ParamsSet {
@@ -67,10 +76,15 @@ export class QcfgTaskContext {
       return;
     const document = editor.document;
     this.substitute.absoluteFile = document.fileName;
+    if (editor.selection.isEmpty)
+      this.substitute.lineNumber = String(editor.selection.active.line + 1);
+    else
+      this.substitute.selectedText = document.getText(editor.selection);
     const root = getDocumentRoot(document);
     if (!root)
       return;
     const {workspaceFolder, relativePath} = root;
+    this.substitute.workspaceFolder = workspaceFolder.uri.fsPath;
     this.workspaceFolder = workspaceFolder;
     this.substitute.relativeFile = relativePath;
     this.substitute.relativeFileNoExt = relativePath.replace(/\.[^/.]+$/, '');
@@ -81,38 +95,66 @@ export class QcfgTaskContext {
     this.substitute.cursorWord = document.getText(range);
   }
   readonly workspaceFolder?: vscode.WorkspaceFolder;
-  readonly substitute = new Substitute();
+  readonly substitute: Substitute = {};
 }
 
-class Substitute {
-  absoluteFile: string|undefined = undefined;
-  relativeFile: string|undefined = undefined;
-  relativeFileNoExt: string|undefined = undefined;
-  cursorWord: string|undefined = undefined;
+const SUBSTITUTE_VARS = [
+  'absoluteFile', 'relativeFile', 'relativeFileNoExt', 'cursorWord',
+  'workspaceFolder', 'lineNumber', 'selectedText'
+];
+
+type Substitute = {
+  [name: string]: string
+};
+
+class ParamsError extends Error {
+  constructor(message: string) { super(message); }
 }
 
-class InstantiationError extends Error {
+class SubstituteError extends Error {
   constructor(message: string) { super(message); }
 }
 
 function substituteVars(cmd: string, substitute: Substitute): string {
-  let prevCmd = cmd;
-  let numSubs = 0;
-  do {
-    prevCmd = cmd;
-    for (const varname of Object.keys(substitute)) {
-      const place = '${' + varname + '}';
-      const subs = substitute[varname];
-      if (!cmd.includes(place))
-        continue;
-      if (subs === undefined)
-        throw new InstantiationError(`Could not substitute var "${varname}"`);
-      cmd = cmd.replace(place, subs);
-      ++numSubs;
-    }
-    log.assert(numSubs < 10, `Did ${numSubs} for single command: ${cmd}`);
-  } while (cmd !== prevCmd);
-  return cmd;
+  return cmd.replace(/\$\{([a-zA-Z]+)\}/g, (_, varname) => {
+    if (!SUBSTITUTE_VARS.includes(varname))
+      throw new ParamsError(`Unexpected variable "${varname}"`);
+    const sub = substitute[varname] as string|undefined;
+    if (!sub)
+      throw new SubstituteError(`Could not substitute var "${varname}"`);
+    return sub;
+  });
+}
+
+async function checkCondition(params: Params, context: QcfgTaskContext):
+    Promise<QcfgTaskContext|undefined> {
+  const when = params.when || {};
+  const newContext = {...context, substitute: {...context.substitute}};
+  if (Object.keys(when).length > 1)
+    throw new ParamsError(
+        'Only one property can be defined for \'when\' clause');
+  if (when.fileExists) {
+    if (!context.workspaceFolder)
+      throw new ParamsError(
+          '"fileExists" can only be checked in context of workspace folder');
+    let globMatches = false;
+    glob(
+        when.fileExists, {cwd: context.workspaceFolder.uri.path},
+        (error, matches) => {
+          if (error)
+            throw new ParamsError(
+                `Could not glob for "${when.fileExists}": ${error.message}`);
+          globMatches = true;
+          newContext.substitute.whenFile = matches[0];
+        });
+    if (!globMatches)
+      return;
+    return newContext;
+  }
+  else if (when.fileMatches) {
+    throw new ParamsError('TODO: when.fileMatches not implemented yet');
+  }
+  return newContext;
 }
 
 function instantiateTask(
@@ -127,23 +169,15 @@ function instantiateTask(
   if (wsFolders.length === 1 || !editor) {
     wsFolder = wsFolders[0];
   } else {
-    // TODO: handle correctly
     wsFolder =
         fileUtils.getDocumentRootThrowing(editor.document).workspaceFolder;
   }
   const environ = {QCFG_VSCODE_PORT: String(remoteControl.port)};
-  // const procExec = new vscode.ProcessExecution(
-  //     'bash-with-sleep.sh', ['/bin/bash', '-c', substituteVars(params.command)],
-  //     {cwd: params.cwd, env: environ});
   const shellExec = new vscode.ShellExecution(
       substituteVars(params.command, context.substitute),
       {cwd: params.cwd, env: environ});
   const task = new Task(
       def, wsFolder, label, 'qcfg', shellExec, params.problemMatchers || []);
-  // const shellExec =
-  //     new vscode.ShellExecution(params.command, {cwd: '${workspaceFolder}'});
-  // const task = new Task(
-  //     def, label, 'qcfg', shellExec, params.problemMatchers || []);
   task.presentationOptions = {
     focus: params.reveal === Reveal.Focus,
     reveal:
@@ -159,19 +193,49 @@ function instantiateTask(
   return task;
 }
 
-function fetchQcfgTasks(): QcfgTask[] {
+function handleError(label: string, err: any) {
+  if (err instanceof SubstituteError)
+    log.debug(`Error substituting variables in task "${label}": ${err.message}`);
+  else if (err instanceof ParamsError)
+    log.warn(`Error in parameters for task "${label}": ${err.message}`);
+  else
+    throw err;
+}
+
+interface ValidationResult {
+  label: string;
+  params: Params;
+  context: QcfgTaskContext;
+}
+
+async function validateParams(
+    label: string, params: Params,
+    context: QcfgTaskContext): Promise<ValidationResult|undefined> {
+  try {
+    const newContext = await checkCondition(params, context);
+    if (newContext)
+      return {label, params, context: newContext};
+  }
+  catch (error) {
+    handleError(label, error);
+  }
+}
+
+async function fetchQcfgTasks(): Promise<QcfgTask[]> {
   const conf = vscode.workspace.getConfiguration('qcfg');
   const globalTasks: ParamsSet = conf.get('tasks.global', {});
   const workspaceTasks: ParamsSet = conf.get('tasks.workspace', {});
-  const all =  {...globalTasks, ...workspaceTasks};
+  const all = {...globalTasks, ...workspaceTasks};
   const context = new QcfgTaskContext();
-  return mapWithThrow(
-      Object.entries(all),
+  const validationPromises = Object.entries(all).map(
       ([label, params]) =>
-          new QcfgTask(label, params, context, (label in workspaceTasks)),
-      ([label, _], err: Error) => {
-        log.debug(`Could not instanatiate task ${label}: ${err.message}`);
-      });
+          validateParams(label, expandparamsOrCmd(params), context));
+  const validResults = filterNonNull(await Promise.all(validationPromises));
+  return mapWithThrow(
+      validResults,
+      res => new QcfgTask(
+          res.label, res.params, res.context, (res.label in workspaceTasks)),
+      (res, error) => handleError(res.label, error));
 }
 
 let lastBuildTask: VscodeTask|undefined;
@@ -206,33 +270,54 @@ class VscodeTask implements dialog.ListSelectable {
     return this.task.group === vscode.TaskGroup.Build;
   }
 
-  protected tags(): string[] {
+  protected isFromWorkspace() {
+    return this.task.source === 'Workspace';
+  }
+
+  protected prefixTags(): string {
+    let res = '';
+    if (this.isFromWorkspace())
+      res += '$(home)';
+    else
+      res += '     ';
+    res += '      ';
+    return res;
+  }
+
+  protected suffixTags(): string[] {
     const tags: string[] = [];
     if (this.isBuild())
-      tags.push('build');
-    if (this.task.source === 'Workspace')
-      tags.push('workspace');
+      tags.push('$(tools)');
     if (this.task.isBackground)
-      tags.push('background');
+      tags.push('$(clock)');
     return tags;
+  }
+
+  fullName() {
+    const task = this.task;
+    let fullName = task.name;
+    if (task.source && task.source !== 'Workspace')
+      fullName = `${task.source}: ${fullName}`;
+    return fullName;
   }
 
   toQuickPickItem() {
     const task = this.task;
-    let label = task.name;
-    if (task.source && task.source !== 'Workspace')
-      label = `${task.source}: ${label}`;
-    const scope = (task.scope && task.scope !== vscode.TaskScope.Global &&
-                   task.scope !== vscode.TaskScope.Workspace) ?
-        task.scope as vscode.WorkspaceFolder :
-        undefined;
-    if (scope && task.scope !== currentWorkspaceFolder())  // workspace folder
-      label = `${label} (${scope.name})`;
-      return {label, description: this.tags().join(', ')};
+    const item: vscode.QuickPickItem = {label: this.prefixTags() + this.fullName()};
+    if (task.scope && task.scope !== vscode.TaskScope.Global &&
+        task.scope !== vscode.TaskScope.Workspace) {
+      const folder = task.scope as vscode.WorkspaceFolder;
+      if (folder !== currentWorkspaceFolder())
+        item.description = folder.name;
+    }
+    const tags = this.suffixTags();
+    if (tags)
+      item.label += '      ' + tags.join('  ');
+    return item;
   }
 
   toPersistentLabel() {
-    return this.toQuickPickItem().label;
+    return this.fullName();
   }
 
   protected taskRun: TaskRun;
@@ -247,10 +332,13 @@ function expandparamsOrCmd(paramsOrCmd: Params | string): Params
 
 class QcfgTask extends VscodeTask{
   constructor(
-      public label: string, paramsOrCmd: Params|string,
-      context: QcfgTaskContext, private fromWorkspace?: boolean) {
-    super(instantiateTask(label, expandparamsOrCmd(paramsOrCmd), context));
-    this.params = expandparamsOrCmd(paramsOrCmd);
+      public label: string, private params: Params, context: QcfgTaskContext,
+      private fromWorkspace = true) {
+    super(instantiateTask(label, params, context));
+  }
+
+  protected isFromWorkspace() {
+    return this.fromWorkspace;
   }
 
   async run() {
@@ -314,21 +402,11 @@ class QcfgTask extends VscodeTask{
         break;
     }
   }
-
-  protected tags(): string[] {
-    const tags = super.tags();
-    if (this.fromWorkspace)
-      tags.push('workspace');
-    return tags;
-  }
-
-  private params: Params;
 }
 
 async function showTasks() {
-  const qcfgTasks = fetchQcfgTasks();
-
-  const rawVscodeTasks = await vscode.tasks.fetchTasks();
+  const [qcfgTasks, rawVscodeTasks] =
+      await Promise.all([fetchQcfgTasks(), vscode.tasks.fetchTasks()]);
   const vscodeTasks = rawVscodeTasks.map(task => new VscodeTask(task));
   const allTasks = [...qcfgTasks, ...vscodeTasks];
   const anyTask = await dialog.selectObjectFromListMru(allTasks, 'tasks');
@@ -339,9 +417,9 @@ async function showTasks() {
   anyTask.run();
 }
 
-function runQcfgTask(name: string)
+async function runQcfgTask(name: string)
 {
-  const tasks = fetchQcfgTasks();
+  const tasks = await fetchQcfgTasks();
   for (const task of tasks) {
     if (name === task.label) {
       task.run();

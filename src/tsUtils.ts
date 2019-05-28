@@ -21,6 +21,10 @@ export function mapNonNull<T, V>(
       .map(x => x!);
 }
 
+export function filterNonNull<T>(array: Array<T|null|undefined>): T[] {
+  return array.filter(x => (x !== null && x !== undefined)).map(x => x!);
+}
+
 export function mapWithThrow<T, V>(
     array: T[], func: (elem: T) => V,
     handler?: (elem: T, err: Error) => (void)): V[] {
@@ -35,4 +39,10 @@ export function mapWithThrow<T, V>(
     }
   }
   return res;
+}
+
+export function concatArrays<T>(...arrays: T[][]): T[] {
+  if (arrays.length === 0)
+    return [];
+  return arrays[0].concat(...arrays.slice(1));
 }

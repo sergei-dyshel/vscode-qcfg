@@ -6,7 +6,7 @@ import { Position, TextDocument, TextEditor, ViewColumn, window, workspace } fro
 import { Logger, str } from './logging';
 import { setTimeoutPromise } from './nodeUtils';
 import { getActiveTextEditor, registerCommand } from './utils';
-import { mapNonNull } from './tsUtils';
+import { filterNonNull } from './tsUtils';
 
 const log = Logger.create('history');
 let extContext: vscode.ExtensionContext;
@@ -363,8 +363,8 @@ class History {
   }
 
   load(savedHistory: History.Saved) {
-    this.backward =
-        mapNonNull(savedHistory, savedPoint => Point.fromSaved(savedPoint));
+    this.backward = filterNonNull(
+        savedHistory.map(savedPoint => Point.fromSaved(savedPoint)));
   }
 
   private log: Logger;

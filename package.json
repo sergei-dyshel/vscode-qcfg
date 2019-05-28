@@ -335,6 +335,20 @@
                         "type": "string"
                       }
                     ]
+                  },
+                  "when": {
+                    "type": "object",
+                    "description": "Condition when task is valid",
+                    "properties": {
+                      "fileExists": {
+                        "type": "string",
+                        "description": "File exists of given glob pattern"
+                      },
+                      "fileMatches": {
+                        "type": "string",
+                        "description": "Current file matches glob pattern"
+                      }
+                    }
                   }
                 },
                 "required": [
@@ -418,6 +432,20 @@
                         "type": "string"
                       }
                     ]
+                  },
+                  "when": {
+                    "type": "object",
+                    "description": "Condition when task is valid",
+                    "properties": {
+                      "fileExists": {
+                        "type": "string",
+                        "description": "File exists of given glob pattern"
+                      },
+                      "fileMatches": {
+                        "type": "string",
+                        "description": "Current file matches glob pattern"
+                      }
+                    }
                   }
                 },
                 "required": [
@@ -534,18 +562,22 @@
   },
   "dependencies": {
     "clipboardy": "^1.2.3",
+    "glob": "^7.1.4",
+    "minimatch": "^3.0.4",
     "node-loader": "^0.6.0",
+    "re2": "^1.8.4",
     "shlex": "^1.0.3",
     "superstring": "^2.3.4",
     "tree-sitter": "^0.13.23",
     "tree-sitter-cpp": "^0.13.11",
     "tree-sitter-python": "^0.13.6",
     "tree-sitter-typescript": "^0.13.6",
-    "typescript-collections": "^1.1.4",
-    "re2": "^1.8.4"
+    "typescript-collections": "^1.1.4"
   },
   "devDependencies": {
     "@types/clipboardy": "^1.1.0",
+    "@types/glob": "^7.1.1",
+    "@types/minimatch": "^3.0.3",
     "@types/mocha": "^2.2.42",
     "@types/node": "^8.10.39",
     "deepmerge": "^3.1.0",
