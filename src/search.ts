@@ -31,7 +31,8 @@ async function searchTodos() {
       'patterns=\'TODO|TEMP|XXX|FIXME\' git-diff-todo.sh',
       {cwd: folder.uri.fsPath});
   const res = await subproc.wait();
-  setLocations(parseLocations(res.stdout, folder.uri.fsPath));
+  setLocations(
+      'TODO|TEMP|XXX|FIXME', parseLocations(res.stdout, folder.uri.fsPath));
 }
 
 // TODO: move to utils
@@ -51,7 +52,7 @@ async function searchWord(panel: boolean)
   const query: TextSearchQuery = {pattern: word, isWordMatch: true};
   const parsedLocations = await searchInFiles(query);
   if (panel)
-    setLocations(parsedLocations, true /* reveal */);
+    setLocations(`Word "${word}"`, parsedLocations, true /* reveal */);
   else
     peekLocations(
         editorCurrentLocation(editor),
@@ -74,9 +75,10 @@ async function searchStructField()
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
-      registerCommand('qcfg.search.word', () => searchWord(false /* peek */)),
       registerCommand(
-          'qcfg.search.word.sidebar', () => searchWord(true /* panel */)),
+          'qcfg.search.word.peek', () => searchWord(false /* peek */)),
+      registerCommand(
+          'qcfg.search.word.panel', () => searchWord(true /* panel */)),
       registerCommand('qcfg.search.todos', searchTodos),
       registerCommand('qcfg.search.structField', searchStructField));
 }

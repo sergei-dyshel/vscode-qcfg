@@ -1,5 +1,7 @@
 'use strict';
 
+import { MultiDictionary } from "typescript-collections";
+
 export function mapObject<V, R>(
   obj: {[key: string]: V}, func: (v: V) => R): {[key: string]: R} {
 const res: {[key: string]: R} = {};
@@ -56,6 +58,15 @@ export function upcastArray<B, T extends B>(arr: B[]): T[] {
   return arr as T[];
 }
 
+export function removeFirstFromArray<T>(array: T[], elem: T): boolean
+{
+  const index = array.indexOf(elem);
+  if (index === -1)
+    return false;
+  array.splice(index, 1);
+  return true;
+}
+
 export function callIfNonNull<R>(func: (() => R)|undefined): R|undefined;
 export function callIfNonNull<T, R>(
     func: ((_: T) => R)|undefined, _: T): R|undefined;
@@ -65,4 +76,12 @@ export function callIfNonNull(func: any, ...args: any[]) {
   if (func)
     return func(...args);
   return;
+}
+
+export function groupBy<K, T>(
+    array: T[], keyFunc: (_: T) => K): MultiDictionary<K, T> {
+  const dict = new MultiDictionary<K, T>();
+  for (const elem of array)
+    dict.setValue(keyFunc(elem), elem);
+  return dict;
 }

@@ -2,10 +2,13 @@
 
 import * as vscode from 'vscode';
 import { TreeItem, ProviderResult, Uri } from 'vscode';
-import { callIfNonNull } from './tsUtils';
+import { callIfNonNull, removeFirstFromArray } from './tsUtils';
 import { Logger } from './logging';
+import { registerCommand } from './utils';
 
 const log = Logger.create('treeView');
+
+export const TREE_ITEM_REMOVABLE_CONTEXT = 'removable';
 
 export function activate(context: vscode.ExtensionContext) {
   const opts: vscode.TreeViewOptions<TreeNode> = {
@@ -15,6 +18,7 @@ export function activate(context: vscode.ExtensionContext) {
   treeView = vscode.window.createTreeView('qcfgTreeView', opts);
   context.subscriptions.push(
       treeView,
+      registerCommand('qcfg.treeView.removeNode', removeNode),
       treeView.onDidExpandElement(
           (event: vscode.TreeViewExpansionEvent<TreeNode>) => {
             callIfNonNull(event.element.onDidExpand, event.element);
@@ -47,6 +51,8 @@ export interface TreeNode {
 
 export interface TreeProvider {
   getTrees(): ProviderResult<TreeNode[]>;
+  getMessage?(): string | vscode.MarkdownString | undefined;
+  removeNode?(node: TreeNode);
   onDidChangeSelection?(nodes: TreeNode[]);
   onDidChangeVisibility?(visible: boolean);
 }
@@ -54,6 +60,8 @@ export interface TreeProvider {
 export function setProvider(provider: TreeProvider) {
   // TODO: run onUnset method of current provider
   currentProvider = provider;
+  if (provider.getMessage)
+    treeView.message = provider.getMessage();
   onChangeEmitter.fire();
 }
 
@@ -95,9 +103,40 @@ export class StaticTreeNode implements TreeNode {
     this.treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
   }
 
+  addChildren(children: StaticTreeNode[]) {
+    for (const child of children)
+      this.addChild(child);
+  }
+
+  sortChildren(cmpFunc?: StaticTreeNode.Compare) {
+    StaticTreeNode.sortNodes(this.children_, cmpFunc);
+  }
+
+  sortChildrenRecursively(cmpFunc?: StaticTreeNode.Compare) {
+    for (const child of this.children)
+      child.sortChildrenRecursively(cmpFunc);
+    this.sortChildren(cmpFunc);
+  }
+
+  remove() {
+    const parent = this.parent;
+    this.parent_ = undefined;
+    if (parent)
+      log.assert(removeFirstFromArray(parent.children_, this));
+    if (!parent)
+      log.assertNonNull(
+          log.assertNonNull(currentProvider).removeNode,
+          'Static tree provider must provide \'removeNode\' to handle root removal')(
+          this);
+    onChangeEmitter.fire(parent);
+  }
+
   readonly treeItem: TreeItem;
   get children(): ReadonlyArray<StaticTreeNode> { return this.children_; }
   get parent(): StaticTreeNode | undefined { return this.parent_; }
+  allowRemoval() {
+    this.treeItem.contextValue = TREE_ITEM_REMOVABLE_CONTEXT ;
+  }
 
   // interface implementation
   getTreeItem() { return this.treeItem; }
@@ -106,6 +145,24 @@ export class StaticTreeNode implements TreeNode {
 
   private children_: StaticTreeNode[] = [];
   private parent_?: StaticTreeNode;
+}
+
+export namespace StaticTreeNode {
+  export type Compare = (a: StaticTreeNode, b: StaticTreeNode) => number;
+
+  export function sortNodes(nodes: StaticTreeNode[], cmpFunc?: Compare) {
+    nodes.sort(
+        (cmpFunc ||
+        ((a, b) =>
+              ((a.treeItem.label || '').localeCompare(b.treeItem.label || '')))));
+  }
+
+  export function sortNodesRecursively(nodes: StaticTreeNode[], cmpFunc?: Compare)
+  {
+    for (const node of nodes)
+      node.sortChildrenRecursively(cmpFunc);
+    sortNodes(nodes, cmpFunc);
+  }
 }
 
 // private
@@ -128,6 +185,18 @@ const treeDataProvider: vscode.TreeDataProvider<TreeNode> = {
     return node.getParent();
   }
 };
+
+function removeNode(...args: any[]) {
+  const node = log.assertNonNull(args[0]) as TreeNode;
+  const provider = log.assertNonNull(currentProvider);
+  if (node instanceof StaticTreeNode)
+    node.remove();
+  else
+    log.assertNonNull(
+        provider.removeNode,
+        'TreeProvider with removable nodes must provide removeNode method')(
+        node);
+}
 
 let treeView: vscode.TreeView<TreeNode>;
 let currentProvider: TreeProvider | undefined;

@@ -52,6 +52,15 @@ function stringifyObject(x: object): string {
     // TextEditor
     return stringifyTextEditor(x as vscode.TextEditor);
   }
+  else if (x instanceof vscode.Uri) {
+    if (x.scheme === 'file')
+      return x.fsPath;
+    else
+      return x.toString();
+  }
+  else if (x instanceof vscode.Location) {
+    return `<${str(x.uri)}${str(x.range)}>`;
+  }
   else if (x instanceof vscode.Position) {
     const pos = x as vscode.Position;
     return `(${pos.line},${pos.character})`;
@@ -61,8 +70,9 @@ function stringifyObject(x: object): string {
     return `${str(sel.anchor)}->${str(sel.active)}`;
   }
   else if (x instanceof vscode.Range) {
-    const range = x as vscode.Range;
-    return `${str(range.start)}..${str(range.end)}`;
+    if (x.start.isEqual(x.end))
+      return stringifyObject(x.start);
+    return `[${str(x.start)}..${str(x.end)}]`;
   }
   else if ('row' in x && 'column' in x) {
     // treeSitter.Point

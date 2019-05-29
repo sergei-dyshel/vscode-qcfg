@@ -1,0 +1,40 @@
+{
+    "contributes": {
+        "commands": [
+            {
+                "command": "qcfg.treeView.removeNode",
+                "title": "qcfg: Remove tree view entry",
+                "icon": {
+                    "dark": "icons/remove-dark.svg",
+                    "light": "icons/remove-dark.svg"
+                }
+            }
+        ],
+        "viewsContainers": {
+            "activitybar": [
+            {
+                "id": "qcfg-views-container",
+                "title": "Qcfg Views Container",
+                "icon": "icons/view-container.png"
+            }
+            ]
+        },
+        "views": {
+            "qcfg-views-container": [
+            {
+                "id": "qcfgTreeView",
+                "name": "Qcfg tree view"
+            }
+            ]
+        },
+        "menus": {
+            "view/item/context": [
+                {
+                    "command": "qcfg.treeView.removeNode",
+                    "when": "view == qcfgTreeView && viewItem == removable",
+                    "group": "inline"
+                }
+            ]
+        }
+    }
+}

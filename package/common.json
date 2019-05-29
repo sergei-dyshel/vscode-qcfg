@@ -163,23 +163,6 @@
         }
       }
     },
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "qcfg-views-container",
-          "title": "Qcfg Views Container",
-          "icon": "icons/view-container.png"
-        }
-      ]
-    },
-    "views": {
-      "qcfg-views-container": [
-        {
-          "id": "qcfgTreeView",
-          "name": "Qcfg tree view"
-        }
-      ]
-    },
     "problemMatchers": [
       {
         "name": "e8build",

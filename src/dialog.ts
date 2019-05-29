@@ -2,6 +2,7 @@
 
 import * as vscode from 'vscode';
 import {window, Uri, QuickPickItem} from 'vscode';
+import { removeFirstFromArray } from './tsUtils';
 
 // export function selectFromList<T extends QuickPickItem>(
 //     items: T[], options?: vscode.QuickPickOptions): Thenable<T|undefined> {
@@ -38,10 +39,8 @@ export async function inputWithHistory(persistentKey: string):
         const active = qp.activeItems[0];
         if ('detail' in active)
           return;
-        const idx = qpItems.indexOf(active);
-        if (idx === -1)
+        if (!removeFirstFromArray(qpItems, active))
           return;
-        qpItems.splice(idx, 1);
         extContext.globalState.update(
             persistentKey, qpItems.map((item) => item.label));
         const newItems = Object.assign([], qpItems);

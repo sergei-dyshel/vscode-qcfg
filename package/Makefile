@@ -1,4 +1,4 @@
-deps := common tasks alternate treeSitter autoSync editing
+deps := common tasks alternate treeSitter autoSync editing treeView
 deps_files := $(patsubst %,$(d)/%.json,$(deps))
 json_merger := npx json-merger --pretty \
 	--error-on-file-not-found --error-on-ref-not-found --output
