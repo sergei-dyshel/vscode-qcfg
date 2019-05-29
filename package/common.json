@@ -46,8 +46,16 @@
         "title": "qcfg: Open gtags definition"
       },
       {
-        "command": "qcfg.search.word",
-        "title": "qcfg: Search current word in workspace"
+        "command": "qcfg.search.word.peek",
+        "title": "qcfg: Search current word in workspace (peek)"
+      },
+      {
+        "command": "qcfg.search.word.panel",
+        "title": "qcfg: Search current word in workspace (panel)"
+      },
+      {
+        "command": "qcfg.search.todos",
+        "title": "qcfg: search ToDos (TODO:)"
       },
       {
         "command": "qcfg.search.structField",
@@ -221,9 +229,9 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "webpack --mode production",
+    "vscode:prepublish": "make package.json && webpack --mode production",
     "tsc-compile": "tsc -p .",
-    "compile": "webpack --mode none",
+    "compile": "make package.json && webpack --mode none",
     "tsc-watch": "tsc -watch -p ./",
     "watch": "webpack --mode none --watch",
     "postinstall": "node ./node_modules/vscode/bin/install",

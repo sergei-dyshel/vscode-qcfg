@@ -46,3 +46,23 @@ export function concatArrays<T>(...arrays: T[][]): T[] {
     return [];
   return arrays[0].concat(...arrays.slice(1));
 }
+
+export function upcastReadonlyArray<B, T extends B>(arr: ReadonlyArray<B>):
+    ReadonlyArray<T> {
+  return arr as ReadonlyArray<T>;
+}
+
+export function upcastArray<B, T extends B>(arr: B[]): T[] {
+  return arr as T[];
+}
+
+export function callIfNonNull<R>(func: (() => R)|undefined): R|undefined;
+export function callIfNonNull<T, R>(
+    func: ((_: T) => R)|undefined, _: T): R|undefined;
+export function callIfNonNull<T1, T2, R>(
+    func: ((_: T1, __: T2) => R)|undefined, _: T1, __: T2): R|undefined;
+export function callIfNonNull(func: any, ...args: any[]) {
+  if (func)
+    return func(...args);
+  return;
+}

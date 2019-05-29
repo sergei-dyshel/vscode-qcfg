@@ -118,17 +118,21 @@ function onDidChangeTextEditorSelection(
 
 function onDidChangeTextDocument(event: vscode.TextDocumentChangeEvent)
 {
-  event.contentChanges.sort((a, b) => (a.rangeOffset - b.rangeOffset));
+  const eventCopy: vscode.TextDocumentChangeEvent = {
+    ...event,
+    contentChanges: [...event.contentChanges]
+  };
+  eventCopy.contentChanges.sort((a, b) => (a.rangeOffset - b.rangeOffset));
   for (const history of histories)
-    history.fixAfterChange(event);
-  if (event.contentChanges.length > 1)
+    history.fixAfterChange(eventCopy);
+  if (eventCopy.contentChanges.length > 1)
     return;
   const editor = window.activeTextEditor;
   if (!editor)
     return;
-  if (event.document !== editor.document)
+  if (eventCopy.document !== editor.document)
     return;
-  log.debug(`Edited ${str(editor.document)}${event.contentChanges[0].range}`);
+  log.debug(`Edited ${str(editor.document)}${eventCopy.contentChanges[0].range}`);
 }
 
 function getHistory(viewColumn: ViewColumn): History {

@@ -19,8 +19,9 @@ import * as windowState from './windowState';
 import * as search from './search';
 import * as colorTheme from './colorTheme';
 import * as taskRunner from './taskRunner';
-// import * as history from './history';
+import * as history from './history';
 import * as fuzzySearch from './fuzzySearch';
+import * as treeView from './treeView';
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('Extension active');
@@ -42,11 +43,12 @@ export function activate(context: vscode.ExtensionContext) {
     search.activate(context);
     colorTheme.activate(context);
     taskRunner.activate(context);
-    // history.activate(context);
+    history.activate(context);
     fuzzySearch.activate(context);
+    treeView.activate(context);
 }
 
 // this method is called when your extension is deactivated
 export async function deactivate() {
-  // await history.deactivate();
+  await history.deactivate();
 }
