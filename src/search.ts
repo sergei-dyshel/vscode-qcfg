@@ -19,7 +19,7 @@ async function searchInFiles(query: TextSearchQuery) {
         for (const range of ranges)
           locations.push({
             location: new vscode.Location(match.uri, range),
-            text: match.preview.text.trim()
+            text: match.preview.text
           });
       });
   return locations;
@@ -43,7 +43,8 @@ function editorCurrentLocation(editor: vscode.TextEditor) {
 // TODO: move to utils
 function peekLocations(current: Location, locations: Location[]) {
   return vscode.commands.executeCommand(
-      'editor.action.showReferences', current.uri, current.range, locations);
+      'editor.action.showReferences', current.uri, current.range.start,
+      locations);
 }
 
 async function searchWord(panel: boolean)
@@ -54,7 +55,7 @@ async function searchWord(panel: boolean)
   if (panel)
     setLocations(`Word "${word}"`, parsedLocations, true /* reveal */);
   else
-    peekLocations(
+    await peekLocations(
         editorCurrentLocation(editor),
         parsedLocations.map(parsedLoc => parsedLoc.location));
 }

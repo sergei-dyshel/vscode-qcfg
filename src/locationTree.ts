@@ -12,7 +12,7 @@ import { Logger, str } from './logging';
 const log = Logger.create('locationTree');
 
 const DEFAULT_PARSE_REGEX =
-    /^(?<file>.+?):(?<line>\d+):((?<column>\d+):)?(?<text>.*$)/;
+    /^(?<file>.+?):(?<line>\d+):((?<column>\d+):)? (?<text>.*$)/;
 
 export interface ParsedLocation {
   location: Location;
@@ -39,7 +39,7 @@ export function parseLocation(line: string, base?: string): ParsedLocation|
       Uri.file(path.resolve(base || '', groups.file)),
       new vscode.Position(
           Number(groups.line) - 1, Number(groups.column || 1) - 1));
-  const text = groups.text ? groups.text.trim() : "";
+  const text = groups.text ? groups.text : "";
   return {location, text};
 }
 
@@ -159,8 +159,9 @@ namespace TreeBuilder {
 
 class DirNode extends StaticTreeNode {
   constructor(dir: string, label: string) {
+    super(label);
     const uri = Uri.file(dir);
-    super(uri);
+    this.treeItem.resourceUri = uri;
     this.treeItem.iconPath = vscode.ThemeIcon.Folder;
     this.treeItem.label = label;
     this.treeItem.id = uri.fsPath;
@@ -170,7 +171,8 @@ class DirNode extends StaticTreeNode {
 
 class FileNode extends StaticTreeNode {
   constructor(uri: Uri) {
-    super(uri);
+    super("");
+    this.treeItem.resourceUri = uri;
     this.treeItem.iconPath = vscode.ThemeIcon.File;
     this.allowRemoval();
     this.treeItem.id = uri.fsPath;
@@ -179,10 +181,17 @@ class FileNode extends StaticTreeNode {
 
 class LocationNode extends StaticTreeNode {
   constructor(parsedLoc: ParsedLocation) {
-    super(parsedLoc.text || "");
+    const text = log.assertNonNull(parsedLoc.text);
+    const trimOffset = text.length - text.trimLeft().length;
+    super(log.assertNonNull(text.trim()));
     this.location = parsedLoc.location;
     this.allowRemoval();
     this.treeItem.id = str(this.location);
+    const label = this.treeItem.label as vscode.TreeItemLabel;
+    label.highlights = [[
+      this.location.range.start.character - trimOffset,
+      this.location.range.end.character - trimOffset
+    ]];
   }
   show() {
     vscode.window.showTextDocument(

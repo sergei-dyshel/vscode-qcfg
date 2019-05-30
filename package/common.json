@@ -113,7 +113,7 @@
         },
         {
                 "key": "alt+r",
-                "command": "qcfg.search.word",
+                "command": "qcfg.search.word.peek",
                 "when": "editorFocus && !findWidgetVisible"
         },
         {

@@ -1,7 +1,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { TreeItem, ProviderResult, Uri } from 'vscode';
+import { TreeItem, TreeItem2, ProviderResult } from 'vscode';
 import { callIfNonNull, removeFirstFromArray } from './tsUtils';
 import { Logger } from './logging';
 import { registerCommand } from './utils';
@@ -86,11 +86,13 @@ export async function revealTree(node?: TreeNode, options?: RevealOptions) {
 }
 
 export class StaticTreeNode implements TreeNode {
-  constructor(labelOrUri: string | Uri) {
-    if (typeof labelOrUri === 'string')
-      this.treeItem = new TreeItem(labelOrUri);
-    else if (labelOrUri instanceof Uri)
-      this.treeItem = new TreeItem(labelOrUri);
+  constructor(label?: string) {
+    if (label)
+      this.treeItem = new TreeItem2({label});
+    else {
+      this.treeItem = new TreeItem2({label: ''});
+      this.treeItem.label = undefined;
+    }
   }
 
   get isRoot() { return this.parent === undefined; }
@@ -131,7 +133,7 @@ export class StaticTreeNode implements TreeNode {
     onChangeEmitter.fire(parent);
   }
 
-  readonly treeItem: TreeItem;
+  readonly treeItem: TreeItem2;
   get children(): ReadonlyArray<StaticTreeNode> { return this.children_; }
   get parent(): StaticTreeNode | undefined { return this.parent_; }
   allowRemoval() {

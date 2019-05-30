@@ -118,6 +118,8 @@ function onDidChangeTextEditorSelection(
 
 function onDidChangeTextDocument(event: vscode.TextDocumentChangeEvent)
 {
+  if (event.document.uri.scheme !== 'file')
+    return;
   const eventCopy: vscode.TextDocumentChangeEvent = {
     ...event,
     contentChanges: [...event.contentChanges]
@@ -132,7 +134,7 @@ function onDidChangeTextDocument(event: vscode.TextDocumentChangeEvent)
     return;
   if (eventCopy.document !== editor.document)
     return;
-  log.debug(`Edited ${str(editor.document)}${eventCopy.contentChanges[0].range}`);
+  log.trace(`Edited ${str(editor.document)}${eventCopy.contentChanges[0].range}`);
 }
 
 function getHistory(viewColumn: ViewColumn): History {
