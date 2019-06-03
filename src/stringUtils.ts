@@ -18,7 +18,11 @@ export function parseNumber(s: string | undefined, default_?: number): number | 
 
 export function buildFuzzyPattern(query: string): string {
   const goodChars = query.replace(/\W/g, '');
-  return goodChars.split('').join('.*') + '.*';
+  return goodChars.split('').join('.*');
+}
+
+export function fuzzyMatch(text: string, query: string): boolean {
+  return text.search(new RegExp(buildFuzzyPattern(query), 'i')) !== -1;
 }
 
 export function buildAbbrevPattern(query: string): string {
@@ -39,6 +43,10 @@ export function buildAbbrevPattern(query: string): string {
                          })
                          .join('');
   return '^' + midPattern + '.*';
+}
+
+export function abbrevMatch(text: string, query: string): boolean {
+  return text.search(new RegExp(buildAbbrevPattern(query))) !== -1;
 }
 
 export function splitWithRemainder(

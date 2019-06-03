@@ -3,6 +3,10 @@
 import * as vscode from 'vscode';
 import * as treeSitter from 'tree-sitter';
 import {workspace} from 'vscode';
+import * as loglevel from 'loglevel';
+import * as callsites from 'callsites';
+import * as sourceMapSupport from 'source-map-support';
+import * as nodjs from './nodejs';
 
 let outputChannel: vscode.OutputChannel;
 
@@ -188,6 +192,12 @@ export class Logger {
   assertNull<T>(val: T | undefined | null, ...args) {
     this.assert(val === undefined || val === null, ...args);
   }
+
+  assertInstanceOf<T extends B, B>(
+      value: B, class_: {new(...args: any[]): T}, ...args): T {
+    this.assert(value instanceof class_, ...args);
+    return value as T;
+  }
 }
 
 function setLevel(level: LogLevel) {
@@ -198,6 +208,40 @@ function setLevel(level: LogLevel) {
 }
 
 let log: Logger;
+
+// TODO: rework logging
+export function createLogger1(name: string, instance?: string) {
+  const logger = loglevel.getLogger(name + '.' + instance);
+  const origFactory = logger.methodFactory;
+  const newFactory: loglevel.MethodFactory = (methodName: string, level: loglevel.LogLevelNumbers, loggerName: string) => {
+    const method = origFactory(methodName, level, loggerName);
+    const cssArgs:string[] = [];
+    let prefix = `%c[${name}]`;
+    cssArgs.push('color: blue');
+    if (instance) {
+      prefix += ` %c{${instance}}`;
+      cssArgs.push('color: green');
+    }
+    const newMethod: loglevel.LoggingMethod = (...args: any[]) => {
+      const site = callsites()[1];
+      const webpackPos: sourceMapSupport.Position = {
+        source: site.getFileName()!,
+        line: site.getLineNumber()!,
+        column: site.getColumnNumber()!
+      };
+      const funcname = site.getFunctionName();
+      const origpos = sourceMapSupport.mapSourcePosition(webpackPos);
+      const basename = nodjs.path.basename(origpos.source);
+      const func = ` ./${basename}:${origpos.line}:${origpos.column} @${funcname}`;
+
+      method(...[prefix + func, ...cssArgs, ...args]);
+    };
+    return newMethod;
+  };
+  logger.methodFactory = newFactory;
+  logger.setLevel(logger.getLevel());
+  return logger;
+}
 
 export function activate(context: vscode.ExtensionContext) {
   outputChannel = vscode.window.createOutputChannel('qcfg');

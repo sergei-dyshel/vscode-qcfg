@@ -25,7 +25,7 @@ export class PromiseQueue {
     };
   }
 
-  private trace(...args) {
+  private trace(...args: any[]) {
       log.trace(`PromiseQueue "${(this.name)}":`, ...args);
   }
 

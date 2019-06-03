@@ -157,7 +157,7 @@ namespace WorkspaceGtags {
     const pattern = buildFuzzyPattern(query);
     log.debug(`Searching pattern "${pattern}"`);
     searchProcess = child_process.spawn(
-        'global', ['-i', '-n', '-x', '-d', pattern], spawnOptions);
+        'global', ['-i', '-n', '-x', '-d', pattern + '.*'], spawnOptions);
     reader = readline.createInterface(searchProcess.stdout);
     reader.on('line', onLine);
     reader.on('close', () => {
@@ -259,7 +259,7 @@ async function searchTags1(
     source: string, query: string, regex: string, gtagsDir: string,
     token: vscode.CancellationToken): Promise<TagInfo[]> {
   const proc = new subprocess.Subprocess(
-      `global -d -x -n "${regex}" | head -n100`,
+      `global -d -x -n "${regex}.*" | head -n100`,
       {cwd: gtagsDir, maxBuffer: 1 * 1024 * 1024});
   const log =
       logging.Logger.create(source, {parent: moduleLogger, instance: query});

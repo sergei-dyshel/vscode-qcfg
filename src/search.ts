@@ -1,13 +1,20 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import {Range, TextSearchQuery, Location} from 'vscode';
-import {Logger} from './logging';
-import {getCursorWordContext, currentWorkspaceFolder, registerCommand} from './utils';
-import { ParsedLocation, setLocations, parseLocations } from './locationTree';
+import { CompletionItem, Location, Range, TextSearchQuery } from 'vscode';
+import { selectMultiple } from './dialog';
+import { getCompletionPrefix } from './documentUtils';
+import { availableLanguageConfigs, getLanguageConfig } from './language';
+import { ParsedLocation, parseLocations, setLocations } from './locationTree';
+import { Logger } from './logging';
+import { abbrevMatch } from './stringUtils';
 import { Subprocess } from './subprocess';
+import { currentWorkspaceFolder, getCursorWordContext, registerCommand } from './utils';
 
 const log = Logger.create('search');
+
+const TODO_CATEGORIES =
+    ['TODO', 'XXX', 'TEMP', 'FIXME', 'REFACTOR', 'OPTIMIZE'];
 
 async function searchInFiles(query: TextSearchQuery) {
   const locations: ParsedLocation[] = [];
@@ -27,12 +34,15 @@ async function searchInFiles(query: TextSearchQuery) {
 
 async function searchTodos() {
   const folder = log.assertNonNull(currentWorkspaceFolder());
+  const filterCategories = await selectMultiple(
+      TODO_CATEGORIES, label => ({label}), 'todos', label => label);
+  if (!filterCategories)
+    return;
+  const patterns = filterCategories.join('|');
   const subproc = new Subprocess(
-      'patterns=\'TODO|TEMP|XXX|FIXME\' git-diff-todo.sh',
-      {cwd: folder.uri.fsPath});
+      `patterns=\'${patterns}\' git-diff-todo.sh`, {cwd: folder.uri.fsPath});
   const res = await subproc.wait();
-  setLocations(
-      'TODO|TEMP|XXX|FIXME', parseLocations(res.stdout, folder.uri.fsPath));
+  setLocations(patterns, parseLocations(res.stdout, folder.uri.fsPath));
 }
 
 // TODO: move to utils
@@ -74,8 +84,55 @@ async function searchStructField()
       editor.selection.active, locations);
 }
 
+namespace TodoCompletion {
+  function createItem(label: string, snippet: string) {
+    const item =
+        new vscode.CompletionItem(label, vscode.CompletionItemKind.Snippet);
+    item.insertText = new vscode.SnippetString(snippet);
+    item.sortText = String.fromCharCode(0);
+    return item;
+  }
+
+  function generateItems(
+      languageId: string, category: string, items: CompletionItem[]) {
+    const langCfg = getLanguageConfig(languageId);
+    if (!langCfg)
+      return;
+    const comment = langCfg.comments;
+    if (!comment)
+      return;
+    if (comment.lineComment)
+      items.push(createItem(
+          `${comment.lineComment} ${category}:`,
+          `${comment.lineComment} ${category}: $0`));
+    if (comment.blockComment) {
+      const [start, end] = comment.blockComment;
+      items.push(createItem(
+          `${start} ${category}: ${end}`, `${start} ${category}: $0 ${end}`));
+    }
+  }
+
+  export const provider: vscode.CompletionItemProvider = {
+    provideCompletionItems(
+        document: vscode.TextDocument, position: vscode.Position,
+        _: vscode.CancellationToken,
+        __: vscode.CompletionContext): CompletionItem[] {
+      const prefix = getCompletionPrefix(document, position);
+      if (prefix === '')
+          return [];
+      const items: CompletionItem[] = [];
+      const filtered = TODO_CATEGORIES.filter(cat => (abbrevMatch(cat, prefix)));
+      for (const category of filtered)
+        generateItems(document.languageId, category, items);
+      return items;
+    }
+  };
+}
+
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
+      vscode.languages.registerCompletionItemProvider(
+          availableLanguageConfigs(), TodoCompletion.provider),
       registerCommand(
           'qcfg.search.word.peek', () => searchWord(false /* peek */)),
       registerCommand(

@@ -116,6 +116,7 @@ function onDidChangeTextEditorSelection(
   getHistory(viewCol).updateCurrent(temporary);
 }
 
+// TODO: use functions from documentUtils
 function onDidChangeTextDocument(event: vscode.TextDocumentChangeEvent)
 {
   if (event.document.uri.scheme !== 'file')

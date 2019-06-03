@@ -9,7 +9,7 @@ const log = logging.Logger.create('window');
 function windowStateChanged(state: vscode.WindowState)
 {
   const msg = state.focused ? 'Focused' : 'Unfocused';
-  log.info(msg);
+  log.debug(msg);
 }
 
 export function activate(context: vscode.ExtensionContext) {

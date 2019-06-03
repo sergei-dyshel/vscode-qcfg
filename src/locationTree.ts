@@ -8,6 +8,9 @@ import { MultiDictionary } from "typescript-collections";
 import { filterNonNull, removeFirstFromArray } from './tsUtils';
 import * as path from 'path';
 import { Logger, str } from './logging';
+import { sortDocumentChanges, adjustOffsetRangeAfterChange, rangeToOffset, offsetToRange } from './documentUtils';
+import { isSubPath } from './pathUtils';
+import { NumRange } from './documentUtils';
 
 const log = Logger.create('locationTree');
 
@@ -43,6 +46,11 @@ export function parseLocation(line: string, base?: string): ParsedLocation|
   return {location, text};
 }
 
+export function activate(context: vscode.ExtensionContext) {
+  context.subscriptions.push(
+      vscode.workspace.onDidChangeTextDocument(onDidChangeTextDocument));
+}
+
 export function setLocations(
     message: string, parsedLocations: ParsedLocation[], reveal = true) {
   const dict = new MultiDictionary<Uri, ParsedLocation>();
@@ -60,13 +68,13 @@ export function setLocations(
   const nodes = TreeBuilder.buildDirHierarchy(fileNodes);
   StaticTreeNode.sortNodesRecursively(nodes, (a, b) => {
     if (a instanceof LocationNode && b instanceof LocationNode)
-      return a.location.range.start.line - b.location.range.start.line;
+      return a.line - b.line;
     if (a instanceof DirNode && b instanceof FileNode)
       return -1;
     if (a instanceof FileNode && b instanceof DirNode)
       return 1;
-    return a.treeItem.resourceUri!.fsPath.localeCompare(
-        b.treeItem.resourceUri!.fsPath);
+    return log.assertInstanceOf(a, UriNode)
+        .fsPath.localeCompare(log.assertInstanceOf(b, UriNode).fsPath);
   });
   currentTrees = nodes;
   currentMessage = message;
@@ -113,7 +121,7 @@ namespace TreeBuilder {
   function build(files: FileNode[]): Forest {
     const forest = createForest();
     for (const file of files) {
-      const components = file.treeItem.resourceUri!.fsPath.split(path.sep);
+      const components = file.fsPath.split(path.sep);
       if (components[0] === '')
         components.shift();
       insert(forest, components, file);
@@ -157,25 +165,33 @@ namespace TreeBuilder {
   }
 }
 
-class DirNode extends StaticTreeNode {
-  constructor(dir: string, label: string) {
+class UriNode extends StaticTreeNode {
+  constructor(uri: Uri, label: string) {
     super(label);
-    const uri = Uri.file(dir);
     this.treeItem.resourceUri = uri;
-    this.treeItem.iconPath = vscode.ThemeIcon.Folder;
-    this.treeItem.label = label;
     this.treeItem.id = uri.fsPath;
     this.allowRemoval();
   }
+
+  get uri() { return this.treeItem.resourceUri!; }
+  get fsPath() { return this.uri.fsPath; }
 }
 
-class FileNode extends StaticTreeNode {
+class DirNode extends UriNode {
+  constructor(dir: string, label: string) {
+    const uri = Uri.file(dir);
+    super(uri, label);
+    this.treeItem.iconPath = vscode.ThemeIcon.Folder;
+    this.treeItem.label = label;
+    this.setExpanded();
+  }
+}
+
+class FileNode extends UriNode {
   constructor(uri: Uri) {
-    super("");
-    this.treeItem.resourceUri = uri;
+    super(uri, "");
     this.treeItem.iconPath = vscode.ThemeIcon.File;
-    this.allowRemoval();
-    this.treeItem.id = uri.fsPath;
+    this.setCollapsed();
   }
 }
 
@@ -184,20 +200,46 @@ class LocationNode extends StaticTreeNode {
     const text = log.assertNonNull(parsedLoc.text);
     const trimOffset = text.length - text.trimLeft().length;
     super(log.assertNonNull(text.trim()));
-    this.location = parsedLoc.location;
+    this.uri = parsedLoc.location.uri;
     this.allowRemoval();
-    this.treeItem.id = str(this.location);
+    this.treeItem.id = str(parsedLoc.location);
     const label = this.treeItem.label as vscode.TreeItemLabel;
+    this.line = parsedLoc.location.range.start.line;
     label.highlights = [[
-      this.location.range.start.character - trimOffset,
-      this.location.range.end.character - trimOffset
+      parsedLoc.location.range.start.character - trimOffset,
+      parsedLoc.location.range.end.character - trimOffset
     ]];
+    this.fetchDocument(parsedLoc.location);
   }
-  show() {
-    vscode.window.showTextDocument(
-        this.location.uri, {selection: this.location.range});
+  async show() {
+    const document = await vscode.workspace.openTextDocument(this.uri);
+    const selection = offsetToRange(document, log.assertNonNull(this.offsetRange));
+    vscode.window.showTextDocument(this.uri, {selection});
   }
-  location: Location;
+  private async fetchDocument(location: Location) {
+    const document = await vscode.workspace.openTextDocument(this.uri);
+    this.offsetRange = rangeToOffset(document, location.range);
+  }
+  line: number;
+  uri: Uri;
+  offsetRange?: NumRange;
+}
+
+function onDidChangeTextDocument(event: vscode.TextDocumentChangeEvent) {
+  const document = event.document;
+  const changes = sortDocumentChanges(event);
+  if (!currentTrees || !treeView.isCurrentProvider(provider))
+    return;
+  StaticTreeNode.applyRecursively(currentTrees, node => {
+    if (node instanceof DirNode && isSubPath(node.fsPath, document.fileName))
+      return true;
+    if (node instanceof FileNode && node.fsPath === document.uri.fsPath)
+      return true;
+    if (node instanceof LocationNode)
+      node.offsetRange = adjustOffsetRangeAfterChange(
+          log.assertNonNull(node.offsetRange), changes);
+    return false;
+  });
 }
 
 const provider: TreeProvider = {

@@ -1,14 +1,17 @@
 {
 	"compilerOptions": {
-		"target": "es6",
+		"target": "es2018",
 		"module": "commonjs",
 		"moduleResolution": "node",
 		"outDir": "out",
-		"lib": [ "es2017", "es2018.regexp" ],
+		"lib": [ "es2018" ],
 		"sourceMap": true,
 		"strictNullChecks": true,
 		"noUnusedLocals": true,
-		"noUnusedParameters": true
+		"noUnusedParameters": true,
+		// TODO: enable strict
+		// "strict": true
+		// "noImplicitReturns": true
 	},
 	"exclude": [
 		"node_modules",

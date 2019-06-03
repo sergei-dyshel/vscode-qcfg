@@ -1,7 +1,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { TreeItem, TreeItem2, ProviderResult } from 'vscode';
+import { TreeItem, TreeItem2, ProviderResult, TreeItemCollapsibleState } from 'vscode';
 import { callIfNonNull, removeFirstFromArray } from './tsUtils';
 import { Logger } from './logging';
 import { registerCommand } from './utils';
@@ -102,12 +102,28 @@ export class StaticTreeNode implements TreeNode {
     log.assert(child.isRoot);
     child.parent_ = this;
     this.children_.push(child);
-    this.treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
+    if (this.treeItem.collapsibleState === TreeItemCollapsibleState.None)
+      this.treeItem.collapsibleState = TreeItemCollapsibleState.Collapsed;
+  }
+
+  detachChildren(): StaticTreeNode[] {
+    for (const child of this.children)
+      child.parent_ = undefined;
+    const ret = this.children_;
+    this.children_ = [];
+    return ret;
   }
 
   addChildren(children: StaticTreeNode[]) {
     for (const child of children)
       this.addChild(child);
+  }
+
+  applyRecursively(func: (_: StaticTreeNode) => boolean) {
+    if (!func(this))
+      return;
+    for (const child of this.children_)
+      child.applyRecursively(func);
   }
 
   sortChildren(cmpFunc?: StaticTreeNode.Compare) {
@@ -139,6 +155,12 @@ export class StaticTreeNode implements TreeNode {
   allowRemoval() {
     this.treeItem.contextValue = TREE_ITEM_REMOVABLE_CONTEXT ;
   }
+  setExpanded() {
+    this.treeItem.collapsibleState = TreeItemCollapsibleState.Expanded;
+  }
+  setCollapsed() {
+    this.treeItem.collapsibleState = TreeItemCollapsibleState.Collapsed;
+  }
 
   // interface implementation
   getTreeItem() { return this.treeItem; }
@@ -151,6 +173,12 @@ export class StaticTreeNode implements TreeNode {
 
 export namespace StaticTreeNode {
   export type Compare = (a: StaticTreeNode, b: StaticTreeNode) => number;
+
+  export function applyRecursively(
+      nodes: StaticTreeNode[], func: (_: StaticTreeNode) => boolean) {
+    for (const node of nodes)
+      node.applyRecursively(func);
+  }
 
   export function sortNodes(nodes: StaticTreeNode[], cmpFunc?: Compare) {
     nodes.sort(

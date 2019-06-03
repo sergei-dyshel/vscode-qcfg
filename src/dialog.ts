@@ -127,6 +127,26 @@ export interface ListSelectable {
   toPersistentLabel: () => string;
 }
 
+export async function selectMultiple<T>(
+    items: T[], toQuickPickItem: (x: T) => QuickPickItem, persistentKey: string,
+    toPersistentLabel: (x: T) => string,
+    options?: vscode.QuickPickOptions): Promise<T[]|undefined> {
+  const previouslySelected: string[] =
+      extContext.globalState.get(persistentKey, []);
+  const qpItems =
+      items.map((item) => ({
+                  ...toQuickPickItem(item),
+                  item,
+                  picked: previouslySelected.includes(toPersistentLabel(item))
+                }));
+  const selected =
+      await window.showQuickPick(qpItems, {...options, canPickMany: true});
+  if (selected) {
+    extContext.globalState.update(
+        persistentKey, selected.map(qpItem => toPersistentLabel(qpItem.item)));
+    return selected.map(qpitem => qpitem.item);
+  }
+}
 
 export async function selectObjectFromListMru<T extends ListSelectable>(
     items: T[], persistentKey: string,
