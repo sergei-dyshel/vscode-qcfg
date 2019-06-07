@@ -3,12 +3,12 @@
 import { Dictionary } from 'typescript-collections';
 import * as vscode from 'vscode';
 import { Position, TextDocument, TextEditor, ViewColumn, window, workspace } from 'vscode';
-import { Logger, str } from './logging';
+import { Logger, log, str } from './logging';
 import { setTimeoutPromise } from './nodeUtils';
-import { getActiveTextEditor, registerCommand } from './utils';
+import { getActiveTextEditor } from './utils';
 import { filterNonNull } from './tsUtils';
+import { registerCommandWrapped } from './exception';
 
-const log = Logger.create('history');
 let extContext: vscode.ExtensionContext;
 
 enum TemporaryMode {
@@ -30,8 +30,8 @@ export function activate(context: vscode.ExtensionContext) {
       window.onDidChangeTextEditorViewColumn(onDidChangeTextEditorViewColumn),
       window.onDidChangeActiveTextEditor(onDidChangeActiveTextEditor),
       workspace.onDidChangeTextDocument(onDidChangeTextDocument),
-      registerCommand('qcfg.history.backward', goBackward),
-      registerCommand('qcfg.history.forward', goForward));
+      registerCommandWrapped('qcfg.history.backward', goBackward),
+      registerCommandWrapped('qcfg.history.forward', goForward));
 }
 
 export function deactivate() {
@@ -292,9 +292,11 @@ class History {
   constructor(private viewColumn: ViewColumn) {
     const editor = log.assertNonNull(getVisibleEditor(viewColumn));
     this.current = Point.fromEditor(editor);
-    this.log = Logger.create(
-        'History',
-        {parent: log, instance: `viewColumn=${viewColumn.toString()}`});
+    this.log = new Logger({
+      name: 'viewColumnHistory',
+      parent: log,
+      instance: viewColumn.toString()
+    });
   }
 
   goBackward() {

@@ -1,10 +1,11 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import * as logging from './logging';
+import { log } from './logging';
 import {workspace, commands} from 'vscode';
-
-const log = logging.Logger.create('colorTheme');
+import { colorThemeFiles } from './language';
+import { selectStringFromList } from './dialog';
+import { registerCommandWrapped } from './exception';
 
 const SECTION = 'workbench.colorTheme';
 const MEMENTO_PERSIST_KEY = 'qcfg.colors.persistent';
@@ -89,12 +90,21 @@ async function onConfigurationChanged()
   await setSettingsTheme(persistedTheme);
 }
 
+async function inspectTheme()
+{
+  const themes = Object.keys(colorThemeFiles);
+  const theme = await selectStringFromList(themes);
+  if (theme)
+    vscode.window.showTextDocument(vscode.Uri.file(colorThemeFiles[theme]));
+}
+
 export function activate(context: vscode.ExtensionContext) {
   extContext = context;
   onConfigurationChanged();
   context.subscriptions.push(
       workspace.onDidChangeConfiguration(onConfigurationChanged),
-      commands.registerCommand('qcfg.colors.select', selectWorkspaceTheme),
-      commands.registerCommand('qcfg.colors.persist', persistWorkspaceTheme),
-      commands.registerCommand('qcfg.colors.clear', clearWorkspaceTheme));
+      registerCommandWrapped('qcfg.colors.select', selectWorkspaceTheme),
+      registerCommandWrapped('qcfg.colors.persist', persistWorkspaceTheme),
+      registerCommandWrapped('qcfg.colors.clear', clearWorkspaceTheme),
+      registerCommandWrapped('qcfg.colors.inspect', inspectTheme));
 }

@@ -5,10 +5,7 @@ import * as path from 'path';
 import * as util from 'util';
 import * as fs from 'fs';
 
-import * as logging from './logging';
-
-const log = logging.Logger.create('fileUtils');
-
+import { log } from './logging';
 
 export function getDocumentRoot(document: vscode.TextDocument) {
   const wsPath = vscode.workspace.asRelativePath(document.fileName, true);

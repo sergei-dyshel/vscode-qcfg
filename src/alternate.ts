@@ -4,10 +4,9 @@ import * as vscode from 'vscode';
 import {window, workspace} from 'vscode';
 import * as fileUtils from './fileUtils';
 import * as path from 'path';
-import * as logging from './logging';
+import { log } from './logging';
 import {getActiveTextEditor} from './utils';
-
-const log = logging.Logger.create('alternate');
+import { registerCommandWrapped } from './exception';
 
 interface Mapping {
   [ext: string]: string[];
@@ -25,9 +24,8 @@ async function switchToAlternate() {
   const ext = path.extname(filePath);
   const mapping: Mapping =
       workspace.getConfiguration('qcfg.alternate').get('mapping', {});
-  if (!(ext in mapping))
-    log.fatal(`No alternate mapping configured for ${ext}`);
-  const altExts = mapping[ext];
+  const altExts = log.assertNonNull(
+      mapping[ext], `No alternate mapping configured for ${ext}`);
   const altFiles = altExts.map((ext) => stripExt(filePath) + ext);
   for (const alt of altFiles) {
     const exists = await fileUtils.exists(alt);
@@ -43,6 +41,6 @@ async function switchToAlternate() {
 }
 
 export function activate(context: vscode.ExtensionContext) {
-  context.subscriptions.push(vscode.commands.registerCommand(
+  context.subscriptions.push(registerCommandWrapped(
       'qcfg.alternate.switch', switchToAlternate));
 }

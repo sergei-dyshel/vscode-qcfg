@@ -2,11 +2,7 @@
 
 import * as vscode from 'vscode';
 import * as child_process from 'child_process';
-import * as logging from './logging';
-
-
-const moduleLog =
-    logging.Logger.create('subprocess');
+import {log, Logger} from './logging';
 
 export class ExecResult extends Error {
   constructor(
@@ -44,8 +40,8 @@ export class Subprocess {
     else
       this.process = child_process.execFile(
           command[0], command.slice(1), options, this.callback.bind(this));
-    this.log = logging.Logger.create(
-        'Subprocess', {parent: moduleLog, instance: `pid=${this.process.pid}`});
+    this.log = new Logger(
+        {name: 'Subprocess', parent: log, instance: `pid=${this.process.pid}`});
     this.log.trace(`started command ${command}`);
     this.promise = new Promise<ExecResult>((resolve, reject) => {
       this.waitingContext = {resolve, reject};
@@ -85,7 +81,7 @@ export class Subprocess {
   }
 
   private result?: ExecResult;
-  private log: logging.Logger;
+  private log: Logger;
   private promise: Promise<ExecResult>;
   private waitingContext: {
     resolve: (result: ExecResult) => void,

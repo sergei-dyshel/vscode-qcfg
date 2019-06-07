@@ -1,7 +1,6 @@
 'use strict';
-import * as logging from './logging';
 
-const log = logging.Logger.create('async');
+import { log } from './logging';
 
 type Callback = () => Promise<void>;
 type Resolve = () => void;

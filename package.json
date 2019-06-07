@@ -74,16 +74,24 @@
         "title": "qcfg: Clear workspace color theme"
       },
       {
-        "command": "qcfg.log.debug",
-        "title": "qcfg: Set log level to DEBUG"
+        "command": "qcfg.colors.inspect",
+        "title": "qcfg: Open color theme file"
       },
       {
-        "command": "qcfg.log.info",
-        "title": "qcfg: Set log level to INFO"
+        "command": "qcfg.log.setHandlerLevel.output",
+        "title": "qcfg: Select log level for OUTPUT PANEL handler"
       },
       {
-        "command": "qcfg.log.trace",
-        "title": "qcfg: Set log level to TRACE"
+        "command": "qcfg.log.setHandlerLevel.file",
+        "title": "qcfg: Select log level for FILE handler"
+      },
+      {
+        "command": "qcfg.log.setHandlerLevel.console",
+        "title": "qcfg: Select log level for CONSOLE handler"
+      },
+      {
+        "command": "qcfg.log.show",
+        "title": "qcfg: Show output panel with log"
       },
       {
         "command": "qcfg.history.backward",
@@ -551,6 +559,24 @@
         }
       }
     ],
+    "languages": [
+      {
+        "id": "qcfg-log",
+        "aliases": [
+          "vscode-qcfg log"
+        ],
+        "extensions": [
+          ".vscode-qcfg.log"
+        ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "qcfg-log",
+        "scopeName": "text.log.qcfg-log",
+        "path": "./syntaxes/qcfg-log.tmLanguage.json"
+      }
+    ],
     "viewsContainers": {
       "activitybar": [
         {
@@ -603,7 +629,6 @@
     "clipboardy": "^1.2.3",
     "glob": "^7.1.4",
     "jsonc-parser": "^2.1.0",
-    "loglevel": "^1.6.2",
     "minimatch": "^3.0.4",
     "node-loader": "^0.6.0",
     "re2": "^1.8.4",

@@ -1,11 +1,9 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import * as logging from './logging';
+import { log } from './logging';
 import * as remoteControl from './remoteControl';
 import {parseNumber} from './stringUtils';
-
-const log = logging.Logger.create('terminal');
 
 let nextId = 0;
 

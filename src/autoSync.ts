@@ -3,11 +3,10 @@
 import * as vscode from 'vscode';
 import * as language from './language';
 import * as saveAll from './saveAll';
-import * as logging from './logging';
+import { log } from './logging';
 import * as subprocess from './subprocess';
 import {setTimeoutPromise} from './nodeUtils';
-
-const log = logging.Logger.create('autoSync');
+import { registerCommandWrapped } from './exception';
 
 let enabled = false;
 let status: vscode.StatusBarItem;
@@ -61,6 +60,6 @@ export function activate(context: vscode.ExtensionContext) {
       vscode.workspace.getConfiguration('qcfg').get('autoSync.enabled', false);
   setStatusBar();
   context.subscriptions.push(
-      vscode.commands.registerCommand('qcfg.autoSync.toggle', toggle));
+      registerCommandWrapped('qcfg.autoSync.toggle', toggle));
   context.subscriptions.push(saveAll.onEvent(onSaveAll));
 }

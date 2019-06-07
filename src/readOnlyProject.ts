@@ -1,7 +1,8 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import {window, workspace, commands} from 'vscode';
+import {window, workspace} from 'vscode';
+import { registerCommandWrapped } from './exception';
 
 const MEMENTO_KEY = 'qcfgIsReadOnly';
 
@@ -45,6 +46,6 @@ export function activate(extContext: vscode.ExtensionContext) {
   updateStatus();
 
   context.subscriptions.push(
-      commands.registerCommand('qcfg.toggleReadOnly', toggle),
+      registerCommandWrapped('qcfg.toggleReadOnly', toggle),
       workspace.onDidChangeTextDocument(onDidChangeTextDocument));
 }

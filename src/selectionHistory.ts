@@ -3,13 +3,13 @@
 import * as vscode from 'vscode';
 import {window, workspace} from 'vscode';
 import {TextEditor, Selection} from 'vscode';
-import {Logger} from './logging';
+import {log} from './logging';
 import {Stack} from 'typescript-collections';
-import {registerCommand, getActiveTextEditor} from './utils';
+import {getActiveTextEditor} from './utils';
+import { registerCommandWrapped } from './exception';
 
 type SelectionStack = Stack<Selection[]>;
 
-const log = Logger.create('selectionHistory');
 const history = new Map<TextEditor, SelectionStack>();
 
 function resetByEditor(editor: TextEditor)
@@ -92,5 +92,5 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
       workspace.onDidChangeTextDocument(onDidChangeTextDocument),
       window.onDidChangeTextEditorSelection(onDidChangeTextEditorSelection),
-      registerCommand('qcfg.selection.previous', popSelection));
+      registerCommandWrapped('qcfg.selection.previous', popSelection));
 }

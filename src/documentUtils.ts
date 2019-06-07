@@ -1,8 +1,7 @@
 'use strict';
 
 import { TextDocument, TextDocumentChangeEvent, TextDocumentContentChangeEvent, Range, Position } from 'vscode';
-import { Logger } from './logging';
-const log = Logger.create('search');
+import { log } from './logging';
 
 export class NumRange {
   constructor(readonly start: number, readonly end: number) {

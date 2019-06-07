@@ -2,14 +2,12 @@
 
 import * as vscode from 'vscode';
 import {SymbolKind} from 'vscode';
-import * as logging from './logging';
+import { log } from './logging';
 import * as subprocess from './subprocess';
 
 import {getActiveTextEditor} from './utils';
 import {getDocumentRoot} from './fileUtils';
 import {isLspActive} from './language';
-
-const log = logging.Logger.create('ctags');
 
 interface LanguageConfig {
   lang?: string;

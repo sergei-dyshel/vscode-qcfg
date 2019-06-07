@@ -6,16 +6,14 @@ import * as dialog from './dialog';
 import * as fileUtils from './fileUtils';
 import { getDocumentRoot } from './fileUtils';
 import * as language from './language';
-import * as logging from './logging';
+import { log } from './logging';
 import * as remoteControl from './remoteControl';
 
 import { TaskCancelledError, TaskRun } from './taskRunner';
 import { mapWithThrow, filterNonNull } from './tsUtils';
 import { currentWorkspaceFolder } from './utils';
-// import * as minimatch from 'minimatch';
 import * as glob from 'glob';
-
-const log = logging.Logger.create('tasks');
+import { registerCommandWrapped } from './exception';
 
 export enum Reveal {
   Focus = 'focus',
@@ -432,8 +430,8 @@ async function runQcfgTask(name: string)
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
-      vscode.commands.registerCommand('qcfg.tasks.build.last', runLastBuildTask),
-      vscode.commands.registerCommand('qcfg.tasks.build.default', runDefaultBuildTask),
-      vscode.commands.registerCommand('qcfg.tasks.runQcfg', runQcfgTask),
-      vscode.commands.registerCommand('qcfg.tasks.show', showTasks));
+      registerCommandWrapped('qcfg.tasks.build.last', runLastBuildTask),
+      registerCommandWrapped('qcfg.tasks.build.default', runDefaultBuildTask),
+      registerCommandWrapped('qcfg.tasks.runQcfg', runQcfgTask),
+      registerCommandWrapped('qcfg.tasks.show', showTasks));
 }

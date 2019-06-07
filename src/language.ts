@@ -1,13 +1,11 @@
 'use strict';
 
 import * as lc from 'vscode-languageclient';
-import * as logging from './logging';
+import { log } from './logging';
 import * as nodejs from './nodejs';
 import * as jsoncParser from 'jsonc-parser';
 
 import * as vscode from 'vscode';
-
-const log = logging.Logger.create('lang');
 
 export function activate(_: vscode.ExtensionContext) {
   fetchLangConfigs();
@@ -70,24 +68,27 @@ export function reindex() {
 function fetchLangConfigs()
 {
   for (const ext of vscode.extensions.all) {
+    const json = ext.packageJSON;
     // All vscode default extensions ids starts with "vscode."
-    if (ext.id.startsWith("vscode.") && ext.packageJSON.contributes &&
-        ext.packageJSON.contributes.languages) {
-      // Find language data from "packageJSON.contributes.languages" for the
-      // languageId
-      for (const langData of ext.packageJSON.contributes.languages) {
-        const langId: string = langData.id;
-        if (!langData.configuration) {
-          log.info(`Could not get language config for "${langId}"`);
-          continue;
-        }
-        const langFilePath =
-            nodejs.path.join(ext.extensionPath, langData.configuration);
-        const langConfig: vscode.LanguageConfiguration =
-            jsoncParser.parse(nodejs.fs.readFileSync(langFilePath).toString());
-        langConfigs[langId] = langConfig;
-        log.info(`Got language config for "${langId}"`);
+    if (!json.contributes)
+      continue;
+    for (const themeData of (json.contributes.themes || [])) {
+      const label = themeData.label as string;
+      const fullPath = nodejs.path.join(ext.extensionPath, themeData.path);
+      if (!nodejs.fs.existsSync(fullPath))
+        continue;
+      colorThemeFiles[label] = fullPath;
+    }
+    for (const langData of (json.contributes.languages || [])) {
+      const langId: string = langData.id;
+      if (!langData.configuration) {
+        continue;
       }
+      const langFilePath =
+          nodejs.path.join(ext.extensionPath, langData.configuration);
+      const langConfig: vscode.LanguageConfiguration =
+          jsoncParser.parse(nodejs.fs.readFileSync(langFilePath).toString());
+      langConfigs[langId] = langConfig;
     }
   }
 
@@ -95,6 +96,11 @@ function fetchLangConfigs()
   if (langConfigs.python && langConfigs.python.comments) {
     langConfigs.python.comments.blockComment = undefined;
   }
+
+  log.info('Got language configs for', Object.keys(langConfigs));
+  log.info('Found color theme files for', Object.keys(colorThemeFiles));
 }
 
+/* TODO: move extension parsing to separate file */
 const langConfigs: {[id: string]: vscode.LanguageConfiguration} = {};
+export const colorThemeFiles: {[id: string]: string} = {};

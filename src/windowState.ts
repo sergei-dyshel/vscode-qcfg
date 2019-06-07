@@ -1,10 +1,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
-
-import * as logging from './logging';
-
-const log = logging.Logger.create('window');
+import { log } from './logging';
 
 function windowStateChanged(state: vscode.WindowState)
 {

@@ -1,26 +1,21 @@
 'use strict';
 
-import * as vscode from 'vscode';
-import {window, workspace} from 'vscode';
-
 import * as net from 'net';
 import * as path from 'path';
-
 import * as shlex from 'shlex';
-
-import * as terminal from './terminal';
-import {Logger} from './logging';
+import * as vscode from 'vscode';
+import { window, workspace } from 'vscode';
 import * as fileUtils from './fileUtils';
-import {getActiveTextEditor} from './utils';
-import {parseNumber} from './stringUtils';
-
-const log = Logger.create('remote');
+import { log } from './logging';
+import { parseNumber } from './stringUtils';
+import * as terminal from './terminal';
+import { getActiveTextEditor } from './utils';
+import { handleErrors } from './exception';
 
 export let port = 48123;
 
 async function handleOpen(location: string, folder: string) {
-  if (folder && !path.isAbsolute(folder))
-    log.fatal(`"${folder}" is not absolute path`);
+  log.assert(path.isAbsolute(folder), `"${folder}" is not absolute path`);
   let wsFolder: vscode.WorkspaceFolder | undefined;
   let found = false;
   for (wsFolder of (workspace.workspaceFolders || []))
@@ -90,9 +85,9 @@ function handleCmd(cmd: string) {
 
 export function activate(_context: vscode.ExtensionContext) {
   const server = net.createServer((socket) => {
-    socket.on('data', (data) => {
-      handleCmd(data.toString());
-    });
+    socket.on('data', handleErrors((data) => {
+                handleCmd(data.toString());
+              }));
   });
   server.listen(port, '127.0.0.1');
   server.on('listening', () => {

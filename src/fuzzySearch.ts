@@ -3,11 +3,10 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { Logger } from './logging';
-import { getActiveTextEditor, registerCommand } from './utils';
+import { log } from './logging';
+import { getActiveTextEditor } from './utils';
 import * as history from './history';
-
-const log = Logger.create('fuzzySearch');
+import { registerCommandWrapped } from './exception';
 
 class Item implements vscode.QuickPickItem {
   description: string;
@@ -117,5 +116,5 @@ function showFuzzySearch() {
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
-      registerCommand('qcfg.fuzzySearch', () => showFuzzySearch()));
+      registerCommandWrapped('qcfg.fuzzySearch', () => showFuzzySearch()));
 }

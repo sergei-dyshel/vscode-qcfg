@@ -11,11 +11,10 @@ import * as treeSitterCpp from 'tree-sitter-cpp';
 import {TextBuffer} from 'superstring';
 
 import {trimInner, selectRange, offsetPosition, swapRanges} from './textUtils';
-import {Context, getActiveTextEditor, registerCommand} from './utils';
+import {Context, getActiveTextEditor } from './utils';
 
-import {Logger, str} from './logging';
-
-const log = Logger.create('tree');
+import {log, str} from './logging';
+import { registerCommandWrapped } from './exception';
 
 let status: vscode.StatusBarItem;
 
@@ -448,24 +447,24 @@ export function activate(context: vscode.ExtensionContext) {
       workspace.onDidChangeTextDocument(clearMode),
       window.onDidChangeTextEditorSelection(onDidChangeTextEditorSelection),
       window.onDidChangeActiveTextEditor(clearMode),
-      registerCommand(
+      registerCommandWrapped(
           'qcfg.selection.expand', () => expandSelection(false /* parent */)),
-      registerCommand(
+      registerCommandWrapped(
           'qcfg.selection.selectSuperParent',
           () => expandSelection(true /* superParent */)),
-      registerCommand('qcfg.selection.shrink', shrinkSelection),
-      registerCommand(
+      registerCommandWrapped('qcfg.selection.shrink', shrinkSelection),
+      registerCommandWrapped(
           'qcfg.selection.left', () => selectSibling(Direction.Left)),
-      registerCommand(
+      registerCommandWrapped(
           'qcfg.selection.right', () => selectSibling(Direction.Right)),
-      registerCommand(
+      registerCommandWrapped(
           'qcfg.selection.extendLeft', () => extendSelection(Direction.Left)),
-      registerCommand(
+      registerCommandWrapped(
           'qcfg.selection.extendRight', () => extendSelection(Direction.Right)),
-      registerCommand(
+      registerCommandWrapped(
           'qcfg.selection.swapLeft',
           () => selectSibling(Direction.Left, true /* swap */)),
-      registerCommand(
+      registerCommandWrapped(
           'qcfg.selection.swapRight',
           () => selectSibling(Direction.Right, true /* swap */)));
   status = window.createStatusBarItem();

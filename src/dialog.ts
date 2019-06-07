@@ -96,6 +96,12 @@ export async function selectFromList<T>(
   return;
 }
 
+export async function selectStringFromList(
+    items: string[],
+    options?: vscode.QuickPickOptions): Promise<string|undefined> {
+  return selectFromList(items, label => ({label}), options);
+}
+
 export async function selectFromListMru<T>(
     items: T[], toQuickPickItem: (x: T) => QuickPickItem, persistentKey: string,
     toPersistentLabel: (x: T) => string,

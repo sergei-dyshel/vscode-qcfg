@@ -85,3 +85,13 @@ export function groupBy<K, T>(
     dict.setValue(keyFunc(elem), elem);
   return dict;
 }
+
+export function maxValue<T>(...args: T[]): T {
+  const numArgs = args.map(x => (x as unknown as number));
+  return Math.max(...numArgs) as unknown as T;
+}
+
+export function minValue<T>(...args: T[]): T {
+  const numArgs = args.map(x => (x as unknown as number));
+  return Math.min(...numArgs) as unknown as T;
+}

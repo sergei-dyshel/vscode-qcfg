@@ -3,10 +3,8 @@
 import * as vscode from 'vscode';
 import { TreeItem, TreeItem2, ProviderResult, TreeItemCollapsibleState } from 'vscode';
 import { callIfNonNull, removeFirstFromArray } from './tsUtils';
-import { Logger } from './logging';
-import { registerCommand } from './utils';
-
-const log = Logger.create('treeView');
+import { log } from './logging';
+import { registerCommandWrapped } from './exception';
 
 export const TREE_ITEM_REMOVABLE_CONTEXT = 'removable';
 
@@ -18,7 +16,8 @@ export function activate(context: vscode.ExtensionContext) {
   treeView = vscode.window.createTreeView('qcfgTreeView', opts);
   context.subscriptions.push(
       treeView,
-      registerCommand('qcfg.treeView.removeNode', removeNode),
+      registerCommandWrapped('qcfg.treeView.removeNode', removeNode),
+      registerCommandWrapped('qcfg.treeView.expandNode', expandNode),
       treeView.onDidExpandElement(
           (event: vscode.TreeViewExpansionEvent<TreeNode>) => {
             callIfNonNull(event.element.onDidExpand, event.element);
@@ -226,6 +225,11 @@ function removeNode(...args: any[]) {
         provider.removeNode,
         'TreeProvider with removable nodes must provide removeNode method')(
         node);
+}
+
+function expandNode(...args: any[]) {
+  const node = log.assertNonNull(args[0]) as TreeNode;
+  treeView.reveal(node, {expand: 3});
 }
 
 let treeView: vscode.TreeView<TreeNode>;

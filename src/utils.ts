@@ -1,11 +1,11 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import {Disposable, window, commands, TextEditor} from 'vscode';
-import {Logger} from './logging';
-import {getDocumentWorkspaceFolder} from './fileUtils';
+import { commands, TextEditor, window } from 'vscode';
+import { registerCommandWrapped } from './exception';
+import { getDocumentWorkspaceFolder } from './fileUtils';
+import { log } from './logging';
 
-const log = Logger.create('tree');
 
 export namespace Context {
   const contexts = new Set<string>();
@@ -31,30 +31,10 @@ export namespace Context {
   }
 }
 
-function warnOnException(fn: any) {
-  return (...args) => {
-    try {
-      return fn(...args);
-    }
-    catch (exc) {
-      if (exc instanceof Error) {
-        const err = exc as Error;
-        window.showErrorMessage(`${err.name}: ${err.message}`);
-      }
-    }
-  };
-}
-
-export function registerCommand(
-    command: string, callback: (...args: any[]) => any,
-    thisArg?: any): Disposable {
-  return commands.registerCommand(command, warnOnException(callback), thisArg);
-}
-
 export function registerTemporaryCommand(callback: (...args: any[]) => any,
 thisArg?: any) {
   const command = `qcfg.temp.${++tempCmdCounter}`;
-  const disposable = registerCommand(command, callback, thisArg);
+  const disposable = registerCommandWrapped(command, callback, thisArg);
   return {command, disposable};
 }
 

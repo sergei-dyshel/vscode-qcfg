@@ -6,12 +6,11 @@ import { selectMultiple } from './dialog';
 import { getCompletionPrefix } from './documentUtils';
 import { availableLanguageConfigs, getLanguageConfig } from './language';
 import { ParsedLocation, parseLocations, setLocations } from './locationTree';
-import { Logger } from './logging';
+import { log } from './logging';
 import { abbrevMatch } from './stringUtils';
 import { Subprocess } from './subprocess';
-import { currentWorkspaceFolder, getCursorWordContext, registerCommand } from './utils';
-
-const log = Logger.create('search');
+import {currentWorkspaceFolder, getCursorWordContext} from './utils';
+import { registerCommandWrapped } from './exception';
 
 const TODO_CATEGORIES =
     ['TODO', 'XXX', 'TEMP', 'FIXME', 'REFACTOR', 'OPTIMIZE'];
@@ -133,10 +132,10 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
       vscode.languages.registerCompletionItemProvider(
           availableLanguageConfigs(), TodoCompletion.provider),
-      registerCommand(
+      registerCommandWrapped(
           'qcfg.search.word.peek', () => searchWord(false /* peek */)),
-      registerCommand(
+      registerCommandWrapped(
           'qcfg.search.word.panel', () => searchWord(true /* panel */)),
-      registerCommand('qcfg.search.todos', searchTodos),
-      registerCommand('qcfg.search.structField', searchStructField));
+      registerCommandWrapped('qcfg.search.todos', searchTodos),
+      registerCommandWrapped('qcfg.search.structField', searchStructField));
 }

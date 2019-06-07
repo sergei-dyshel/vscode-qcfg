@@ -1,8 +1,6 @@
 'use strict';
 
-import {Logger} from './logging';
-
-const log = Logger.create('string');
+import {log} from './logging';
 
 export function parseNumber(s: string): number;
 export function parseNumber(s: string | undefined): number | undefined;
@@ -66,4 +64,14 @@ export function splitWithRemainder(
   if (str || !result)
     result.push(str);
   return result;
+}
+
+export function escapeRegExp(str) {
+  // from https://stackoverflow.com/a/1144788/5531098
+  return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+}
+
+export function replaceAll(str: string, find: string, replace: string)
+{
+  return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
 }

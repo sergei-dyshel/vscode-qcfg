@@ -1,0 +1,55 @@
+{
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "$comment": "based on https://github.com/emilast/vscode-logfile-highlighter",
+    "name": "vscode-qcfg log file",
+    "scopeName": "text.log.qcfg-log",
+    "patterns": [
+        {
+            "comment": "log line",
+            "match": "^(\\d+:\\d+:\\d+\\.\\d+)\\s+(\\w+)\\s+([\\w.]+):(\\d+):(\\d+)\\s+([\\w.()]+)\\s+(\\[[\\w.]+\\])?\\s+(\\{.*?\\})?",
+            "captures": {
+                "1": { "name": "constant.numeric" },
+                "2": {
+                    "patterns": [
+                        {
+                            "match": "FATAL",
+                            "name": "invalid.illegal"
+                        },
+                        {
+                            "match": "ERROR",
+                            "name": "invalid.illegal"
+                        },
+                        {
+                            "match": "WARN",
+                            "name": "invalid.deprecated"
+                        },
+                        {
+                            "match": "DEBUG",
+                            "name": "comment"
+                        },
+                        {
+                            "match": "TRACE",
+                            "name": "comment"
+                        }
+                    ]
+                },
+                "3": { "name": "storage" },
+                "4": { "name": "constant.numeric" },
+                "5": { "name": "constant.numeric" },
+                "6": { "name": "string.quoted" },
+                "7": { "name": "entity.name.class" },
+                "8": { "name": "variable" }
+            }
+        },
+        {
+            "comment": "stack trace line",
+            "match": "^\\s+at (\\S+) \\((.*?):(\\d+):(\\d+)\\)",
+            "captures": {
+                "1": { "name": "string.quoted" },
+                "2": { "name": "storage" },
+                "3": { "name": "constant.numeric"},
+                "4": { "name": "constant.numeric"}
+            }
+        }
+    ]
+}

@@ -6,11 +6,11 @@ import {Position} from 'vscode';
 import * as clipboardy from 'clipboardy';
 
 import {offsetPosition, isLinewise, expandLinewise, trimWhitespace, selectRange} from './textUtils';
-import {Logger} from './logging';
-import {getActiveTextEditor, registerCommand} from './utils';
-import { forceNonTemporary, resetTemporary } from './history';
+import { log } from './logging';
+import {getActiveTextEditor} from './utils';
 
-const log = Logger.create('editing');
+import { forceNonTemporary, resetTemporary } from './history';
+import { registerCommandWrapped, registerTextEditorCommandWrapped } from './exception';
 
 function selectLines() {
   const editor = getActiveTextEditor();
@@ -142,18 +142,15 @@ async function peekReferences() {
 }
 
 export function activate(context: vscode.ExtensionContext) {
-  context.subscriptions.push(registerCommand('qcfg.selectLines', selectLines));
   context.subscriptions.push(
-      registerCommand('qcfg.goToDefinition', goToDefinition),
-      registerCommand('qcfg.peekReferences', peekReferences));
-  context.subscriptions.push(commands.registerTextEditorCommand(
-      'qcfg.swapCursorAndAnchor', swapCursorAndAnchor));
-  context.subscriptions.push(commands.registerTextEditorCommand(
-      'qcfg.smartPaste', smartPaste));
-  context.subscriptions.push(commands.registerCommand(
-      'qcfg.surroundWith', surroundWith));
-  context.subscriptions.push(commands.registerCommand(
-      'qcfg.cloneEditorBeside', cloneEditorBeside));
-  context.subscriptions.push(commands.registerCommand(
-      'qcfg.navigateBackToPreviousFile', navigateBackToPreviousFile));
+      registerCommandWrapped('qcfg.selectLines', selectLines),
+      registerCommandWrapped('qcfg.goToDefinition', goToDefinition),
+      registerCommandWrapped('qcfg.peekReferences', peekReferences),
+      registerTextEditorCommandWrapped(
+          'qcfg.swapCursorAndAnchor', swapCursorAndAnchor),
+      registerTextEditorCommandWrapped('qcfg.smartPaste', smartPaste),
+      registerCommandWrapped('qcfg.surroundWith', surroundWith),
+      registerCommandWrapped('qcfg.cloneEditorBeside', cloneEditorBeside),
+      registerCommandWrapped(
+          'qcfg.navigateBackToPreviousFile', navigateBackToPreviousFile));
 }

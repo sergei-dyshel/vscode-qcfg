@@ -1,12 +1,10 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import {Task, TaskExecution, tasks} from 'vscode';
-import {registerTemporaryCommand} from './utils';
-
-import {Logger} from './logging';
+import { Task, TaskExecution, tasks } from 'vscode';
 import { Disposable } from 'vscode-jsonrpc';
-
+import { log, Logger } from './logging';
+import { registerTemporaryCommand } from './utils';
 
 export enum State {
   INITIALIZED,
@@ -29,7 +27,7 @@ export class TaskRun {
 
   constructor(public task: Task) {
     this.state = State.INITIALIZED;
-    this.log = Logger.create('taskRun', {instance: task.name});
+    this.log = new Logger({name: 'taskRun', parent: log, instance: task.name});
   }
 
   async start(): Promise<void> {

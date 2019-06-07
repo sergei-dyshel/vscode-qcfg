@@ -7,12 +7,10 @@ import { Location, Uri } from "vscode";
 import { MultiDictionary } from "typescript-collections";
 import { filterNonNull, removeFirstFromArray } from './tsUtils';
 import * as path from 'path';
-import { Logger, str } from './logging';
+import { log, str } from './logging';
 import { sortDocumentChanges, adjustOffsetRangeAfterChange, rangeToOffset, offsetToRange } from './documentUtils';
 import { isSubPath } from './pathUtils';
 import { NumRange } from './documentUtils';
-
-const log = Logger.create('locationTree');
 
 const DEFAULT_PARSE_REGEX =
     /^(?<file>.+?):(?<line>\d+):((?<column>\d+):)? (?<text>.*$)/;

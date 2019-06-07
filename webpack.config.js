@@ -44,6 +44,15 @@ const config = {
             {test: /\.node$/, use: 'node-loader'}
         ]
     },
+    stats: {
+        all: false,
+        errors: true,
+        warnings: true,
+        warningsFilter: (warning) => {
+            return (warning.includes("Can't resolve 'spawn-sync'")
+                    || warning.includes("build/Debug"));
+        }
+    }
 }
 
 module.exports = config;
