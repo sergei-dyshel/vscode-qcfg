@@ -8,6 +8,7 @@ import * as fileUtils from './fileUtils';
 import {getActiveTextEditor} from './utils';
 import {window, workspace} from 'vscode';
 import { registerCommandWrapped } from './exception';
+import { Modules } from './module';
 
 function openOrCreateTerminal(name: string, cwd: string) {
   for (const terminal of window.terminals) {
@@ -40,7 +41,7 @@ async function runCommand() {
     vscode.commands.executeCommand(cmd);
 }
 
-export function activate(context: vscode.ExtensionContext) {
+function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
       registerCommandWrapped(
           'qcfg.terminal.inWorkspaceFolder', terminalInWorkspaceFolder),
@@ -48,3 +49,5 @@ export function activate(context: vscode.ExtensionContext) {
           'qcfg.terminal.inFileFolder', terminalInFileFolder),
       registerCommandWrapped('qcfg.runCommand', runCommand));
 }
+
+Modules.register(activate);

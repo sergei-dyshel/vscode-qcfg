@@ -11,6 +11,7 @@ import { abbrevMatch } from './stringUtils';
 import { Subprocess } from './subprocess';
 import {currentWorkspaceFolder, getCursorWordContext} from './utils';
 import { registerCommandWrapped } from './exception';
+import { Modules } from './module';
 
 const TODO_CATEGORIES =
     ['TODO', 'XXX', 'TEMP', 'FIXME', 'REFACTOR', 'OPTIMIZE'];
@@ -128,7 +129,7 @@ namespace TodoCompletion {
   };
 }
 
-export function activate(context: vscode.ExtensionContext) {
+function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
       vscode.languages.registerCompletionItemProvider(
           availableLanguageConfigs(), TodoCompletion.provider),
@@ -139,3 +140,5 @@ export function activate(context: vscode.ExtensionContext) {
       registerCommandWrapped('qcfg.search.todos', searchTodos),
       registerCommandWrapped('qcfg.search.structField', searchStructField));
 }
+
+Modules.register(activate);

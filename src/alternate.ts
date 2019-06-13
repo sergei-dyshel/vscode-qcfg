@@ -7,6 +7,7 @@ import * as path from 'path';
 import { log } from './logging';
 import {getActiveTextEditor} from './utils';
 import { registerCommandWrapped } from './exception';
+import { Modules } from './module';
 
 interface Mapping {
   [ext: string]: string[];
@@ -40,7 +41,9 @@ async function switchToAlternate() {
       `Alternate file for "${relPath}" does not exist`);
 }
 
-export function activate(context: vscode.ExtensionContext) {
+function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(registerCommandWrapped(
       'qcfg.alternate.switch', switchToAlternate));
 }
+
+Modules.register(activate);

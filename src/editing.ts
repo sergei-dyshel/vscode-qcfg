@@ -11,6 +11,7 @@ import {getActiveTextEditor} from './utils';
 
 import { forceNonTemporary, resetTemporary } from './history';
 import { registerCommandWrapped, registerTextEditorCommandWrapped } from './exception';
+import { Modules } from './module';
 
 function selectLines() {
   const editor = getActiveTextEditor();
@@ -141,7 +142,7 @@ async function peekReferences() {
   resetTemporary();
 }
 
-export function activate(context: vscode.ExtensionContext) {
+function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
       registerCommandWrapped('qcfg.selectLines', selectLines),
       registerCommandWrapped('qcfg.goToDefinition', goToDefinition),
@@ -154,3 +155,5 @@ export function activate(context: vscode.ExtensionContext) {
       registerCommandWrapped(
           'qcfg.navigateBackToPreviousFile', navigateBackToPreviousFile));
 }
+
+Modules.register(activate);

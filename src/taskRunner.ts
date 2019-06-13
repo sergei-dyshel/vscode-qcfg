@@ -6,6 +6,7 @@ import { Disposable } from 'vscode-jsonrpc';
 import { log, Logger } from './logging';
 import { registerTemporaryCommand } from './utils';
 import { listenWrapped } from './exception';
+import { Modules } from './module';
 
 export enum State {
   INITIALIZED,
@@ -167,8 +168,10 @@ export class TaskCancelledError extends Error {
   name = 'TaskCancelledError';
 }
 
-export function activate(context: vscode.ExtensionContext) {
+function activate(context: vscode.ExtensionContext) {
   TaskRun.activate(context);
 }
+
+Modules.register(activate);
 
 const allRuns = new Map<TaskExecution, TaskRun>();

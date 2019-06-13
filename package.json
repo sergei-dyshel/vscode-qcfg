@@ -106,6 +106,14 @@
         "title": "qcfg: Fuzzy search lines"
       },
       {
+        "command": "qcfg.edit.previous",
+        "title": "qcfg: Select previous text edit"
+      },
+      {
+        "command": "qcfg.edit.next",
+        "title": "qcfg: Select next text edit"
+      },
+      {
         "command": "qcfg.tasks.show",
         "title": "qcfg: Show list of tasks"
       },
@@ -124,10 +132,6 @@
       {
         "command": "qcfg.alternate.switch",
         "title": "qcfg: Switch to alternate file"
-      },
-      {
-        "command": "qcfg.selection.previous",
-        "title": "qcfg: Select previous selection"
       },
       {
         "command": "qcfg.selection.expand",
@@ -223,6 +227,16 @@
       }
     ],
     "keybindings": [
+      {
+        "key": "alt+o",
+        "command": "qcfg.edit.previous",
+        "when": "editorFocus"
+      },
+      {
+        "key": "alt+i",
+        "command": "qcfg.edit.next",
+        "when": "editorFocus"
+      },
       {
         "key": "ctrl+shift+;",
         "command": "qcfg.runCommand"
@@ -650,6 +664,7 @@
     "@types/source-map-support": "^0.5.0",
     "deepmerge": "^3.1.0",
     "gts": "^0.9.0",
+    "ifdef-loader": "^2.1.1",
     "json-merger": "^1.0.2",
     "ts-loader": "^6.0.1",
     "ts-node": "^7.0.1",

@@ -3,17 +3,17 @@
 import * as vscode from 'vscode';
 import { Task, window } from 'vscode';
 import * as dialog from './dialog';
+import { registerCommandWrapped } from './exception';
 import * as fileUtils from './fileUtils';
 import { getDocumentRoot } from './fileUtils';
 import * as language from './language';
 import { log } from './logging';
 import * as remoteControl from './remoteControl';
-
 import { TaskCancelledError, TaskRun } from './taskRunner';
-import { mapWithThrow, filterNonNull } from './tsUtils';
+import { filterNonNull, mapWithThrow } from './tsUtils';
 import { currentWorkspaceFolder } from './utils';
 import * as glob from 'glob';
-import { registerCommandWrapped } from './exception';
+import { Modules } from './module';
 
 export enum Reveal {
   Focus = 'focus',
@@ -137,7 +137,7 @@ async function checkCondition(params: Params, context: QcfgTaskContext):
       throw new ParamsError(
           '"fileExists" can only be checked in context of workspace folder');
     let globMatches = false;
-    glob(
+    glob.default(
         when.fileExists, {cwd: context.workspaceFolder.uri.path},
         (error, matches) => {
           if (error)
@@ -428,10 +428,12 @@ async function runQcfgTask(name: string)
   log.error(`Qcfg task "${name}" is not available`);
 }
 
-export function activate(context: vscode.ExtensionContext) {
+function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
       registerCommandWrapped('qcfg.tasks.build.last', runLastBuildTask),
       registerCommandWrapped('qcfg.tasks.build.default', runDefaultBuildTask),
       registerCommandWrapped('qcfg.tasks.runQcfg', runQcfgTask),
       registerCommandWrapped('qcfg.tasks.show', showTasks));
 }
+
+Modules.register(activate);

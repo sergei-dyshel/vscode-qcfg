@@ -7,6 +7,7 @@ import { log } from './logging';
 import * as subprocess from './subprocess';
 import {setTimeoutPromise} from './nodeUtils';
 import { registerCommandWrapped } from './exception';
+import { Modules } from './module';
 
 let enabled = false;
 let status: vscode.StatusBarItem;
@@ -52,7 +53,7 @@ async function onSaveAll(docs: saveAll.DocumentsInFolder) {
       language.sendDidSave(doc);
 }
 
-export function activate(context: vscode.ExtensionContext) {
+function activate(context: vscode.ExtensionContext) {
   status = vscode.window.createStatusBarItem();
   status.command = 'qcfg.autoSync.toggle';
 
@@ -63,3 +64,5 @@ export function activate(context: vscode.ExtensionContext) {
       registerCommandWrapped('qcfg.autoSync.toggle', toggle));
   context.subscriptions.push(saveAll.onEvent(onSaveAll));
 }
+
+Modules.register(activate);

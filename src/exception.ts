@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import { Disposable } from 'vscode';
 import { log } from './logging';
 import { replaceAll } from './stringUtils';
+import { showStatusBarMessage } from './windowUtils';
 
 export class CheckError extends Error {
   constructor(message: string) {
@@ -73,11 +74,14 @@ function simplifyErrorStack(stack: string) {
 }
 
 function handleErrorDuringCommand(command: string, error: any) {
-  stdErrorHandler(error, `Error occured during running command "${command}": `);
+  stdErrorHandler(error, `Command "${command}": `);
 }
 
 function stdErrorHandler(error: any, prefix = '') {
-  if (error instanceof Error) {
+  if (error instanceof CheckError) {
+    log.info(`${prefix}Check failed: ${error.message}`);
+    showStatusBarMessage(error.message, {color: 'red'});
+  } else if (error instanceof Error) {
     const stack = simplifyErrorStack(error.stack || '');
     log.error(`${prefix}${stack}`);
   } else
@@ -85,5 +89,5 @@ function stdErrorHandler(error: any, prefix = '') {
 }
 
 function handleErrorDuringEvent(error: any) {
-  stdErrorHandler(error, `Error occured during handling event: `);
+  stdErrorHandler(error, `Event: `);
 }

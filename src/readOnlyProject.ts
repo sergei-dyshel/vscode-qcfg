@@ -3,6 +3,7 @@
 import * as vscode from 'vscode';
 import {window, workspace} from 'vscode';
 import { registerCommandWrapped, listenWrapped } from './exception';
+import { Modules } from './module';
 
 const MEMENTO_KEY = 'qcfgIsReadOnly';
 
@@ -38,7 +39,7 @@ function onDidChangeTextDocument(_event) {
       'Current workspace is marked as READ-ONLY', {modal: true});
 }
 
-export function activate(extContext: vscode.ExtensionContext) {
+function activate(extContext: vscode.ExtensionContext) {
   context = extContext;
   status = window.createStatusBarItem();
   status.color = 'red';
@@ -50,3 +51,5 @@ export function activate(extContext: vscode.ExtensionContext) {
       listenWrapped(
           workspace.onDidChangeTextDocument, onDidChangeTextDocument));
 }
+
+Modules.register(activate);

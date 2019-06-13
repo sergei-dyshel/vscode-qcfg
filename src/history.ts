@@ -141,7 +141,9 @@ function onDidChangeTextDocument(event: vscode.TextDocumentChangeEvent)
     return;
   if (eventCopy.document !== editor.document)
     return;
+  /// #if DEBUG
   log.trace(`Edited ${str(editor.document)}${eventCopy.contentChanges[0].range}`);
+  /// #endif
 }
 
 function getHistory(viewColumn: ViewColumn): History {

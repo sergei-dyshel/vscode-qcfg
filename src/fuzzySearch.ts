@@ -7,6 +7,7 @@ import { log } from './logging';
 import { getActiveTextEditor } from './utils';
 import * as history from './history';
 import { registerCommandWrapped, handleErrors } from './exception';
+import { Modules } from './module';
 
 class Item implements vscode.QuickPickItem {
   description: string;
@@ -114,7 +115,9 @@ function showFuzzySearch() {
   pick.show();
 }
 
-export function activate(context: vscode.ExtensionContext) {
+function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
       registerCommandWrapped('qcfg.fuzzySearch', () => showFuzzySearch()));
 }
+
+Modules.register(activate);

@@ -5,6 +5,7 @@ import { TreeItem, TreeItem2, ProviderResult, TreeItemCollapsibleState } from 'v
 import { callIfNonNull, removeFirstFromArray } from './tsUtils';
 import { log } from './logging';
 import { registerCommandWrapped, listenWrapped } from './exception';
+import { Modules } from './module';
 
 export const TREE_ITEM_REMOVABLE_CONTEXT = 'removable';
 
@@ -237,3 +238,5 @@ function expandNode(...args: any[]) {
 
 let treeView: vscode.TreeView<TreeNode>;
 let currentProvider: TreeProvider | undefined;
+
+Modules.register(activate);

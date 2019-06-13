@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import {window, Uri, QuickPickItem} from 'vscode';
 import { removeFirstFromArray } from './tsUtils';
 import { handleErrors } from './exception';
+import { Modules } from './module';
 
 // export function selectFromList<T extends QuickPickItem>(
 //     items: T[], options?: vscode.QuickPickOptions): Thenable<T|undefined> {
@@ -80,11 +81,6 @@ class Button implements vscode.QuickInputButton {
 }
 
 const buttons: {[name: string]: Button} = {};
-
-export function activate(context: vscode.ExtensionContext) {
-  extContext = context;
-  buttons.REMOVE = new Button('icons/remove-dark.svg', 'Remove');
-}
 
 export async function selectFromList<T>(
     items: T[], toQuickPickItem: (x: T) => QuickPickItem,
@@ -169,3 +165,10 @@ export async function selectStringFromListMru(
   return selectFromListMru(
       items, (label) => ({label}), persistentKey, (label) => label, options);
 }
+
+function activate(context: vscode.ExtensionContext) {
+  extContext = context;
+  buttons.REMOVE = new Button('icons/remove-dark.svg', 'Remove');
+}
+
+Modules.register(activate);

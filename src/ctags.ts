@@ -2,12 +2,13 @@
 
 import * as vscode from 'vscode';
 import {SymbolKind} from 'vscode';
-import { log } from './logging';
+import { Logger } from './logging';
 import * as subprocess from './subprocess';
 
 import {getActiveTextEditor} from './utils';
 import {getDocumentRoot} from './fileUtils';
 import {isLspActive} from './language';
+import { Modules } from './module';
 
 interface LanguageConfig {
   lang?: string;
@@ -58,6 +59,7 @@ async function getTags(
     document: vscode.TextDocument,
     token: vscode.CancellationToken): Promise<TagInfo[]> {
   const langConfig = languageConfigs[document.languageId];
+  const log = new Logger({instance: document.fileName, level: 'debug'});
   if (!langConfig)
       return [];
   const docRoot = getDocumentRoot(document);
@@ -71,9 +73,9 @@ async function getTags(
         '--output-format=json', '--fields=*', relativePath
       ],
       {cwd: workspaceFolder.uri.fsPath, maxBuffer: 1 * 1024 * 1024});
-  log.debug('Started');
+  log.trace('Started');
   token.onCancellationRequested(() => {
-    log.debug('Cancelled');
+    log.trace('Cancelled');
     proc.kill();
   });
   const result = await proc.wait();
@@ -81,7 +83,7 @@ async function getTags(
     return [];
   const lines = result.stdout.split('\n');
   const tags = lines.filter((line) => line !== '').map(parseLine);
-  log.debug(`Returned ${lines.length} results`);
+  log.trace(`Returned ${lines.length} results`);
   return tags;
 }
 
@@ -116,8 +118,10 @@ class DocumentSymbolProvider implements vscode.DocumentSymbolProvider {
   }
 }
 
-export function activate(context: vscode.ExtensionContext) {
+function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
       vscode.languages.registerDocumentSymbolProvider(
           '*', new DocumentSymbolProvider()));
 }
+
+Modules.register(activate);

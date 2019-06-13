@@ -6,6 +6,7 @@ import {workspace, commands} from 'vscode';
 import { colorThemeFiles } from './language';
 import { selectStringFromList } from './dialog';
 import { registerCommandWrapped, listenWrapped } from './exception';
+import { Modules } from './module';
 
 const SECTION = 'workbench.colorTheme';
 const MEMENTO_PERSIST_KEY = 'qcfg.colors.persistent';
@@ -98,7 +99,7 @@ async function inspectTheme()
     vscode.window.showTextDocument(vscode.Uri.file(colorThemeFiles[theme]));
 }
 
-export function activate(context: vscode.ExtensionContext) {
+function activate(context: vscode.ExtensionContext) {
   extContext = context;
   onConfigurationChanged();
   context.subscriptions.push(
@@ -108,3 +109,5 @@ export function activate(context: vscode.ExtensionContext) {
       registerCommandWrapped('qcfg.colors.clear', clearWorkspaceTheme),
       registerCommandWrapped('qcfg.colors.inspect', inspectTheme));
 }
+
+Modules.register(activate);

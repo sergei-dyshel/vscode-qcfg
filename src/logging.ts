@@ -3,19 +3,20 @@
 import * as vscode from 'vscode';
 import * as treeSitter from 'tree-sitter';
 import {workspace} from 'vscode';
-import * as callsites from 'callsites';
-import * as sourceMapSupport from 'source-map-support';
 import * as nodejs from './nodejs';
-import { maxValue } from './tsUtils';
+import { maxNumber } from './tsUtils';
 import { selectStringFromList } from './dialog';
 import { registerCommandWrapped, listenWrapped } from './exception';
+import { Modules } from './module';
+import { getCallsite } from './sourceMap';
 
+type LogLevelStr = 'info'|'debug'|'trace';
 
 export interface LoggerOptions {
   instance?: string;
   parent?: Logger;
-  level?: LogLevel;
-  name: string;
+  level?: LogLevel|LogLevelStr;
+  name?: string;
 }
 
 export class Logger {
@@ -23,7 +24,9 @@ export class Logger {
     this.name = '';
     if (options) {
       this.parent = options.parent;
-      this.level = options.level;
+      this.level = typeof (options.level) === 'string' ?
+          strToLevel(options.level) :
+          options.level;
       this.instance = options.instance;
       this.name = options.name || '';
     }
@@ -86,9 +89,9 @@ export class Logger {
   }
 
   private resolveLevel(): LogLevel {
-    return maxValue(
-        (this.level || defaultLogLevel),
-        (this.parent ? this.parent.resolveLevel() : defaultLogLevel));
+    return maxNumber(
+        (this.level || globalLevel),
+        (this.parent ? this.parent.resolveLevel() : globalLevel));
   }
 
   private _log(logLevel: LogLevel, callDepth: number, ...message: any[]) {
@@ -106,8 +109,6 @@ export class Logger {
     };
     for (const handler of handlers)
       handler.handleIfNeeded(record);
-    if (logLevel === LogLevel.Notice)
-      vscode.window.setStatusBarMessage(msgStr, 3);
     if (logLevel === LogLevel.Warning)
       vscode.window.showWarningMessage(msgStr);
     else if (logLevel === LogLevel.Error) {
@@ -152,7 +153,7 @@ export class LoggedError extends Error {}
 ///////////////////////////////////////////////////////////////////////////////
 
 const FIRST_LINE_ID = '{vscode-qcfg.log}';
-const defaultLogLevel: LogLevel = LogLevel.Debug;
+let globalLevel: LogLevel = LogLevel.Debug;
 
 const LOG_LEVEL_STRINGS =
     ['TRACE', 'DEBUG', 'INFO', 'NOTICE', 'WARN', 'ERROR', 'FATAL'];
@@ -161,8 +162,18 @@ function levelToStr(level: LogLevel) {
   return LOG_LEVEL_STRINGS[level];
 }
 
+function updateGlobalLevel() {
+  if (handlers.empty)
+    return;
+  const prev = globalLevel;
+  globalLevel = handlers.map(handler => handler.level).min()!;
+  if (globalLevel !== prev)
+    log.info(`Changed global level ${levelToStr(prev)} => ${
+        levelToStr(globalLevel)}`);
+}
+
 function strToLevel(s: string): LogLevel|undefined {
-  const idx = LOG_LEVEL_STRINGS.indexOf(s);
+  const idx = LOG_LEVEL_STRINGS.indexOf(s.toUpperCase());
   if (idx !== -1)
     return idx as LogLevel;
 }
@@ -191,7 +202,13 @@ function stringifyTextEditor(editor: vscode.TextEditor)
 }
 
 function stringifyObject(x: object): string {
-  if ('fileName' in x && 'uri' in x) {
+  if (x instanceof vscode.Uri) {
+    if (x.scheme === 'file')
+      return x.fsPath;
+    else
+      return x.toString();
+  }
+  else if ('fileName' in x && 'uri' in x) {
     // TextDocument
     const doc = x as vscode.TextDocument;
     const relpath = workspace.asRelativePath(doc.fileName);
@@ -200,12 +217,6 @@ function stringifyObject(x: object): string {
   else if ('document' in x && 'viewColumn' in x) {
     // TextEditor
     return stringifyTextEditor(x as vscode.TextEditor);
-  }
-  else if (x instanceof vscode.Uri) {
-    if (x.scheme === 'file')
-      return x.fsPath;
-    else
-      return x.toString();
   }
   else if (x instanceof vscode.Location) {
     return `<${str(x.uri)}${str(x.range)}>`;
@@ -230,7 +241,8 @@ function stringifyObject(x: object): string {
   }
   if ('range' in x && 'rangeOffset' in x && 'rangeLength' in x && 'text' in x) {
     const event = x as vscode.TextDocumentContentChangeEvent;
-    return `${str(event.range)}:${JSON.stringify(event.text)}`;
+    return `${str(event.range)},${event.rangeOffset},${event.rangeLength}:${
+        JSON.stringify(event.text)}`;
   } else if ('row' in x && 'column' in x) {
     // treeSitter.Point
     const point = x as treeSitter.Point;
@@ -241,8 +253,11 @@ function stringifyObject(x: object): string {
     return `<${node.type} ${str(node.startPosition)} - ${str(node.endPosition)}>`;
   } else if (x instanceof Array) {
     const arr = x as any[];
-    return arr.map(str).join(', ');
-  } else {
+    return '[ ' + arr.map(str).join(', ') + ' ]';
+  }
+  else if ('toString' in x)
+    return x.toString();
+  else {
     return JSON.stringify(x);
   }
 }
@@ -260,7 +275,7 @@ interface LogRecord {
 }
 
 class Handler {
-  constructor(private name: string, private level: LogLevel) {}
+  constructor(private name: string, public level: LogLevel) {}
 
   handleIfNeeded(record: LogRecord) {
     if (record.level < this.level)
@@ -270,9 +285,10 @@ class Handler {
 
   async promptForLevel() {
     const level = await selectLevel();
-    if (level) {
+    if (level !== undefined) {
       this.level = level;
       log.info(`Set handler "${this.name}" log level to ${levelToStr(level)}`);
+      updateGlobalLevel();
     }
   }
 
@@ -293,10 +309,14 @@ function formatRecord(record: LogRecord): string
 
 class OutputChannelHandler extends Handler {
   constructor() {
-    const level =
-        'VSCODE_QCFG_DEBUG' in process.env ? LogLevel.Debug : LogLevel.Info;
+    const envLevel = strToLevel(process.env.VSCODE_QCFG_LOGLEVEL || 'info');
+    const level = envLevel !== undefined ? envLevel : LogLevel.Info;
     super('OutputPanel', level);
     this.outputChannel = vscode.window.createOutputChannel('qcfg');
+    for (const editor of vscode.window.visibleTextEditors) {
+      if (editor.document.fileName.startsWith('extension-output'))
+        this.show();
+    }
   }
   handle(record: LogRecord) {
     this.outputChannel.appendLine(formatRecord(record));
@@ -366,24 +386,7 @@ class FileHandler extends Handler {
 
 const handlers: Handler[] = [];
 
-function getCallsite(frame: number) {
-  const site = callsites()[frame];
-  const jsPos: sourceMapSupport.Position = {
-    source: site.getFileName()!,
-    line: site.getLineNumber()!,
-    column: site.getColumnNumber()!
-  };
-  const funcName = site.getFunctionName() || '';
-  const tsPos = sourceMapSupport.mapSourcePosition(jsPos);
-  const basename = nodejs.path.basename(tsPos.source);
-  return {
-    location: `${basename}:${tsPos.line}:${tsPos.column}`,
-    function: funcName
-  };
-}
-
 function onDidChangeVisibleTextEditors(editors: vscode.TextEditor[]) {
-  vscode.commands.executeCommand('editor.action.showHover', 'blabla');
   for (const editor of editors) {
     if (editor.document.fileName.startsWith('extension-output'))
       if (editor.document.lineAt(0).text.includes(FIRST_LINE_ID))
@@ -400,7 +403,7 @@ async function selectLevel(): Promise<LogLevel|undefined> {
   return strToLevel(levelStr);
 }
 
-export function activate(context: vscode.ExtensionContext) {
+function activate(context: vscode.ExtensionContext) {
   const outputHandler = new OutputChannelHandler();
   handlers.push(outputHandler);
   const consoleHandler = new ConsoleHandler();
@@ -424,5 +427,14 @@ export function activate(context: vscode.ExtensionContext) {
           () => consoleHandler.promptForLevel()));
 
   log.info(FIRST_LINE_ID);
+  updateGlobalLevel();
+/// #if DEBUG
+  log.info('DEBUG mode');
+/// #else
+  log.info('PRODUCTION mode');
+/// #endif
   log.info('Logging to file', fileHandler.fileName);
+  onDidChangeVisibleTextEditors(vscode.window.visibleTextEditors);
 }
+
+Modules.register(activate);

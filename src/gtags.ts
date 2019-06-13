@@ -15,6 +15,7 @@ import {getActiveTextEditor} from './utils';
 import {parseNumber, buildFuzzyPattern, splitWithRemainder, buildAbbrevPattern} from './stringUtils';
 import * as RE2 from 're2';
 import { registerCommandWrapped, handleErrors } from './exception';
+import { Modules } from './module';
 
 async function findGtagsDir(dir: string) {
   while (dir !== '/') {
@@ -360,7 +361,7 @@ class GtagsHoverProvider implements vscode.HoverProvider {
         {language: document.languageId, value: tags[0].text});
   }
 }
-export function activate(context: vscode.ExtensionContext) {
+function activate(context: vscode.ExtensionContext) {
   const queue = new PromiseQueue('gtags');
   queue.add(updateDB, 'gtags check');
   setInterval(queue.queued(updateDB, 'gtags check'), 30000);
@@ -375,3 +376,5 @@ export function activate(context: vscode.ExtensionContext) {
       registerCommandWrapped(
           'qcfg.gtags.workspace', WorkspaceGtags.run));
 }
+
+Modules.register(activate);

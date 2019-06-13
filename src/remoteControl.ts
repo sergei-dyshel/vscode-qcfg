@@ -11,6 +11,7 @@ import { parseNumber } from './stringUtils';
 import * as terminal from './terminal';
 import { getActiveTextEditor } from './utils';
 import { handleErrors } from './exception';
+import { Modules } from './module';
 
 export let port = 48123;
 
@@ -83,7 +84,7 @@ function handleCmd(cmd: string) {
   }
 }
 
-export function activate(_context: vscode.ExtensionContext) {
+function activate(_context: vscode.ExtensionContext) {
   const server = net.createServer((socket) => {
     socket.on('data', handleErrors((data) => {
                 handleCmd(data.toString());
@@ -104,3 +105,5 @@ export function activate(_context: vscode.ExtensionContext) {
     }
   });
 }
+
+Modules.register(activate);

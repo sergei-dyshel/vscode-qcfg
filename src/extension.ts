@@ -1,61 +1,63 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import * as nodejs from './nodejs';
-
-import * as tasks from './tasks';
-import * as editing from './editing';
-import * as autoSync from './autoSync';
-import * as gtags from './gtags';
-import * as ctags from './ctags';
-import * as saveAll from './saveAll';
-import * as logging from './logging';
-import * as treeSitter from './treeSitter';
+import { Modules } from './module';
 import * as alternate from './alternate';
-import * as misc from './misc';
-import * as readOnlyProject from './readOnlyProject';
-import * as selectionHistory from './editHistory';
-import * as dialog from './dialog';
-import * as remoteControl from './remoteControl';
-import * as windowState from './windowState';
-import * as search from './search';
+import * as autoSync from './autoSync';
 import * as colorTheme from './colorTheme';
-import * as taskRunner from './taskRunner';
+import * as ctags from './ctags';
+import * as dialog from './dialog';
+import * as editHistory from './editHistory';
+import * as editing from './editing';
 // import * as history from './history';
 import * as fuzzySearch from './fuzzySearch';
-import * as treeView from './treeView';
-import * as locationTree from './locationTree';
+import * as gtags from './gtags';
 import * as language from './language';
-
-import * as sourceMapSupport from 'source-map-support';
+import * as locationTree from './locationTree';
+import * as logging from './logging';
+import * as misc from './misc';
+import * as nodejs from './nodejs';
+import * as readOnlyProject from './readOnlyProject';
+import * as remoteControl from './remoteControl';
+import * as saveAll from './saveAll';
+import * as search from './search';
+import * as taskRunner from './taskRunner';
+import * as tasks from './tasks';
+import * as treeSitter from './treeSitter';
+import * as treeView from './treeView';
+import * as windowState from './windowState';
 
 export function activate(context: vscode.ExtensionContext) {
-    sourceMapSupport.install();
     console.log('Extension active');
-    logging.activate(context); // must be first
-    nodejs.activate(context);
-    tasks.activate(context);
-    language.activate(context);
-    editing.activate(context);
-    autoSync.activate(context);
-    gtags.activate(context);
-    ctags.activate(context);
-    saveAll.activate(context);
-    treeSitter.activate(context);
-    alternate.activate(context);
-    misc.activate(context);
-    readOnlyProject.activate(context);
-    selectionHistory.activate(context);
-    dialog.activate(context);
-    remoteControl.activate(context);
-    windowState.activate(context);
-    search.activate(context);
-    colorTheme.activate(context);
-    taskRunner.activate(context);
+
+    Modules.activateAll(context);
+    logging.log.info(`Activated ${logging.str(Modules.fileNames())}`);
+
     // history.activate(context);
-    fuzzySearch.activate(context);
-    treeView.activate(context);
-    locationTree.activate(context);
+    (console as any).qcfg = {
+      nodejs,
+      tasks,
+      language,
+      editing,
+      autoSync,
+      gtags,
+      ctags,
+      saveAll,
+      treeSitter,
+      alternate,
+      misc,
+      readOnlyProject,
+      selectionHistory: editHistory,
+      dialog,
+      remoteControl,
+      windowState,
+      search,
+      colorTheme,
+      taskRunner,
+      fuzzySearch,
+      treeView,
+      locationTree
+    };
 }
 
 // this method is called when your extension is deactivated

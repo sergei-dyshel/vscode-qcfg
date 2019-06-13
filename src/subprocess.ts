@@ -41,8 +41,10 @@ export class Subprocess {
       this.process = child_process.execFile(
           command[0], command.slice(1), options, this.callback.bind(this));
     this.log = new Logger(
-        {name: 'Subprocess', parent: log, instance: `pid=${this.process.pid}`});
+        {parent: log, instance: `pid=${this.process.pid}`, level: 'debug'});
+    /// #if DEBUG
     this.log.trace(`started command ${command}`);
+    /// #endif
     this.promise = new Promise<ExecResult>((resolve, reject) => {
       this.waitingContext = {resolve, reject};
     });

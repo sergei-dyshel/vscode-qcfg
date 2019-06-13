@@ -86,14 +86,12 @@ export function groupBy<K, T>(
   return dict;
 }
 
-export function maxValue<T>(...args: T[]): T {
-  const numArgs = args.map(x => (x as unknown as number));
-  return Math.max(...numArgs) as unknown as T;
+export function maxNumber<T>(...args: T[]): T {
+  return args.map(x => (x as unknown as number)).max() as unknown as T;
 }
 
-export function minValue<T>(...args: T[]): T {
-  const numArgs = args.map(x => (x as unknown as number));
-  return Math.min(...numArgs) as unknown as T;
+export function minNumber<T>(...args: T[]): T {
+  return args.map(x => (x as unknown as number)).min() as unknown as T;
 }
 
 export class ReverseArrayIterator<T> implements IterableIterator<T> {
@@ -116,9 +114,86 @@ declare global {
      * Iterate over array in reverse order.
      */
     reverseIter(): ReverseArrayIterator<T>;
+    readonly top: T|undefined;
+    readonly empty: boolean;
+    readonly notEmpty: boolean;
+    min(cmp?: (x: T, y: T) => number): T|undefined;
+    max(cmp?: (x: T, y: T) => number): T|undefined;
+    equals(that: T[], eq?: (x: T, y: T) => boolean): boolean;
   }
 }
 
 Array.prototype.reverseIter = function<T>(this: T[]) {
   return new ReverseArrayIterator<T>(this);
 };
+
+function numberCompare<T>(x: T, y: T): number {
+  const xNum = x as unknown as number;
+  const yNum = y as unknown as number;
+  if (xNum < yNum)
+    return -1;
+  else if (xNum === yNum)
+    return 0;
+  return 1;
+}
+
+function defaultEquals<T>(a: T, b:T) {
+  return a === b;
+}
+
+Array.prototype.equals = function<T>(
+    this: T[], that: T[], eq: (x: T, y: T) => boolean = defaultEquals) {
+  if (this.length !== that.length)
+    return false;
+  for (let i = 0; i < this.length; ++i)
+    if (!eq(this[i], that[i]))
+      return false;
+  return true;
+};
+
+Array.prototype.min = function<T>(
+    this: T[], cmp: (x: T, y: T) => number = numberCompare) {
+  if (!this.length)
+    return;
+  return this.reduce((x, y) => (cmp(x, y) === -1 ? x : y));
+};
+
+Array.prototype.max = function<T>(
+    this: T[], cmp: (x: T, y: T) => number = numberCompare) {
+  if (!this.length)
+    return;
+  return this.reduce((x, y) => (cmp(x, y) === -1 ? y : x));
+};
+
+Object.defineProperty(Array.prototype, 'top', {
+  get<T>(): T | undefined {
+    if (this.length > 0)
+      return this[this.length - 1];
+  }
+});
+
+Object.defineProperty(Array.prototype, 'empty', {
+  get(): boolean {
+    return this.length === 0;
+  }
+});
+
+Object.defineProperty(Array.prototype, 'notEmpty', {
+  get(): boolean {
+    return !this.empty;
+  }
+});
+
+export class DefaultMap<K, V> extends Map<K, V> {
+  constructor(private factory: (key: K) => V) {
+    super();
+  }
+  get(key: K): V {
+    let val = super.get(key);
+    if (val)
+      return val;
+    val = this.factory(key);
+    this.set(key, val);
+    return val;
+  }
+}

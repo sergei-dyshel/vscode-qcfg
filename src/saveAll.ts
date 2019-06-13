@@ -3,6 +3,7 @@
 import * as vscode from 'vscode';
 import * as fileUtils from './fileUtils';
 import { log } from './logging';
+import { Modules } from './module';
 
 export interface DocumentsInFolder {
   folder: vscode.WorkspaceFolder;
@@ -35,7 +36,9 @@ function onDidSaveTextDocument(document: vscode.TextDocument) {
   setTimeout(emit, 200);
 }
 
-export function activate(context: vscode.ExtensionContext) {
+function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
       vscode.workspace.onDidSaveTextDocument(onDidSaveTextDocument));
 }
+
+Modules.register(activate);

@@ -2,10 +2,6 @@
     "contributes": {
         "commands": [
             {
-                "command": "qcfg.selection.previous",
-                "title": "qcfg: Select previous selection"
-            },
-            {
                 "command": "qcfg.selection.expand",
                 "title": "qcfg: Expand selection"
             },

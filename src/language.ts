@@ -6,10 +6,7 @@ import * as nodejs from './nodejs';
 import * as jsoncParser from 'jsonc-parser';
 
 import * as vscode from 'vscode';
-
-export function activate(_: vscode.ExtensionContext) {
-  fetchLangConfigs();
-}
+import { Modules } from './module';
 
 export function getLanguageConfig(id: string): vscode.LanguageConfiguration|
     undefined {
@@ -104,3 +101,9 @@ function fetchLangConfigs()
 /* TODO: move extension parsing to separate file */
 const langConfigs: {[id: string]: vscode.LanguageConfiguration} = {};
 export const colorThemeFiles: {[id: string]: string} = {};
+
+function activate(_: vscode.ExtensionContext) {
+  fetchLangConfigs();
+}
+
+Modules.register(activate);

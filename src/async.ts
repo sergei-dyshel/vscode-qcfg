@@ -1,17 +1,23 @@
 'use strict';
 
-import { log } from './logging';
+import { Logger } from './logging';
 
 type Callback = () => Promise<void>;
 type Resolve = () => void;
 type Reject = (err: any) => void;
 
 export class PromiseQueue {
-  constructor(private name: string) {}
+  private log: Logger;
+  constructor(name: string) {
+    this.log =
+        new Logger({name: 'PromiseQueue', instance: name, level: 'debug'});
+  }
 
   add(cb: Callback, name?: string) : Promise<void> {
     return new Promise((resolve: Resolve, reject: Reject) => {
-      this.trace(`enqueing "${name}`);
+      /// #if DEBUG
+      this.log.trace(`enqueing "${name}`);
+      /// #endif
       this.queue.push({cb, resolve, reject, name});
       this.runNext();
     });
@@ -24,34 +30,38 @@ export class PromiseQueue {
     };
   }
 
-  private trace(...args: any[]) {
-      log.trace(`PromiseQueue "${(this.name)}":`, ...args);
-  }
-
   private runNext() {
     if (this.queue.length === 0 || this.busy)
       return;
-    const entry = log.assertNonNull(this.queue.shift());
-    this.trace(`starting "${entry.name}`);
+    const entry = this.log.assertNonNull(this.queue.shift());
+    /// #if DEBUG
+    this.log.trace(`starting "${entry.name}`);
+    /// #endif
     this.busy = true;
     try {
       entry.cb().then(
           () => {
             this.busy = false;
-            this.trace(`finished "${entry.name}"`);
+            /// #if DEBUG
+            this.log.trace(`finished "${entry.name}"`);
+            /// #endif
             entry.resolve();
             this.runNext();
           },
           (err: any) => {
             this.busy = false;
-            this.trace(`failed "${entry.name}"`);
+            /// #if DEBUG
+            this.log.trace(`failed "${entry.name}"`);
+            /// #endif
             entry.reject(err);
             this.runNext();
           });
     }
     catch (err) {
       this.busy = false;
-      this.trace(`failed synchronously "${entry.name}"`);
+      /// #if DEBUG
+      this.log.trace(`failed synchronously "${entry.name}"`);
+      /// #endif
       entry.reject(err);
       this.runNext();
     }

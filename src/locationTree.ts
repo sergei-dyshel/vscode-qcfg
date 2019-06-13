@@ -11,6 +11,7 @@ import { isSubPath } from './pathUtils';
 import * as treeView from './treeView';
 import { StaticTreeNode, TreeProvider } from "./treeView";
 import { filterNonNull, removeFirstFromArray } from './tsUtils';
+import { Modules } from './module';
 
 const DEFAULT_PARSE_REGEX =
     /^(?<file>.+?):(?<line>\d+):((?<column>\d+):)? (?<text>.*$)/;
@@ -42,11 +43,6 @@ export function parseLocation(line: string, base?: string): ParsedLocation|
           Number(groups.line) - 1, Number(groups.column || 1) - 1));
   const text = groups.text ? groups.text : "";
   return {location, text};
-}
-
-export function activate(context: vscode.ExtensionContext) {
-  context.subscriptions.push(listenWrapped(
-      vscode.workspace.onDidChangeTextDocument, onDidChangeTextDocument));
 }
 
 export function setLocations(
@@ -258,6 +254,13 @@ const provider: TreeProvider = {
       node.show();
   }
 };
+
+function activate(context: vscode.ExtensionContext) {
+  context.subscriptions.push(listenWrapped(
+      vscode.workspace.onDidChangeTextDocument, onDidChangeTextDocument));
+}
+
+Modules.register(activate);
 
 let currentTrees: StaticTreeNode[]|undefined;
 let currentMessage = "";

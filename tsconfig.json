@@ -9,6 +9,8 @@
 		"strictNullChecks": true,
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
+		"esModuleInterop": true, // needed for webpack
+		"allowSyntheticDefaultImports": true, // needed for webpack
 		// TODO: enable strict
 		// "strict": true
 		// "noImplicitReturns": true

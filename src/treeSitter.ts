@@ -15,6 +15,7 @@ import {Context, getActiveTextEditor } from './utils';
 
 import {log, str} from './logging';
 import { registerCommandWrapped, listenWrapped } from './exception';
+import { Modules } from './module';
 
 let status: vscode.StatusBarItem;
 
@@ -55,7 +56,7 @@ namespace Parsers {
     if (language in parsers)
       return parsers[language];
     else if (language in languageConfig) {
-      const parser = new Parser();
+      const parser = new Parser.default();
       parser.setLanguage(languageConfig[language].parser);
       parsers[language] = parser;
       return parser;
@@ -441,7 +442,7 @@ function clearMode() {
    status.hide();
 }
 
-export function activate(context: vscode.ExtensionContext) {
+function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
       listenWrapped(workspace.onDidCloseTextDocument, Trees.removeDocument),
       listenWrapped(workspace.onDidChangeTextDocument, clearMode),
@@ -471,3 +472,5 @@ export function activate(context: vscode.ExtensionContext) {
           () => selectSibling(Direction.Right, true /* swap */)));
   status = window.createStatusBarItem();
 }
+
+Modules.register(activate);
