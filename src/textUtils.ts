@@ -34,10 +34,14 @@ export function expandLinewise(range: Range) {
   return new Range(range.start.line, 0, range.end.line + 1, 0);
 }
 
-export function selectRange(editor: TextEditor, range: Range, reversed?: boolean) {
+export function rangeToSelection(range: Range, reversed?: boolean) {
   const anchor = reversed ? range.end : range.start;
   const active = reversed ? range.start : range.end;
-  editor.selection = new Selection(anchor, active);
+  return new Selection(anchor, active);
+}
+
+export function selectRange(editor: TextEditor, range: Range, reversed?: boolean) {
+  editor.selection = rangeToSelection(range, reversed);
   editor.revealRange(range);
 }
 

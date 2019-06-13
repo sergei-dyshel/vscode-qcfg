@@ -3,6 +3,7 @@
 import * as vscode from 'vscode';
 import {window, Uri, QuickPickItem} from 'vscode';
 import { removeFirstFromArray } from './tsUtils';
+import { handleErrors } from './exception';
 
 // export function selectFromList<T extends QuickPickItem>(
 //     items: T[], options?: vscode.QuickPickOptions): Thenable<T|undefined> {
@@ -22,17 +23,17 @@ export async function inputWithHistory(persistentKey: string):
     const qpItems: QuickPickItem[] = items.map((x) => ({label: x}));
     qp.items = qpItems;
     qp.buttons = [buttons.REMOVE];
-    const onDidHideDisposer = qp.onDidHide(() => {
+    const onDidHideDisposer = qp.onDidHide(handleErrors(() => {
       resolve(undefined);
       qp.dispose();
-    });
-    qp.onDidAccept(() => {
+    }));
+    qp.onDidAccept(handleErrors(() => {
       resolve(qp.selectedItems[0].label);
       onDidHideDisposer.dispose();
       qp.hide();
       qp.dispose();
-    });
-    qp.onDidTriggerButton((button: Button) => {
+    }));
+    qp.onDidTriggerButton(handleErrors((button: Button) => {
       if (button === buttons.REMOVE) {
         if (!qp.activeItems)
           return;
@@ -48,8 +49,8 @@ export async function inputWithHistory(persistentKey: string):
           newItems.push(active);
         qp.items = newItems;
       }
-    });
-    qp.onDidChangeValue(() => {
+    }));
+    qp.onDidChangeValue(handleErrors(() => {
       const exactLabel = qp.items.find((item) => {
         return item.label === qp.value;
       });
@@ -60,7 +61,7 @@ export async function inputWithHistory(persistentKey: string):
       } else {
         qp.items = qpItems;
       }
-    });
+    }));
     qp.show();
   });
   if (!selected)

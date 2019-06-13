@@ -5,6 +5,7 @@ import { Task, TaskExecution, tasks } from 'vscode';
 import { Disposable } from 'vscode-jsonrpc';
 import { log, Logger } from './logging';
 import { registerTemporaryCommand } from './utils';
+import { listenWrapped } from './exception';
 
 export enum State {
   INITIALIZED,
@@ -67,10 +68,10 @@ export class TaskRun {
 
   static activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
-      tasks.onDidEndTaskProcess(TaskRun.onDidEndTaskProcess),
-      tasks.onDidStartTaskProcess(TaskRun.onDidStartTaskProcess),
-      tasks.onDidEndTask(TaskRun.onDidEndTask)
-    );
+        listenWrapped(tasks.onDidEndTaskProcess, TaskRun.onDidEndTaskProcess),
+        listenWrapped(
+            tasks.onDidStartTaskProcess, TaskRun.onDidStartTaskProcess),
+        listenWrapped(tasks.onDidEndTask, TaskRun.onDidEndTask));
   }
 
   static findRunningTask(name: string): TaskRun | undefined {

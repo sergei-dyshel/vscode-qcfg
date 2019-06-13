@@ -14,7 +14,7 @@ import {trimInner, selectRange, offsetPosition, swapRanges} from './textUtils';
 import {Context, getActiveTextEditor } from './utils';
 
 import {log, str} from './logging';
-import { registerCommandWrapped } from './exception';
+import { registerCommandWrapped, listenWrapped } from './exception';
 
 let status: vscode.StatusBarItem;
 
@@ -443,10 +443,12 @@ function clearMode() {
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
-      workspace.onDidCloseTextDocument(Trees.removeDocument),
-      workspace.onDidChangeTextDocument(clearMode),
-      window.onDidChangeTextEditorSelection(onDidChangeTextEditorSelection),
-      window.onDidChangeActiveTextEditor(clearMode),
+      listenWrapped(workspace.onDidCloseTextDocument, Trees.removeDocument),
+      listenWrapped(workspace.onDidChangeTextDocument, clearMode),
+      listenWrapped(
+          window.onDidChangeTextEditorSelection,
+          onDidChangeTextEditorSelection),
+      listenWrapped(window.onDidChangeActiveTextEditor, clearMode),
       registerCommandWrapped(
           'qcfg.selection.expand', () => expandSelection(false /* parent */)),
       registerCommandWrapped(

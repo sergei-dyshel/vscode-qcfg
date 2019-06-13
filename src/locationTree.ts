@@ -1,16 +1,16 @@
 'use strict';
 
-import * as vscode from 'vscode';
-import { StaticTreeNode, TreeProvider } from "./treeView";
-import * as treeView from './treeView';
-import { Location, Uri } from "vscode";
-import { MultiDictionary } from "typescript-collections";
-import { filterNonNull, removeFirstFromArray } from './tsUtils';
 import * as path from 'path';
+import { MultiDictionary } from "typescript-collections";
+import * as vscode from 'vscode';
+import { Location, Uri } from "vscode";
+import { adjustOffsetRangeAfterChange, NumRange, offsetToRange, rangeToOffset } from './documentUtils';
+import { listenWrapped } from './exception';
 import { log, str } from './logging';
-import { sortDocumentChanges, adjustOffsetRangeAfterChange, rangeToOffset, offsetToRange } from './documentUtils';
 import { isSubPath } from './pathUtils';
-import { NumRange } from './documentUtils';
+import * as treeView from './treeView';
+import { StaticTreeNode, TreeProvider } from "./treeView";
+import { filterNonNull, removeFirstFromArray } from './tsUtils';
 
 const DEFAULT_PARSE_REGEX =
     /^(?<file>.+?):(?<line>\d+):((?<column>\d+):)? (?<text>.*$)/;
@@ -45,8 +45,8 @@ export function parseLocation(line: string, base?: string): ParsedLocation|
 }
 
 export function activate(context: vscode.ExtensionContext) {
-  context.subscriptions.push(
-      vscode.workspace.onDidChangeTextDocument(onDidChangeTextDocument));
+  context.subscriptions.push(listenWrapped(
+      vscode.workspace.onDidChangeTextDocument, onDidChangeTextDocument));
 }
 
 export function setLocations(
@@ -225,7 +225,6 @@ class LocationNode extends StaticTreeNode {
 
 function onDidChangeTextDocument(event: vscode.TextDocumentChangeEvent) {
   const document = event.document;
-  const changes = sortDocumentChanges(event);
   if (!currentTrees || !treeView.isCurrentProvider(provider))
     return;
   StaticTreeNode.applyRecursively(currentTrees, node => {
@@ -235,7 +234,7 @@ function onDidChangeTextDocument(event: vscode.TextDocumentChangeEvent) {
       return true;
     if (node instanceof LocationNode)
       node.offsetRange = adjustOffsetRangeAfterChange(
-          log.assertNonNull(node.offsetRange), changes);
+          log.assertNonNull(node.offsetRange), event.contentChanges);
     return false;
   });
 }

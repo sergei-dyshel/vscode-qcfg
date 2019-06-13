@@ -14,7 +14,7 @@ import {isLspActive} from './language';
 import {getActiveTextEditor} from './utils';
 import {parseNumber, buildFuzzyPattern, splitWithRemainder, buildAbbrevPattern} from './stringUtils';
 import * as RE2 from 're2';
-import { registerCommandWrapped } from './exception';
+import { registerCommandWrapped, handleErrors } from './exception';
 
 async function findGtagsDir(dir: string) {
   while (dir !== '/') {
@@ -91,10 +91,10 @@ namespace WorkspaceGtags {
     const editor = getActiveTextEditor();
     gtagsDir = log.assertNonNull(await findGtagsDir(editor.document.fileName));
     quickPick = vscode.window.createQuickPick();
-    quickPick.onDidHide(onHide);
-    quickPick.onDidAccept(abortSearch);
-    quickPick.onDidChangeValue(onNewQuery);
-    quickPick.onDidAccept(onDidAccept);
+    quickPick.onDidHide(handleErrors(onHide));
+    quickPick.onDidAccept(handleErrors(abortSearch));
+    quickPick.onDidChangeValue(handleErrors(onNewQuery));
+    quickPick.onDidAccept(handleErrors(onDidAccept));
     quickPick.show();
     onNewQuery('');
   }
@@ -364,7 +364,6 @@ export function activate(context: vscode.ExtensionContext) {
   const queue = new PromiseQueue('gtags');
   queue.add(updateDB, 'gtags check');
   setInterval(queue.queued(updateDB, 'gtags check'), 30000);
-  // context.subscriptions.push(vscode.workspace.onDidSaveTextDocument(onSave));
   context.subscriptions.push(
       saveAll.onEvent(queue.queued(onSaveAll)),
       vscode.languages.registerWorkspaceSymbolProvider(

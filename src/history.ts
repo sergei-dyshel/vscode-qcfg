@@ -7,7 +7,7 @@ import { Logger, log, str } from './logging';
 import { setTimeoutPromise } from './nodeUtils';
 import { getActiveTextEditor } from './utils';
 import { filterNonNull } from './tsUtils';
-import { registerCommandWrapped } from './exception';
+import { registerCommandWrapped, listenWrapped } from './exception';
 
 let extContext: vscode.ExtensionContext;
 
@@ -25,11 +25,17 @@ export function activate(context: vscode.ExtensionContext) {
   loadHistory();
   setInterval(saveHistory, 30000);
   context.subscriptions.push(
-      window.onDidChangeVisibleTextEditors(onDidChangeVisibleTextEditors),
-      window.onDidChangeTextEditorSelection(onDidChangeTextEditorSelection),
-      window.onDidChangeTextEditorViewColumn(onDidChangeTextEditorViewColumn),
-      window.onDidChangeActiveTextEditor(onDidChangeActiveTextEditor),
-      workspace.onDidChangeTextDocument(onDidChangeTextDocument),
+      listenWrapped(
+          window.onDidChangeVisibleTextEditors, onDidChangeVisibleTextEditors),
+      listenWrapped(
+          window.onDidChangeTextEditorSelection,
+          onDidChangeTextEditorSelection),
+      listenWrapped(
+          window.onDidChangeTextEditorViewColumn,
+          onDidChangeTextEditorViewColumn),
+      listenWrapped(
+          window.onDidChangeActiveTextEditor, onDidChangeActiveTextEditor),
+      listenWrapped(workspace.onDidChangeTextDocument, onDidChangeTextDocument),
       registerCommandWrapped('qcfg.history.backward', goBackward),
       registerCommandWrapped('qcfg.history.forward', goForward));
 }

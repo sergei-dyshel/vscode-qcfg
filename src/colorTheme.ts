@@ -5,7 +5,7 @@ import { log } from './logging';
 import {workspace, commands} from 'vscode';
 import { colorThemeFiles } from './language';
 import { selectStringFromList } from './dialog';
-import { registerCommandWrapped } from './exception';
+import { registerCommandWrapped, listenWrapped } from './exception';
 
 const SECTION = 'workbench.colorTheme';
 const MEMENTO_PERSIST_KEY = 'qcfg.colors.persistent';
@@ -102,7 +102,7 @@ export function activate(context: vscode.ExtensionContext) {
   extContext = context;
   onConfigurationChanged();
   context.subscriptions.push(
-      workspace.onDidChangeConfiguration(onConfigurationChanged),
+      listenWrapped(workspace.onDidChangeConfiguration, onConfigurationChanged),
       registerCommandWrapped('qcfg.colors.select', selectWorkspaceTheme),
       registerCommandWrapped('qcfg.colors.persist', persistWorkspaceTheme),
       registerCommandWrapped('qcfg.colors.clear', clearWorkspaceTheme),

@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import { TreeItem, TreeItem2, ProviderResult, TreeItemCollapsibleState } from 'vscode';
 import { callIfNonNull, removeFirstFromArray } from './tsUtils';
 import { log } from './logging';
-import { registerCommandWrapped } from './exception';
+import { registerCommandWrapped, listenWrapped } from './exception';
 
 export const TREE_ITEM_REMOVABLE_CONTEXT = 'removable';
 
@@ -15,24 +15,27 @@ export function activate(context: vscode.ExtensionContext) {
   };
   treeView = vscode.window.createTreeView('qcfgTreeView', opts);
   context.subscriptions.push(
-      treeView,
-      registerCommandWrapped('qcfg.treeView.removeNode', removeNode),
+      treeView, registerCommandWrapped('qcfg.treeView.removeNode', removeNode),
       registerCommandWrapped('qcfg.treeView.expandNode', expandNode),
-      treeView.onDidExpandElement(
+      listenWrapped(
+          treeView.onDidExpandElement,
           (event: vscode.TreeViewExpansionEvent<TreeNode>) => {
             callIfNonNull(event.element.onDidExpand, event.element);
           }),
-      treeView.onDidCollapseElement(
+      listenWrapped(
+          treeView.onDidCollapseElement,
           (event: vscode.TreeViewExpansionEvent<TreeNode>) => {
             callIfNonNull(event.element.onDidCollapse, event.element);
           }),
-      treeView.onDidChangeSelection(
+      listenWrapped(
+          treeView.onDidChangeSelection,
           (event: vscode.TreeViewSelectionChangeEvent<TreeNode>) => {
             if (currentProvider)
               callIfNonNull(
                   currentProvider.onDidChangeSelection, event.selection);
           }),
-      treeView.onDidChangeVisibility(
+      listenWrapped(
+          treeView.onDidChangeVisibility,
           (event: vscode.TreeViewVisibilityChangeEvent) => {
             if (currentProvider)
               callIfNonNull(

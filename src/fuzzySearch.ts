@@ -6,7 +6,7 @@ import * as vscode from 'vscode';
 import { log } from './logging';
 import { getActiveTextEditor } from './utils';
 import * as history from './history';
-import { registerCommandWrapped } from './exception';
+import { registerCommandWrapped, handleErrors } from './exception';
 
 class Item implements vscode.QuickPickItem {
   description: string;
@@ -57,29 +57,29 @@ function showFuzzySearch() {
   }
   // Save the item the user selected so it can be pre-selected next time fuzzy
   // search is invoked.
-  pick.onDidAccept(() => {
+  pick.onDidAccept(handleErrors(() => {
     lastSelected = pick.selectedItems[0];
     pick.hide();
     history.resetTemporary();
-  });
+  }));
 
 
   // Show the currently selected item in the editor.
-  pick.onDidChangeActive(items => {
+  pick.onDidChangeActive(handleErrors(items => {
     if (!items.length)  return;
 
     const p = new vscode.Position(items[0].line - 1, 0);
     editor.revealRange(
     new vscode.Range(p, p), vscode.TextEditorRevealType.InCenter);
     editor.selection = new vscode.Selection(p, p);
-  });
+  }));
 
   // Show the previous search string. When the user types a character, the
   // preview string will replaced with the typed character.
   pick.value = valueFromPreviousInvocation;
   const previewValue = valueFromPreviousInvocation;
   let hasPreviewValue = previewValue.length > 0;
-  pick.onDidChangeValue(value => {
+  pick.onDidChangeValue(handleErrors(value => {
     if (hasPreviewValue) {
       hasPreviewValue = false;
 
@@ -92,7 +92,7 @@ function showFuzzySearch() {
         }
       }
     }
-  });
+  }));
   // Save the search string so we can show it next time fuzzy search is
   // invoked.
   pick.onDidChangeValue(value => valueFromPreviousInvocation = value);
@@ -100,7 +100,7 @@ function showFuzzySearch() {
 
   // If fuzzy-search was cancelled navigate to the previous location.
   const startingSelection = editor.selection;
-  pick.onDidHide(() => {
+  pick.onDidHide(handleErrors(() => {
     if (pick.selectedItems.length === 0) {
       editor.revealRange(
         new vscode.Range(startingSelection.start, startingSelection.end),
@@ -108,7 +108,7 @@ function showFuzzySearch() {
       editor.selection = startingSelection;
     }
     history.resetTemporary();
-  });
+  }));
 
   history.forceTemporary();
   pick.show();

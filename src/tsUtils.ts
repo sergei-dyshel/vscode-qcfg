@@ -95,3 +95,30 @@ export function minValue<T>(...args: T[]): T {
   const numArgs = args.map(x => (x as unknown as number));
   return Math.min(...numArgs) as unknown as T;
 }
+
+export class ReverseArrayIterator<T> implements IterableIterator<T> {
+  private idx: number;
+  constructor(private array: T[]) {
+    this.idx = array.length;
+  }
+  next(): IteratorResult<T> {
+    this.idx--;
+    return {done: this.idx < 0, value: this.array[this.idx]};
+  }
+  [Symbol.iterator]() {
+    return this;
+  }
+}
+
+declare global {
+  interface Array<T> {
+    /**
+     * Iterate over array in reverse order.
+     */
+    reverseIter(): ReverseArrayIterator<T>;
+  }
+}
+
+Array.prototype.reverseIter = function<T>(this: T[]) {
+  return new ReverseArrayIterator<T>(this);
+};

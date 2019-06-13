@@ -216,28 +216,33 @@ function stringifyObject(x: object): string {
   }
   else if (x instanceof vscode.Selection) {
     const sel = x as vscode.Selection;
-    return `${str(sel.anchor)}->${str(sel.active)}`;
+    if (sel.anchor.isEqual(sel.active))
+      return stringifyObject(sel.anchor);
+    if (sel.anchor.isBefore(sel.active))
+      return `${str(sel.anchor)}->${str(sel.active)}`;
+    else
+      return `${str(sel.active)}<-${str(sel.anchor)}`;
   }
   else if (x instanceof vscode.Range) {
     if (x.start.isEqual(x.end))
       return stringifyObject(x.start);
     return `[${str(x.start)}..${str(x.end)}]`;
   }
-  else if ('row' in x && 'column' in x) {
+  if ('range' in x && 'rangeOffset' in x && 'rangeLength' in x && 'text' in x) {
+    const event = x as vscode.TextDocumentContentChangeEvent;
+    return `${str(event.range)}:${JSON.stringify(event.text)}`;
+  } else if ('row' in x && 'column' in x) {
     // treeSitter.Point
     const point = x as treeSitter.Point;
     return `(${point.row},${point.column})`;
-  }
-  else if ('type' in x && 'startPosition' in x && 'endPosition' in x) {
+  } else if ('type' in x && 'startPosition' in x && 'endPosition' in x) {
     // treeSitter.SyntaxNode
     const node = x as treeSitter.SyntaxNode;
     return `<${node.type} ${str(node.startPosition)} - ${str(node.endPosition)}>`;
-  }
-  else if (x instanceof Array) {
+  } else if (x instanceof Array) {
     const arr = x as any[];
     return arr.map(str).join(', ');
-  }
-  else {
+  } else {
     return JSON.stringify(x);
   }
 }

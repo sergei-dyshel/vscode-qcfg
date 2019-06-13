@@ -14,7 +14,7 @@ import * as treeSitter from './treeSitter';
 import * as alternate from './alternate';
 import * as misc from './misc';
 import * as readOnlyProject from './readOnlyProject';
-import * as selectionHistory from './selectionHistory';
+import * as selectionHistory from './editHistory';
 import * as dialog from './dialog';
 import * as remoteControl from './remoteControl';
 import * as windowState from './windowState';

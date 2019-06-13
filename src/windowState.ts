@@ -2,6 +2,7 @@
 
 import * as vscode from 'vscode';
 import { log } from './logging';
+import { listenWrapped } from './exception';
 
 function windowStateChanged(state: vscode.WindowState)
 {
@@ -11,5 +12,5 @@ function windowStateChanged(state: vscode.WindowState)
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
-      vscode.window.onDidChangeWindowState(windowStateChanged));
+      listenWrapped(vscode.window.onDidChangeWindowState, windowStateChanged));
 }

@@ -33,6 +33,7 @@ export class NumRange {
   }
 }
 
+/* REFACTOR: remove if not used */
 export function sortDocumentChanges(event: TextDocumentChangeEvent):
     TextDocumentContentChangeEvent[] {
   const changes = [...event.contentChanges];
@@ -53,7 +54,7 @@ export function offsetToRange(document: TextDocument, range: NumRange): Range {
 export function adjustOffsetRangeAfterChange(
     range: NumRange, changes: TextDocumentContentChangeEvent[]): NumRange {
   let delta = 0;
-  for (const change of changes) {
+  for (const change of changes.reverseIter()) {
     if (change.rangeOffset + change.rangeLength <= range.start)
       delta += change.text.length - change.rangeLength;
     else
