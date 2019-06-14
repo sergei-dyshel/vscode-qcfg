@@ -1,23 +1,23 @@
 'use strict';
 
-import * as vscode from 'vscode';
-import {window, workspace } from 'vscode';
-import {Range, TextDocument, Position, TextEditor} from 'vscode';
+import { TextBuffer } from 'superstring';
 import * as Parser from 'tree-sitter';
-import {SyntaxNode, Tree} from 'tree-sitter';
+import { SyntaxNode, Tree } from 'tree-sitter';
+import * as treeSitterCpp from 'tree-sitter-cpp';
 import * as treeSitterPython from 'tree-sitter-python';
 import * as treeSitterTypeScript from 'tree-sitter-typescript';
-import * as treeSitterCpp from 'tree-sitter-cpp';
-import {TextBuffer} from 'superstring';
-
-import {trimInner, selectRange, offsetPosition, swapRanges} from './textUtils';
-import {Context, getActiveTextEditor } from './utils';
-
-import {log, str} from './logging';
-import { registerCommandWrapped, listenWrapped } from './exception';
+import { ExtensionContext, Position, Range, StatusBarItem, TextDocument, TextEditor, TextEditorDecorationType, TextEditorSelectionChangeEvent, window, workspace } from 'vscode';
+import { NumRange } from './documentUtils';
+import { listenWrapped, registerCommandWrapped } from './exception';
+import { log, str } from './logging';
 import { Modules } from './module';
+import { offsetPosition, selectRange, swapRanges, trimInner } from './textUtils';
+import { Context, getActiveTextEditor } from './utils';
 
-let status: vscode.StatusBarItem;
+
+type VsRange = Range;
+
+let status: StatusBarItem;
 
 interface LanguageConfig {
   parser: any;
@@ -33,13 +33,48 @@ declare module 'tree-sitter' {
 
   }
   interface SyntaxNode {
-    startOffset: number;
+    readonly offsetRange: NumRange;
+    readonly range: VsRange;
+    readonly start: Position;
+    readonly end: Position;
   }
 }
 
-Object.defineProperty(SyntaxNode.prototype, 'startOffset', {
-  get(): number {
-    return this.startIndex;
+Object.defineProperty(SyntaxNode.prototype, 'offsetRange', {
+  get(): NumRange {
+    const this_ = this as SyntaxNode;
+    /* XXX: use memoization package? (e.g. memoizee) */
+    if (!this.offsetRange_)
+      this.offsetRange_ = new NumRange(this_.startIndex, this_.endIndex);
+    return this.offsetRange_;
+  }
+});
+
+Object.defineProperty(SyntaxNode.prototype, 'range', {
+  get(): Range {
+    const this_ = this as SyntaxNode;
+    if (!this.range_)
+      this.range_ = new Range(this_.start, this_.end);
+    return this.range_;
+  }
+});
+
+Object.defineProperty(SyntaxNode.prototype, 'start', {
+  get(): Position {
+    const this_ = this as SyntaxNode;
+    if (!this.start_)
+      this.start_ =
+          new Position(this_.startPosition.row, this_.startPosition.column);
+    return this.start_;
+  }
+});
+
+Object.defineProperty(SyntaxNode.prototype, 'end', {
+  get(): Position {
+    const this_ = this as SyntaxNode;
+    if (!this.end_)
+      this.end_ = new Position(this_.endPosition.row, this_.endPosition.column);
+    return this.end_;
   }
 });
 
@@ -85,8 +120,8 @@ namespace Parsers {
 let lastSelection: Range | null;
 
 class RangeDecorator {
-  left: vscode.TextEditorDecorationType;
-  right: vscode.TextEditorDecorationType;
+  left: TextEditorDecorationType;
+  right: TextEditorDecorationType;
   constructor(border :string) {
     this.left = window.createTextEditorDecorationType(
         {'border': border, borderRadius: '5px 0px 0px 5px'});
@@ -140,7 +175,7 @@ namespace Trees {
 }
 
 function onDidChangeTextEditorSelection(
-    event: vscode.TextEditorSelectionChangeEvent) {
+    event: TextEditorSelectionChangeEvent) {
   const selections = event.selections;
   if (!lastSelection || selections.length > 1 ||
       !(selections[0].isEqual(lastSelection))) {
@@ -150,7 +185,7 @@ function onDidChangeTextEditorSelection(
 }
 
 function findContainedNode(node: SyntaxNode, range: Range, strict: boolean) {
-  const nRange = nodeRange(node);
+  const nRange = node.range;
   if (range.contains(nRange) &&
       !(strict && nRange.isEqual(range))) {
     return node;
@@ -187,7 +222,7 @@ async function shrinkSelection() {
     if (!node)
       throw new Error("Could not shrink selection");
     updateDecorations(editor, node);
-    range = nodeRange(node);
+    range = node.range;
     setStatusFromNode(node);
   }
   selectAndRememberRange(editor, range);
@@ -200,26 +235,17 @@ interface ParserWithAsync {
   }): Promise<Tree>;
 }
 
-function point2pos(point: Parser.Point): Position {
-  return new Position(point.row, point.column);
-}
-
-function nodeRange(node: SyntaxNode): Range {
-
-  return new Range(point2pos(node.startPosition), point2pos(node.endPosition));
-}
-
 function nodeContainsRange(
     node: SyntaxNode, range: Range): boolean {
-  return nodeRange(node).contains(range);
+  return node.range.contains(range);
 }
 
 function isSameNode(node1: SyntaxNode, node2: SyntaxNode) {
-  return node1 && node2 && nodeRange(node1).isEqual(nodeRange(node2));
+  return node1 && node2 && node1.range.isEqual(node2.range);
 }
 
 function nodeHasRange(node: SyntaxNode, range: Range) {
-  return nodeRange(node).isEqual(range);
+  return node.range.isEqual(range);
 }
 
 function findContainingNodeImpl(node: SyntaxNode, range: Range):
@@ -248,16 +274,16 @@ function findContainingChildren(
   let firstChild: SyntaxNode | undefined;
   let lastChild: SyntaxNode | undefined;
 
-  if (nodeRange(parent).isEqual(range)) {
+  if (parent.range.isEqual(range)) {
     firstChild = parent;
     lastChild = parent;
     parent = log.assertNonNull<SyntaxNode>(parent.parent);
   }
   for (let i = 0; i < parent.childCount; ++i) {
     const child = log.assertNonNull<SyntaxNode>(parent.child(i));
-    if (nodeRange(child).contains(range.start))
+    if (child.range.contains(range.start))
       firstChild = child;
-    if (nodeRange(child).contains(range.end)) {
+    if (child.range.contains(range.end)) {
       lastChild = child;
       break;
     }
@@ -273,9 +299,7 @@ function findContainingChildren(
 
 
 function childrenRange(firstChild: SyntaxNode, lastChild: SyntaxNode): Range {
-  const firstChildStart = point2pos(firstChild.startPosition);
-  const lastChildEnd = point2pos(lastChild.endPosition);
-  return new Range(firstChildStart, lastChildEnd);
+  return new Range(firstChild.start, lastChild.end);
 }
 
 function selectChildren(
@@ -302,7 +326,7 @@ async function selectSibling(direction: Direction, swap?: boolean) {
   let ctx = await getContext();
   const node = findContainingNode(ctx.tree.rootNode, ctx.selection);
   let sibling: SyntaxNode | null;
-  if (nodeRange(node).isEqual(ctx.selection)) {
+  if (node.range.isEqual(ctx.selection)) {
     if (direction === Direction.Left)
       sibling = node.previousNamedSibling;
     else
@@ -312,13 +336,13 @@ async function selectSibling(direction: Direction, swap?: boolean) {
   } else {
     sibling = node;
   }
-  let siblingRange = nodeRange(sibling);
+  let siblingRange = sibling.range;
   lastSelection = siblingRange;
   if (swap && node !== sibling) {
-    await swapRanges(ctx.editor, nodeRange(node), siblingRange);
+    await swapRanges(ctx.editor, node.range, siblingRange);
     ctx = await getContext();
     sibling = findContainingNode(ctx.tree.rootNode, ctx.selection);
-    siblingRange = nodeRange(sibling);
+    siblingRange = sibling.range;
   }
 
   selectAndRememberRange(ctx.editor, siblingRange);
@@ -369,14 +393,15 @@ function updateDecorations(editor: TextEditor, node: SyntaxNode) {
   //   superParentDecorator.clear(editor);
   // else
   if (superParent)
-    superParentDecorator.decorate(editor, [nodeRange(superParent)]);
+    superParentDecorator.decorate(editor, [superParent.range]);
   else
     superParentDecorator.clear(editor);
   if (node.parent)
-    siblingDecorator.decorate(editor, node.parent.namedChildren.map(nodeRange));
+    siblingDecorator.decorate(
+        editor, node.parent.namedChildren.map(node => node.range));
   else
     siblingDecorator.clear(editor);
-  parentDecorator.decorate(editor, [nodeRange(parent)]);
+  parentDecorator.decorate(editor, [parent.range]);
 }
 
 function getSuperParent(node: SyntaxNode) {
@@ -426,7 +451,7 @@ async function expandSelection(superParent: boolean) {
   }
   updateDecorations(ctx.editor, node);
   setStatusFromNode(node);
-  selectAndRememberRange(ctx.editor, nodeRange(node));
+  selectAndRememberRange(ctx.editor, node.range);
 }
 
 function setStatusFromNode(node: SyntaxNode) {
@@ -458,7 +483,7 @@ function clearMode() {
    status.hide();
 }
 
-function activate(context: vscode.ExtensionContext) {
+function activate(context: ExtensionContext) {
   context.subscriptions.push(
       listenWrapped(workspace.onDidCloseTextDocument, Trees.removeDocument),
       listenWrapped(workspace.onDidChangeTextDocument, clearMode),
