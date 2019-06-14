@@ -126,6 +126,18 @@
           "when": "editorFocus"
         },
         {
+          "key": "alt+q",
+          "command": "workbench.action.closeEditorInAllGroups"
+        },
+        {
+                "key": "ctrl+q",
+                "command": "workbench.action.toggleSidebarVisibility"
+        },
+        {
+                "key": "ctrl+w",
+                "command": "workbench.action.togglePanel"
+        },
+        {
                 "key": "ctrl+shift+;",
                 "command": "qcfg.runCommand"
         },

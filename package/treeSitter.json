@@ -41,6 +41,53 @@
                 "command": "qcfg.selection.extendLeft",
                 "title": "qcfg: extend selection left"
             }
+        ],
+        "keybindings": [
+            {
+                "key": "alt+up",
+                "command": "qcfg.selection.expand",
+                "when": "editorTextFocus"
+            },
+            {
+                "key": "ctrl+alt+up",
+                "command": "qcfg.selection.selectSuperParent",
+                "when": "editorTextFocus"
+            },
+            {
+                "key": "alt+down",
+                "command": "qcfg.selection.shrink",
+                "when": "editorTextFocus"
+            },
+            {
+                "key": "alt+pageup",
+                "command": "qcfg.selection.left",
+                "when": "editorTextFocus && qcfgTreeMode"
+            },
+            {
+                "key": "alt+pagedown",
+                "command": "qcfg.selection.right",
+                "when": "editorTextFocus && qcfgTreeMode"
+            },
+            {
+                "key": "ctrl+alt+pageup",
+                "command": "qcfg.selection.swapLeft",
+                "when": "editorTextFocus && qcfgTreeMode"
+            },
+            {
+                "key": "ctrl+alt+pagedown",
+                "command": "qcfg.selection.swapRight",
+                "when": "editorTextFocus && qcfgTreeMode"
+            },
+            {
+                "key": "shift+alt+pageup",
+                "command": "qcfg.selection.extendRight",
+                "when": "editorTextFocus && qcfgTreeMode"
+            },
+            {
+                "key": "shift+alt+pagedown",
+                "command": "qcfg.selection.extendLeft",
+                "when": "editorTextFocus && qcfgTreeMode"
+            }
         ]
     }
 }

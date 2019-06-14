@@ -28,6 +28,21 @@ enum Direction {
   Right
 }
 
+declare module 'tree-sitter' {
+  class SyntaxNode {
+
+  }
+  interface SyntaxNode {
+    startOffset: number;
+  }
+}
+
+Object.defineProperty(SyntaxNode.prototype, 'startOffset', {
+  get(): number {
+    return this.startIndex;
+  }
+});
+
 namespace TreeMode {
   const NAME = 'qcfgTreeMode';
 
@@ -109,9 +124,10 @@ namespace Trees {
     const parser = Parsers.get(document.languageId);
     const parserAsync = parser as any as ParserWithAsync;
     const buf = new TextBuffer(document.getText());
-    // providing previous tree crashes on E8 code
+    // TODO: make using previous tree configurable (may crash)
+    const prevTree = trees.get(document);
     const tree = await parserAsync.parseTextBuffer(
-        buf, undefined, {syncOperationCount: 1000});
+        buf, prevTree, {syncOperationCount: 1000});
     // const tree = await parserAsync.parseTextBuffer(buf);
     // const tree = parser.parse(document.getText());
     trees.set(document, tree);

@@ -142,8 +142,16 @@ async function peekReferences() {
   resetTemporary();
 }
 
+function gotoLineRelative(delta: number) {
+  const editor = getActiveTextEditor();
+  const active = editor.selection.active;
+  const pos = new vscode.Position(active.line + delta, active.character);
+  editor.selection = new vscode.Selection(pos, pos);
+}
+
 function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
+      registerCommandWrapped('qcfg.gotoLineRelative', gotoLineRelative),
       registerCommandWrapped('qcfg.selectLines', selectLines),
       registerCommandWrapped('qcfg.goToDefinition', goToDefinition),
       registerCommandWrapped('qcfg.peekReferences', peekReferences),

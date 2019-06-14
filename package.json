@@ -238,6 +238,18 @@
         "when": "editorFocus"
       },
       {
+        "key": "alt+q",
+        "command": "workbench.action.closeEditorInAllGroups"
+      },
+      {
+        "key": "ctrl+q",
+        "command": "workbench.action.toggleSidebarVisibility"
+      },
+      {
+        "key": "ctrl+w",
+        "command": "workbench.action.togglePanel"
+      },
+      {
         "key": "ctrl+shift+;",
         "command": "qcfg.runCommand"
       },
@@ -297,6 +309,901 @@
       {
         "key": "ctrl+k ctrl+shift+b",
         "command": "qcfg.tasks.build.default"
+      },
+      {
+        "key": "alt+up",
+        "command": "qcfg.selection.expand",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "ctrl+alt+up",
+        "command": "qcfg.selection.selectSuperParent",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "alt+down",
+        "command": "qcfg.selection.shrink",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "alt+pageup",
+        "command": "qcfg.selection.left",
+        "when": "editorTextFocus && qcfgTreeMode"
+      },
+      {
+        "key": "alt+pagedown",
+        "command": "qcfg.selection.right",
+        "when": "editorTextFocus && qcfgTreeMode"
+      },
+      {
+        "key": "ctrl+alt+pageup",
+        "command": "qcfg.selection.swapLeft",
+        "when": "editorTextFocus && qcfgTreeMode"
+      },
+      {
+        "key": "ctrl+alt+pagedown",
+        "command": "qcfg.selection.swapRight",
+        "when": "editorTextFocus && qcfgTreeMode"
+      },
+      {
+        "key": "shift+alt+pageup",
+        "command": "qcfg.selection.extendRight",
+        "when": "editorTextFocus && qcfgTreeMode"
+      },
+      {
+        "key": "shift+alt+pagedown",
+        "command": "qcfg.selection.extendLeft",
+        "when": "editorTextFocus && qcfgTreeMode"
+      },
+      {
+        "key": "ctrl+5",
+        "command": "qcfg.gotoLineRelative",
+        "args": 5
+      },
+      {
+        "key": "alt+5",
+        "command": "qcfg.gotoLineRelative",
+        "args": -5
+      },
+      {
+        "key": "ctrl+6",
+        "command": "qcfg.gotoLineRelative",
+        "args": 6
+      },
+      {
+        "key": "alt+6",
+        "command": "qcfg.gotoLineRelative",
+        "args": -6
+      },
+      {
+        "key": "ctrl+7",
+        "command": "qcfg.gotoLineRelative",
+        "args": 7
+      },
+      {
+        "key": "alt+7",
+        "command": "qcfg.gotoLineRelative",
+        "args": -7
+      },
+      {
+        "key": "ctrl+8",
+        "command": "qcfg.gotoLineRelative",
+        "args": 8
+      },
+      {
+        "key": "alt+8",
+        "command": "qcfg.gotoLineRelative",
+        "args": -8
+      },
+      {
+        "key": "ctrl+9",
+        "command": "qcfg.gotoLineRelative",
+        "args": 9
+      },
+      {
+        "key": "alt+9",
+        "command": "qcfg.gotoLineRelative",
+        "args": -9
+      },
+      {
+        "key": "ctrl+1 ctrl+0",
+        "command": "qcfg.gotoLineRelative",
+        "args": 10
+      },
+      {
+        "key": "ctrl+1 0",
+        "command": "qcfg.gotoLineRelative",
+        "args": 10
+      },
+      {
+        "key": "alt+1 alt+0",
+        "command": "qcfg.gotoLineRelative",
+        "args": -10
+      },
+      {
+        "key": "alt+1 0",
+        "command": "qcfg.gotoLineRelative",
+        "args": -10
+      },
+      {
+        "key": "ctrl+1 ctrl+1",
+        "command": "qcfg.gotoLineRelative",
+        "args": 11
+      },
+      {
+        "key": "ctrl+1 1",
+        "command": "qcfg.gotoLineRelative",
+        "args": 11
+      },
+      {
+        "key": "alt+1 alt+1",
+        "command": "qcfg.gotoLineRelative",
+        "args": -11
+      },
+      {
+        "key": "alt+1 1",
+        "command": "qcfg.gotoLineRelative",
+        "args": -11
+      },
+      {
+        "key": "ctrl+1 ctrl+2",
+        "command": "qcfg.gotoLineRelative",
+        "args": 12
+      },
+      {
+        "key": "ctrl+1 2",
+        "command": "qcfg.gotoLineRelative",
+        "args": 12
+      },
+      {
+        "key": "alt+1 alt+2",
+        "command": "qcfg.gotoLineRelative",
+        "args": -12
+      },
+      {
+        "key": "alt+1 2",
+        "command": "qcfg.gotoLineRelative",
+        "args": -12
+      },
+      {
+        "key": "ctrl+1 ctrl+3",
+        "command": "qcfg.gotoLineRelative",
+        "args": 13
+      },
+      {
+        "key": "ctrl+1 3",
+        "command": "qcfg.gotoLineRelative",
+        "args": 13
+      },
+      {
+        "key": "alt+1 alt+3",
+        "command": "qcfg.gotoLineRelative",
+        "args": -13
+      },
+      {
+        "key": "alt+1 3",
+        "command": "qcfg.gotoLineRelative",
+        "args": -13
+      },
+      {
+        "key": "ctrl+1 ctrl+4",
+        "command": "qcfg.gotoLineRelative",
+        "args": 14
+      },
+      {
+        "key": "ctrl+1 4",
+        "command": "qcfg.gotoLineRelative",
+        "args": 14
+      },
+      {
+        "key": "alt+1 alt+4",
+        "command": "qcfg.gotoLineRelative",
+        "args": -14
+      },
+      {
+        "key": "alt+1 4",
+        "command": "qcfg.gotoLineRelative",
+        "args": -14
+      },
+      {
+        "key": "ctrl+1 ctrl+5",
+        "command": "qcfg.gotoLineRelative",
+        "args": 15
+      },
+      {
+        "key": "ctrl+1 5",
+        "command": "qcfg.gotoLineRelative",
+        "args": 15
+      },
+      {
+        "key": "alt+1 alt+5",
+        "command": "qcfg.gotoLineRelative",
+        "args": -15
+      },
+      {
+        "key": "alt+1 5",
+        "command": "qcfg.gotoLineRelative",
+        "args": -15
+      },
+      {
+        "key": "ctrl+1 ctrl+6",
+        "command": "qcfg.gotoLineRelative",
+        "args": 16
+      },
+      {
+        "key": "ctrl+1 6",
+        "command": "qcfg.gotoLineRelative",
+        "args": 16
+      },
+      {
+        "key": "alt+1 alt+6",
+        "command": "qcfg.gotoLineRelative",
+        "args": -16
+      },
+      {
+        "key": "alt+1 6",
+        "command": "qcfg.gotoLineRelative",
+        "args": -16
+      },
+      {
+        "key": "ctrl+1 ctrl+7",
+        "command": "qcfg.gotoLineRelative",
+        "args": 17
+      },
+      {
+        "key": "ctrl+1 7",
+        "command": "qcfg.gotoLineRelative",
+        "args": 17
+      },
+      {
+        "key": "alt+1 alt+7",
+        "command": "qcfg.gotoLineRelative",
+        "args": -17
+      },
+      {
+        "key": "alt+1 7",
+        "command": "qcfg.gotoLineRelative",
+        "args": -17
+      },
+      {
+        "key": "ctrl+1 ctrl+8",
+        "command": "qcfg.gotoLineRelative",
+        "args": 18
+      },
+      {
+        "key": "ctrl+1 8",
+        "command": "qcfg.gotoLineRelative",
+        "args": 18
+      },
+      {
+        "key": "alt+1 alt+8",
+        "command": "qcfg.gotoLineRelative",
+        "args": -18
+      },
+      {
+        "key": "alt+1 8",
+        "command": "qcfg.gotoLineRelative",
+        "args": -18
+      },
+      {
+        "key": "ctrl+1 ctrl+9",
+        "command": "qcfg.gotoLineRelative",
+        "args": 19
+      },
+      {
+        "key": "ctrl+1 9",
+        "command": "qcfg.gotoLineRelative",
+        "args": 19
+      },
+      {
+        "key": "alt+1 alt+9",
+        "command": "qcfg.gotoLineRelative",
+        "args": -19
+      },
+      {
+        "key": "alt+1 9",
+        "command": "qcfg.gotoLineRelative",
+        "args": -19
+      },
+      {
+        "key": "ctrl+2 ctrl+0",
+        "command": "qcfg.gotoLineRelative",
+        "args": 20
+      },
+      {
+        "key": "ctrl+2 0",
+        "command": "qcfg.gotoLineRelative",
+        "args": 20
+      },
+      {
+        "key": "alt+2 alt+0",
+        "command": "qcfg.gotoLineRelative",
+        "args": -20
+      },
+      {
+        "key": "alt+2 0",
+        "command": "qcfg.gotoLineRelative",
+        "args": -20
+      },
+      {
+        "key": "ctrl+2 ctrl+1",
+        "command": "qcfg.gotoLineRelative",
+        "args": 21
+      },
+      {
+        "key": "ctrl+2 1",
+        "command": "qcfg.gotoLineRelative",
+        "args": 21
+      },
+      {
+        "key": "alt+2 alt+1",
+        "command": "qcfg.gotoLineRelative",
+        "args": -21
+      },
+      {
+        "key": "alt+2 1",
+        "command": "qcfg.gotoLineRelative",
+        "args": -21
+      },
+      {
+        "key": "ctrl+2 ctrl+2",
+        "command": "qcfg.gotoLineRelative",
+        "args": 22
+      },
+      {
+        "key": "ctrl+2 2",
+        "command": "qcfg.gotoLineRelative",
+        "args": 22
+      },
+      {
+        "key": "alt+2 alt+2",
+        "command": "qcfg.gotoLineRelative",
+        "args": -22
+      },
+      {
+        "key": "alt+2 2",
+        "command": "qcfg.gotoLineRelative",
+        "args": -22
+      },
+      {
+        "key": "ctrl+2 ctrl+3",
+        "command": "qcfg.gotoLineRelative",
+        "args": 23
+      },
+      {
+        "key": "ctrl+2 3",
+        "command": "qcfg.gotoLineRelative",
+        "args": 23
+      },
+      {
+        "key": "alt+2 alt+3",
+        "command": "qcfg.gotoLineRelative",
+        "args": -23
+      },
+      {
+        "key": "alt+2 3",
+        "command": "qcfg.gotoLineRelative",
+        "args": -23
+      },
+      {
+        "key": "ctrl+2 ctrl+4",
+        "command": "qcfg.gotoLineRelative",
+        "args": 24
+      },
+      {
+        "key": "ctrl+2 4",
+        "command": "qcfg.gotoLineRelative",
+        "args": 24
+      },
+      {
+        "key": "alt+2 alt+4",
+        "command": "qcfg.gotoLineRelative",
+        "args": -24
+      },
+      {
+        "key": "alt+2 4",
+        "command": "qcfg.gotoLineRelative",
+        "args": -24
+      },
+      {
+        "key": "ctrl+2 ctrl+5",
+        "command": "qcfg.gotoLineRelative",
+        "args": 25
+      },
+      {
+        "key": "ctrl+2 5",
+        "command": "qcfg.gotoLineRelative",
+        "args": 25
+      },
+      {
+        "key": "alt+2 alt+5",
+        "command": "qcfg.gotoLineRelative",
+        "args": -25
+      },
+      {
+        "key": "alt+2 5",
+        "command": "qcfg.gotoLineRelative",
+        "args": -25
+      },
+      {
+        "key": "ctrl+2 ctrl+6",
+        "command": "qcfg.gotoLineRelative",
+        "args": 26
+      },
+      {
+        "key": "ctrl+2 6",
+        "command": "qcfg.gotoLineRelative",
+        "args": 26
+      },
+      {
+        "key": "alt+2 alt+6",
+        "command": "qcfg.gotoLineRelative",
+        "args": -26
+      },
+      {
+        "key": "alt+2 6",
+        "command": "qcfg.gotoLineRelative",
+        "args": -26
+      },
+      {
+        "key": "ctrl+2 ctrl+7",
+        "command": "qcfg.gotoLineRelative",
+        "args": 27
+      },
+      {
+        "key": "ctrl+2 7",
+        "command": "qcfg.gotoLineRelative",
+        "args": 27
+      },
+      {
+        "key": "alt+2 alt+7",
+        "command": "qcfg.gotoLineRelative",
+        "args": -27
+      },
+      {
+        "key": "alt+2 7",
+        "command": "qcfg.gotoLineRelative",
+        "args": -27
+      },
+      {
+        "key": "ctrl+2 ctrl+8",
+        "command": "qcfg.gotoLineRelative",
+        "args": 28
+      },
+      {
+        "key": "ctrl+2 8",
+        "command": "qcfg.gotoLineRelative",
+        "args": 28
+      },
+      {
+        "key": "alt+2 alt+8",
+        "command": "qcfg.gotoLineRelative",
+        "args": -28
+      },
+      {
+        "key": "alt+2 8",
+        "command": "qcfg.gotoLineRelative",
+        "args": -28
+      },
+      {
+        "key": "ctrl+2 ctrl+9",
+        "command": "qcfg.gotoLineRelative",
+        "args": 29
+      },
+      {
+        "key": "ctrl+2 9",
+        "command": "qcfg.gotoLineRelative",
+        "args": 29
+      },
+      {
+        "key": "alt+2 alt+9",
+        "command": "qcfg.gotoLineRelative",
+        "args": -29
+      },
+      {
+        "key": "alt+2 9",
+        "command": "qcfg.gotoLineRelative",
+        "args": -29
+      },
+      {
+        "key": "ctrl+3 ctrl+0",
+        "command": "qcfg.gotoLineRelative",
+        "args": 30
+      },
+      {
+        "key": "ctrl+3 0",
+        "command": "qcfg.gotoLineRelative",
+        "args": 30
+      },
+      {
+        "key": "alt+3 alt+0",
+        "command": "qcfg.gotoLineRelative",
+        "args": -30
+      },
+      {
+        "key": "alt+3 0",
+        "command": "qcfg.gotoLineRelative",
+        "args": -30
+      },
+      {
+        "key": "ctrl+3 ctrl+1",
+        "command": "qcfg.gotoLineRelative",
+        "args": 31
+      },
+      {
+        "key": "ctrl+3 1",
+        "command": "qcfg.gotoLineRelative",
+        "args": 31
+      },
+      {
+        "key": "alt+3 alt+1",
+        "command": "qcfg.gotoLineRelative",
+        "args": -31
+      },
+      {
+        "key": "alt+3 1",
+        "command": "qcfg.gotoLineRelative",
+        "args": -31
+      },
+      {
+        "key": "ctrl+3 ctrl+2",
+        "command": "qcfg.gotoLineRelative",
+        "args": 32
+      },
+      {
+        "key": "ctrl+3 2",
+        "command": "qcfg.gotoLineRelative",
+        "args": 32
+      },
+      {
+        "key": "alt+3 alt+2",
+        "command": "qcfg.gotoLineRelative",
+        "args": -32
+      },
+      {
+        "key": "alt+3 2",
+        "command": "qcfg.gotoLineRelative",
+        "args": -32
+      },
+      {
+        "key": "ctrl+3 ctrl+3",
+        "command": "qcfg.gotoLineRelative",
+        "args": 33
+      },
+      {
+        "key": "ctrl+3 3",
+        "command": "qcfg.gotoLineRelative",
+        "args": 33
+      },
+      {
+        "key": "alt+3 alt+3",
+        "command": "qcfg.gotoLineRelative",
+        "args": -33
+      },
+      {
+        "key": "alt+3 3",
+        "command": "qcfg.gotoLineRelative",
+        "args": -33
+      },
+      {
+        "key": "ctrl+3 ctrl+4",
+        "command": "qcfg.gotoLineRelative",
+        "args": 34
+      },
+      {
+        "key": "ctrl+3 4",
+        "command": "qcfg.gotoLineRelative",
+        "args": 34
+      },
+      {
+        "key": "alt+3 alt+4",
+        "command": "qcfg.gotoLineRelative",
+        "args": -34
+      },
+      {
+        "key": "alt+3 4",
+        "command": "qcfg.gotoLineRelative",
+        "args": -34
+      },
+      {
+        "key": "ctrl+3 ctrl+5",
+        "command": "qcfg.gotoLineRelative",
+        "args": 35
+      },
+      {
+        "key": "ctrl+3 5",
+        "command": "qcfg.gotoLineRelative",
+        "args": 35
+      },
+      {
+        "key": "alt+3 alt+5",
+        "command": "qcfg.gotoLineRelative",
+        "args": -35
+      },
+      {
+        "key": "alt+3 5",
+        "command": "qcfg.gotoLineRelative",
+        "args": -35
+      },
+      {
+        "key": "ctrl+3 ctrl+6",
+        "command": "qcfg.gotoLineRelative",
+        "args": 36
+      },
+      {
+        "key": "ctrl+3 6",
+        "command": "qcfg.gotoLineRelative",
+        "args": 36
+      },
+      {
+        "key": "alt+3 alt+6",
+        "command": "qcfg.gotoLineRelative",
+        "args": -36
+      },
+      {
+        "key": "alt+3 6",
+        "command": "qcfg.gotoLineRelative",
+        "args": -36
+      },
+      {
+        "key": "ctrl+3 ctrl+7",
+        "command": "qcfg.gotoLineRelative",
+        "args": 37
+      },
+      {
+        "key": "ctrl+3 7",
+        "command": "qcfg.gotoLineRelative",
+        "args": 37
+      },
+      {
+        "key": "alt+3 alt+7",
+        "command": "qcfg.gotoLineRelative",
+        "args": -37
+      },
+      {
+        "key": "alt+3 7",
+        "command": "qcfg.gotoLineRelative",
+        "args": -37
+      },
+      {
+        "key": "ctrl+3 ctrl+8",
+        "command": "qcfg.gotoLineRelative",
+        "args": 38
+      },
+      {
+        "key": "ctrl+3 8",
+        "command": "qcfg.gotoLineRelative",
+        "args": 38
+      },
+      {
+        "key": "alt+3 alt+8",
+        "command": "qcfg.gotoLineRelative",
+        "args": -38
+      },
+      {
+        "key": "alt+3 8",
+        "command": "qcfg.gotoLineRelative",
+        "args": -38
+      },
+      {
+        "key": "ctrl+3 ctrl+9",
+        "command": "qcfg.gotoLineRelative",
+        "args": 39
+      },
+      {
+        "key": "ctrl+3 9",
+        "command": "qcfg.gotoLineRelative",
+        "args": 39
+      },
+      {
+        "key": "alt+3 alt+9",
+        "command": "qcfg.gotoLineRelative",
+        "args": -39
+      },
+      {
+        "key": "alt+3 9",
+        "command": "qcfg.gotoLineRelative",
+        "args": -39
+      },
+      {
+        "key": "ctrl+4 ctrl+0",
+        "command": "qcfg.gotoLineRelative",
+        "args": 40
+      },
+      {
+        "key": "ctrl+4 0",
+        "command": "qcfg.gotoLineRelative",
+        "args": 40
+      },
+      {
+        "key": "alt+4 alt+0",
+        "command": "qcfg.gotoLineRelative",
+        "args": -40
+      },
+      {
+        "key": "alt+4 0",
+        "command": "qcfg.gotoLineRelative",
+        "args": -40
+      },
+      {
+        "key": "ctrl+4 ctrl+1",
+        "command": "qcfg.gotoLineRelative",
+        "args": 41
+      },
+      {
+        "key": "ctrl+4 1",
+        "command": "qcfg.gotoLineRelative",
+        "args": 41
+      },
+      {
+        "key": "alt+4 alt+1",
+        "command": "qcfg.gotoLineRelative",
+        "args": -41
+      },
+      {
+        "key": "alt+4 1",
+        "command": "qcfg.gotoLineRelative",
+        "args": -41
+      },
+      {
+        "key": "ctrl+4 ctrl+2",
+        "command": "qcfg.gotoLineRelative",
+        "args": 42
+      },
+      {
+        "key": "ctrl+4 2",
+        "command": "qcfg.gotoLineRelative",
+        "args": 42
+      },
+      {
+        "key": "alt+4 alt+2",
+        "command": "qcfg.gotoLineRelative",
+        "args": -42
+      },
+      {
+        "key": "alt+4 2",
+        "command": "qcfg.gotoLineRelative",
+        "args": -42
+      },
+      {
+        "key": "ctrl+4 ctrl+3",
+        "command": "qcfg.gotoLineRelative",
+        "args": 43
+      },
+      {
+        "key": "ctrl+4 3",
+        "command": "qcfg.gotoLineRelative",
+        "args": 43
+      },
+      {
+        "key": "alt+4 alt+3",
+        "command": "qcfg.gotoLineRelative",
+        "args": -43
+      },
+      {
+        "key": "alt+4 3",
+        "command": "qcfg.gotoLineRelative",
+        "args": -43
+      },
+      {
+        "key": "ctrl+4 ctrl+4",
+        "command": "qcfg.gotoLineRelative",
+        "args": 44
+      },
+      {
+        "key": "ctrl+4 4",
+        "command": "qcfg.gotoLineRelative",
+        "args": 44
+      },
+      {
+        "key": "alt+4 alt+4",
+        "command": "qcfg.gotoLineRelative",
+        "args": -44
+      },
+      {
+        "key": "alt+4 4",
+        "command": "qcfg.gotoLineRelative",
+        "args": -44
+      },
+      {
+        "key": "ctrl+4 ctrl+5",
+        "command": "qcfg.gotoLineRelative",
+        "args": 45
+      },
+      {
+        "key": "ctrl+4 5",
+        "command": "qcfg.gotoLineRelative",
+        "args": 45
+      },
+      {
+        "key": "alt+4 alt+5",
+        "command": "qcfg.gotoLineRelative",
+        "args": -45
+      },
+      {
+        "key": "alt+4 5",
+        "command": "qcfg.gotoLineRelative",
+        "args": -45
+      },
+      {
+        "key": "ctrl+4 ctrl+6",
+        "command": "qcfg.gotoLineRelative",
+        "args": 46
+      },
+      {
+        "key": "ctrl+4 6",
+        "command": "qcfg.gotoLineRelative",
+        "args": 46
+      },
+      {
+        "key": "alt+4 alt+6",
+        "command": "qcfg.gotoLineRelative",
+        "args": -46
+      },
+      {
+        "key": "alt+4 6",
+        "command": "qcfg.gotoLineRelative",
+        "args": -46
+      },
+      {
+        "key": "ctrl+4 ctrl+7",
+        "command": "qcfg.gotoLineRelative",
+        "args": 47
+      },
+      {
+        "key": "ctrl+4 7",
+        "command": "qcfg.gotoLineRelative",
+        "args": 47
+      },
+      {
+        "key": "alt+4 alt+7",
+        "command": "qcfg.gotoLineRelative",
+        "args": -47
+      },
+      {
+        "key": "alt+4 7",
+        "command": "qcfg.gotoLineRelative",
+        "args": -47
+      },
+      {
+        "key": "ctrl+4 ctrl+8",
+        "command": "qcfg.gotoLineRelative",
+        "args": 48
+      },
+      {
+        "key": "ctrl+4 8",
+        "command": "qcfg.gotoLineRelative",
+        "args": 48
+      },
+      {
+        "key": "alt+4 alt+8",
+        "command": "qcfg.gotoLineRelative",
+        "args": -48
+      },
+      {
+        "key": "alt+4 8",
+        "command": "qcfg.gotoLineRelative",
+        "args": -48
+      },
+      {
+        "key": "ctrl+4 ctrl+9",
+        "command": "qcfg.gotoLineRelative",
+        "args": 49
+      },
+      {
+        "key": "ctrl+4 9",
+        "command": "qcfg.gotoLineRelative",
+        "args": 49
+      },
+      {
+        "key": "alt+4 alt+9",
+        "command": "qcfg.gotoLineRelative",
+        "args": -49
+      },
+      {
+        "key": "alt+4 9",
+        "command": "qcfg.gotoLineRelative",
+        "args": -49
       }
     ],
     "configuration": {
@@ -645,12 +1552,12 @@
     "jsonc-parser": "^2.1.0",
     "minimatch": "^3.0.4",
     "node-loader": "^0.6.0",
-    "re2": "^1.8.4",
+    "re2": "^1.10.0",
     "shlex": "^1.0.3",
     "source-map-support": "^0.5.12",
-    "superstring": "^2.3.4",
-    "tree-sitter": "^0.13.23",
-    "tree-sitter-cpp": "^0.13.11",
+    "superstring": "^2.4.0",
+    "tree-sitter": "^0.15.4",
+    "tree-sitter-cpp": "^0.13.15",
     "tree-sitter-python": "^0.13.6",
     "tree-sitter-typescript": "^0.13.6",
     "typescript-collections": "^1.1.4"
@@ -660,20 +1567,20 @@
     "@types/glob": "^7.1.1",
     "@types/minimatch": "^3.0.3",
     "@types/mocha": "^2.2.42",
-    "@types/node": "^8.10.39",
+    "@types/node": "^8.10.49",
     "@types/source-map-support": "^0.5.0",
-    "deepmerge": "^3.1.0",
+    "deepmerge": "^3.2.0",
     "gts": "^0.9.0",
     "ifdef-loader": "^2.1.1",
-    "json-merger": "^1.0.2",
-    "ts-loader": "^6.0.1",
+    "json-merger": "^1.1.1",
+    "ts-loader": "^6.0.2",
     "ts-node": "^7.0.1",
-    "tslint": "^5.12.1",
-    "typescript": "^3.2.2",
-    "vscode": "^1.1.26",
+    "tslint": "^5.17.0",
+    "typescript": "^3.5.2",
+    "vscode": "^1.1.34",
     "vscode-languageclient": "^5.2.1",
     "vscode-languageserver": "^5.2.1",
-    "webpack": "^4.32.2",
-    "webpack-cli": "^3.3.2"
+    "webpack": "^4.34.0",
+    "webpack-cli": "^3.3.4"
   }
 }
