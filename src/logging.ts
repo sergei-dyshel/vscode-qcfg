@@ -179,7 +179,7 @@ function strToLevel(s: string): LogLevel|undefined {
 }
 
 function formatMessage(args: any[], default_ = ''): string {
-  return args.length === 0 ? default_ : args.map(String).join(' ');
+  return args.length === 0 ? default_ : args.map(str).join(' ');
 }
 
 function getDate(): string {
@@ -233,6 +233,9 @@ function stringifyObject(x: object): string {
       return `${str(sel.anchor)}->${str(sel.active)}`;
     else
       return `${str(sel.active)}<-${str(sel.anchor)}`;
+  }
+  else if (x instanceof Error) {
+    return `${x.message}: ${x.name}`;
   }
   else if (x instanceof vscode.Range) {
     if (x.start.isEqual(x.end))
@@ -433,6 +436,7 @@ function activate(context: vscode.ExtensionContext) {
 /// #else
   log.info('PRODUCTION mode');
 /// #endif
+  log.info(`Logging to output panel on ${levelToStr(outputHandler.level)} level`);
   log.info('Logging to file', fileHandler.fileName);
   onDidChangeVisibleTextEditors(vscode.window.visibleTextEditors);
 }

@@ -15,7 +15,7 @@ export function showStatusBarMessage(
     statusBarMsgItem.color = options.color;
   const timeoutMs =
       (options && options.timeoutMs) ? options.timeoutMs : DEFAULT_TIMEOUT_MS;
-  timer.setTimeout(clearStatusBarMessage, timeoutMs);
+  timer.setTimeout(timeoutMs, clearStatusBarMessage);
   statusBarMsgItem.show();
 }
 

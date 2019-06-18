@@ -73,3 +73,15 @@ export class PromiseQueue {
       Array<{cb: Callback, resolve: Resolve, reject: Reject, name?: string}> =
           [];
 }
+
+export class PromiseContext<T> {
+  constructor () {
+    this.promise = new Promise<T>((resolve, reject) => {
+      this.resolve = resolve;
+      this.reject = reject;
+    });
+  }
+  readonly promise: Promise<T>;
+  resolve: (result: T) => void;
+  reject: (err: Error) => void;
+}

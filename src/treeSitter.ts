@@ -1,82 +1,19 @@
 'use strict';
 
-import { TextBuffer } from 'superstring';
-import * as Parser from 'tree-sitter';
-import { SyntaxNode, Tree } from 'tree-sitter';
-import * as treeSitterCpp from 'tree-sitter-cpp';
-import * as treeSitterPython from 'tree-sitter-python';
-import * as treeSitterTypeScript from 'tree-sitter-typescript';
-import { ExtensionContext, Position, Range, StatusBarItem, TextDocument, TextEditor, TextEditorDecorationType, TextEditorSelectionChangeEvent, window, workspace } from 'vscode';
-import { NumRange } from './documentUtils';
+import { ExtensionContext, Range, StatusBarItem, TextEditor, TextEditorDecorationType, TextEditorSelectionChangeEvent, window, workspace } from 'vscode';
 import { listenWrapped, registerCommandWrapped } from './exception';
 import { log, str } from './logging';
 import { Modules } from './module';
+import {SyntaxTrees, SyntaxNode} from './syntaxTree';
 import { offsetPosition, selectRange, swapRanges, trimInner } from './textUtils';
 import { Context, getActiveTextEditor } from './utils';
 
-
-type VsRange = Range;
-
 let status: StatusBarItem;
-
-interface LanguageConfig {
-  parser: any;
-}
 
 enum Direction {
   Left,
   Right
 }
-
-declare module 'tree-sitter' {
-  class SyntaxNode {
-
-  }
-  interface SyntaxNode {
-    readonly offsetRange: NumRange;
-    readonly range: VsRange;
-    readonly start: Position;
-    readonly end: Position;
-  }
-}
-
-Object.defineProperty(SyntaxNode.prototype, 'offsetRange', {
-  get(): NumRange {
-    const this_ = this as SyntaxNode;
-    /* XXX: use memoization package? (e.g. memoizee) */
-    if (!this.offsetRange_)
-      this.offsetRange_ = new NumRange(this_.startIndex, this_.endIndex);
-    return this.offsetRange_;
-  }
-});
-
-Object.defineProperty(SyntaxNode.prototype, 'range', {
-  get(): Range {
-    const this_ = this as SyntaxNode;
-    if (!this.range_)
-      this.range_ = new Range(this_.start, this_.end);
-    return this.range_;
-  }
-});
-
-Object.defineProperty(SyntaxNode.prototype, 'start', {
-  get(): Position {
-    const this_ = this as SyntaxNode;
-    if (!this.start_)
-      this.start_ =
-          new Position(this_.startPosition.row, this_.startPosition.column);
-    return this.start_;
-  }
-});
-
-Object.defineProperty(SyntaxNode.prototype, 'end', {
-  get(): Position {
-    const this_ = this as SyntaxNode;
-    if (!this.end_)
-      this.end_ = new Position(this_.endPosition.row, this_.endPosition.column);
-    return this.end_;
-  }
-});
 
 namespace TreeMode {
   const NAME = 'qcfgTreeMode';
@@ -89,31 +26,6 @@ namespace TreeMode {
   }
   export function is() {
     return Context.has(NAME);
-  }
-}
-
-const languageConfig: {[language: string]: LanguageConfig} = {
-  python: {parser: treeSitterPython},
-  c: {parser: treeSitterCpp},
-  cpp: {parser: treeSitterCpp},
-  typescript: {parser: treeSitterTypeScript},
-};
-
-namespace Parsers {
-  const parsers: {[language: string]: Parser} = {};
-
-  export function get(language: string): Parser {
-    if (language in parsers)
-      return parsers[language];
-    else if (language in languageConfig) {
-      const parser = new Parser.default();
-      parser.setLanguage(languageConfig[language].parser);
-      parsers[language] = parser;
-      return parser;
-    }
-    else {
-      return log.fatal(`No parser available for language "${language}"`);
-    }
   }
 }
 
@@ -152,28 +64,6 @@ const siblingDecorator = new RangeDecorator('1px solid rgba(255, 255, 255, 0.50)
 const parentDecorator = new RangeDecorator('2px solid rgba(255, 255, 0, 0.25)');
 const superParentDecorator = new RangeDecorator('2px solid rgba(0, 255, 0, 0.25)');
 
-namespace Trees {
-  const trees = new Map<TextDocument, Tree>();
-
-  export async function get(document: TextDocument): Promise<Tree> {
-    const parser = Parsers.get(document.languageId);
-    const parserAsync = parser as any as ParserWithAsync;
-    const buf = new TextBuffer(document.getText());
-    // TODO: make using previous tree configurable (may crash)
-    const prevTree = trees.get(document);
-    const tree = await parserAsync.parseTextBuffer(
-        buf, prevTree, {syncOperationCount: 1000});
-    // const tree = await parserAsync.parseTextBuffer(buf);
-    // const tree = parser.parse(document.getText());
-    trees.set(document, tree);
-    return tree;
-  }
-
-  export function removeDocument(document: TextDocument) {
-    trees.delete(document);
-  }
-}
-
 function onDidChangeTextEditorSelection(
     event: TextEditorSelectionChangeEvent) {
   const selections = event.selections;
@@ -210,7 +100,7 @@ async function shrinkSelection() {
   const editor = getActiveTextEditor();
   const document = editor.document;
   const selection = editor.selection;
-  const tree = await Trees.get(document);
+  const tree = await SyntaxTrees.get(document);
   if (editor.selections.length > 1 || selection.isEmpty)
     return;
   let range: Range;
@@ -226,13 +116,6 @@ async function shrinkSelection() {
     setStatusFromNode(node);
   }
   selectAndRememberRange(editor, range);
-}
-
-// parseTextBuffer is missing in tree-sitter definitions
-interface ParserWithAsync {
-  parseTextBuffer(buf: TextBuffer, oldTree?: Tree, config?: {
-    syncOperationCount: number
-  }): Promise<Tree>;
 }
 
 function nodeContainsRange(
@@ -316,7 +199,7 @@ async function getContext() {
   const selection = editor.selection;
   if (editor.selections.length > 1)
     throw new Error('Not applicable to multiple selections');
-  const tree = await Trees.get(document);
+  const tree = await SyntaxTrees.get(document);
   return {editor, document, selection, tree};
 }
 
@@ -354,7 +237,7 @@ async function extendSelection(direction: Direction) {
   const editor = getActiveTextEditor();
   const document = editor.document;
   const selection = editor.selection;
-  const tree = await Trees.get(document);
+  const tree = await SyntaxTrees.get(document);
   if (!TreeMode.is())
     return;
   const x = findContainingChildren(tree.rootNode, editor.selection);
@@ -485,7 +368,6 @@ function clearMode() {
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
-      listenWrapped(workspace.onDidCloseTextDocument, Trees.removeDocument),
       listenWrapped(workspace.onDidChangeTextDocument, clearMode),
       listenWrapped(
           window.onDidChangeTextEditorSelection,

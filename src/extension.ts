@@ -47,7 +47,7 @@ export function activate(context: vscode.ExtensionContext) {
       alternate,
       misc,
       readOnlyProject,
-      selectionHistory: editHistory,
+      editHistory,
       dialog,
       remoteControl,
       windowState,

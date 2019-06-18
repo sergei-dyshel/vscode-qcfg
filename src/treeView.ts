@@ -170,7 +170,7 @@ export class StaticTreeNode implements TreeNode {
   getChildren() { return this.children_; }
   getParent() { return this.parent_; }
 
-  private children_: StaticTreeNode[] = [];
+  protected children_: StaticTreeNode[] = [];
   private parent_?: StaticTreeNode;
 }
 

@@ -8,7 +8,7 @@ export const setIntervalPromise = promisify(setInterval);
 
 // TODO: unused
 export class Timer {
-  setTimeout(callback: (...args: any[]) => void, ms: number, ...args: any[]) {
+  setTimeout(ms: number, callback: (...args: any[]) => void, ...args: any[]) {
     this.clear();
     this.type = TimerType.TIMEOUT;
     this.timer = setTimeout(() => {
@@ -30,6 +30,10 @@ export class Timer {
         clearTimeout(this.timer);
       else if (this.type === TimerType.INTERVAL)
         clearInterval(this.timer);
+  }
+
+  get isSet() {
+    return this.timer !== undefined;
   }
 
   private timer?: NodeJS.Timer;

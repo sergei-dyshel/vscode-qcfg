@@ -10,7 +10,7 @@
 import path from 'path';
 import webpack from 'webpack';
 
-const generateConfig = (argv): webpack.configuration => ({
+const generateConfig = (env): webpack.configuration => ({
   target: 'node',  // vscode extensions run in a Node.js-context 📖 ->
                    // https://webpack.js.org/configuration/node/
 
@@ -26,6 +26,9 @@ const generateConfig = (argv): webpack.configuration => ({
     devtoolModuleFilenameTemplate: '../[resource-path]',
   },
   devtool: 'source-map',
+  optimization: {
+    minimize: false,
+  },
   externals: {
     vscode:
         'commonjs vscode'  // the vscode-module is created on-the-fly and must
@@ -54,7 +57,7 @@ const generateConfig = (argv): webpack.configuration => ({
               }
             }
           },
-          {loader: 'ifdef-loader', options: {DEBUG: argv.mode !== 'production'}}
+          {loader: 'ifdef-loader', options: {DEBUG: env && env.DEBUG}}
         ]
       },
       {test: /\.node$/, use: 'node-loader'}
@@ -72,6 +75,6 @@ const generateConfig = (argv): webpack.configuration => ({
   }
 });
 
-module.exports = (_, argv) => {
-    return generateConfig(argv);
+module.exports = (env) => {
+    return generateConfig(env);
 };
