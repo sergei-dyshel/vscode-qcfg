@@ -1,6 +1,6 @@
 'use strict';
 
-import { TextDocument, TextDocumentChangeEvent, TextDocumentContentChangeEvent, Range, Position } from 'vscode';
+import { TextDocument, TextDocumentChangeEvent, TextDocumentContentChangeEvent, Range, Position, Selection } from 'vscode';
 import { log } from './logging';
 import { maxNumber, minNumber } from './tsUtils';
 
@@ -200,6 +200,11 @@ export function detectSelectionChange(
 declare module 'vscode' {
   export interface Range {
     compareTo(that: Range): number;
+    strictlyContains(that: Range): boolean;
+    asSelection(reverse?: boolean): Selection;
+  }
+  export interface Position {
+    readonly asRange: Range;
   }
 }
 
@@ -210,3 +215,19 @@ Range.prototype.compareTo =
     return startCmp;
   return this.end.compareTo(that.end);
 };
+
+Range.prototype.asSelection = function(this: Range, reverse = false) {
+  const anchor = reverse ? this.end : this.start;
+  const active = reverse ? this.start : this.end;
+  return new Selection(anchor, active);
+};
+
+Range.prototype.strictlyContains = function(this: Range, that: Range) {
+  return this.contains(that) && !this.isEqual(that);
+};
+
+Object.defineProperty(Position.prototype, 'asRange', {
+  get() {
+    return new Range(this, this);
+  }
+});

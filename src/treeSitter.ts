@@ -1,139 +1,32 @@
 'use strict';
 
-import { ExtensionContext, Range, StatusBarItem, TextEditor, TextEditorDecorationType, TextEditorSelectionChangeEvent, window, workspace } from 'vscode';
-import { listenWrapped, registerCommandWrapped } from './exception';
-import { log, str } from './logging';
+import { CancellationToken, commands, ExtensionContext, languages, Position, Range, Selection, SelectionRange, TextDocument, TextDocumentChangeEvent, TextEditor, workspace } from 'vscode';
+import { handleErrorsAsync, listenWrapped, registerCommandWrapped } from './exception';
+import { Logger, str } from './logging';
 import { Modules } from './module';
-import {SyntaxTrees, SyntaxNode} from './syntaxTree';
-import { offsetPosition, selectRange, swapRanges, trimInner } from './textUtils';
-import { Context, getActiveTextEditor } from './utils';
+import { SyntaxNode, SyntaxTree, SyntaxTrees } from './syntaxTree';
+import { selectRange, swapRanges, trimInner, trimWhitespace } from './textUtils';
+import { getActiveTextEditor } from './utils';
 
-let status: StatusBarItem;
+const log = new Logger({level: 'trace'});
 
 enum Direction {
   Left,
   Right
 }
 
-namespace TreeMode {
-  const NAME = 'qcfgTreeMode';
-
-  export function set() {
-    Context.set(NAME);
-  }
-  export function clear() {
-    Context.clear(NAME);
-  }
-  export function is() {
-    return Context.has(NAME);
-  }
-}
-
-let lastSelection: Range | null;
-
-class RangeDecorator {
-  left: TextEditorDecorationType;
-  right: TextEditorDecorationType;
-  constructor(border :string) {
-    this.left = window.createTextEditorDecorationType(
-        {'border': border, borderRadius: '5px 0px 0px 5px'});
-    this.right = window.createTextEditorDecorationType(
-        {'border': border, borderRadius: '0px 5px 5px 0px'});
-  }
-
-  decorate(editor: TextEditor, ranges: Range[]) {
-    const document = editor.document;
-    function rangeFirstChar(range: Range): Range {
-      return new Range(range.start, offsetPosition(document, range.start, 1));
-    }
-    function rangeLastChar(range: Range): Range {
-      return new Range(offsetPosition(document, range.end, -1), range.end);
-    }
-    const firstChars = ranges.map(rangeFirstChar);
-    const lastChars = ranges.map(rangeLastChar);
-    editor.setDecorations(this.left, firstChars);
-    editor.setDecorations(this.right, lastChars);
-  }
-
-  clear(editor: TextEditor) {
-    this.decorate(editor, []);
-  }
-}
-
-const siblingDecorator = new RangeDecorator('1px solid rgba(255, 255, 255, 0.50)');
-const parentDecorator = new RangeDecorator('2px solid rgba(255, 255, 0, 0.25)');
-const superParentDecorator = new RangeDecorator('2px solid rgba(0, 255, 0, 0.25)');
-
-function onDidChangeTextEditorSelection(
-    event: TextEditorSelectionChangeEvent) {
-  const selections = event.selections;
-  if (!lastSelection || selections.length > 1 ||
-      !(selections[0].isEqual(lastSelection))) {
-    clearMode();
-    TreeMode.clear();
-  }
-}
-
-function findContainedNode(node: SyntaxNode, range: Range, strict: boolean) {
-  const nRange = node.range;
-  if (range.contains(nRange) &&
-      !(strict && nRange.isEqual(range))) {
-    return node;
-  }
-  for (let i = 0; i < node.childCount; ++i) {
-    const child = node.child(i) as SyntaxNode;
-    const foundInChild = findContainedNode(child, range, strict);
-    if (foundInChild)
-      return foundInChild;
-  }
-}
-
-
 function selectAndRememberRange(
     editor: TextEditor, range: Range, reversed?: boolean) {
-  lastSelection = range;
   selectRange(editor, range, reversed);
-  TreeMode.set();
-}
-
-async function shrinkSelection() {
-  const editor = getActiveTextEditor();
-  const document = editor.document;
-  const selection = editor.selection;
-  const tree = await SyntaxTrees.get(document);
-  if (editor.selections.length > 1 || selection.isEmpty)
-    return;
-  let range: Range;
-  const innerRange = trimInner(editor.document, selection);
-  if (innerRange && !innerRange.isEqual(selection)) {
-    range = innerRange;
-  } else {
-    const node = findContainedNode(tree.rootNode, selection, true /* strict */);
-    if (!node)
-      throw new Error("Could not shrink selection");
-    updateDecorations(editor, node);
-    range = node.range;
-    setStatusFromNode(node);
-  }
-  selectAndRememberRange(editor, range);
-}
-
-function nodeContainsRange(
-    node: SyntaxNode, range: Range): boolean {
-  return node.range.contains(range);
 }
 
 function isSameNode(node1: SyntaxNode, node2: SyntaxNode) {
   return node1 && node2 && node1.range.isEqual(node2.range);
 }
 
-function nodeHasRange(node: SyntaxNode, range: Range) {
-  return node.range.isEqual(range);
-}
-
 function findContainingNodeImpl(node: SyntaxNode, range: Range):
     SyntaxNode | undefined {
-  if (nodeHasRange(node, range))
+  if (node.range.isEqual(range))
     return node;
   for (let i = 0; i < node.childCount; ++i) {
     const child = node.child(i) as SyntaxNode;
@@ -141,7 +34,7 @@ function findContainingNodeImpl(node: SyntaxNode, range: Range):
     if (foundInChild)
       return foundInChild;
   }
-  if (nodeContainsRange(node, range))
+  if (node.range.contains(range))
     return node;
 }
 
@@ -157,13 +50,13 @@ function findContainingChildren(
   let firstChild: SyntaxNode | undefined;
   let lastChild: SyntaxNode | undefined;
 
-  if (parent.range.isEqual(range)) {
-    firstChild = parent;
-    lastChild = parent;
-    parent = log.assertNonNull<SyntaxNode>(parent.parent);
+  if (parent.range.isEqual(range))
+    parent = log.assertNonNull(parent.parent);
+  while (!isListNode(parent)) {
+    parent = log.assertNonNull(parent.parent);
   }
-  for (let i = 0; i < parent.childCount; ++i) {
-    const child = log.assertNonNull<SyntaxNode>(parent.child(i));
+  for (let i = 0; i < parent.namedChildCount; ++i) {
+    const child = parent.namedChild(i)!;
     if (child.range.contains(range.start))
       firstChild = child;
     if (child.range.contains(range.end)) {
@@ -173,11 +66,7 @@ function findContainingChildren(
   }
   if (!firstChild || !lastChild)
     throw new Error('Could not identify children nodes');
-  return {
-    parent,
-    firstChild: log.assertNonNull<SyntaxNode>(firstChild),
-    lastChild: log.assertNonNull<SyntaxNode>(lastChild)
-  };
+  return {parent, firstChild, lastChild};
 }
 
 
@@ -190,7 +79,6 @@ function selectChildren(
     reversed?: boolean) {
   selectAndRememberRange(
       editor, childrenRange(firstChild, lastChild), reversed);
-  setStatusFromChildren(firstChild, lastChild);
 }
 
 async function getContext() {
@@ -204,33 +92,31 @@ async function getContext() {
 }
 
 async function selectSibling(direction: Direction, swap?: boolean) {
-  if (!TreeMode.is())
-    return;
   let ctx = await getContext();
-  const node = findContainingNode(ctx.tree.rootNode, ctx.selection);
-  let sibling: SyntaxNode | null;
-  if (node.range.isEqual(ctx.selection)) {
-    if (direction === Direction.Left)
-      sibling = node.previousNamedSibling;
-    else
-      sibling = node.nextNamedSibling;
-    if (!sibling)
-      return;
-  } else {
-    sibling = node;
+  const {parent, firstChild, lastChild} =
+      findContainingChildren(ctx.tree.rootNode, ctx.selection);
+  let node = (firstChild !== lastChild) ?
+      (direction === Direction.Left ? firstChild : lastChild) :
+      firstChild;
+  const sibling = node.range.isEqual(ctx.selection) ?
+      (direction === Direction.Left ? parent.previousNamedSibling :
+                                      parent.nextNamedSibling) :
+      node;
+  if (!sibling)
+        return;
+  if (sibling === node) {
+    selectChildren(ctx.editor, node, node, direction === Direction.Left);
+    return;
   }
-  let siblingRange = sibling.range;
-  lastSelection = siblingRange;
-  if (swap && node !== sibling) {
-    await swapRanges(ctx.editor, node.range, siblingRange);
+  let siblingRange = node.range;
+  if (swap && parent !== node) {
+    await swapRanges(ctx.editor, parent.range, siblingRange);
     ctx = await getContext();
-    sibling = findContainingNode(ctx.tree.rootNode, ctx.selection);
-    siblingRange = sibling.range;
+    node = findContainingNode(ctx.tree.rootNode, ctx.selection);
+    siblingRange = node.range;
   }
 
   selectAndRememberRange(ctx.editor, siblingRange);
-  updateDecorations(ctx.editor, sibling);
-  setStatusFromNode(sibling);
 }
 
 async function extendSelection(direction: Direction) {
@@ -238,8 +124,6 @@ async function extendSelection(direction: Direction) {
   const document = editor.document;
   const selection = editor.selection;
   const tree = await SyntaxTrees.get(document);
-  if (!TreeMode.is())
-    return;
   const x = findContainingChildren(tree.rootNode, editor.selection);
   let parent: SyntaxNode  = x.parent;
   let firstChild: SyntaxNode | null = x.firstChild;
@@ -264,51 +148,36 @@ async function extendSelection(direction: Direction) {
     if (firstChild && lastChild)
       selectChildren(editor, firstChild, lastChild, selection.isReversed);
   }
-  updateDecorations(editor, log.assertNonNull<SyntaxNode>(firstChild));
 }
 
-function updateDecorations(editor: TextEditor, node: SyntaxNode) {
-  const parent = getProperParent(node);
-  if (!parent)
-    return;
-  const superParent = getSuperParent(node);
-  // if (isSameNode(superParent, parent))
-  //   superParentDecorator.clear(editor);
-  // else
-  if (superParent)
-    superParentDecorator.decorate(editor, [superParent.range]);
-  else
-    superParentDecorator.clear(editor);
-  if (node.parent)
-    siblingDecorator.decorate(
-        editor, node.parent.namedChildren.map(node => node.range));
-  else
-    siblingDecorator.clear(editor);
-  parentDecorator.decorate(editor, [parent.range]);
+const LIST_NODE_TYPES: string[] = [
+  'statement_block',
+  'arguments',
+  'formal_paremeters',
+  'array',
+  'program',
+  'module',
+  'preproc_if',
+  // 'function_definition', // only in python
+  'compound_statement',
+  'field_declaration_list',
+  'declaration_list',
+  'translation_unit',
+];
+
+function isListNode(node: SyntaxNode) {
+  return LIST_NODE_TYPES.includes(node.type);
 }
 
-function getSuperParent(node: SyntaxNode) {
-  const COMPOUND_NODE_TYPES: string[] = [
-    'statement_block',
-    'arguments',
-    'formal_paremeters',
-    'array',
-    'program',
-    'module',
-    'preproc_if',
-    // 'function_definition', // only in python
-    'compound_statement',
-    'field_declaration_list',
-    'declaration_list',
-    'translation_unit',
-  ];
+/* REFACTOR: unexport */
+export function getSuperParent(node: SyntaxNode) {
   let sParent: SyntaxNode | null;
   sParent = getProperParent(node);
   while (sParent) {
     const parent = getProperParent(sParent);
     if (!parent)
       return sParent;
-    if (COMPOUND_NODE_TYPES.includes(parent.type))
+    if (isListNode(node))
       return sParent;
     sParent = parent;
   }
@@ -323,62 +192,144 @@ function getProperParent(node: SyntaxNode) {
   return parent;
 }
 
-async function expandSelection(superParent: boolean) {
+class ExpandMode {
+  async init() {
+    const document = this.editor.document;
+    const position = this.currentRange.end;
+    const wordRange = document.getWordRangeAtPosition(position);
+    const result = await commands.executeCommand(
+        'vscode.executeSelectionRangeProvider', document.uri, [position]);
+    const allSelRanges = result as SelectionRange[];
+    let selRange: SelectionRange|undefined = allSelRanges[0];
+    while (selRange) {
+      const range = selRange.range;
+      if (range.strictlyContains(this.currentRange) &&
+          (!wordRange || range.contains(wordRange)))
+        this.expandRanges.push(range);
+      selRange = selRange.parent;
+    }
+    log.trace('Selection range provider returned ranges', this.expandRanges);
+    this.expandRanges = this.expandRanges.filter(
+        range => trimWhitespace(document, range).isEqual(range));
+    log.trace('expandRanges after filtering', this.expandRanges);
+  }
+
+  expand() {
+    const document = this.editor.document;
+    if (this.expandRanges.isEmpty)
+      return;
+    while (!this.expandRanges.isEmpty) {
+      this.shrinkRanges.push(this.currentRange);
+      this.currentRange = this.expandRanges.shift()!;
+      this.setSelection();
+      if (this.expandRanges.isEmpty)
+        break;
+      const prev = this.shrinkRanges.top!;
+      const next = this.expandRanges[0]!;
+      const prevText = document.getText(prev);
+      const currentText = document.getText(this.currentRange);
+      if (this.currentRange.isEqual(trimInner(document, next))) {
+        log.trace('Skipping range with stripped brackets/quotes');
+        continue;
+      }
+      if (currentText === (prevText + ',') ||
+          currentText === (prevText + ';')) {
+        log.trace('Skipping range ending with comma');
+        continue;
+      }
+      break;
+    }
+  }
+
+  shrink() {
+    if (this.shrinkRanges.isEmpty)
+      return;
+    this.expandRanges.unshift(this.currentRange);
+    this.currentRange = this.shrinkRanges.pop()!;
+    this.setSelection();
+  }
+
+  private setSelection() {
+    if (this.editor.selection.isEqual(this.currentRange))
+      return;
+    this.editor.selection =
+        this.currentRange.asSelection(this.editor.selection.isReversed);
+  }
+
+  private expandRanges: Range[] = [];
+  private shrinkRanges: Range[] = [];
+  currentRange: Range;
+
+  constructor(public editor: TextEditor, selection: Selection) {
+    this.currentRange = selection;
+  }
+}
+
+let currentMode: ExpandMode|undefined;
+
+async function expandOrShrink(arg: {shrink: boolean, listNode?: boolean}) {
   const ctx = await getContext();
-  let node = findContainingNode(ctx.tree.rootNode, ctx.selection);
-  if (nodeHasRange(node, ctx.selection) && TreeMode.is()) {
-    const parent = superParent ? getSuperParent(node) : getProperParent(node);
-    if (!parent)
-      throw new Error('No parent');
-    node = parent;
+  if (!currentMode || currentMode.editor !== ctx.editor ||
+      !currentMode.currentRange.isEqual(ctx.selection)) {
+    currentMode = new ExpandMode(ctx.editor, ctx.selection);
+    await currentMode.init();
   }
-  updateDecorations(ctx.editor, node);
-  setStatusFromNode(node);
-  selectAndRememberRange(ctx.editor, node.range);
-}
-
-function setStatusFromNode(node: SyntaxNode) {
-  const parent = getProperParent(node);
-  const parentType = parent ? parent.type : '';
-  status.text = `${parentType} $(arrow-right) ${node.type}`;
-  status.show();
-}
-
-function setStatusFromChildren(firstChild: SyntaxNode, lastChild: SyntaxNode) {
-  let childStr: string;
-  if (firstChild.type === lastChild.type)
-    childStr = `${firstChild.type}...`;
+  if (arg.shrink)
+    currentMode.shrink();
   else
-    childStr = '...';
-  const parentType = firstChild.parent ? firstChild.parent.type : '';
-  status.text = `${parentType} $(arrow-right) ${childStr}`;
-  status.show();
+    currentMode.expand();
 }
 
-function clearMode() {
-  for (const editor of window.visibleTextEditors) {
-    superParentDecorator.decorate(editor, []);
-    parentDecorator.decorate(editor, []);
-    siblingDecorator.decorate(editor, []);
+function computeSelectionRange(document: TextDocument, tree: SyntaxTree, position: Position): SelectionRange
+{
+  let node: SyntaxNode|null =
+      findContainingNode(tree.rootNode, position.asRange);
+  const ranges: Range[] = [];
+  while (node) {
+    const inner = trimInner(document, node.range);
+    if (node.range.strictlyContains(inner) &&
+        (ranges.isEmpty || inner.strictlyContains(ranges.top!)))
+      ranges.push(inner);
+    ranges.push(node.range);
+    node = node.parent;
   }
-   lastSelection = null;
-   TreeMode.clear();
-   status.hide();
+
+  log.traceStr('Syntax-based selection range for {}: {}', position, ranges);
+
+  const topSelRange = new SelectionRange(position.asRange);
+  let selRange = topSelRange;
+  while (!ranges.isEmpty) {
+    selRange.parent = new SelectionRange(ranges.shift()!);
+    selRange = selRange.parent;
+  }
+  return topSelRange;
+}
+
+async function provideSelectionRanges(
+    document: TextDocument, positions: Position[], _: CancellationToken) {
+  const tree = await SyntaxTrees.get(document);
+  const result = positions.map(pos => computeSelectionRange(document, tree, pos));
+  return result;
+}
+
+function onDidChangeTextDocument(event: TextDocumentChangeEvent) {
+  if (currentMode && currentMode.editor.document === event.document)
+    currentMode = undefined;
 }
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
-      listenWrapped(workspace.onDidChangeTextDocument, clearMode),
-      listenWrapped(
-          window.onDidChangeTextEditorSelection,
-          onDidChangeTextEditorSelection),
-      listenWrapped(window.onDidChangeActiveTextEditor, clearMode),
+      listenWrapped(workspace.onDidChangeTextDocument, onDidChangeTextDocument),
+      languages.registerSelectionRangeProvider(
+          SyntaxTrees.supportedLanguages,
+          {provideSelectionRanges: handleErrorsAsync(provideSelectionRanges)}),
       registerCommandWrapped(
-          'qcfg.selection.expand', () => expandSelection(false /* parent */)),
+          'qcfg.selection.expand', () => expandOrShrink({shrink: false})),
+      registerCommandWrapped(
+          'qcfg.selection.shrink', () => expandOrShrink({shrink: true})),
       registerCommandWrapped(
           'qcfg.selection.selectSuperParent',
-          () => expandSelection(true /* superParent */)),
-      registerCommandWrapped('qcfg.selection.shrink', shrinkSelection),
+          () => expandOrShrink({shrink: false, listNode: true})),
       registerCommandWrapped(
           'qcfg.selection.left', () => selectSibling(Direction.Left)),
       registerCommandWrapped(
@@ -393,7 +344,6 @@ function activate(context: ExtensionContext) {
       registerCommandWrapped(
           'qcfg.selection.swapRight',
           () => selectSibling(Direction.Right, true /* swap */)));
-  status = window.createStatusBarItem();
 }
 
 Modules.register(activate);

@@ -2,7 +2,7 @@
 
 import * as vscode from 'vscode';
 import { TreeItem, TreeItem2, ProviderResult, TreeItemCollapsibleState } from 'vscode';
-import { callIfNonNull, removeFirstFromArray } from './tsUtils';
+import { callIfNonNull } from './tsUtils';
 import { log } from './logging';
 import { registerCommandWrapped, listenWrapped } from './exception';
 import { Modules } from './module';
@@ -60,32 +60,34 @@ export interface TreeProvider {
   onDidChangeVisibility?(visible: boolean);
 }
 
-export function setProvider(provider: TreeProvider) {
-  // TODO: run onUnset method of current provider
-  currentProvider = provider;
-  if (provider.getMessage)
-    treeView.message = provider.getMessage();
-  onChangeEmitter.fire();
-}
-
-export function isCurrentProvider(provider: TreeProvider) {
-  return currentProvider === provider;
-}
-
-export interface RevealOptions {
-  select?: boolean;
-  focus?: boolean;
-  expand?: boolean | number;
-}
-
-export async function revealTree(node?: TreeNode, options?: RevealOptions) {
-  if (!node) {
-    const nodes = await log.assertNonNull(currentProvider).getTrees();
-    if (!nodes || nodes.length === 0)
-      return;
-    node = nodes[0];
+export namespace TreeView {
+  export function setProvider(provider: TreeProvider) {
+    // TODO: run onUnset method of current provider
+    currentProvider = provider;
+    if (provider.getMessage)
+      treeView.message = provider.getMessage();
+    onChangeEmitter.fire();
   }
-  return treeView.reveal(node, options);
+
+  export function isCurrentProvider(provider: TreeProvider) {
+    return currentProvider === provider;
+  }
+
+  export interface RevealOptions {
+    select?: boolean;
+    focus?: boolean;
+    expand?: boolean | number;
+  }
+
+  export async function revealTree(node?: TreeNode, options?: RevealOptions) {
+    if (!node) {
+      const nodes = await log.assertNonNull(currentProvider).getTrees();
+      if (!nodes || nodes.length === 0)
+        return;
+      node = nodes[0];
+    }
+    return treeView.reveal(node, options);
+  }
 }
 
 export class StaticTreeNode implements TreeNode {
@@ -140,15 +142,11 @@ export class StaticTreeNode implements TreeNode {
   }
 
   remove() {
+    if (!this.parent)
+      throw new Error('Can not remove root node');
     const parent = this.parent;
     this.parent_ = undefined;
-    if (parent)
-      log.assert(removeFirstFromArray(parent.children_, this));
-    if (!parent)
-      log.assertNonNull(
-          log.assertNonNull(currentProvider).removeNode,
-          'Static tree provider must provide \'removeNode\' to handle root removal')(
-          this);
+    log.assert(parent.children_.removeFirst(this));
     onChangeEmitter.fire(parent);
   }
 
@@ -222,13 +220,10 @@ const treeDataProvider: vscode.TreeDataProvider<TreeNode> = {
 function removeNode(...args: any[]) {
   const node = log.assertNonNull(args[0]) as TreeNode;
   const provider = log.assertNonNull(currentProvider);
-  if (node instanceof StaticTreeNode)
-    node.remove();
-  else
-    log.assertNonNull(
-        provider.removeNode,
-        'TreeProvider with removable nodes must provide removeNode method')(
-        node);
+  if (!provider.removeNode)
+    throw new Error(
+        'TreeProvider with removable nodes must provide removeNode method');
+  provider.removeNode(node);
 }
 
 function expandNode(...args: any[]) {

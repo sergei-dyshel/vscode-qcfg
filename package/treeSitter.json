@@ -10,10 +10,6 @@
                 "title": "qcfg: Select super parent"
             },
             {
-                "command": "qcfg.selection.expand",
-                "title": "qcfg: Expand selection"
-            },
-            {
                 "command": "qcfg.selection.shrink",
                 "title": "qcfg: Shrink selection"
             },
@@ -49,44 +45,44 @@
                 "when": "editorTextFocus"
             },
             {
-                "key": "ctrl+alt+up",
-                "command": "qcfg.selection.selectSuperParent",
-                "when": "editorTextFocus"
-            },
-            {
                 "key": "alt+down",
                 "command": "qcfg.selection.shrink",
                 "when": "editorTextFocus"
             },
             {
+                "key": "ctrl+alt+up",
+                "command": "qcfg.selection.selectSuperParent",
+                "when": "editorTextFocus"
+            },
+            {
                 "key": "alt+pageup",
                 "command": "qcfg.selection.left",
-                "when": "editorTextFocus && qcfgTreeMode"
+                "when": "editorTextFocus"
             },
             {
                 "key": "alt+pagedown",
                 "command": "qcfg.selection.right",
-                "when": "editorTextFocus && qcfgTreeMode"
+                "when": "editorTextFocus"
             },
             {
                 "key": "ctrl+alt+pageup",
                 "command": "qcfg.selection.swapLeft",
-                "when": "editorTextFocus && qcfgTreeMode"
+                "when": "editorTextFocus"
             },
             {
                 "key": "ctrl+alt+pagedown",
                 "command": "qcfg.selection.swapRight",
-                "when": "editorTextFocus && qcfgTreeMode"
+                "when": "editorTextFocus"
             },
             {
                 "key": "shift+alt+pageup",
                 "command": "qcfg.selection.extendRight",
-                "when": "editorTextFocus && qcfgTreeMode"
+                "when": "editorTextFocus"
             },
             {
                 "key": "shift+alt+pagedown",
                 "command": "qcfg.selection.extendLeft",
-                "when": "editorTextFocus && qcfgTreeMode"
+                "when": "editorTextFocus"
             }
         ]
     }

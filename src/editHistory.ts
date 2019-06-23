@@ -4,7 +4,6 @@ import { ExtensionContext, Range, Selection, TextDocument, TextDocumentChangeEve
 import { adjustOffsetRangeAfterChange, NumRange, offsetToRange, rangeToOffset } from './documentUtils';
 import { listenWrapped, registerCommandWrapped, CheckError } from './exception';
 import { Logger, str } from './logging';
-import { rangeToSelection } from './textUtils';
 import { DefaultMap, filterNonNull } from './tsUtils';
 import { getActiveTextEditor } from './utils';
 import { Modules } from './module';
@@ -40,7 +39,7 @@ class DocumentHistory {
     /// #if DEBUG
     this.log.trace(`current ranges ${str(ranges)}`);
     /// #endif
-    if (this.backward.notEmpty) {
+    if (!this.backward.isEmpty) {
       /// #if DEBUG
       this.log.trace(`previous ranges ${this.backward.top!}`);
       /// #endif
@@ -61,15 +60,12 @@ class DocumentHistory {
   }
 
   goBackward(selection: Selection[]): NumRange[] {
-    if (this.backward.empty)
+    if (this.backward.isEmpty)
       throw new CheckError('No backward  history');
     const ranges = this.backward.pop()!;
     const selectionRanges = rangesToOffset(this.document, selection);
     selectionRanges.sort(NumRange.prototype.compareTo);
-    if (ranges.equals(selectionRanges, NumRange.prototype.equals)) {
-      /* TODO:  */
-    }
-    if (this.forward.empty)
+    if (this.forward.isEmpty)
       this.savedSelection = selectionRanges;
     this.forward.push(ranges);
     this.log.debug(
@@ -79,12 +75,12 @@ class DocumentHistory {
   }
 
   goForward(): NumRange[] {
-    if (this.forward.empty)
+    if (this.forward.isEmpty)
       throw new CheckError('No more forward history');
     this.backward.push(this.forward.pop()!);
     this.log.debug(`Going forward (${this.backward.length} backward items, ${
         this.forward.length} forward items)`);
-    if (this.forward.empty)
+    if (this.forward.isEmpty)
       return this.savedSelection!;
     return this.forward.top!;
   }
@@ -131,7 +127,7 @@ function onDidChangeTextDocument(event: TextDocumentChangeEvent) {
   const document = event.document;
   if (document.fileName.startsWith('extension-output'))
     return;
-  if (event.contentChanges.empty)
+  if (event.contentChanges.isEmpty)
     return;
   const docHistory = history.get(document);
   docHistory.processTextChange(event.contentChanges);
@@ -144,7 +140,7 @@ function selectRanges(editor: TextEditor, ranges: Range[]) {
   if (!ranges.length)
     return;
   for (const range of ranges)
-    selections.push(rangeToSelection(range));
+    selections.push(range.asSelection());
   editor.selections = selections;
   editor.revealRange(new Range(ranges[0].start, ranges.top!.end));
 }

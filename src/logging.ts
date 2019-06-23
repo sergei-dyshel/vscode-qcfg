@@ -9,6 +9,7 @@ import { selectStringFromList } from './dialog';
 import { registerCommandWrapped, listenWrapped } from './exception';
 import { Modules } from './module';
 import { getCallsite } from './sourceMap';
+import * as stringFormat from 'string-format';
 
 type LogLevelStr = 'info'|'debug'|'trace';
 
@@ -32,26 +33,42 @@ export class Logger {
     }
   }
 
+  log(level: LogLevel, args: any[]) {
+    if (level < this.resolveLevel())
+      return;
+    return this.logImpl(level, 4, formatMessage(args));
+  }
+  logStr(level: LogLevel, fmt: string, args: any[]) {
+    if (level < this.resolveLevel())
+      return;
+    return this.logImpl(level, 4, formatMessageStr(fmt, args));
+  }
   trace(...args: any[]) {
-    this._log(LogLevel.Trace, 3, ...args);
+    this.log(LogLevel.Trace, args);
   }
-  info(...args: any[]) {
-    this._log(LogLevel.Info, 3, ...args);
-  }
-  notice(...args: any[]) {
-    this._log(LogLevel.Notice, 3, ...args);
-  }
-  warn(...args: any[]) {
-    this._log(LogLevel.Warning, 3, ...args);
+  traceStr(fmt: string, ...args: any[]) {
+    this.logStr(LogLevel.Trace, fmt, args);
   }
   debug(...args: any[]) {
-    this._log(LogLevel.Debug, 3, ...args);
+    this.log(LogLevel.Debug, args);
+  }
+  debugStr(fmt: string, ...args: any[]) {
+    this.logStr(LogLevel.Debug, fmt, args);
+  }
+  info(...args: any[]) {
+    this.log(LogLevel.Info, args);
+  }
+  notice(...args: any[]) {
+    this.log(LogLevel.Notice, args);
+  }
+  warn(...args: any[]) {
+    this.log(LogLevel.Warning, args);
   }
   error(...args: any[]) {
-    this._log(LogLevel.Error, 3, ...args);
+    this.log(LogLevel.Error, args);
   }
   fatal(...args: any[]): never {
-    return this._log(LogLevel.Fatal, 3, args) as never;
+    return this.log(LogLevel.Fatal, args) as never;
   }
   assert(condition, ...args) {
     if (!condition) {
@@ -94,29 +111,25 @@ export class Logger {
         (this.parent ? this.parent.resolveLevel() : globalLevel));
   }
 
-  private _log(logLevel: LogLevel, callDepth: number, ...message: any[]) {
-    if (logLevel < this.resolveLevel())
-      return;
-    const msgStr = formatMessage(message);
+  private logImpl(logLevel: LogLevel, callDepth: number, message: string) {
     const record: LogRecord = {
       level: logLevel,
       date: getDate(),
       name: this.fullName(),
       instance: this.instance,
       message,
-      messageStr: msgStr,
       ...getCallsite(callDepth)
     };
     for (const handler of handlers)
       handler.handleIfNeeded(record);
     if (logLevel === LogLevel.Warning)
-      vscode.window.showWarningMessage(msgStr);
+      vscode.window.showWarningMessage(message);
     else if (logLevel === LogLevel.Error) {
       vscode.window.showErrorMessage(
-          msgStr.split('\n')[0] + ' [Show log](command:qcfg.log.show)');
+          message.split('\n')[0] + ' [Show log](command:qcfg.log.show)');
     }
     if (logLevel === LogLevel.Fatal) {
-      const errorMsg = `[${this.fullName}] ${msgStr}`;
+      const errorMsg = `[${this.fullName}] ${message}`;
       console.trace(errorMsg);
       throw new Error(errorMsg);
     }
@@ -163,7 +176,7 @@ function levelToStr(level: LogLevel) {
 }
 
 function updateGlobalLevel() {
-  if (handlers.empty)
+  if (handlers.isEmpty)
     return;
   const prev = globalLevel;
   globalLevel = handlers.map(handler => handler.level).min()!;
@@ -180,6 +193,13 @@ function strToLevel(s: string): LogLevel|undefined {
 
 function formatMessage(args: any[], default_ = ''): string {
   return args.length === 0 ? default_ : args.map(str).join(' ');
+}
+
+function formatMessageStr(fmt: string, args: any[]) {
+  const normalizedArgs = args.map(arg => {
+    return typeof arg === 'object' ? stringifyObject(arg) : arg;
+  });
+  return stringFormat.default(fmt, ...normalizedArgs);
 }
 
 function getDate(): string {
@@ -272,8 +292,7 @@ interface LogRecord {
   function: string;
   name: string;
   instance?: string;
-  message: any[];
-  messageStr: string;
+  message: string;
   formatted?: string;
 }
 
@@ -306,7 +325,7 @@ function formatRecord(record: LogRecord): string
     const pathStr = record.name !== '' ? `[${record.name}]` : '';
     const instanceStr = record.instance ? `{${record.instance}}` : '';
     record.formatted = `${record.date} ${level} ${record.location} ${
-        record.function}() ${pathStr} ${instanceStr} ${record.messageStr}`;
+        record.function}() ${pathStr} ${instanceStr} ${record.message}`;
     return record.formatted;
 }
 
@@ -343,14 +362,7 @@ class ConsoleHandler extends Handler {
     this.logFuncs.set(LogLevel.Fatal, console.error);
   }
   handle(record: LogRecord) {
-    let prefix =
-        `%c${record.location} ${record.function}() %c[qcfg.${record.name}]`;
-    const cssArgs: string[] = ["color: magenta", "color: blue"];
-    if (record.instance) {
-      prefix += ` %c{${record.instance}}`;
-      cssArgs.push('color: green');
-    }
-    this.logFuncs.get(record.level)(prefix, ...cssArgs, ...record.message);
+    this.logFuncs.get(record.level)('<qcfg> ' + record.message);
   }
 }
 

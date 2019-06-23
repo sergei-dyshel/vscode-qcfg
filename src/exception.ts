@@ -5,6 +5,7 @@ import { Disposable } from 'vscode';
 import { log } from './logging';
 import { replaceAll } from './stringUtils';
 import { showStatusBarMessage } from './windowUtils';
+import { PromiseType } from './tsUtils';
 
 export class CheckError extends Error {
   constructor(message: string) {
@@ -25,10 +26,30 @@ export function wrapWithErrorHandler<T extends(...args: any[]) => any, R>(
   };
 }
 
+export function
+wrapWithErrorHandlerAsync<T extends(...args: any[]) => Promise<any>, R>(
+    func: T, handler: (error: any) => R): (...funcArgs: Parameters<T>) =>
+    Promise<PromiseType<ReturnType<T>>|R>| R {
+  return (...args: Parameters<T>): Promise<PromiseType<ReturnType<T>>| R>|R => {
+    try {
+      return func(...args).catch(exc => handler(exc));
+    } catch (exc) {
+      return handler(exc);
+    }
+  };
+}
+
 export function handleErrors<T extends(...args: any[]) => any>(func: T):
     (...funcArgs: Parameters<T>) => ReturnType<T>| void {
   return wrapWithErrorHandler(func, stdErrorHandler);
 }
+
+export function handleErrorsAsync<T extends(...args: any[]) => Promise<any>>(
+    func: T): (...funcArgs: Parameters<T>) =>
+    Promise<PromiseType<ReturnType<T>>> {
+  return wrapWithErrorHandlerAsync(func, stdErrorHandler);
+}
+
 
 export function registerCommandWrapped(
     command: string, callback: (...args: any[]) => any,
@@ -74,10 +95,13 @@ function simplifyErrorStack(stack: string) {
 }
 
 function handleErrorDuringCommand(command: string, error: any) {
-  stdErrorHandler(error, `Command "${command}": `);
+  try {
+    stdErrorHandler(error, `Command "${command}": `);
+  } catch (_) {
+  }
 }
 
-function stdErrorHandler(error: any, prefix = '') {
+function stdErrorHandler(error: any, prefix = ''): never {
   if (error instanceof CheckError) {
     log.info(`${prefix}Check failed: ${error.message}`);
     showStatusBarMessage(error.message, {color: 'red'});
@@ -86,6 +110,7 @@ function stdErrorHandler(error: any, prefix = '') {
     log.error(`${prefix}${stack}`);
   } else
     log.error(`${prefix}${String(error)}`);
+  throw error;
 }
 
 function handleErrorDuringEvent(error: any) {

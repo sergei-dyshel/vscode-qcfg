@@ -8,9 +8,8 @@ import { adjustOffsetRangeAfterChange, NumRange, offsetToRange, rangeToOffset } 
 import { listenWrapped } from './exception';
 import { log, str } from './logging';
 import { isSubPath } from './pathUtils';
-import * as treeView from './treeView';
-import { StaticTreeNode, TreeProvider } from "./treeView";
-import { filterNonNull, removeFirstFromArray } from './tsUtils';
+import { StaticTreeNode, TreeProvider, TreeView } from "./treeView";
+import { filterNonNull } from './tsUtils';
 import { Modules } from './module';
 
 const DEFAULT_PARSE_REGEX =
@@ -72,9 +71,9 @@ export function setLocations(
   });
   currentTrees = nodes;
   currentMessage = message;
-  treeView.setProvider(provider);
+  TreeView.setProvider(provider);
   if (reveal)
-    treeView.revealTree(undefined, {select: false, focus: false});
+    TreeView.revealTree(undefined, {select: false, focus: false});
 }
 
 // private
@@ -185,7 +184,7 @@ class FileNode extends UriNode {
   constructor(uri: Uri) {
     super(uri, "");
     this.treeItem.iconPath = vscode.ThemeIcon.File;
-    this.setCollapsed();
+    this.setExpanded();
   }
 }
 
@@ -221,7 +220,7 @@ class LocationNode extends StaticTreeNode {
 
 function onDidChangeTextDocument(event: vscode.TextDocumentChangeEvent) {
   const document = event.document;
-  if (!currentTrees || !treeView.isCurrentProvider(provider))
+  if (!currentTrees || !TreeView.isCurrentProvider(provider))
     return;
   StaticTreeNode.applyRecursively(currentTrees, node => {
     if (node instanceof DirNode && isSubPath(node.fsPath, document.fileName))
@@ -243,8 +242,9 @@ const provider: TreeProvider = {
     return currentMessage;
   },
   removeNode(node: StaticTreeNode) {
-    log.assert(node.isRoot);
-    log.assert(removeFirstFromArray(log.assertNonNull(currentTrees), node));
+    if (node.isRoot)
+      log.assert(currentTrees!.removeFirst(node));
+    node.remove();
   },
   onDidChangeSelection(nodes: StaticTreeNode[]) {
     if (nodes.length !== 1)

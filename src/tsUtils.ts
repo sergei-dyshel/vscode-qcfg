@@ -58,15 +58,6 @@ export function upcastArray<B, T extends B>(arr: B[]): T[] {
   return arr as T[];
 }
 
-export function removeFirstFromArray<T>(array: T[], elem: T): boolean
-{
-  const index = array.indexOf(elem);
-  if (index === -1)
-    return false;
-  array.splice(index, 1);
-  return true;
-}
-
 export function callIfNonNull<R>(func: (() => R)|undefined): R|undefined;
 export function callIfNonNull<T, R>(
     func: ((_: T) => R)|undefined, _: T): R|undefined;
@@ -115,16 +106,24 @@ declare global {
      */
     reverseIter(): ReverseArrayIterator<T>;
     readonly top: T|undefined;
-    readonly empty: boolean;
-    readonly notEmpty: boolean;
+    readonly isEmpty: boolean;
     min(cmp?: (x: T, y: T) => number): T|undefined;
     max(cmp?: (x: T, y: T) => number): T|undefined;
     equals(that: T[], eq?: (x: T, y: T) => boolean): boolean;
+    removeFirst(val: T): boolean;
   }
 }
 
 Array.prototype.reverseIter = function<T>(this: T[]) {
   return new ReverseArrayIterator<T>(this);
+};
+
+Array.prototype.removeFirst = function<T>(this: T[], val: T): boolean {
+  const index = this.indexOf(val);
+  if (index === -1)
+    return false;
+  this.splice(index, 1);
+  return true;
 };
 
 function numberCompare<T>(x: T, y: T): number {
@@ -172,15 +171,9 @@ Object.defineProperty(Array.prototype, 'top', {
   }
 });
 
-Object.defineProperty(Array.prototype, 'empty', {
+Object.defineProperty(Array.prototype, 'isEmpty', {
   get(): boolean {
     return this.length === 0;
-  }
-});
-
-Object.defineProperty(Array.prototype, 'notEmpty', {
-  get(): boolean {
-    return !this.empty;
   }
 });
 
@@ -197,3 +190,6 @@ export class DefaultMap<K, V> extends Map<K, V> {
     return val;
   }
 }
+
+export type PromiseType<T extends Promise<any>> =
+    T extends Promise<infer R>? R : any;

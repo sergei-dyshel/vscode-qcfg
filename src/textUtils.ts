@@ -1,8 +1,9 @@
 'use strict';
 
-import {TextDocument, Position, Range, TextEditor, Selection} from 'vscode';
+import {TextDocument, Position, Range, TextEditor } from 'vscode';
 
 
+// TODO: add as property to position class
 export function offsetPosition(
     document: TextDocument, pos: Position, offset: number) {
   return document.positionAt(document.offsetAt(pos) + offset);
@@ -34,14 +35,8 @@ export function expandLinewise(range: Range) {
   return new Range(range.start.line, 0, range.end.line + 1, 0);
 }
 
-export function rangeToSelection(range: Range, reversed?: boolean) {
-  const anchor = reversed ? range.end : range.start;
-  const active = reversed ? range.start : range.end;
-  return new Selection(anchor, active);
-}
-
 export function selectRange(editor: TextEditor, range: Range, reversed?: boolean) {
-  editor.selection = rangeToSelection(range, reversed);
+  editor.selection = range.asSelection(reversed);
   editor.revealRange(range);
 }
 
@@ -72,5 +67,7 @@ export function swapRanges(
   });
 }
 
-const BRACKETS: Array<[string, string]> =
-    [['[', ']'], ['(', ')'], ['{', '}'], ['"', '"'], ["'", "'"]];
+const BRACKETS: Array<[string, string]> = [
+  ['[', ']'], ['(', ')'], ['{', '}'], ['"""', '"""'], ['\'\'\'', '\'\'\''],
+  ['"', '"'], ['\'', '\''], ['<', '>'], ['/*', '*/']
+];

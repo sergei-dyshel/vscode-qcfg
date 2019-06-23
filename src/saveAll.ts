@@ -27,7 +27,7 @@ function onDidSaveTextDocument(document: vscode.TextDocument) {
   const {workspaceFolder: wsFolder} =
       fileUtils.getDocumentRootThrowing(document);
   const docPath = vscode.workspace.asRelativePath(document.fileName);
-  log.info('onDidSaveTextDocument:', docPath);
+  log.debug('onDidSaveTextDocument:', docPath);
 
   if (savedFiles.has(wsFolder))
     log.assertNonNull(savedFiles.get(wsFolder)).push(document);

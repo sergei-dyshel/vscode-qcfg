@@ -2,7 +2,6 @@
 
 import * as vscode from 'vscode';
 import {window, Uri, QuickPickItem} from 'vscode';
-import { removeFirstFromArray } from './tsUtils';
 import { handleErrors } from './exception';
 import { Modules } from './module';
 
@@ -41,7 +40,7 @@ export async function inputWithHistory(persistentKey: string):
         const active = qp.activeItems[0];
         if ('detail' in active)
           return;
-        if (!removeFirstFromArray(qpItems, active))
+        if (!qpItems.removeFirst(active))
           return;
         extContext.globalState.update(
             persistentKey, qpItems.map((item) => item.label));

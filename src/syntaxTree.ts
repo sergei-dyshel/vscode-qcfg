@@ -83,7 +83,7 @@ namespace Parsers {
     if (!(language in languageConfig))
       throw new Error(`Syntax tree not available for language "${language}"`);
     const parsers = parserPool.get(language);
-    if (parsers.notEmpty)
+    if (!parsers.isEmpty)
       return parsers.pop()!;
     const parser = new Parser.default();
     parser.setLanguage(languageConfig[language].parser);

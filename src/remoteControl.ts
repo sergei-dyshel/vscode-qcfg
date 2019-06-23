@@ -97,7 +97,7 @@ function activate(_context: vscode.ExtensionContext) {
   server.on('error', (err) => {
     const error = err as NodeJS.ErrnoException;
     if (error.code === 'EADDRINUSE') {
-      log.info(`Port ${port} already in use`);
+      log.debug(`Port ${port} already in use`);
       port++;
       server.listen(port, '127.0.0.1');
     } else {
