@@ -5,7 +5,7 @@ import { handleErrorsAsync, listenWrapped, registerCommandWrapped } from './exce
 import { Logger, str } from './logging';
 import { Modules } from './module';
 import { SyntaxNode, SyntaxTree, SyntaxTrees } from './syntaxTree';
-import { selectRange, swapRanges, trimInner, trimWhitespace } from './textUtils';
+import { selectRange, swapRanges, trimInner, trimWhitespace, trimBrackets } from './textUtils';
 import { getActiveTextEditor } from './utils';
 
 const log = new Logger({level: 'trace'});
@@ -81,26 +81,34 @@ function selectChildren(
       editor, childrenRange(firstChild, lastChild), reversed);
 }
 
-async function getContext() {
+function getContextNoTree() {
   const editor = getActiveTextEditor();
   const document = editor.document;
   const selection = editor.selection;
   if (editor.selections.length > 1)
     throw new Error('Not applicable to multiple selections');
-  const tree = await SyntaxTrees.get(document);
-  return {editor, document, selection, tree};
+  return {editor, document, selection};
+}
+
+async function getContext() {
+  const ctx = getContextNoTree();
+  const tree = await SyntaxTrees.get(ctx.document);
+  return {tree, ...ctx};
 }
 
 async function selectSibling(direction: Direction, swap?: boolean) {
   let ctx = await getContext();
   const {parent, firstChild, lastChild} =
       findContainingChildren(ctx.tree.rootNode, ctx.selection);
+  log.traceStr(
+      'Found for list syntax nodes containing {}: from {} - to {}',
+      ctx.selection, firstChild, lastChild);
   let node = (firstChild !== lastChild) ?
       (direction === Direction.Left ? firstChild : lastChild) :
       firstChild;
   const sibling = node.range.isEqual(ctx.selection) ?
-      (direction === Direction.Left ? parent.previousNamedSibling :
-                                      parent.nextNamedSibling) :
+      (direction === Direction.Left ? (node.previousNamedSibling || node) :
+                                      (node.nextNamedSibling || node)) :
       node;
   if (!sibling)
         return;
@@ -108,9 +116,9 @@ async function selectSibling(direction: Direction, swap?: boolean) {
     selectChildren(ctx.editor, node, node, direction === Direction.Left);
     return;
   }
-  let siblingRange = node.range;
+  let siblingRange = sibling.range;
   if (swap && parent !== node) {
-    await swapRanges(ctx.editor, parent.range, siblingRange);
+    await swapRanges(ctx.editor, node.range, siblingRange);
     ctx = await getContext();
     node = findContainingNode(ctx.tree.rootNode, ctx.selection);
     siblingRange = node.range;
@@ -120,33 +128,29 @@ async function selectSibling(direction: Direction, swap?: boolean) {
 }
 
 async function extendSelection(direction: Direction) {
-  const editor = getActiveTextEditor();
-  const document = editor.document;
-  const selection = editor.selection;
-  const tree = await SyntaxTrees.get(document);
-  const x = findContainingChildren(tree.rootNode, editor.selection);
-  let parent: SyntaxNode  = x.parent;
-  let firstChild: SyntaxNode | null = x.firstChild;
-  let lastChild: SyntaxNode | null = x.firstChild;
-  parent = parent;
+  const ctx = await getContext();
+  let {firstChild, lastChild} =
+      findContainingChildren(ctx.tree.rootNode, ctx.selection);
+  log.traceStr(
+      'Found for list syntax nodes containing {}: from {} - to {}',
+      ctx.selection, firstChild, lastChild);
   const childRange = childrenRange(firstChild, lastChild);
-  if (!childRange.isEqual(selection)) {
-    selectChildren(editor, firstChild, lastChild);
+  if (!childRange.isEqual(ctx.selection)) {
+    selectChildren(ctx.editor, firstChild, lastChild);
   } else {
     if (direction === Direction.Left) {
-      if (selection.isReversed)
-        firstChild = firstChild.previousNamedSibling;
+      if (ctx.selection.isReversed)
+        firstChild = firstChild.previousNamedSibling || firstChild;
       else if (firstChild !== lastChild)
-        lastChild = lastChild.previousNamedSibling;
+        lastChild = lastChild.previousNamedSibling || lastChild;
     }
     else if (direction === Direction.Right) {
-      if (!selection.isReversed)
-        lastChild = lastChild.nextNamedSibling;
+      if (!ctx.selection.isReversed)
+        lastChild = lastChild.nextNamedSibling || lastChild;
       else if (firstChild !== lastChild)
-        firstChild = firstChild.nextNamedSibling;
+        firstChild = firstChild.nextNamedSibling || firstChild;
     }
-    if (firstChild && lastChild)
-      selectChildren(editor, firstChild, lastChild, selection.isReversed);
+    selectChildren(ctx.editor, firstChild, lastChild, ctx.selection.isReversed);
   }
 }
 
@@ -196,13 +200,21 @@ class ExpandMode {
   async init() {
     const document = this.editor.document;
     const position = this.currentRange.end;
-    const wordRange = document.getWordRangeAtPosition(position);
+    let wordRange = document.getWordRangeAtPosition(position);
+    // In json for some reason word includes quotes
+    if (wordRange)
+      wordRange = trimBrackets(document, wordRange);
     const result = await commands.executeCommand(
         'vscode.executeSelectionRangeProvider', document.uri, [position]);
     const allSelRanges = result as SelectionRange[];
     let selRange: SelectionRange|undefined = allSelRanges[0];
     while (selRange) {
       const range = selRange.range;
+      const inner = trimInner(document, range);
+      if (!inner.isEqual(range) && inner.strictlyContains(this.currentRange) &&
+          (!wordRange || inner.contains(wordRange)) &&
+          (this.expandRanges.isEmpty || this.expandRanges.top!.isEqual(inner)))
+        this.expandRanges.push(inner);
       if (range.strictlyContains(this.currentRange) &&
           (!wordRange || range.contains(wordRange)))
         this.expandRanges.push(range);
@@ -268,7 +280,7 @@ class ExpandMode {
 let currentMode: ExpandMode|undefined;
 
 async function expandOrShrink(arg: {shrink: boolean, listNode?: boolean}) {
-  const ctx = await getContext();
+  const ctx = await getContextNoTree();
   if (!currentMode || currentMode.editor !== ctx.editor ||
       !currentMode.currentRange.isEqual(ctx.selection)) {
     currentMode = new ExpandMode(ctx.editor, ctx.selection);

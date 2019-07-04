@@ -30,16 +30,41 @@
         },
         "keybindings": [
             {
-                    "key": "alt+t",
-                    "command": "qcfg.tasks.show"
+                "key": "alt+t",
+                "command": "qcfg.tasks.show"
             },
             {
-                    "key": "ctrl+k ctrl+b",
-                    "command": "qcfg.tasks.build.last"
+                "key": "ctrl+k ctrl+b",
+                "command": "qcfg.tasks.build.last"
             },
             {
-                    "key": "ctrl+k ctrl+shift+b",
-                    "command": "qcfg.tasks.build.default"
+                "key": "ctrl+k ctrl+shift+b",
+                "command": "qcfg.tasks.build.default"
+            },
+            {
+                "key": "alt+s",
+                "command": "qcfg.tasks.runQcfg",
+                "args": "syg"
+            },
+            {
+                "key": "alt+l",
+                "command": "qcfg.tasks.runQcfg",
+                "args": "jump2line"
+            },
+            {
+                "key": "alt+g",
+                "command": "qcfg.tasks.runQcfg",
+                "args": "gtags_cursor"
+            },
+            {
+                "key": "ctrl+k ctrl+g",
+                "command": "qcfg.tasks.runQcfg",
+                "args": "gtags"
+            },
+            {
+                "key": "alt+.",
+                "command": "qcfg.tasks.runQcfg",
+                "args": "rg_word"
             }
         ]
     }

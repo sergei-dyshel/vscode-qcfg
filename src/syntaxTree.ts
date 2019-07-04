@@ -6,7 +6,7 @@ import { SyntaxNode, Tree as SyntaxTree } from 'tree-sitter';
 import * as treeSitterCpp from 'tree-sitter-cpp';
 import * as treeSitterPython from 'tree-sitter-python';
 import * as treeSitterTypeScript from 'tree-sitter-typescript';
-import { ExtensionContext, Position, Range, TextDocument, TextDocumentChangeEvent, workspace, window } from 'vscode';
+import { ExtensionContext, Position, Range, TextDocument, TextDocumentChangeEvent, workspace, window, EventEmitter, Event } from 'vscode';
 import { NumRange } from './documentUtils';
 import { listenWrapped } from './exception';
 import { Modules } from './module';
@@ -26,17 +26,69 @@ interface LanguageConfig {
   parser: any;
 }
 
+const languageConfig: {[language: string]: LanguageConfig} = {
+  python: {parser: treeSitterPython},
+  c: {parser: treeSitterCpp},
+  cpp: {parser: treeSitterCpp},
+  typescript: {parser: treeSitterTypeScript},
+};
+
 declare module 'tree-sitter' {
   class SyntaxNode {
 
   }
   interface SyntaxNode {
+    readonly nodeType: SyntaxNode.Type;
     readonly offsetRange: NumRange;
     readonly range: VsRange;
     readonly start: Position;
     readonly end: Position;
   }
+  namespace SyntaxNode {
+    export type Type = 'identifier'|'declaration'|'function_definition'|
+        'decorated_definition'|'class_definition'|'preproc_include'|
+        'system_lib_string'|'string_literal'|'scoped_identifier'|
+        'namespace_identifier'|'function_declarator'|'number_literal'|
+        'type_qualifier'|'primitive_type'|'type_identifier'|'template_type'|
+        'scoped_type_identifier'|'type_descriptor'|'storage_class_specifier';
+  }
 }
+
+export namespace SyntaxTrees {
+  export function get(document: TextDocument): Promise<SyntaxTree> {
+    checkDocumentSupported(document);
+    return trees.get(document).get();
+  }
+  export function isDocumentSupported(document: TextDocument) {
+    return document.languageId in languageConfig;
+  }
+
+  export function documentGeneration(document: TextDocument) {
+    checkDocumentSupported(document);
+    return trees.get(document).generation;
+  }
+
+  export const supportedLanguages = Object.keys(languageConfig);
+}
+
+export interface SyntaxTreeUpdatedEvent {
+  document: TextDocument;
+  tree: SyntaxTree;
+}
+
+const emmiter = new EventEmitter<SyntaxTreeUpdatedEvent>();
+export const onSyntaxTreeUpdated: Event<SyntaxTreeUpdatedEvent> = emmiter.event;
+
+//////////////////////////////////////////////////////////////////////////////
+// Private
+//////////////////////////////////////////////////////////////////////////////
+
+Object.defineProperty(SyntaxNode.prototype, 'nodeType', {
+  get(): SyntaxNode.Type {
+    const this_ = this as SyntaxNode;
+    return this_.type as SyntaxNode.Type;
+  }
+});
 
 Object.defineProperty(SyntaxNode.prototype, 'offsetRange', {
   get(): NumRange {
@@ -95,14 +147,6 @@ namespace Parsers {
   }
 }
 
-const languageConfig: {[language: string]: LanguageConfig} = {
-  python: {parser: treeSitterPython},
-  c: {parser: treeSitterCpp},
-  cpp: {parser: treeSitterCpp},
-  typescript: {parser: treeSitterTypeScript},
-};
-
-
 class DocumentContext {
   constructor(private document: TextDocument) {
     this.log =
@@ -111,7 +155,7 @@ class DocumentContext {
   private tree?: SyntaxTree;
   private promiseContext?: PromiseContext<SyntaxTree>;
   private timer: Timer = new Timer();
-  private generation = 0;
+  private generation_ = 0;
   private log: Logger;
   private isUpdating = false;
 
@@ -123,7 +167,7 @@ class DocumentContext {
     const buf = new TextBuffer(this.document.getText());
     this.isUpdating = true;
     while (true) {
-      const generation = this.generation;
+      const generation = this.generation_;
       try {
         // TODO: make using previous tree configurable (may crash)
         const start = Date.now();
@@ -131,7 +175,8 @@ class DocumentContext {
             buf, this.tree, {syncOperationCount: 1000});
         const end = Date.now();
         this.log.debug(`Parsing took ${(end - start) / 1000} seconds`);
-        if (generation === this.generation) {
+        if (generation === this.generation_) {
+          emmiter.fire({document: this.document, tree: this.tree});
           if (this.promiseContext) {
             this.promiseContext.resolve(this.tree);
             this.promiseContext = undefined;
@@ -150,6 +195,10 @@ class DocumentContext {
     }
     Parsers.put(this.document.languageId, parser);
     this.isUpdating = false;
+  }
+
+  get generation() {
+    return this.generation_;
   }
 
   onDocumentUpdated() {
@@ -173,15 +222,10 @@ class DocumentContext {
 const trees = new DefaultMap<TextDocument, DocumentContext>(
     (document) => new DocumentContext(document));
 
-export namespace SyntaxTrees {
-  export function get(document: TextDocument): Promise<SyntaxTree> {
-    if (SyntaxTrees.supportedLanguages.includes(document.languageId))
-        return trees.get(document).get();
+function checkDocumentSupported(document: TextDocument) {
+  if (!SyntaxTrees.isDocumentSupported(document))
     throw new Error(
         `Syntax tree not available for language "${document.languageId}"`);
-  }
-
-  export const supportedLanguages = Object.keys(languageConfig);
 }
 
 function onDidChangeTextDocument(event: TextDocumentChangeEvent) {

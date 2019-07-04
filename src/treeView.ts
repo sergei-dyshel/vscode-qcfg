@@ -1,43 +1,43 @@
 'use strict';
 
-import * as vscode from 'vscode';
-import { TreeItem, TreeItem2, ProviderResult, TreeItemCollapsibleState } from 'vscode';
+import { TreeItem, TreeItem2, ProviderResult, TreeItemCollapsibleState, ExtensionContext, TreeViewOptions, window, TreeViewExpansionEvent, TreeViewSelectionChangeEvent, TreeViewVisibilityChangeEvent, MarkdownString, TreeItemLabel, TreeDataProvider, TreeView } from 'vscode';
 import { callIfNonNull } from './tsUtils';
 import { log } from './logging';
 import { registerCommandWrapped, listenWrapped } from './exception';
 import { Modules } from './module';
+import { EventEmitter } from 'vscode';
 
 export const TREE_ITEM_REMOVABLE_CONTEXT = 'removable';
 
-export function activate(context: vscode.ExtensionContext) {
-  const opts: vscode.TreeViewOptions<TreeNode> = {
+export function activate(context: ExtensionContext) {
+  const opts: TreeViewOptions<TreeNode> = {
     showCollapseAll: true,
     'treeDataProvider': treeDataProvider
   };
-  treeView = vscode.window.createTreeView('qcfgTreeView', opts);
+  treeView = window.createTreeView('qcfgTreeView', opts);
   context.subscriptions.push(
       treeView, registerCommandWrapped('qcfg.treeView.removeNode', removeNode),
       registerCommandWrapped('qcfg.treeView.expandNode', expandNode),
       listenWrapped(
           treeView.onDidExpandElement,
-          (event: vscode.TreeViewExpansionEvent<TreeNode>) => {
+          (event: TreeViewExpansionEvent<TreeNode>) => {
             callIfNonNull(event.element.onDidExpand, event.element);
           }),
       listenWrapped(
           treeView.onDidCollapseElement,
-          (event: vscode.TreeViewExpansionEvent<TreeNode>) => {
+          (event: TreeViewExpansionEvent<TreeNode>) => {
             callIfNonNull(event.element.onDidCollapse, event.element);
           }),
       listenWrapped(
           treeView.onDidChangeSelection,
-          (event: vscode.TreeViewSelectionChangeEvent<TreeNode>) => {
+          (event: TreeViewSelectionChangeEvent<TreeNode>) => {
             if (currentProvider)
               callIfNonNull(
                   currentProvider.onDidChangeSelection, event.selection);
           }),
       listenWrapped(
           treeView.onDidChangeVisibility,
-          (event: vscode.TreeViewVisibilityChangeEvent) => {
+          (event: TreeViewVisibilityChangeEvent) => {
             if (currentProvider)
               callIfNonNull(
                   currentProvider.onDidChangeVisibility, event.visible);
@@ -54,19 +54,26 @@ export interface TreeNode {
 
 export interface TreeProvider {
   getTrees(): ProviderResult<TreeNode[]>;
-  getMessage?(): string | vscode.MarkdownString | undefined;
+  getMessage?(): string | MarkdownString | undefined;
   removeNode?(node: TreeNode);
   onDidChangeSelection?(nodes: TreeNode[]);
   onDidChangeVisibility?(visible: boolean);
 }
 
-export namespace TreeView {
+export namespace QcfgTreeView {
   export function setProvider(provider: TreeProvider) {
-    // TODO: run onUnset method of current provider
-    currentProvider = provider;
-    if (provider.getMessage)
-      treeView.message = provider.getMessage();
+    // TODO: run onUnset method of current provider, check if this is the same provider
+    if (currentProvider !== provider)
+      currentProvider = provider;
+    refresh();
+  }
+
+  export function refresh() {
+    if (!currentProvider)
+      return;
     onChangeEmitter.fire();
+    if (currentProvider.getMessage)
+      treeView.message = currentProvider.getMessage();
   }
 
   export function isCurrentProvider(provider: TreeProvider) {
@@ -88,12 +95,21 @@ export namespace TreeView {
     }
     return treeView.reveal(node, options);
   }
+
+  export function isVisible() {
+    return treeView.visible;
+  }
 }
 
 export class StaticTreeNode implements TreeNode {
-  constructor(label?: string) {
-    if (label)
-      this.treeItem = new TreeItem2({label});
+  constructor(label?: TreeItemLabel|string) {
+    if (label) {
+      if (typeof label === 'string') {
+        this.treeItem = new TreeItem2({label});
+      } else {
+        this.treeItem = new TreeItem2(label);
+      }
+    }
     else {
       this.treeItem = new TreeItem2({label: ''});
       this.treeItem.label = undefined;
@@ -151,8 +167,12 @@ export class StaticTreeNode implements TreeNode {
   }
 
   readonly treeItem: TreeItem2;
-  get children(): ReadonlyArray<StaticTreeNode> { return this.children_; }
-  get parent(): StaticTreeNode | undefined { return this.parent_; }
+  get children(): StaticTreeNode[] {
+    return this.children_;
+  }
+  get parent(): StaticTreeNode|undefined {
+    return this.parent_;
+  }
   allowRemoval() {
     this.treeItem.contextValue = TREE_ITEM_REMOVABLE_CONTEXT ;
   }
@@ -165,8 +185,8 @@ export class StaticTreeNode implements TreeNode {
 
   // interface implementation
   getTreeItem() { return this.treeItem; }
-  getChildren() { return this.children_; }
-  getParent() { return this.parent_; }
+  getChildren() { return this.children; }
+  getParent() { return this.parent; }
 
   protected children_: StaticTreeNode[] = [];
   private parent_?: StaticTreeNode;
@@ -198,9 +218,9 @@ export namespace StaticTreeNode {
 
 // private
 
-const onChangeEmitter = new vscode.EventEmitter<TreeNode>();
+const onChangeEmitter = new EventEmitter<TreeNode>();
 
-const treeDataProvider: vscode.TreeDataProvider<TreeNode> = {
+const treeDataProvider: TreeDataProvider<TreeNode> = {
   onDidChangeTreeData: onChangeEmitter.event,
   getTreeItem(node: TreeNode) {
     return node.getTreeItem();
@@ -208,8 +228,10 @@ const treeDataProvider: vscode.TreeDataProvider<TreeNode> = {
   getChildren(node?: TreeNode) {
     if (node)
       return node.getChildren();
-    if (currentProvider)
+    if (currentProvider) {
+      log.debug('Refreshing the tree');
       return currentProvider.getTrees();
+    }
     return;
   },
   getParent(node: TreeNode) {
@@ -231,7 +253,7 @@ function expandNode(...args: any[]) {
   treeView.reveal(node, {expand: 3});
 }
 
-let treeView: vscode.TreeView<TreeNode>;
+let treeView: TreeView<TreeNode>;
 let currentProvider: TreeProvider | undefined;
 
 Modules.register(activate);

@@ -8,7 +8,7 @@ import { adjustOffsetRangeAfterChange, NumRange, offsetToRange, rangeToOffset } 
 import { listenWrapped } from './exception';
 import { log, str } from './logging';
 import { isSubPath } from './pathUtils';
-import { StaticTreeNode, TreeProvider, TreeView } from "./treeView";
+import { StaticTreeNode, TreeProvider, QcfgTreeView } from "./treeView";
 import { filterNonNull } from './tsUtils';
 import { Modules } from './module';
 
@@ -71,9 +71,9 @@ export function setLocations(
   });
   currentTrees = nodes;
   currentMessage = message;
-  TreeView.setProvider(provider);
+  QcfgTreeView.setProvider(provider);
   if (reveal)
-    TreeView.revealTree(undefined, {select: false, focus: false});
+    QcfgTreeView.revealTree(undefined, {select: false, focus: false});
 }
 
 // private
@@ -220,7 +220,7 @@ class LocationNode extends StaticTreeNode {
 
 function onDidChangeTextDocument(event: vscode.TextDocumentChangeEvent) {
   const document = event.document;
-  if (!currentTrees || !TreeView.isCurrentProvider(provider))
+  if (!currentTrees || !QcfgTreeView.isCurrentProvider(provider))
     return;
   StaticTreeNode.applyRecursively(currentTrees, node => {
     if (node instanceof DirNode && isSubPath(node.fsPath, document.fileName))

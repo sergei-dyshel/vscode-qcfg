@@ -55,7 +55,7 @@
       },
       {
         "command": "qcfg.search.todos",
-        "title": "qcfg: search ToDos (TODO:)"
+        "title": "qcfg: search ToDos"
       },
       {
         "command": "qcfg.search.structField",
@@ -112,6 +112,14 @@
       {
         "command": "qcfg.edit.next",
         "title": "qcfg: Select next text edit"
+      },
+      {
+        "command": "qcfg.openRecent.sameWindow",
+        "title": "qcfg: Open recent workspace (SAME window)"
+      },
+      {
+        "command": "qcfg.openRecent.newWindow",
+        "title": "qcfg: Open recent workspace (NEW window)"
       }
     ],
     "keybindings": [
@@ -185,6 +193,14 @@
         {
                 "key": "ctrl+l",
                 "command": "qcfg.fuzzySearch"
+        },
+        {
+                "key": "ctrl+k ctrl+o",
+                "command": "qcfg.openRecent.sameWindow"
+        },
+        {
+                "key": "ctrl+k shift+ctrl+o",
+                "command": "qcfg.openRecent.newWindow"
         }
     ],
     "configuration": {

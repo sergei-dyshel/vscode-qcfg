@@ -55,7 +55,7 @@
       },
       {
         "command": "qcfg.search.todos",
-        "title": "qcfg: search ToDos (TODO:)"
+        "title": "qcfg: search ToDos"
       },
       {
         "command": "qcfg.search.structField",
@@ -114,6 +114,14 @@
         "title": "qcfg: Select next text edit"
       },
       {
+        "command": "qcfg.openRecent.sameWindow",
+        "title": "qcfg: Open recent workspace (SAME window)"
+      },
+      {
+        "command": "qcfg.openRecent.newWindow",
+        "title": "qcfg: Open recent workspace (NEW window)"
+      },
+      {
         "command": "qcfg.tasks.show",
         "title": "qcfg: Show list of tasks"
       },
@@ -170,6 +178,10 @@
         "title": "qcfg: extend selection left"
       },
       {
+        "command": "qcfg.syntaxTree.show",
+        "title": "qcfg: Show syntax tree in side panel"
+      },
+      {
         "command": "qcfg.autoSync.toggle",
         "title": "qcfg: AutoSync toggle"
       },
@@ -196,6 +208,10 @@
       {
         "command": "qcfg.navigateBackToPreviousFile",
         "title": "qcfg: Navigate back to previous file"
+      },
+      {
+        "command": "qcfg.stripBrackets",
+        "title": "qcfg: Stripe brackets/quotes etc."
       },
       {
         "command": "qcfg.goToDefinition",
@@ -295,6 +311,14 @@
         "command": "qcfg.fuzzySearch"
       },
       {
+        "key": "ctrl+k ctrl+o",
+        "command": "qcfg.openRecent.sameWindow"
+      },
+      {
+        "key": "ctrl+k shift+ctrl+o",
+        "command": "qcfg.openRecent.newWindow"
+      },
+      {
         "key": "alt+t",
         "command": "qcfg.tasks.show"
       },
@@ -305,6 +329,31 @@
       {
         "key": "ctrl+k ctrl+shift+b",
         "command": "qcfg.tasks.build.default"
+      },
+      {
+        "key": "alt+s",
+        "command": "qcfg.tasks.runQcfg",
+        "args": "syg"
+      },
+      {
+        "key": "alt+l",
+        "command": "qcfg.tasks.runQcfg",
+        "args": "jump2line"
+      },
+      {
+        "key": "alt+g",
+        "command": "qcfg.tasks.runQcfg",
+        "args": "gtags_cursor"
+      },
+      {
+        "key": "ctrl+k ctrl+g",
+        "command": "qcfg.tasks.runQcfg",
+        "args": "gtags"
+      },
+      {
+        "key": "alt+.",
+        "command": "qcfg.tasks.runQcfg",
+        "args": "rg_word"
       },
       {
         "key": "alt+up",
@@ -343,13 +392,80 @@
       },
       {
         "key": "shift+alt+pageup",
-        "command": "qcfg.selection.extendRight",
+        "command": "qcfg.selection.extendLeft",
         "when": "editorTextFocus"
       },
       {
         "key": "shift+alt+pagedown",
-        "command": "qcfg.selection.extendLeft",
+        "command": "qcfg.selection.extendRight",
         "when": "editorTextFocus"
+      },
+      {
+        "key": "ctrl+\\",
+        "command": "qcfg.cloneEditorBeside"
+      },
+      {
+        "key": "alt+a",
+        "command": "qcfg.alternate.switch"
+      },
+      {
+        "key": "alt+enter",
+        "command": "qcfg.swapCursorAndAnchor",
+        "when": "editorHasSelection && editorTextFocus"
+      },
+      {
+        "key": "ctrl+b",
+        "command": "qcfg.selectLines",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "ctrl+backspace",
+        "command": "qcfg.stripBrackets",
+        "when": "editorTextFocus && editorHasSelection"
+      },
+      {
+        "key": "ctrl+v",
+        "command": "qcfg.smartPaste"
+      },
+      {
+        "key": "shift+9",
+        "command": "qcfg.surroundWith",
+        "when": "editorTextFocus && editorHasSelection",
+        "args": [
+          "(",
+          ")",
+          "left"
+        ]
+      },
+      {
+        "key": "shift+0",
+        "command": "qcfg.surroundWith",
+        "when": "editorTextFocus && editorHasSelection",
+        "args": [
+          "(",
+          ")",
+          "right"
+        ]
+      },
+      {
+        "key": "[",
+        "command": "qcfg.surroundWith",
+        "when": "editorTextFocus && editorHasSelection",
+        "args": [
+          "[",
+          "]",
+          "left"
+        ]
+      },
+      {
+        "key": "]",
+        "command": "qcfg.surroundWith",
+        "when": "editorTextFocus && editorHasSelection",
+        "args": [
+          "[",
+          "]",
+          "right"
+        ]
       },
       {
         "key": "ctrl+5",

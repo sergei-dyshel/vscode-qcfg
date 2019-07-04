@@ -36,6 +36,10 @@
             {
                 "command": "qcfg.selection.extendLeft",
                 "title": "qcfg: extend selection left"
+            },
+            {
+                "command": "qcfg.syntaxTree.show",
+                "title": "qcfg: Show syntax tree in side panel"
             }
         ],
         "keybindings": [
@@ -76,12 +80,12 @@
             },
             {
                 "key": "shift+alt+pageup",
-                "command": "qcfg.selection.extendRight",
+                "command": "qcfg.selection.extendLeft",
                 "when": "editorTextFocus"
             },
             {
                 "key": "shift+alt+pagedown",
-                "command": "qcfg.selection.extendLeft",
+                "command": "qcfg.selection.extendRight",
                 "when": "editorTextFocus"
             }
         ]

@@ -23,8 +23,7 @@ export class ExecResult extends Error {
   }
 }
 
-interface ExecOptions extends child_process.ExecOptions,
-                              child_process.ExecFileOptions {
+interface ExecOptions {
   cwd?: string;
   env?: {[name: string]: string};
   maxBuffer?: number;

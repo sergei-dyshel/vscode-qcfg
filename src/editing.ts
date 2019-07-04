@@ -1,17 +1,17 @@
 'use strict';
 
-import {TextEditor, window, commands} from 'vscode';
-import * as vscode from 'vscode';
+import {TextEditor, window, commands, TextEditorEdit, Selection, ViewColumn, TextEditorRevealType, ExtensionContext} from 'vscode';
 import {Position} from 'vscode';
 import * as clipboardy from 'clipboardy';
 
-import {offsetPosition, isLinewise, expandLinewise, trimWhitespace, selectRange} from './textUtils';
+import {offsetPosition, isLinewise, expandLinewise, trimWhitespace, selectRange, trimBrackets} from './textUtils';
 import { log } from './logging';
 import {getActiveTextEditor} from './utils';
 
 import { forceNonTemporary, resetTemporary } from './history';
 import { registerCommandWrapped, registerTextEditorCommandWrapped } from './exception';
 import { Modules } from './module';
+import { lineIndentation } from './documentUtils';
 
 function selectLines() {
   const editor = getActiveTextEditor();
@@ -38,7 +38,7 @@ async function surroundWith(args: any[]) {
   const text = editor.document.getText(selection);
   const replaceText = prefix + text + suffix;
   const selectionStart = selection.start;
-  const editsDone = await editor.edit((edit: vscode.TextEditorEdit) => {
+  const editsDone = await editor.edit((edit: TextEditorEdit) => {
     edit.replace(selection, replaceText);
   });
   if (!editsDone)
@@ -50,21 +50,21 @@ async function surroundWith(args: any[]) {
     pos = offsetPosition(editor.document, selectionStart, replaceText.length);
   else
     throw new Error(`surroundWith: Invalid direction "${direction}"`);
-  editor.selection = new vscode.Selection(pos, pos);
+  editor.selection = new Selection(pos, pos);
   console.log('Selection:', editor.selection);
 }
 
 function swapCursorAndAnchor(
     editor: TextEditor) {
   editor.selections = editor.selections.map((sel) => {
-    return new vscode.Selection(sel.active, sel.anchor);
+    return new Selection(sel.active, sel.anchor);
   });
 }
 
 function cloneEditorBeside(): void {
   log.assert(window.activeTextEditor);
   const editor = window.activeTextEditor as TextEditor;
-  const columns = new Set<vscode.ViewColumn>();
+  const columns = new Set<ViewColumn>();
   for (const editor of window.visibleTextEditors)
     if (editor.viewColumn)
       columns.add(editor.viewColumn);
@@ -73,13 +73,13 @@ function cloneEditorBeside(): void {
     commands.executeCommand('workbench.action.splitEditor');
     return;
   }
-  let newColumn: vscode.ViewColumn;
+  let newColumn: ViewColumn;
   switch (editor.viewColumn) {
-    case vscode.ViewColumn.One:
-      newColumn = vscode.ViewColumn.Two;
+    case ViewColumn.One:
+      newColumn = ViewColumn.Two;
       break;
-    case vscode.ViewColumn.Two:
-      newColumn = vscode.ViewColumn.One;
+    case ViewColumn.Two:
+      newColumn = ViewColumn.One;
       break;
     default:
       return;
@@ -89,13 +89,13 @@ function cloneEditorBeside(): void {
   const pos = editor.selection.active;
   const doc = editor.document;
   window.showTextDocument(doc, newColumn).then((newEditor) => {
-    newEditor.selection = new vscode.Selection(pos, pos);
-    newEditor.revealRange(visible, vscode.TextEditorRevealType.InCenter);
+    newEditor.selection = new Selection(pos, pos);
+    newEditor.revealRange(visible, TextEditorRevealType.InCenter);
   });
 }
 
 function smartPaste(
-    editor: TextEditor, edit: vscode.TextEditorEdit) {
+    editor: TextEditor, edit: TextEditorEdit) {
   const text = clipboardy.readSync();
   if (!text.endsWith('\n') || editor.selections.length > 1) {
     commands.executeCommand('editor.action.clipboardPasteAction');
@@ -104,7 +104,7 @@ function smartPaste(
   const selection = editor.selection;
   if (selection.isEmpty) {
     const cursor = selection.active;
-    const lineStart = new vscode.Position(cursor.line, 0);
+    const lineStart = new Position(cursor.line, 0);
     edit.replace(lineStart, text);
   } else if (selection.end.character === 0) {
     commands.executeCommand('editor.action.clipboardPasteAction');
@@ -119,7 +119,7 @@ async function navigateBackToPreviousFile() {
   if (!firstEditor)
     return;
   let editor = firstEditor;
-  let selection: vscode.Selection | undefined;
+  let selection: Selection | undefined;
   while ((editor.document === firstEditor.document) &&
          (editor.selection !== selection)) {
     selection = editor.selection;
@@ -145,11 +145,45 @@ async function peekReferences() {
 function gotoLineRelative(delta: number) {
   const editor = getActiveTextEditor();
   const active = editor.selection.active;
-  const pos = new vscode.Position(active.line + delta, active.character);
-  editor.selection = new vscode.Selection(pos, pos);
+  const pos = new Position(active.line + delta, active.character);
+  editor.selection = new Selection(pos, pos);
 }
 
-function activate(context: vscode.ExtensionContext) {
+async function wrapWithBracketsInline(args: string[]) {
+  const editor = getActiveTextEditor();
+  const selection = editor.selection;
+  const document = editor.document;
+  const prevLine = selection.start.line - 1;
+  const nextLine = selection.end.line + 1;
+  if (prevLine < 0 || nextLine > document.lineCount - 1)
+    throw new Error('Can not wrap first or last line');
+  await editor.edit(builder => {
+    const start = document.lineAt(prevLine).range.end;
+    const indentation = lineIndentation(document, prevLine);
+    builder.insert(start, ' ' + args[0]);
+    const end = new Position(nextLine, 0);
+    builder.insert(end, indentation + args[1] + '\n');
+  });
+}
+
+async function stripBrackets() {
+  const editor = getActiveTextEditor();
+  const selection = editor.selection;
+  const strippedRange = trimBrackets(editor.document, selection);
+  if (strippedRange.isEqual(selection))
+    return;
+  const strippedText = editor.document.getText(strippedRange);
+  const start = selection.start;
+  const reversed = selection.isReversed;
+  await editor.edit(builder => {
+    builder.replace(selection, strippedText);
+  });
+  const end = offsetPosition(editor.document, start, strippedText.length);
+  editor.selection =
+      reversed ? new Selection(end, start) : new Selection(start, end);
+}
+
+function activate(context: ExtensionContext) {
   context.subscriptions.push(
       registerCommandWrapped('qcfg.gotoLineRelative', gotoLineRelative),
       registerCommandWrapped('qcfg.selectLines', selectLines),
@@ -160,6 +194,9 @@ function activate(context: vscode.ExtensionContext) {
       registerTextEditorCommandWrapped('qcfg.smartPaste', smartPaste),
       registerCommandWrapped('qcfg.surroundWith', surroundWith),
       registerCommandWrapped('qcfg.cloneEditorBeside', cloneEditorBeside),
+      registerCommandWrapped(
+          'qcfg.wrapWithBracketsInline', wrapWithBracketsInline),
+      registerCommandWrapped('qcfg.stripBrackets', stripBrackets),
       registerCommandWrapped(
           'qcfg.navigateBackToPreviousFile', navigateBackToPreviousFile));
 }

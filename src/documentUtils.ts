@@ -1,6 +1,6 @@
 'use strict';
 
-import { TextDocument, TextDocumentChangeEvent, TextDocumentContentChangeEvent, Range, Position, Selection } from 'vscode';
+import { TextDocument, TextDocumentContentChangeEvent, Range, Position, Selection } from 'vscode';
 import { log } from './logging';
 import { maxNumber, minNumber } from './tsUtils';
 
@@ -64,14 +64,6 @@ export class NumRange {
   }
 }
 
-/* REFACTOR: remove if not used */
-export function sortDocumentChanges(event: TextDocumentChangeEvent):
-    TextDocumentContentChangeEvent[] {
-  const changes = [...event.contentChanges];
-  changes.sort((a, b) => (a.rangeOffset - b.rangeOffset));
-  return changes;
-}
-
 export function rangeToOffset(document: TextDocument, range: Range): NumRange {
   return new NumRange(
       document.offsetAt(range.start), document.offsetAt(range.end));
@@ -131,70 +123,20 @@ export function getCompletionPrefix(
   return match[1];
 }
 
-enum SelectionChange {
-  Equal = 'equal',
-  Added = 'added',
-  Removed = 'removed',
-  Growed = 'growed',
-  Shrinked = 'shrinked',
-  Differ = 'differ'
+function lineFirstNonWhitespaceCharacter(document: TextDocument, line: number)
+{
+  return new Position(
+      line, document.lineAt(line).firstNonWhitespaceCharacterIndex);
 }
 
-// REFACTOR: remove if not needed
-export function detectSelectionChange(
-    before: Range[], after: Range[]): SelectionChange {
-  let change = SelectionChange.Equal as any;
-  if (before.length < after.length)
-    change = SelectionChange.Added;
-  else if (before.length > after.length)
-    change = SelectionChange.Removed;
-  let i = 0;
-  let j = 0;
-  while (i < before.length && j < after.length) {
-    const x = before[i];
-    const y = after[j];
-    switch (change) {
-      case SelectionChange.Equal:
-        if (x.isEqual(y)) {
-        }
-        if (x.contains(y))
-          change = SelectionChange.Shrinked;
-        if (y.contains(x))
-          change = SelectionChange.Growed;
-        else
-          return SelectionChange.Differ;
-        ++i;
-        ++j;
-        continue;
-      case SelectionChange.Added:
-        if (x.isEqual(y))
-          ++i;
-        ++j;
-        continue;
-      case SelectionChange.Removed:
-        if (x.isEqual(y))
-          ++j;
-        ++i;
-        continue;
-      case SelectionChange.Growed:
-        if (!y.contains(x))
-          return SelectionChange.Differ;
-        ++i;
-        ++j;
-        continue;
-      case SelectionChange.Shrinked:
-        if (!x.contains(y))
-          return SelectionChange.Differ;
-        ++i;
-        ++j;
-        continue;
-    }
-  }
-  if ((change === SelectionChange.Added ||
-       change === SelectionChange.Removed) &&
-      (i !== before.length || j !== after.length))
-    return SelectionChange.Differ;
-  return change;
+export function lineIndentationRange(document: TextDocument, line: number) {
+  return new Range(
+      document.lineAt(line).range.start,
+      lineFirstNonWhitespaceCharacter(document, line));
+}
+
+export function lineIndentation(document: TextDocument, line: number): string {
+  return document.getText(lineIndentationRange(document, line));
 }
 
 declare module 'vscode' {
@@ -205,6 +147,7 @@ declare module 'vscode' {
   }
   export interface Position {
     readonly asRange: Range;
+    offset(offs: {line?: number, character?: number});
   }
 }
 
@@ -224,6 +167,12 @@ Range.prototype.asSelection = function(this: Range, reverse = false) {
 
 Range.prototype.strictlyContains = function(this: Range, that: Range) {
   return this.contains(that) && !this.isEqual(that);
+};
+
+Position.prototype.offset = function(
+    this: Position, offset: {line?: number, character?: number}) {
+  return this.with(
+      this.line + (offset.line || 0), this.character + (offset.character || 0));
 };
 
 Object.defineProperty(Position.prototype, 'asRange', {

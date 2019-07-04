@@ -26,12 +26,89 @@
                 "title": "qcfg: Navigate back to previous file"
             },
             {
+                "command": "qcfg.stripBrackets",
+                "title": "qcfg: Stripe brackets/quotes etc."
+            },
+            {
                 "command": "qcfg.goToDefinition",
                 "title": "qcfg: Go to definition"
             },
             {
+                "command": "qcfg.wrapWithBracketsInline",
+                "title": "qcfg: Wrap with brackets (if/for...)"
+            },
+            {
                 "command": "qcfg.peekReferences",
                 "title": "qcfg: Peek references"
+            }
+        ],
+        "keybindings": [
+            {
+                "key": "ctrl+\\",
+                "command": "qcfg.cloneEditorBeside"
+            },
+            {
+                "key": "alt+a",
+                "command": "qcfg.alternate.switch"
+            },
+            {
+                "key": "alt+enter",
+                "command": "qcfg.swapCursorAndAnchor",
+                "when": "editorHasSelection && editorTextFocus"
+            },
+            {
+                "key": "ctrl+b",
+                "command": "qcfg.selectLines",
+                "when": "editorTextFocus"
+            },
+            {
+                "key": "ctrl+backspace",
+                "command": "qcfg.stripBrackets",
+                "when": "editorTextFocus && editorHasSelection"
+            },
+            {
+                "key": "ctrl+v",
+                "command": "qcfg.smartPaste"
+            },
+            {
+                "key": "shift+9",
+                "command": "qcfg.surroundWith",
+                "when": "editorTextFocus && editorHasSelection",
+                "args": [
+                    "(",
+                    ")",
+                    "left"
+                ]
+            },
+            {
+                "key": "shift+0",
+                "command": "qcfg.surroundWith",
+                "when": "editorTextFocus && editorHasSelection",
+                "args": [
+                    "(",
+                    ")",
+                    "right"
+                ]
+            },
+            {
+                "key": "[",
+                "command": "qcfg.surroundWith",
+                "when": "editorTextFocus && editorHasSelection",
+                "args": [
+                    "[",
+                    "]",
+                    "left"
+                ]
+            },
+            {
+                "key": "]",
+                "command": "qcfg.surroundWith",
+                "when": "editorTextFocus && editorHasSelection",
+                "args": [
+                    "[",
+                    "]",
+                    "right"
+                ]
             }
         ]
     }

@@ -26,6 +26,8 @@ import * as tasks from './tasks';
 import * as treeSitter from './treeSitter';
 import * as treeView from './treeView';
 import * as windowState from './windowState';
+import * as syntaxTreeView from './syntaxTreeView';
+import * as workspaceHistory from './workspaceHistory';
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('Extension active');
@@ -56,7 +58,9 @@ export function activate(context: vscode.ExtensionContext) {
       taskRunner,
       fuzzySearch,
       treeView,
-      locationTree
+      locationTree,
+      syntaxTreeView,
+      workspaceHistory
     };
 }
 

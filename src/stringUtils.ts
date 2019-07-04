@@ -75,3 +75,13 @@ export function replaceAll(str: string, find: string, replace: string)
 {
   return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
 }
+
+export function ellipsize(
+    str: string, maxLen: number, options?: {delimiter?: string}): string {
+  if (str.length <= maxLen)
+    return str;
+  const delimiter = options && options.delimiter ? options.delimiter : '...';
+  const left = Math.ceil(maxLen / 2);
+  const right = maxLen - left;
+  return str.substr(0, left) + delimiter + str.substr(str.length - right);
+}

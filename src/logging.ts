@@ -273,16 +273,16 @@ function stringifyObject(x: object): string {
   } else if ('type' in x && 'startPosition' in x && 'endPosition' in x) {
     // treeSitter.SyntaxNode
     const node = x as treeSitter.SyntaxNode;
-    return `<${node.type} ${str(node.startPosition)} - ${str(node.endPosition)}>`;
+    return `<${node.type} ${str(node.range)}>`;
   } else if (x instanceof Array) {
     const arr = x as any[];
     return '[ ' + arr.map(str).join(', ') + ' ]';
+  } else if ('toString' in x) {
+    const s = x.toString();
+    if (s !== '[object Object]')
+      return s;
   }
-  else if ('toString' in x)
-    return x.toString();
-  else {
-    return JSON.stringify(x);
-  }
+  return JSON.stringify(x);
 }
 
 interface LogRecord {

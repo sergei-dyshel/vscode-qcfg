@@ -3,7 +3,7 @@
 import { ExtensionContext, Range, Selection, TextDocument, TextDocumentChangeEvent, TextDocumentContentChangeEvent, TextEditor, TextEditorSelectionChangeEvent, window, workspace } from 'vscode';
 import { adjustOffsetRangeAfterChange, NumRange, offsetToRange, rangeToOffset } from './documentUtils';
 import { listenWrapped, registerCommandWrapped, CheckError } from './exception';
-import { Logger, str } from './logging';
+import { Logger } from './logging';
 import { DefaultMap, filterNonNull } from './tsUtils';
 import { getActiveTextEditor } from './utils';
 import { Modules } from './module';
@@ -22,41 +22,29 @@ class DocumentHistory {
   private savedSelection?: NumRange[];
 
   processTextChange(changes: TextDocumentContentChangeEvent[]) {
-    /// #if DEBUG
-    this.log.trace(`${str(changes)}`);
-    /// #endif
+    this.log.trace(changes);
     this.backward = this.backward.concat(this.forward.reverse());
     this.forward = [];
     const prevBackward = this.backward;
     this.backward =
         this.backward.map(ranges => adjustRangesAfterChange(ranges, changes))
             .filter(ranges => ranges.length > 0);
-    /// #if DEBUG
-    this.log.trace(`changed history from ${str(prevBackward)} to ${
-        str(this.backward)}`);
-    /// #endif
+    this.log.trace(
+        'changed history from {} to {}', prevBackward, this.backward);
     const ranges = textChangeToRanges(changes);
-    /// #if DEBUG
-    this.log.trace(`current ranges ${str(ranges)}`);
-    /// #endif
+    this.log.trace('current ranges', ranges);
     if (!this.backward.isEmpty) {
-      /// #if DEBUG
-      this.log.trace(`previous ranges ${this.backward.top!}`);
-      /// #endif
+      this.log.trace('previous ranges', this.backward.top);
       const merge = tryMerge(this.backward.top!, ranges);
       if (merge) {
         this.backward.pop();
         this.backward.push(merge);
-        /// #if DEBUG
-        this.log.trace(`Merged with previous, pushing ${str(merge)}`);
-        /// #endif
+        this.log.trace('Merged with previous, pushing', merge);
         return;
       }
     }
     this.backward.push(ranges);
-    /// #if DEBUG
-    this.log.trace(`Pushing ${str(ranges)}`);
-    /// #endif
+    this.log.trace('Pushing', ranges);
   }
 
   goBackward(selection: Selection[]): NumRange[] {
