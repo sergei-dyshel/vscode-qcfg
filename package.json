@@ -218,6 +218,10 @@
         "title": "qcfg: Go to definition"
       },
       {
+        "command": "qcfg.wrapWithBracketsInline",
+        "title": "qcfg: Wrap with brackets (if/for...)"
+      },
+      {
         "command": "qcfg.peekReferences",
         "title": "qcfg: Peek references"
       },
@@ -236,6 +240,18 @@
           "dark": "icons/expandAll-dark.svg",
           "light": "icons/expandAll-light.svg"
         }
+      },
+      {
+        "command": "qcfg.multipleSelection.moveMarkDown",
+        "title": "qcfg: Multiple selections - mark next"
+      },
+      {
+        "command": "qcfg.multipleSelection.moveMarkUp",
+        "title": "qcfg: Multiple selections - mark prev"
+      },
+      {
+        "command": "qcfg.multipleSelection.unselectMarked",
+        "title": "qcfg: Multiple selections - unselect marked"
       }
     ],
     "keybindings": [
@@ -1316,6 +1332,21 @@
         "key": "alt+4 9",
         "command": "qcfg.gotoLineRelative",
         "args": -49
+      },
+      {
+        "key": "insert",
+        "command": "qcfg.multipleSelection.unselectMarked",
+        "when": "editorTextFocus && editorHasMultipleSelections"
+      },
+      {
+        "key": "up",
+        "command": "qcfg.multipleSelection.moveMarkUp",
+        "when": "editorTextFocus && editorHasMultipleSelections"
+      },
+      {
+        "key": "down",
+        "command": "qcfg.multipleSelection.moveMarkDown",
+        "when": "editorTextFocus && editorHasMultipleSelections"
       }
     ],
     "configuration": {

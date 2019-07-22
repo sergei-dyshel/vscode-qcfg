@@ -1,0 +1,35 @@
+{
+    "contributes": {
+        "commands": [
+            {
+                "command": "qcfg.multipleSelection.moveMarkDown",
+                "title": "qcfg: Multiple selections - mark next"
+            },
+            {
+                "command": "qcfg.multipleSelection.moveMarkUp",
+                "title": "qcfg: Multiple selections - mark prev"
+            },
+            {
+                "command": "qcfg.multipleSelection.unselectMarked",
+                "title": "qcfg: Multiple selections - unselect marked"
+            }
+        ],
+        "keybindings": [
+            {
+                "key": "insert",
+                "command": "qcfg.multipleSelection.unselectMarked",
+                "when": "editorTextFocus && editorHasMultipleSelections"
+            },
+            {
+                "key": "up",
+                "command": "qcfg.multipleSelection.moveMarkUp",
+                "when": "editorTextFocus && editorHasMultipleSelections"
+            },
+            {
+                "key": "down",
+                "command": "qcfg.multipleSelection.moveMarkDown",
+                "when": "editorTextFocus && editorHasMultipleSelections"
+            }
+        ]
+    }
+}
