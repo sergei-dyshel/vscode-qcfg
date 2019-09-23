@@ -13,16 +13,16 @@ import * as readline from 'readline';
 import {isLspActive} from './language';
 import {getActiveTextEditor} from './utils';
 import {parseNumber, buildFuzzyPattern, splitWithRemainder, buildAbbrevPattern} from './stringUtils';
-import * as RE2 from 're2';
+const RE2 = require('re2');
 import { registerCommandWrapped, handleErrors } from './exception';
 import { Modules } from './module';
 
 async function findGtagsDir(dir: string) {
-  while (dir !== '/') {
+  while (true) {
     if (await fileUtils.exists(path.join(dir, 'GTAGS'))) {
       return dir;
     } else if (dir === '/') {
-      return;
+      return undefined;
     } else {
       dir = path.dirname(dir);
     }
@@ -278,7 +278,7 @@ async function searchGtags(
   return tags;
 }
 
-async function searchDefinition(query: string, gtagsDir): Promise<TagInfo[]> {
+async function searchDefinition(query: string, gtagsDir: string): Promise<TagInfo[]> {
   const result = await subprocess.exec(
       ['global', '-d', '-x', '-n', query], {cwd: gtagsDir});
   const lines = result.stdout.split('\n');

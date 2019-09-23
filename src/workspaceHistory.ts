@@ -17,7 +17,7 @@ function getWorkspaceFile(): string|undefined {
   if (workspace.workspaceFile) {
     if (workspace.workspaceFile.scheme === 'untitled') {
       log.debug('Opened untitled project');
-      return;
+      return undefined;
     }
     log.debug('Opened workspace', workspace.workspaceFile.fsPath);
     return workspace.workspaceFile.fsPath;
@@ -26,6 +26,7 @@ function getWorkspaceFile(): string|undefined {
     log.debug('Opened workspace folder', workspace.workspaceFolders[0].uri.fsPath);
     return workspace.workspaceFolders[0].uri.fsPath;
   }
+  return undefined;
 }
 
 function expandTitle(root: string, title: string): string {

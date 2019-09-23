@@ -44,7 +44,7 @@ export function sendDidSave(document: vscode.TextDocument) {
     const exports: object = extension.exports;
     if (typeof (exports) !== 'object' || !('languageClient' in exports))
       continue;
-    const langClient: lc.LanguageClient = exports['languageClient'];
+    const langClient: lc.LanguageClient = (exports as any).languageClient;
 
     langClient.sendNotification('textDocument/didSave', params);
     const path = vscode.workspace.asRelativePath(document.fileName);

@@ -290,6 +290,7 @@ function findDocument(fileName: string): TextDocument|undefined {
   for (const doc of workspace.textDocuments)
     if (doc.fileName === fileName)
       return doc;
+  return undefined;
 }
 
 namespace History {
@@ -393,9 +394,8 @@ class History {
 }
 
 function getVisibleEditor(viewColumn: ViewColumn): TextEditor|undefined {
-  for (const editor of window.visibleTextEditors)
-    if (editor.viewColumn === viewColumn)
-      return editor;
+  return window.visibleTextEditors.firstOf(
+      editor => editor.viewColumn === viewColumn);
 }
 
 let numViewColumns = 0;

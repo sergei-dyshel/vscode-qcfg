@@ -10,7 +10,7 @@
 import path from 'path';
 import webpack from 'webpack';
 
-const generateConfig = (env): webpack.configuration => ({
+const generateConfig = (env: any): webpack.Configuration => ({
   target: 'node',  // vscode extensions run in a Node.js-context 📖 ->
                    // https://webpack.js.org/configuration/node/
 
@@ -75,6 +75,6 @@ const generateConfig = (env): webpack.configuration => ({
   }
 });
 
-module.exports = (env) => {
+module.exports = (env: any) => {
     return generateConfig(env);
 };

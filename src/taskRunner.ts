@@ -159,6 +159,7 @@ function findTaskTerminal(task: Task): vscode.Terminal | undefined {
       if (term.name === cand)
         return term;
   }
+  return undefined;
 }
 
 export class TaskCancelledError extends Error {

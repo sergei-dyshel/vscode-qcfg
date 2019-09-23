@@ -70,21 +70,21 @@ export class Logger {
   fatal(...args: any[]): never {
     return this.log(LogLevel.Fatal, args) as never;
   }
-  assert(condition, ...args) {
+  assert(condition: boolean|undefined|null|object, ...args: any[]) {
     if (!condition) {
       throw new Error(formatMessage(args, "Assertion failed"));
     }
   }
-  assertNonNull<T>(val: T | undefined | null, ...args): T {
+  assertNonNull<T>(val: T | undefined | null, ...args: any[]): T {
     this.assert(val !== undefined && val !== null, ...args);
     return val as T;
   }
-  assertNull<T>(val: T | undefined | null, ...args) {
+  assertNull<T>(val: T | undefined | null, ...args: any[]) {
     this.assert(val === undefined || val === null, ...args);
   }
 
   assertInstanceOf<T extends B, B>(
-      value: B, class_: {new(...args: any[]): T}, ...args): T {
+      value: B, class_: {new(...args: any[]): T}, ...args: any[]): T {
     this.assert(value instanceof class_, ...args);
     return value as T;
   }
@@ -189,6 +189,7 @@ function strToLevel(s: string): LogLevel|undefined {
   const idx = LOG_LEVEL_STRINGS.indexOf(s.toUpperCase());
   if (idx !== -1)
     return idx as LogLevel;
+  return undefined;
 }
 
 function formatMessage(args: any[], default_ = ''): string {

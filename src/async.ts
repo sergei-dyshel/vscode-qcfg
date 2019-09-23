@@ -77,6 +77,10 @@ export class PromiseQueue {
 
 export class PromiseContext<T> {
   constructor () {
+    // required by "strictPropertyInitialization"
+    this.resolve = (_) => {};
+    this.reject = (_) => {};
+
     this.promise = new Promise<T>((resolve, reject) => {
       this.resolve = resolve;
       this.reject = reject;

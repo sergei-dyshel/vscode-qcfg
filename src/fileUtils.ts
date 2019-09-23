@@ -26,8 +26,7 @@ export function getDocumentRootThrowing(document: vscode.TextDocument) {
 export function getDocumentWorkspaceFolder(document: vscode.TextDocument)
 {
   const docRoot = getDocumentRoot(document);
-  if (docRoot)
-    return docRoot.workspaceFolder;
+  return docRoot ? docRoot.workspaceFolder : undefined;
 }
 
 export const exists = nodejs.util.promisify(nodejs.fs.exists);

@@ -20,10 +20,6 @@ function selectAndRememberRange(
   selectRange(editor, range, reversed);
 }
 
-function isSameNode(node1: SyntaxNode, node2: SyntaxNode) {
-  return node1 && node2 && node1.range.isEqual(node2.range);
-}
-
 function findContainingNodeImpl(node: SyntaxNode, range: Range):
     SyntaxNode | undefined {
   if (node.range.isEqual(range))
@@ -36,6 +32,7 @@ function findContainingNodeImpl(node: SyntaxNode, range: Range):
   }
   if (node.range.contains(range))
     return node;
+  return undefined;
 }
 
 function findContainingNode(node: SyntaxNode, range: Range) : SyntaxNode {
@@ -171,29 +168,6 @@ const LIST_NODE_TYPES: string[] = [
 
 function isListNode(node: SyntaxNode) {
   return LIST_NODE_TYPES.includes(node.type);
-}
-
-/* REFACTOR: unexport */
-export function getSuperParent(node: SyntaxNode) {
-  let sParent: SyntaxNode | null;
-  sParent = getProperParent(node);
-  while (sParent) {
-    const parent = getProperParent(sParent);
-    if (!parent)
-      return sParent;
-    if (isListNode(node))
-      return sParent;
-    sParent = parent;
-  }
-}
-
-function getProperParent(node: SyntaxNode) {
-  let parent = node.parent;
-  while (parent && isSameNode(node, parent)) {
-    node = parent;
-    parent = node.parent;
-  }
-  return parent;
 }
 
 class ExpandMode {

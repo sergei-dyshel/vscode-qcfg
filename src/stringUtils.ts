@@ -66,7 +66,7 @@ export function splitWithRemainder(
   return result;
 }
 
-export function escapeRegExp(str) {
+export function escapeRegExp(str: string) {
   // from https://stackoverflow.com/a/1144788/5531098
   return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
 }

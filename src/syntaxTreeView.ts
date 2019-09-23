@@ -122,6 +122,7 @@ function buildNodeName(node: SyntaxNode, document: TextDocument): string|undefin
     case 'scoped_type_identifier':
       return ellipsize(node.text, ELLIPSIZE_LEN);
   }
+  return undefined;
 }
 
 class SyntaxTreeViewNode extends StaticTreeNode {

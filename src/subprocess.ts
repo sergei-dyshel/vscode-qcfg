@@ -33,12 +33,14 @@ interface ExecOptions {
 
 export class Subprocess {
   constructor(command: string|string[], private options?: ExecOptions) {
+    this.waitingContext = {resolve: (_) => {}, reject: (_) => {}};
     if (typeof (command) === 'string')
       this.process =
-          child_process.exec(command, options, this.callback.bind(this));
+          child_process.exec(command, options || {}, this.callback.bind(this));
     else
       this.process = child_process.execFile(
-          command[0], command.slice(1), options, this.callback.bind(this));
+          command[0], command.slice(1), options || {},
+          this.callback.bind(this));
     this.log = new Logger(
         {parent: log, instance: `pid=${this.process.pid}`, level: 'debug'});
     /// #if DEBUG

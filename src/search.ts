@@ -19,7 +19,8 @@ const TODO_CATEGORIES =
 async function searchInFiles(query: TextSearchQuery) {
   const locations: ParsedLocation[] = [];
   await vscode.workspace.findTextInFiles(
-      query, (match: vscode.TextSearchMatch) => {
+      query, (result: vscode.TextSearchResult) => {
+        const match = result as vscode.TextSearchMatch;
         const ranges: Range[] = match.ranges instanceof Range ?
             [match.ranges] :
             match.ranges as Range[];

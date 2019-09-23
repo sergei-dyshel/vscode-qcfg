@@ -1,8 +1,8 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import {window, workspace} from 'vscode';
-import { registerCommandWrapped, listenWrapped } from './exception';
+import { TextDocumentChangeEvent, window, workspace } from 'vscode';
+import { listenWrapped, registerCommandWrapped } from './exception';
 import { Modules } from './module';
 
 const MEMENTO_KEY = 'qcfgIsReadOnly';
@@ -31,7 +31,7 @@ function updateStatus() {
     status.hide();
 }
 
-function onDidChangeTextDocument(_event) {
+function onDidChangeTextDocument(_: TextDocumentChangeEvent) {
   if (!getState())
     return;
 

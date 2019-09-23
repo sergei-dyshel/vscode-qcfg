@@ -33,23 +33,25 @@ export async function inputWithHistory(persistentKey: string):
       qp.hide();
       qp.dispose();
     }));
-    qp.onDidTriggerButton(handleErrors((button: Button) => {
-      if (button === buttons.REMOVE) {
-        if (!qp.activeItems)
-          return;
-        const active = qp.activeItems[0];
-        if ('detail' in active)
-          return;
-        if (!qpItems.removeFirst(active))
-          return;
-        extContext.globalState.update(
-            persistentKey, qpItems.map((item) => item.label));
-        const newItems = Object.assign([], qpItems);
-        if (active.detail)
-          newItems.push(active);
-        qp.items = newItems;
-      }
-    }));
+    qp.onDidTriggerButton(
+        handleErrors((quickInputButton: vscode.QuickInputButton) => {
+          const button = quickInputButton as Button;
+          if (button === buttons.REMOVE) {
+            if (!qp.activeItems)
+              return;
+            const active = qp.activeItems[0];
+            if ('detail' in active)
+              return;
+            if (!qpItems.removeFirst(active))
+              return;
+            extContext.globalState.update(
+                persistentKey, qpItems.map((item) => item.label));
+            const newItems = Object.assign([], qpItems);
+            if (active.detail)
+              newItems.push(active);
+            qp.items = newItems;
+          }
+        }));
     qp.onDidChangeValue(handleErrors(() => {
       const exactLabel = qp.items.find((item) => {
         return item.label === qp.value;
@@ -148,6 +150,7 @@ export async function selectMultiple<T>(
         persistentKey, selected.map(qpItem => toPersistentLabel(qpItem.item)));
     return selected.map(qpitem => qpitem.item);
   }
+  return undefined;
 }
 
 export async function selectObjectFromListMru<T extends ListSelectable>(

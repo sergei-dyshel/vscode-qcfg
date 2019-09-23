@@ -53,14 +53,14 @@ export class NumRange {
   intersection(that: NumRange): NumRange|undefined {
     const start = maxNumber(this.start, that.start);
     const end = minNumber(this.end, that.end);
-    if (start <= end)
-      return new NumRange(start, end);
+    return (start <= end) ? new NumRange(start, end) : undefined;
   }
 
   union(that: NumRange): NumRange|undefined {
     if (this.intersection(that))
       return new NumRange(
           minNumber(this.start, that.start), maxNumber(this.end, that.end));
+    return undefined;
   }
 }
 
@@ -111,8 +111,7 @@ export function adjustRangeAfterChange(
     changes: TextDocumentContentChangeEvent[]): Range|undefined {
   const adjusted =
       adjustOffsetRangeAfterChange(rangeToOffset(document, range), changes);
-  if (adjusted)
-    return offsetToRange(document, adjusted);
+  return adjusted ? offsetToRange(document, adjusted) : undefined;
 }
 
 export function getCompletionPrefix(
@@ -147,7 +146,7 @@ declare module 'vscode' {
   }
   export interface Position {
     readonly asRange: Range;
-    offset(offs: {line?: number, character?: number});
+    offset(offs: {line?: number, character?: number}): Position;
   }
 }
 

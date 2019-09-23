@@ -111,6 +111,7 @@ declare global {
     max(cmp?: (x: T, y: T) => number): T|undefined;
     equals(that: T[], eq?: (x: T, y: T) => boolean): boolean;
     removeFirst(val: T): boolean;
+    firstOf(cond: (val: T) => boolean): T|undefined;
   }
 
   interface ReadonlyArray<T> {
@@ -145,6 +146,14 @@ function defaultEquals<T>(a: T, b:T) {
   return a === b;
 }
 
+Array.prototype.firstOf = function<T>(this: T[], cond: (val: T) => boolean): T|
+    undefined {
+  const idx = this.findIndex(cond);
+  if (idx === -1)
+    return undefined;
+  return this[idx];
+};
+
 Array.prototype.equals = function<T>(
     this: T[], that: T[], eq: (x: T, y: T) => boolean = defaultEquals) {
   if (this.length !== that.length)
@@ -173,6 +182,7 @@ Object.defineProperty(Array.prototype, 'top', {
   get<T>(): T | undefined {
     if (this.length > 0)
       return this[this.length - 1];
+    return undefined;
   }
 });
 

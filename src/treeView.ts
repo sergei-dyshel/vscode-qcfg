@@ -55,9 +55,9 @@ export interface TreeNode {
 export interface TreeProvider {
   getTrees(): ProviderResult<TreeNode[]>;
   getMessage?(): string | undefined;
-  removeNode?(node: TreeNode);
-  onDidChangeSelection?(nodes: TreeNode[]);
-  onDidChangeVisibility?(visible: boolean);
+  removeNode?(node: TreeNode): void;
+  onDidChangeSelection?(nodes: TreeNode[]): void;
+  onDidChangeVisibility?(visible: boolean): void;
 }
 
 export namespace QcfgTreeView {

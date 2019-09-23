@@ -3,9 +3,6 @@
 import { TextBuffer } from 'superstring';
 import * as Parser from 'tree-sitter';
 import { SyntaxNode, Tree as SyntaxTree } from 'tree-sitter';
-import * as treeSitterCpp from 'tree-sitter-cpp';
-import * as treeSitterPython from 'tree-sitter-python';
-import * as treeSitterTypeScript from 'tree-sitter-typescript';
 import { ExtensionContext, Position, Range, TextDocument, TextDocumentChangeEvent, workspace, window, EventEmitter, Event } from 'vscode';
 import { NumRange } from './documentUtils';
 import { listenWrapped } from './exception';
@@ -27,10 +24,10 @@ interface LanguageConfig {
 }
 
 const languageConfig: {[language: string]: LanguageConfig} = {
-  python: {parser: treeSitterPython},
-  c: {parser: treeSitterCpp},
-  cpp: {parser: treeSitterCpp},
-  typescript: {parser: treeSitterTypeScript},
+  python: {parser: require('tree-sitter-python')},
+  c: {parser: require('tree-sitter-cpp')},
+  cpp: {parser: require('tree-sitter-cpp')},
+  typescript: {parser: require('tree-sitter-typescript')},
 };
 
 declare module 'tree-sitter' {

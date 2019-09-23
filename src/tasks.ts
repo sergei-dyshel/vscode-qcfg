@@ -218,6 +218,7 @@ async function validateParams(
   catch (error) {
     handleError(label, error);
   }
+  return undefined;
 }
 
 async function fetchQcfgTasks(): Promise<QcfgTask[]> {
@@ -321,7 +322,7 @@ class VscodeTask implements dialog.ListSelectable {
     return this.fullName();
   }
 
-  protected taskRun: TaskRun;
+  protected taskRun?: TaskRun;
 }
 
 
@@ -359,8 +360,8 @@ class QcfgTask extends VscodeTask{
 
     const params = this.params;
     const exitCodes = params.exitCodes || [0];
-    const success = exitCodes.includes(this.taskRun.exitCode!);
-    const term = this.taskRun.terminal;
+    const success = exitCodes.includes(this.taskRun!.exitCode!);
+    const term = this.taskRun!.terminal;
     if (success && params.flags && params.flags.includes(Flag.reindex))
       language.reindex();
     let action = success ? params.onSuccess : params.onFailure;

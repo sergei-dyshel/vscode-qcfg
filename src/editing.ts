@@ -94,8 +94,10 @@ function cloneEditorBeside(): void {
   });
 }
 
+type DirectionArg = 'up' | 'down' | 'left' | 'right';
+
 async function syncEditorToDirection(args: any[]) {
-  const [dir]  = args;
+  const dir: DirectionArg = args[0];
   log.assert(window.activeTextEditor);
   const editor = window.activeTextEditor as TextEditor;
   const visible = editor.visibleRanges[0];

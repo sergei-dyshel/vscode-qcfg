@@ -36,9 +36,10 @@ function getSettingsTheme(): string|undefined {
   const conf = workspace.getConfiguration();
   const val = conf.inspect(SECTION);
   if (!val)
-    return;
+    return undefined;
   if (val.workspaceValue)
     return val.workspaceValue as string;
+  return undefined;
 }
 
 async function setSettingsTheme(theme: string | undefined)

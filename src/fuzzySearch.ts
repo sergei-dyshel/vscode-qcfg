@@ -10,9 +10,6 @@ import { registerCommandWrapped, handleErrors } from './exception';
 import { Modules } from './module';
 
 class Item implements vscode.QuickPickItem {
-  description: string;
-  detail: string;
-
   constructor(public label: string, public line: number) {
     this.label = label.trim();
   }
