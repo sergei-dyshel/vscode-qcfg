@@ -45,6 +45,7 @@
         "keybindings": [
             {
                 "key": "ctrl+\\",
+                "mac": "cmd+\\",
                 "command": "qcfg.cloneEditorBeside"
             },
             {
@@ -58,16 +59,19 @@
             },
             {
                 "key": "ctrl+b",
+                "mac": "cmd+b",
                 "command": "qcfg.selectLines",
                 "when": "editorTextFocus"
             },
             {
                 "key": "ctrl+backspace",
+                "mac": "cmd+backspace",
                 "command": "qcfg.stripBrackets",
                 "when": "editorTextFocus && editorHasSelection"
             },
             {
                 "key": "ctrl+v",
+                "mac": "cmd+v",
                 "command": "qcfg.smartPaste"
             },
             {
@@ -109,6 +113,26 @@
                     "]",
                     "right"
                 ]
+            },
+            {
+                "key": "alt+shift+h",
+                "command": "qcfg.syncEditorToDirection",
+                "args": ["left"]
+            },
+            {
+                "key": "alt+shift+l",
+                "command": "qcfg.syncEditorToDirection",
+                "args": ["right"]
+            },
+            {
+                "key": "alt+shift+j",
+                "command": "qcfg.syncEditorToDirection",
+                "args": ["down"]
+            },
+            {
+                "key": "alt+shift+k",
+                "command": "qcfg.syncEditorToDirection",
+                "args": ["up"]
             }
         ]
     }

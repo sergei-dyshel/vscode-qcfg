@@ -2,6 +2,7 @@ d := package
 include $(d)/Makefile
 
 npm_pre_install:
+	npm install -g vsce
 	npm install json-merger deepmerge ts-node typescript @types/node
 
 npm_install: | package.json
@@ -27,4 +28,4 @@ npm_full_reinstall:
 install: | package.json
 	rm -rf *.vsix >/dev/null
 	vsce package
-	code --install-extension=`ls *.vsix`
+	code-oss --install-extension=`ls *.vsix`

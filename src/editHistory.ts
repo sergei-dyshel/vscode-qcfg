@@ -21,7 +21,7 @@ class DocumentHistory {
 
   private savedSelection?: NumRange[];
 
-  processTextChange(changes: TextDocumentContentChangeEvent[]) {
+  processTextChange(changes: readonly TextDocumentContentChangeEvent[]) {
     this.log.trace(changes);
     this.backward = this.backward.concat(this.forward.reverse());
     this.forward = [];
@@ -79,7 +79,7 @@ class DocumentHistory {
 const history = new DefaultMap<TextDocument, DocumentHistory>(
     (document) => new DocumentHistory(document));
 
-function textChangeToRanges(changes: TextDocumentContentChangeEvent[]):
+function textChangeToRanges(changes: readonly TextDocumentContentChangeEvent[]):
     NumRange[] {
   const ranges: NumRange[] = [];
   let delta = 0;
@@ -93,7 +93,8 @@ function textChangeToRanges(changes: TextDocumentContentChangeEvent[]):
 }
 
 function adjustRangesAfterChange(
-    ranges: NumRange[], changes: TextDocumentContentChangeEvent[]): NumRange[] {
+    ranges: NumRange[],
+    changes: readonly TextDocumentContentChangeEvent[]): NumRange[] {
   return filterNonNull(
       ranges.map(range => adjustOffsetRangeAfterChange(range, changes)));
 }

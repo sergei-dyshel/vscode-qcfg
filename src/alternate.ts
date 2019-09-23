@@ -8,20 +8,17 @@ import { log } from './logging';
 import {getActiveTextEditor} from './utils';
 import { registerCommandWrapped } from './exception';
 import { Modules } from './module';
+import { baseName, stripExt } from './pathUtils';
 
 interface Mapping {
   [ext: string]: string[];
-}
-
-function stripExt(filename: string) {
-  const parsed = path.parse(filename);
-  return path.join(parsed.dir, parsed.name);
 }
 
 async function switchToAlternate() {
   const editor = getActiveTextEditor();
   const document = editor.document;
   const filePath = document.fileName;
+  const relPath = workspace.asRelativePath(document.fileName);
   const ext = path.extname(filePath);
   const mapping: Mapping =
       workspace.getConfiguration('qcfg.alternate').get('mapping', {});
@@ -31,12 +28,27 @@ async function switchToAlternate() {
   for (const alt of altFiles) {
     const exists = await fileUtils.exists(alt);
     if (exists) {
-      const altDoc = await workspace.openTextDocument(alt);
-      window.showTextDocument(altDoc, editor.viewColumn);
+      window.showTextDocument(
+          vscode.Uri.file(alt), {viewColumn: editor.viewColumn});
       return;
     }
   }
-  const relPath = workspace.asRelativePath(document.fileName);
+  for (const ext of altExts) {
+    const shortName = baseName(filePath) + ext;
+    const folder = log.assertNonNull(fileUtils.getDocumentWorkspaceFolder(document));
+    const pattern = new vscode.RelativePattern(folder, '**/' + shortName);
+    const files = await workspace.findFiles(pattern);
+    if (files.length === 1) {
+      window.showTextDocument(files[0], {viewColumn: editor.viewColumn});
+      return;
+    }
+    else if (files.length > 1) {
+      window.showWarningMessage(
+          `Multiple options for alternate file of "${relPath}"`,
+          ...(files.map(uri => uri.fsPath)));
+      return;
+    }
+  }
   window.showWarningMessage(
       `Alternate file for "${relPath}" does not exist`);
 }

@@ -1,6 +1,7 @@
 'use strict';
 
 import { Logger } from './logging';
+import { zipArrays } from './tsUtils';
 
 type Callback = () => Promise<void>;
 type Resolve = () => void;
@@ -84,4 +85,33 @@ export class PromiseContext<T> {
   readonly promise: Promise<T>;
   resolve: (result: T) => void;
   reject: (err: Error) => void;
+}
+
+export function mapAsync<V, R>(
+    arr: V[], func: (v: V) => Thenable<R>): Promise<R[]> {
+  return Promise.all(arr.map(func));
+}
+
+export async function mapAsyncSequential<V, R>(
+    arr: V[], func: (v: V) => Promise<R>): Promise<R[]> {
+  const result: R[] = [];
+  for (const v of arr) {
+    result.push(await func(v));
+  }
+  return result;
+}
+
+export async function mapAsyncNoThrow<V, R>(
+    arr: V[], func: (v: V) => Promise<R>): Promise<Array<[V, R]>> {
+  const results: Array<R|undefined> =
+      await mapAsyncSequential(arr, async (v: V) => {
+        try {
+          return await func(v);
+        } catch (_) {
+          return undefined;
+        }
+      });
+  return zipArrays(arr, results).filter(tuple => {
+    return tuple[1] !== undefined;
+  }) as Array<[V, R]>;
 }

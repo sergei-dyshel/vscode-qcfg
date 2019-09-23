@@ -40,9 +40,14 @@ async function searchTodos() {
     return;
   const patterns = filterCategories.join('|');
   const subproc = new Subprocess(
-      `patterns=\'${patterns}\' git-diff-todo.sh`, {cwd: folder.uri.fsPath});
+      `patterns=\'${patterns}\' q-git-diff-todo`,
+      {cwd: folder.uri.fsPath, allowedCodes: [0, 1]});
   const res = await subproc.wait();
-  setLocations(patterns, parseLocations(res.stdout, folder.uri.fsPath));
+  if (res.code === 1) {
+    vscode.window.showWarningMessage(`No ${patterns} items were found`);
+  } else {
+    setLocations(patterns, parseLocations(res.stdout, folder.uri.fsPath));
+  }
 }
 
 // TODO: move to utils

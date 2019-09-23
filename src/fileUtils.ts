@@ -1,16 +1,15 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import * as path from 'path';
-import * as util from 'util';
-import * as fs from 'fs';
+import * as nodejs from './nodejs';
 
 import { log } from './logging';
+import { Uri } from 'vscode';
 
 export function getDocumentRoot(document: vscode.TextDocument) {
   const wsPath = vscode.workspace.asRelativePath(document.fileName, true);
   const relativePath = vscode.workspace.asRelativePath(document.fileName, false);
-  const [wsDir] = wsPath.split(path.sep, 1);
+  const [wsDir] = wsPath.split(nodejs.path.sep, 1);
   for (const workspaceFolder of (vscode.workspace.workspaceFolders || [])) {
     if (workspaceFolder.name === wsDir)
       return {workspaceFolder, relativePath};
@@ -31,11 +30,11 @@ export function getDocumentWorkspaceFolder(document: vscode.TextDocument)
     return docRoot.workspaceFolder;
 }
 
-export const exists = util.promisify(fs.exists);
+export const exists = nodejs.util.promisify(nodejs.fs.exists);
 
 export function existsInRoot(
     wsFolder: vscode.WorkspaceFolder, fileName: string) {
-  return exists(path.join(wsFolder.uri.fsPath, fileName));
+  return exists(nodejs.path.join(wsFolder.uri.fsPath, fileName));
 }
 
 export async function openLocation(
@@ -71,4 +70,9 @@ export async function openLocation(
   }
   editor!.selection = selection;
   editor!.revealRange(editor!.selection);
+}
+
+export async function readJSON(path: string): Promise<any> {
+  return JSON.parse(new nodejs.util.TextDecoder('utf-8').decode(
+      await vscode.workspace.fs.readFile(Uri.file(path))));
 }

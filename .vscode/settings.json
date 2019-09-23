@@ -1,0 +1,9 @@
+{
+    "tabnine.trigger": "off",
+    "qcfg.tasks.workspace": {
+        "build": {
+            "command": "make install",
+            "flags": ["build"]
+        }
+    }
+}

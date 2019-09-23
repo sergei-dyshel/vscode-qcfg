@@ -75,8 +75,8 @@ export function offsetToRange(document: TextDocument, range: NumRange): Range {
 }
 
 export function adjustOffsetRangeAfterChange(
-    range: NumRange, changes: TextDocumentContentChangeEvent[]): NumRange|
-    undefined {
+    range: NumRange,
+    changes: readonly TextDocumentContentChangeEvent[]): NumRange|undefined {
   for (const change of changes.reverseIter()) {
     const changeStart = change.rangeOffset;
     const changeEnd = change.rangeOffset + change.rangeLength;

@@ -85,3 +85,22 @@ export function ellipsize(
   const right = maxLen - left;
   return str.substr(0, left) + delimiter + str.substr(str.length - right);
 }
+
+export class TemplateError extends Error {
+  constructor(message: string) { super(message); }
+}
+
+export function expandTemplate(
+    text: string, substitute: {[name: string]: string},
+    throwWhenNotExist = false): string {
+  return text.replace(/\$\{([a-zA-Z0-9]+)\}/g, (_, varname) => {
+    const sub = substitute[varname] as string|undefined;
+    if (!sub) {
+      if (throwWhenNotExist)
+        throw new TemplateError(`Could not substitute var "${varname}"`);
+      else
+        return '';
+    }
+    return sub;
+  });
+}

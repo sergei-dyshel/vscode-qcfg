@@ -55,6 +55,7 @@
             },
             {
                 "key": "ctrl+alt+up",
+                "mac": "cmd+alt+up",
                 "command": "qcfg.selection.selectSuperParent",
                 "when": "editorTextFocus"
             },
@@ -70,11 +71,13 @@
             },
             {
                 "key": "ctrl+alt+pageup",
+                "mac": "cmd+alt+pageup",
                 "command": "qcfg.selection.swapLeft",
                 "when": "editorTextFocus"
             },
             {
                 "key": "ctrl+alt+pagedown",
+                "mac": "cmd+alt+pagedown",
                 "command": "qcfg.selection.swapRight",
                 "when": "editorTextFocus"
             },

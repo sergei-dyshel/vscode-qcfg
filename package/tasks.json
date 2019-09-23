@@ -223,10 +223,12 @@
 			},
 			{
 				"key": "ctrl+k ctrl+b",
+				"mac": "cmd+k cmd+b",
 				"command": "qcfg.tasks.build.last"
 			},
 			{
 				"key": "ctrl+k ctrl+shift+b",
+				"mac": "cmd+k cmd+shift+b",
 				"command": "qcfg.tasks.build.default"
 			},
 			{
@@ -235,7 +237,8 @@
 				"args": "syg"
 			},
 			{
-				"key": "alt+l",
+				"key": "ctrl+k ctrl+l",
+				"mac": "cmd+k cmd+l",
 				"command": "qcfg.tasks.runQcfg",
 				"args": "jump2line"
 			},
@@ -246,6 +249,7 @@
 			},
 			{
 				"key": "ctrl+k ctrl+g",
+				"mac": "cmd+k cmd+g",
 				"command": "qcfg.tasks.runQcfg",
 				"args": "gtags"
 			},

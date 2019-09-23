@@ -240,12 +240,14 @@ async function fetchQcfgTasks(): Promise<QcfgTask[]> {
 let lastBuildTask: VscodeTask|undefined;
 
 async function runDefaultBuildTask() {
+  const qcfgTasks = await fetchQcfgTasks();
+  for (const task of qcfgTasks)
+    if (task.label === 'build')
+      return task.run();
   const tasks = await vscode.tasks.fetchTasks();
   for (const task of tasks)
     if (task.group === vscode.TaskGroup.Build)
       return vscode.commands.executeCommand('workbench.action.tasks.build');
-  return vscode.commands.executeCommand(
-      'workbench.action.tasks.runTask', 'qcfg: build');
 }
 
 async function runLastBuildTask() {

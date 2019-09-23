@@ -127,7 +127,7 @@ function onDidChangeTextDocument(event: vscode.TextDocumentChangeEvent)
 {
   if (event.document.uri.scheme !== 'file')
     return;
-  const eventCopy: vscode.TextDocumentChangeEvent = {
+  const eventCopy = {
     ...event,
     contentChanges: [...event.contentChanges]
   };

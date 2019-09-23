@@ -94,6 +94,39 @@ function cloneEditorBeside(): void {
   });
 }
 
+async function syncEditorToDirection(args: any[]) {
+  const [dir]  = args;
+  log.assert(window.activeTextEditor);
+  const editor = window.activeTextEditor as TextEditor;
+  const visible = editor.visibleRanges[0];
+  const pos = editor.selection.active;
+  const doc = editor.document;
+  const column = editor.viewColumn;
+  const focusCmd = {
+    up: 'workbench.action.focusAboveGroup',
+    down: 'workbench.action.focusBelowGroup',
+    left: 'workbench.action.focusLeftGroup',
+    right: 'workbench.action.focusRightGroup'
+  };
+  const splitCmd = {
+    down: 'workbench.action.splitEditorDown',
+    left: 'workbench.action.splitEditorLeft',
+    right: 'workbench.action.splitEditorRight',
+    up: 'workbench.action.splitEditorUp'
+  };
+  await commands.executeCommand(focusCmd[dir]);
+  const adjEditor = window.activeTextEditor!;
+  if (adjEditor.viewColumn === column) {
+    await commands.executeCommand(splitCmd[dir]);
+    return;
+  }
+  // console.log(`Active editor ${editor.viewColumn}, new column ${newColumn}`);
+  window.showTextDocument(doc, adjEditor).then((newEditor) => {
+    newEditor.selection = new Selection(pos, pos);
+    newEditor.revealRange(visible, TextEditorRevealType.InCenter);
+  });
+}
+
 function smartPaste(
     editor: TextEditor, edit: TextEditorEdit) {
   const text = clipboardy.readSync();
@@ -194,6 +227,7 @@ function activate(context: ExtensionContext) {
       registerTextEditorCommandWrapped('qcfg.smartPaste', smartPaste),
       registerCommandWrapped('qcfg.surroundWith', surroundWith),
       registerCommandWrapped('qcfg.cloneEditorBeside', cloneEditorBeside),
+      registerCommandWrapped('qcfg.syncEditorToDirection', syncEditorToDirection),
       registerCommandWrapped(
           'qcfg.wrapWithBracketsInline', wrapWithBracketsInline),
       registerCommandWrapped('qcfg.stripBrackets', stripBrackets),

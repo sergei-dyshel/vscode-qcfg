@@ -112,6 +112,11 @@ declare global {
     equals(that: T[], eq?: (x: T, y: T) => boolean): boolean;
     removeFirst(val: T): boolean;
   }
+
+  interface ReadonlyArray<T> {
+    reverseIter(): ReverseArrayIterator<T>;
+    readonly isEmpty: boolean;
+  }
 }
 
 Array.prototype.reverseIter = function<T>(this: T[]) {
@@ -193,3 +198,8 @@ export class DefaultMap<K, V> extends Map<K, V> {
 
 export type PromiseType<T extends Promise<any>> =
     T extends Promise<infer R>? R : any;
+
+
+export function zipArrays<T1, T2>(a: T1[], b: T2[]): Array<[T1, T2]> {
+  return a.map((k, i) => [k, b[i]]);
+}

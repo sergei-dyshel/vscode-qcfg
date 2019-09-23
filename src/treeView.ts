@@ -1,6 +1,6 @@
 'use strict';
 
-import { TreeItem, TreeItem2, ProviderResult, TreeItemCollapsibleState, ExtensionContext, TreeViewOptions, window, TreeViewExpansionEvent, TreeViewSelectionChangeEvent, TreeViewVisibilityChangeEvent, MarkdownString, TreeItemLabel, TreeDataProvider, TreeView } from 'vscode';
+import { TreeItem, TreeItem2, ProviderResult, TreeItemCollapsibleState, ExtensionContext, TreeViewOptions, window, TreeViewExpansionEvent, TreeViewSelectionChangeEvent, TreeViewVisibilityChangeEvent, TreeItemLabel, TreeDataProvider, TreeView } from 'vscode';
 import { callIfNonNull } from './tsUtils';
 import { log } from './logging';
 import { registerCommandWrapped, listenWrapped } from './exception';
@@ -54,7 +54,7 @@ export interface TreeNode {
 
 export interface TreeProvider {
   getTrees(): ProviderResult<TreeNode[]>;
-  getMessage?(): string | MarkdownString | undefined;
+  getMessage?(): string | undefined;
   removeNode?(node: TreeNode);
   onDidChangeSelection?(nodes: TreeNode[]);
   onDidChangeVisibility?(visible: boolean);
