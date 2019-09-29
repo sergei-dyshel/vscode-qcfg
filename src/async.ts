@@ -1,7 +1,9 @@
 'use strict';
 
-import { Logger } from './logging';
+import { Logger, log } from './logging';
 import { zipArrays } from './tsUtils';
+import { ExtensionContext } from 'vscode';
+import { Modules } from './module';
 
 type Callback = () => Promise<void>;
 type Resolve = () => void;
@@ -92,7 +94,13 @@ export class PromiseContext<T> {
 }
 
 export function mapAsync<V, R>(
-    arr: V[], func: (v: V) => Thenable<R>): Promise<R[]> {
+    arr: V[], func: (v: V) => Promise<R>): Promise<R[]> {
+  return (sequentialAsyncByDefault ? mapAsyncSequential : mapAsyncParallel)(
+      arr, func);
+}
+
+export function mapAsyncParallel<V, R>(
+    arr: V[], func: (v: V) => Promise<R>): Promise<R[]> {
   return Promise.all(arr.map(func));
 }
 
@@ -106,16 +114,35 @@ export async function mapAsyncSequential<V, R>(
 }
 
 export async function mapAsyncNoThrow<V, R>(
-    arr: V[], func: (v: V) => Promise<R>): Promise<Array<[V, R]>> {
-  const results: Array<R|undefined> =
-      await mapAsyncSequential(arr, async (v: V) => {
-        try {
-          return await func(v);
-        } catch (_) {
+    arr: V[], func: (v: V) => Promise<R>,
+    handler?: (err: any, v: V) => R | void|undefined): Promise<Array<[V, R]>> {
+  const results: Array<R|undefined> = await mapAsync(arr, async (v: V) => {
+    try {
+      return await func(v);
+    } catch (err) {
+      if (handler) {
+        const res = handler(v, err);
+        if (!res)
           return undefined;
-        }
-      });
+        return res;
+      }
+      return undefined;
+    }
+  });
   return zipArrays(arr, results).filter(tuple => {
     return tuple[1] !== undefined;
   }) as Array<[V, R]>;
 }
+
+let sequentialAsyncByDefault = false;
+
+function activate(_: ExtensionContext) {
+  /// #if DEBUG
+  sequentialAsyncByDefault = true;
+  /// #endif
+  log.infoStr(
+      'Async mapping is {} by default',
+      sequentialAsyncByDefault ? 'sequential' : 'parallel');
+}
+
+Modules.register(activate)

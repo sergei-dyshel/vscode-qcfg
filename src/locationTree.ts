@@ -9,40 +9,8 @@ import { listenWrapped } from './exception';
 import { log, str } from './logging';
 import { isSubPath } from './pathUtils';
 import { StaticTreeNode, TreeProvider, QcfgTreeView } from "./treeView";
-import { filterNonNull } from './tsUtils';
 import { Modules } from './module';
-
-const DEFAULT_PARSE_REGEX =
-    /^(?<file>.+?):(?<line>\d+):((?<column>\d+):)? (?<text>.*$)/;
-
-export interface ParsedLocation {
-  location: Location;
-  text?: string;
-}
-
-export function parseLocations(text: string, base?: string): ParsedLocation[]
-{
-  const lines = text.match(/[^\r\n]+/g);
-  if (!lines)
-    return [];
-  return filterNonNull(lines.map(line => parseLocation(line, base)));
-}
-
-export function parseLocation(line: string, base?: string): ParsedLocation|
-    undefined {
-  const match = line.match(DEFAULT_PARSE_REGEX);
-  if (!match)
-    return;
-  const groups = match.groups!;
-  if (!groups.file)
-      return;
-  const location = new Location(
-      Uri.file(path.resolve(base || '', groups.file)),
-      new vscode.Position(
-          Number(groups.line) - 1, Number(groups.column || 1) - 1));
-  const text = groups.text ? groups.text : "";
-  return {location, text};
-}
+import { ParsedLocation } from './parseLocations';
 
 export function setLocations(
     message: string, parsedLocations: ParsedLocation[], reveal = true) {

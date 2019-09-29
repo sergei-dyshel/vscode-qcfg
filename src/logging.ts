@@ -58,6 +58,9 @@ export class Logger {
   info(...args: any[]) {
     this.log(LogLevel.Info, args);
   }
+  infoStr(fmt: string, ...args: any[]) {
+    this.logStr(LogLevel.Info, fmt, args);
+  }
   notice(...args: any[]) {
     this.log(LogLevel.Notice, args);
   }

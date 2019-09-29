@@ -27,20 +27,34 @@ export function filterNonNull<T>(array: Array<T|null|undefined>): T[] {
   return array.filter(x => (x !== null && x !== undefined)).map(x => x!);
 }
 
+
+/**
+ * Map array with optional exception handler.
+ *
+ * When function application results in exception,
+ * it's handled by optional **handler**.
+ *
+ * If handler returns values it will be added to result.
+ */
 export function mapWithThrow<T, V>(
     array: T[], func: (elem: T) => V,
-    handler?: (elem: T, err: Error) => (void)): V[] {
-  const res: V[] = [];
+    handler?: (elem: T, err: Error) => (V|void|undefined)): Array<[T, V]> {
+  const res: Array<V|undefined> = [];
   for (const elem of array) {
     try {
       res.push(func(elem));
     }
     catch (err) {
-      if (handler)
-        handler(elem, err);
+      if (handler) {
+        const val = handler(elem, err);
+        res.push(val ? val : undefined);
+      } else {
+        res.push(undefined);
+      }
     }
   }
-  return res;
+  return zipArrays(array, res).filter(pair => pair[1] !== undefined) as
+      Array<[T, V]>;
 }
 
 export function concatArrays<T>(...arrays: T[][]): T[] {

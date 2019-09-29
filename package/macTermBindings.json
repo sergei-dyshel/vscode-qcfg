@@ -1,0 +1,94 @@
+{
+  "contributes": {
+    "keybindings": [
+      {
+        "key": "cmd+a",
+        "command": "workbench.action.terminal.sendSequence",
+        "when": "terminalFocus && isMac",
+        "args": {
+          "text": "\u0001"
+        }
+      },
+      {
+        "key": "cmd+e",
+        "command": "workbench.action.terminal.sendSequence",
+        "when": "terminalFocus && isMac",
+        "args": {
+          "text": "\u0005"
+        }
+      },
+      {
+        "key": "cmd+c",
+        "command": "workbench.action.terminal.sendSequence",
+        "when": "terminalFocus && isMac",
+        "args": {
+          "text": "\u0003"
+        }
+      },
+      {
+        "key": "cmd+w",
+        "command": "workbench.action.terminal.sendSequence",
+        "when": "terminalFocus && isMac",
+        "args": {
+          "text": "\u0017"
+        }
+      },
+      {
+        "key": "cmd+r",
+        "command": "workbench.action.terminal.sendSequence",
+        "when": "terminalFocus && isMac",
+        "args": {
+          "text": "\u0012"
+        }
+      },
+      {
+        "key": "cmd+n",
+        "command": "workbench.action.terminal.sendSequence",
+        "when": "terminalFocus && isMac",
+        "args": {
+          "text": "\u000e"
+        }
+      },
+      {
+        "key": "cmd+p",
+        "command": "workbench.action.terminal.sendSequence",
+        "when": "terminalFocus && isMac",
+        "args": {
+          "text": "\u0010"
+        }
+      },
+      {
+        "key": "cmd+u",
+        "command": "workbench.action.terminal.sendSequence",
+        "when": "terminalFocus && isMac",
+        "args": {
+          "text": "\u0015"
+        }
+      },
+      {
+        "key": "cmd+shift+k",
+        "command": "workbench.action.terminal.sendSequence",
+        "when": "terminalFocus && isMac",
+        "args": {
+          "text": "\u000b"
+        }
+      },
+      {
+        "key": "alt+b",
+        "command": "workbench.action.terminal.sendSequence",
+        "when": "terminalFocus && isMac",
+        "args": {
+          "text": "\u001bb"
+        }
+      },
+      {
+        "key": "alt+f",
+        "command": "workbench.action.terminal.sendSequence",
+        "when": "terminalFocus && isMac",
+        "args": {
+          "text": "\u001bf"
+        }
+      }
+    ]
+  }
+}

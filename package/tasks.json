@@ -49,7 +49,9 @@
 												"clear",
 												"autoRestart",
 												"reindex",
-												"build"
+												"build",
+												"parseLocations",
+												"anyWorkspaceFolder"
 											]
 										}
 									},
@@ -146,7 +148,9 @@
 												"clear",
 												"autoRestart",
 												"reindex",
-												"build"
+												"build",
+												"parseLocations",
+												"anyWorkspaceFolder"
 											]
 										}
 									},

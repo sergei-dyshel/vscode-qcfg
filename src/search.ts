@@ -5,13 +5,14 @@ import { CompletionItem, Location, Range, TextSearchQuery } from 'vscode';
 import { selectMultiple } from './dialog';
 import { getCompletionPrefix } from './documentUtils';
 import { availableLanguageConfigs, getLanguageConfig } from './language';
-import { ParsedLocation, parseLocations, setLocations } from './locationTree';
+import { setLocations } from './locationTree';
 import { log } from './logging';
 import { abbrevMatch } from './stringUtils';
 import { Subprocess } from './subprocess';
 import {currentWorkspaceFolder, getCursorWordContext} from './utils';
 import { registerCommandWrapped } from './exception';
 import { Modules } from './module';
+import { ParsedLocation, parseLocations } from './parseLocations';
 
 const TODO_CATEGORIES =
     ['TODO', 'XXX', 'TEMP', 'FIXME', 'REFACTOR', 'OPTIMIZE'];

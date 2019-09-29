@@ -40,6 +40,14 @@
             {
                 "command": "qcfg.peekReferences",
                 "title": "qcfg: Peek references"
+            },
+            {
+                "command": "qcfg.selectWordUnderCursor",
+                "title": "qcfg: Select word under cursor"
+            },
+            {
+                "command": "qcfg.toggleRelativeLineNumbers",
+                "title": "qcfg: Toggle relative line numbers"
             }
         ],
         "keybindings": [

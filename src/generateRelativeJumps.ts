@@ -1,24 +1,9 @@
 'use strict';
 
+import { KeyBinding, PackageJson, Key } from "./packageJson";
+
 const START_LINE = 5;
 const END_LINE = START_LINE * 10;
-
-interface Key {
-  key: string;
-  mac?: string;
-}
-
-interface KeyBinding extends Key {
-  command: string;
-  when?: string;
-  args?: any;
-}
-
-interface PackageJson {
-  contributes?: {
-    keybindings?: KeyBinding[]
-  };
-}
 
 const keybindings: KeyBinding[] = [];
 

@@ -1,12 +1,12 @@
 'use strict';
 
-import {TextEditor, window, commands, TextEditorEdit, Selection, ViewColumn, TextEditorRevealType, ExtensionContext} from 'vscode';
+import {TextEditor, window, commands, TextEditorEdit, Selection, ViewColumn, TextEditorRevealType, ExtensionContext, workspace, ConfigurationTarget } from 'vscode';
 import {Position} from 'vscode';
 import * as clipboardy from 'clipboardy';
 
 import {offsetPosition, isLinewise, expandLinewise, trimWhitespace, selectRange, trimBrackets} from './textUtils';
 import { log } from './logging';
-import {getActiveTextEditor} from './utils';
+import {getActiveTextEditor, getCursorWordContext} from './utils';
 
 import { forceNonTemporary, resetTemporary } from './history';
 import { registerCommandWrapped, registerTextEditorCommandWrapped } from './exception';
@@ -218,6 +218,34 @@ async function stripBrackets() {
       reversed ? new Selection(end, start) : new Selection(start, end);
 }
 
+function selectWordUnderCursor() {
+  const word = getCursorWordContext();
+  if (!word)
+    throw Error('No word under cursor');
+  word.editor.selection = word.range.asSelection();
+}
+
+type LineNumberConf = 'on' | 'off' | 'interval' | 'relative';
+
+function toggleRelativeNumbers() {
+  const SECTION = 'editor.lineNumbers';
+  const conf = workspace.getConfiguration();
+  const info = conf.inspect<string>(SECTION)!;
+  if (info.workspaceFolderValue || info.workspaceValue)
+    throw Error(`"${SECTION}" is overriden on workspace/folder level`);
+  const value = (info.globalValue || info.defaultValue) as LineNumberConf;
+  switch (value) {
+  case 'on':
+    conf.update(SECTION, 'relative', ConfigurationTarget.Global);
+    break;
+  case 'relative':
+    conf.update(SECTION, 'on', ConfigurationTarget.Global);
+    break;
+  default:
+    throw Error(`"${SECTION} has value of '${value}`);
+  }
+}
+
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
       registerCommandWrapped('qcfg.gotoLineRelative', gotoLineRelative),
@@ -229,12 +257,17 @@ function activate(context: ExtensionContext) {
       registerTextEditorCommandWrapped('qcfg.smartPaste', smartPaste),
       registerCommandWrapped('qcfg.surroundWith', surroundWith),
       registerCommandWrapped('qcfg.cloneEditorBeside', cloneEditorBeside),
-      registerCommandWrapped('qcfg.syncEditorToDirection', syncEditorToDirection),
+      registerCommandWrapped(
+          'qcfg.syncEditorToDirection', syncEditorToDirection),
       registerCommandWrapped(
           'qcfg.wrapWithBracketsInline', wrapWithBracketsInline),
       registerCommandWrapped('qcfg.stripBrackets', stripBrackets),
       registerCommandWrapped(
-          'qcfg.navigateBackToPreviousFile', navigateBackToPreviousFile));
+          'qcfg.navigateBackToPreviousFile', navigateBackToPreviousFile),
+      registerCommandWrapped(
+          'qcfg.selectWordUnderCursor', selectWordUnderCursor),
+      registerCommandWrapped(
+          'qcfg.toggleRelativeLineNumbers', toggleRelativeNumbers));
 }
 
 Modules.register(activate);

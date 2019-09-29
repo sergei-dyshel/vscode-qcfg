@@ -226,6 +226,14 @@
         "title": "qcfg: Peek references"
       },
       {
+        "command": "qcfg.selectWordUnderCursor",
+        "title": "qcfg: Select word under cursor"
+      },
+      {
+        "command": "qcfg.toggleRelativeLineNumbers",
+        "title": "qcfg: Toggle relative line numbers"
+      },
+      {
         "command": "qcfg.treeView.removeNode",
         "title": "qcfg: Remove tree view entry",
         "icon": {
@@ -1559,6 +1567,94 @@
         "key": "down",
         "command": "qcfg.multipleSelection.moveMarkDown",
         "when": "editorTextFocus && editorHasMultipleSelections"
+      },
+      {
+        "key": "cmd+a",
+        "command": "workbench.action.terminal.sendSequence",
+        "when": "terminalFocus && isMac",
+        "args": {
+          "text": "\u0001"
+        }
+      },
+      {
+        "key": "cmd+e",
+        "command": "workbench.action.terminal.sendSequence",
+        "when": "terminalFocus && isMac",
+        "args": {
+          "text": "\u0005"
+        }
+      },
+      {
+        "key": "cmd+c",
+        "command": "workbench.action.terminal.sendSequence",
+        "when": "terminalFocus && isMac",
+        "args": {
+          "text": "\u0003"
+        }
+      },
+      {
+        "key": "cmd+w",
+        "command": "workbench.action.terminal.sendSequence",
+        "when": "terminalFocus && isMac",
+        "args": {
+          "text": "\u0017"
+        }
+      },
+      {
+        "key": "cmd+r",
+        "command": "workbench.action.terminal.sendSequence",
+        "when": "terminalFocus && isMac",
+        "args": {
+          "text": "\u0012"
+        }
+      },
+      {
+        "key": "cmd+n",
+        "command": "workbench.action.terminal.sendSequence",
+        "when": "terminalFocus && isMac",
+        "args": {
+          "text": "\u000e"
+        }
+      },
+      {
+        "key": "cmd+p",
+        "command": "workbench.action.terminal.sendSequence",
+        "when": "terminalFocus && isMac",
+        "args": {
+          "text": "\u0010"
+        }
+      },
+      {
+        "key": "cmd+u",
+        "command": "workbench.action.terminal.sendSequence",
+        "when": "terminalFocus && isMac",
+        "args": {
+          "text": "\u0015"
+        }
+      },
+      {
+        "key": "cmd+shift+k",
+        "command": "workbench.action.terminal.sendSequence",
+        "when": "terminalFocus && isMac",
+        "args": {
+          "text": "\u000b"
+        }
+      },
+      {
+        "key": "alt+b",
+        "command": "workbench.action.terminal.sendSequence",
+        "when": "terminalFocus && isMac",
+        "args": {
+          "text": "\u001bb"
+        }
+      },
+      {
+        "key": "alt+f",
+        "command": "workbench.action.terminal.sendSequence",
+        "when": "terminalFocus && isMac",
+        "args": {
+          "text": "\u001bf"
+        }
       }
     ],
     "configuration": {
@@ -1602,7 +1698,9 @@
                         "clear",
                         "autoRestart",
                         "reindex",
-                        "build"
+                        "build",
+                        "parseLocations",
+                        "anyWorkspaceFolder"
                       ]
                     }
                   },
@@ -1699,7 +1797,9 @@
                         "clear",
                         "autoRestart",
                         "reindex",
-                        "build"
+                        "build",
+                        "parseLocations",
+                        "anyWorkspaceFolder"
                       ]
                     }
                   },
@@ -1929,7 +2029,6 @@
     "@types/sprintf-js": "^1.1.2",
     "@types/string-format": "^2.0.0",
     "@types/vscode": "^1.38.0",
-    "@types/webpack": "^4.39.1",
     "deepmerge": "^3.2.0",
     "gts": "^0.9.0",
     "ifdef-loader": "^2.1.1",
