@@ -6,7 +6,6 @@
 		"outDir": "out",
 		"lib": [ "es2018" ],
 		"sourceMap": true,
-		"strictNullChecks": true,
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 		"esModuleInterop": true, // needed for webpack

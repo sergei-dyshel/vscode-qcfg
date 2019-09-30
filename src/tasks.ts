@@ -1,7 +1,6 @@
 'use strict';
 
-import * as vscode from 'vscode';
-import { Task, window } from 'vscode';
+import { Task, window, WorkspaceFolder, workspace, TaskDefinition, TaskScope, ShellExecution, TaskRevealKind, TaskPanelKind, TaskGroup, tasks, commands, QuickPickItem, ExtensionContext } from 'vscode';
 import * as dialog from './dialog';
 import { registerCommandWrapped } from './exception';
 import { getDocumentRoot } from './fileUtils';
@@ -68,13 +67,14 @@ interface ConfParamsSet {
   [label: string]: Params | string;
 }
 
-interface ParamsWithSource {
+interface NamedParams {
+  label: string;
   params: Params;
   fromWorkspace: boolean;
 }
 
-interface ParamsSet {
-  [label: string]: ParamsWithSource;
+interface NamedParamsSet {
+  [label: string]: NamedParams;
 }
 
 export async function runOneTime(name: string, params: Params) {
@@ -89,7 +89,7 @@ export async function runOneTime(name: string, params: Params) {
 class QcfgTaskContext {
 
   /** Specify workspace folder for anyWorkspaceFolder task */
-  constructor(folder?: vscode.WorkspaceFolder) {
+  constructor(folder?: WorkspaceFolder) {
     const editor = window.activeTextEditor;
     if (editor) {
       const document = editor.document;
@@ -106,9 +106,9 @@ class QcfgTaskContext {
     this.allowedVars = [
       'cursorWord', 'workspaceFolder', 'selectedText', 'allWorkspaceFolders'
     ];
-    if (vscode.workspace.workspaceFolders)
+    if (workspace.workspaceFolders)
       this.substitute.allWorkspaceFolders =
-          vscode.workspace.workspaceFolders.map(wf => wf.uri.fsPath).join(' ');
+          workspace.workspaceFolders.map(wf => wf.uri.fsPath).join(' ');
     if (folder) {
       this.workspaceFolder = folder;
     }
@@ -133,7 +133,7 @@ class QcfgTaskContext {
   }
   /** var not listed here will throw exception */
   readonly allowedVars: string[];
-  readonly workspaceFolder?: vscode.WorkspaceFolder;
+  readonly workspaceFolder?: WorkspaceFolder;
   readonly substitute: Substitute = {};
 }
 
@@ -194,12 +194,12 @@ async function checkCondition(params: Params, context: QcfgTaskContext):
 
 function instantiateTask(
     label: string, params: Params, context: QcfgTaskContext): Task {
-  const def: vscode.TaskDefinition = {type: 'qcfg', task: params};
+  const def: TaskDefinition = {type: 'qcfg', task: params};
   const flags: Flag[] = params.flags || [];
 
-  const scope = context.workspaceFolder || vscode.TaskScope.Global;
+  const scope = context.workspaceFolder || TaskScope.Global;
   const environ = {QCFG_VSCODE_PORT: String(remoteControl.port)};
-  const shellExec = new vscode.ShellExecution(
+  const shellExec = new ShellExecution(
       substituteVars(params.command, context.substitute),
       {cwd: params.cwd, env: environ});
   const task = new Task(
@@ -207,15 +207,15 @@ function instantiateTask(
   task.presentationOptions = {
     focus: params.reveal === Reveal.Focus,
     reveal:
-        ((params.reveal !== Reveal.No) ? vscode.TaskRevealKind.Always :
-                                         vscode.TaskRevealKind.Never),
+        ((params.reveal !== Reveal.No) ? TaskRevealKind.Always :
+                                         TaskRevealKind.Never),
     panel: (flags.includes(Flag.dedicatedPanel)) ?
-        vscode.TaskPanelKind.Dedicated :
-        vscode.TaskPanelKind.Shared,
+        TaskPanelKind.Dedicated :
+        TaskPanelKind.Shared,
     clear: (flags.includes(Flag.clear) || flags.includes(Flag.build))
   };
   if (flags.includes(Flag.build))
-    task.group = vscode.TaskGroup.Build;
+    task.group = TaskGroup.Build;
   return task;
 }
 
@@ -229,18 +229,20 @@ function handleError(label: string, err: any) {
 }
 
 function getTaskParamsFromConf(
-    section: string, fromWorkspace: boolean): ParamsSet {
-  const conf = vscode.workspace.getConfiguration('qcfg');
+    section: string, fromWorkspace: boolean): NamedParamsSet {
+  const conf = workspace.getConfiguration('qcfg');
+  const confParamsSet = conf.get(section, {}) as ConfParamsSet;
   return mapObject(
-      conf.get(section, {}) as ConfParamsSet,
-      paramsOrCmd => ({params: expandParamsOrCmd(paramsOrCmd), fromWorkspace}));
+      confParamsSet,
+      (label, paramsOrCmd) =>
+          ({params: expandParamsOrCmd(paramsOrCmd), label, fromWorkspace}));
 }
 
-function getQcfgTaskParams(): ParamsSet {
-  return {
+function getQcfgTaskParams(): NamedParams[] {
+  return Object.values({
     ...(getTaskParamsFromConf('tasks.global', false)),
     ...(getTaskParamsFromConf('tasks.workspace', true))
-  };
+  });
 }
 
 async function createQcfgTask(
@@ -250,23 +252,28 @@ async function createQcfgTask(
   return new QcfgTask(label, params, newContext, fromWorkspace);
 }
 
+/* /* REFACTOR: pass namedParams to inner functions  */
+async function createQcfgMultiTask(
+    namedParams: NamedParams,
+    folderContexts: QcfgTaskContext[]): Promise<QcfgTask[]> {
+  const {label, params, fromWorkspace} = namedParams;
+  return (await mapAsyncNoThrow(folderContexts, async context => {
+           return await createQcfgTask(
+               label, params, context, fromWorkspace);
+         }, (err, _) => handleError(label, err))).map(pair => pair[1]);
+}
+
 async function fetchQcfgTasks(): Promise<QcfgTask[]> {
   const allParams = getQcfgTaskParams();
 
   const currentContext = new QcfgTaskContext();
-  const folderContexts = (vscode.workspace.workspaceFolders ||
+  const folderContexts = (workspace.workspaceFolders ||
                           []).map(folder => new QcfgTaskContext(folder));
 
-  const tasks = await mapAsync(Object.entries(allParams), async ([label, paramsWithSrc]) => {
-    const {params, fromWorkspace} = paramsWithSrc;
+  const tasks = await mapAsync(allParams, async namedParams => {
+    const {label, params, fromWorkspace} = namedParams;
     if (params.flags && params.flags.includes(Flag.anyWorkspaceFolder)) {
-      return (await mapAsyncNoThrow(folderContexts, async context => {
-               const labelWithFolder =
-                   `${label} (in ${context.workspaceFolder!.name})`;
-               return await createQcfgTask(
-                   labelWithFolder, params, context, fromWorkspace);
-             }, (err, _) => handleError(label, err))).map(pair => pair[1]);
-
+      return createQcfgMultiTask(namedParams, folderContexts);
     } else {
       try {
         return [await createQcfgTask(
@@ -281,6 +288,14 @@ async function fetchQcfgTasks(): Promise<QcfgTask[]> {
   return concatArrays(...tasks);
 }
 
+// async function fetchQcfgMultiTasks(): Promise<QcfgTask[]>
+// {
+//  const allParams = getQcfgTaskParams();
+//   const folderContexts = (workspace.workspaceFolders ||
+//                           []).map(folder => new QcfgTaskContext(folder));
+
+// }
+
 let lastBuildTask: VscodeTask|undefined;
 
 async function runDefaultBuildTask() {
@@ -288,10 +303,10 @@ async function runDefaultBuildTask() {
   for (const task of qcfgTasks)
     if (task.label === 'build')
       return task.run();
-  const tasks = await vscode.tasks.fetchTasks();
-  for (const task of tasks)
-    if (task.group === vscode.TaskGroup.Build)
-      return vscode.commands.executeCommand('workbench.action.tasks.build');
+  const allTasks = await tasks.fetchTasks();
+  for (const task of allTasks)
+    if (task.group === TaskGroup.Build)
+      return commands.executeCommand('workbench.action.tasks.build');
 }
 
 async function runLastBuildTask() {
@@ -302,22 +317,14 @@ async function runLastBuildTask() {
   await runDefaultBuildTask();
 }
 
-class VscodeTask implements dialog.ListSelectable {
-  constructor(protected task: Task) {}
+abstract class BaseTask implements dialog.ListSelectable {
+  abstract run(): Promise<void>;
+  abstract isBuild(): boolean;
 
-  async run() {
-    this.taskRun = new TaskRun(this.task!);
-    await this.taskRun.start();
-    await this.taskRun.wait();
-  }
-
-  isBuild() {
-    return this.task.group === vscode.TaskGroup.Build;
-  }
-
-  protected isFromWorkspace() {
-    return this.task.source === 'Workspace';
-  }
+  protected abstract isFromWorkspace(): boolean;
+  protected abstract isBackground(): boolean;
+  protected abstract fullName(): string;
+  protected abstract workspaceFolder(): WorkspaceFolder|undefined;
 
   protected prefixTags(): string {
     let res = '';
@@ -333,27 +340,17 @@ class VscodeTask implements dialog.ListSelectable {
     const tags: string[] = [];
     if (this.isBuild())
       tags.push('$(tools)');
-    if (this.task.isBackground)
+    if (this.isBackground())
       tags.push('$(clock)');
     return tags;
   }
 
-  fullName() {
-    const task = this.task;
-    let fullName = task.name;
-    if (task.source && task.source !== 'Workspace')
-      fullName = `${task.source}: ${fullName}`;
-    return fullName;
-  }
-
   toQuickPickItem() {
-    const task = this.task;
-    const item: vscode.QuickPickItem = {label: this.prefixTags() + this.fullName()};
-    if (task.scope && task.scope !== vscode.TaskScope.Global &&
-        task.scope !== vscode.TaskScope.Workspace) {
-      const folder = task.scope as vscode.WorkspaceFolder;
-      if (folder !== currentWorkspaceFolder())
-        item.description = folder.name;
+    const item: QuickPickItem = {label: this.prefixTags() + this.fullName()};
+    const folder = this.workspaceFolder();
+    const curFolder = currentWorkspaceFolder();
+    if (folder && (folder !== curFolder)) {
+      item.description = folder.name;
     }
     const tags = this.suffixTags();
     if (tags)
@@ -363,6 +360,47 @@ class VscodeTask implements dialog.ListSelectable {
 
   toPersistentLabel() {
     return this.fullName();
+  }
+}
+
+class VscodeTask extends BaseTask {
+  constructor(protected task: Task) {
+    super();
+  }
+
+  async run() {
+    this.taskRun = new TaskRun(this.task!);
+    await this.taskRun.start();
+    await this.taskRun.wait();
+  }
+
+  isBuild() {
+    return this.task.group === TaskGroup.Build;
+  }
+
+  protected isFromWorkspace() {
+    return this.task.source === 'Workspace';
+  }
+
+  protected isBackground() {
+    return this.task.isBackground;
+  }
+
+  protected workspaceFolder() {
+    const task = this.task;
+    if (task.scope && task.scope !== TaskScope.Global &&
+        task.scope !== TaskScope.Workspace) {
+      return task.scope as WorkspaceFolder;
+    }
+    return undefined;
+  }
+
+  fullName() {
+    const task = this.task;
+    let fullName = task.name;
+    if (task.source && task.source !== 'Workspace')
+      fullName = `${task.source}: ${fullName}`;
+    return fullName;
   }
 
   protected taskRun?: TaskRun;
@@ -425,7 +463,7 @@ class QcfgTask extends VscodeTask{
       case EndAction.Dispose:
         if (window.activeTerminal === term) {
           term.dispose();
-          vscode.commands.executeCommand('workbench.action.closePanel');
+          commands.executeCommand('workbench.action.closePanel');
         } else {
           term.dispose();
         }
@@ -433,7 +471,7 @@ class QcfgTask extends VscodeTask{
       case EndAction.Hide:
         term.hide();
         if (window.activeTerminal === term)
-          vscode.commands.executeCommand('workbench.action.closePanel');
+          commands.executeCommand('workbench.action.closePanel');
         break;
       case EndAction.Show:
         term.show();
@@ -451,7 +489,7 @@ class QcfgTask extends VscodeTask{
 
 async function showTasks() {
   const [qcfgTasks, rawVscodeTasks] =
-      await Promise.all([fetchQcfgTasks(), vscode.tasks.fetchTasks()]);
+      await Promise.all([fetchQcfgTasks(), tasks.fetchTasks()]);
   const vscodeTasks = rawVscodeTasks.map(task => new VscodeTask(task));
   const allTasks = [...qcfgTasks, ...vscodeTasks];
   const anyTask = await dialog.selectObjectFromListMru(allTasks, 'tasks');
@@ -474,7 +512,7 @@ async function runQcfgTask(name: string)
   log.error(`Qcfg task "${name}" is not available`);
 }
 
-function activate(context: vscode.ExtensionContext) {
+function activate(context: ExtensionContext) {
   context.subscriptions.push(
       registerCommandWrapped('qcfg.tasks.build.last', runLastBuildTask),
       registerCommandWrapped('qcfg.tasks.build.default', runDefaultBuildTask),

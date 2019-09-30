@@ -121,7 +121,7 @@ export async function mapAsyncNoThrow<V, R>(
       return await func(v);
     } catch (err) {
       if (handler) {
-        const res = handler(v, err);
+        const res = handler(err, v);
         if (!res)
           return undefined;
         return res;
@@ -145,4 +145,4 @@ function activate(_: ExtensionContext) {
       sequentialAsyncByDefault ? 'sequential' : 'parallel');
 }
 
-Modules.register(activate)
+Modules.register(activate);

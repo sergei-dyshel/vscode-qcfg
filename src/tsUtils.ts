@@ -3,10 +3,11 @@
 import { MultiDictionary } from "typescript-collections";
 
 export function mapObject<V, R>(
-  obj: {[key: string]: V}, func: (v: V) => R): {[key: string]: R} {
-const res: {[key: string]: R} = {};
-return Object.assign(
-    res, ...Object.entries(obj).map(([k, v]) => ({[k]: func(v)})));
+    obj: {[key: string]: V}, func: (k: string, v: V) => R): {[key: string]: R} {
+  const res: {[key: string]: R} = {};
+  const entryObjs = Object.entries(obj).map(([k, v]) => ({[k]: func(k, v)}));
+  const result = Object.assign(res, ...entryObjs);
+  return result;
 }
 
 export function If<T>(cond: any, ifTrue: () => T, ifFalse: () => T): T {
