@@ -1,6 +1,8 @@
 'use strict';
 
-import {log} from './logging';
+import * as stringFormat from 'string-format';
+
+export const formatString = stringFormat.default;
 
 export function parseNumber(s: string): number;
 export function parseNumber(s: string | undefined): number | undefined;
@@ -10,7 +12,7 @@ export function parseNumber(s: string | undefined, default_?: number): number | 
     return default_;
   const num = Number(s);
   if (isNaN(num) || s === "")
-    log.fatal(`${s} is not a number`);
+    throw new Error(`${s} is not a number`);
   return num;
 }
 
@@ -56,7 +58,8 @@ export function splitWithRemainder(
       result.push(str);
       break;
     }
-    log.assert(match[0].length > 0, 'Empty match inside split');
+    if (match[0].length === 0)
+      throw new Error('Empty match inside split');
     result.push(str.substring(0, match.index));
     str = str.substring(match.index + match[0].length);
     --limit;

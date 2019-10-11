@@ -397,12 +397,6 @@
         "when": "editorTextFocus"
       },
       {
-        "key": "ctrl+alt+up",
-        "mac": "cmd+alt+up",
-        "command": "qcfg.selection.selectSuperParent",
-        "when": "editorTextFocus"
-      },
-      {
         "key": "alt+pageup",
         "command": "qcfg.selection.left",
         "when": "editorTextFocus"
@@ -1689,6 +1683,10 @@
                     ],
                     "default": "yes"
                   },
+                  "locationRegex": {
+                    "type": "string",
+                    "description": "Regular expression to parse search results. vimgrep format by default. Predefined formats: gtags"
+                  },
                   "flags": {
                     "type": "array",
                     "items": {
@@ -1699,8 +1697,8 @@
                         "autoRestart",
                         "reindex",
                         "build",
-                        "parseLocations",
-                        "anyWorkspaceFolder"
+                        "search",
+                        "folder"
                       ]
                     }
                   },
@@ -1788,6 +1786,10 @@
                     ],
                     "default": "yes"
                   },
+                  "locationRegex": {
+                    "type": "string",
+                    "description": "Regular expression to parse search results. vimgrep format by default. Predefined formats: gtags"
+                  },
                   "flags": {
                     "type": "array",
                     "items": {
@@ -1798,8 +1800,8 @@
                         "autoRestart",
                         "reindex",
                         "build",
-                        "parseLocations",
-                        "anyWorkspaceFolder"
+                        "search",
+                        "folder"
                       ]
                     }
                   },
@@ -2017,7 +2019,9 @@
     "tree-sitter-cpp": "^0.13.15",
     "tree-sitter-python": "^0.13.6",
     "tree-sitter-typescript": "^0.13.6",
-    "typescript-collections": "^1.1.4"
+    "ts-json-schema-generator": "^0.54.0",
+    "typescript-collections": "^1.1.4",
+    "typescript-json-schema": "^0.40.0"
   },
   "devDependencies": {
     "@types/clipboardy": "^1.1.0",
@@ -2029,6 +2033,7 @@
     "@types/sprintf-js": "^1.1.2",
     "@types/string-format": "^2.0.0",
     "@types/vscode": "^1.38.0",
+    "@types/webpack": "^4.39.3",
     "deepmerge": "^3.2.0",
     "gts": "^0.9.0",
     "ifdef-loader": "^2.1.1",

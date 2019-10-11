@@ -1,20 +1,60 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { Task, TaskExecution, tasks } from 'vscode';
+import { Task, tasks } from 'vscode';
 import { Disposable } from 'vscode-jsonrpc';
 import { log, Logger } from './logging';
 import { registerTemporaryCommand } from './utils';
 import { listenWrapped } from './exception';
 import { Modules } from './module';
+import { Dictionary } from 'typescript-collections';
+// import { Dictionary } from 'typescript-collections';
 
 export enum State {
   INITIALIZED,
+  WAITING,
   EXECUTED,
   RUNNING,
   PROCESS_STARTED,
   PROCESS_ENDED,
-  DONE
+  DONE,
+  ABORTED
+}
+
+
+/**
+ * Two tasks with same descriptor can not run at the same time.
+ *
+ * TODO: While VSCode allows similiar tasks (e.g. same tasks in different
+ * folders) to run together, onDid* events of them may receive same execution
+ * object so we can't differentitate between them. That's why tasks potentially
+ * having same execution object must have same descriptor so they won't run
+ * together.
+ */
+class TaskDescriptor {
+  name: string;
+  constructor(task: Task) {
+    this.name = task.name;
+  }
+  isEqual(other: TaskDescriptor) {
+    return this.name === other.name;
+  }
+  toString() {
+    return this.name;
+  }
+}
+
+/**
+ * What to do when there is already running
+ * task with same @TaskDescriptor.
+ */
+export enum TaskConfilictPolicy {
+  /** Abort current task */
+  ABORT = 'Abort',
+  /** Queue current task after the one currently running */
+  WAIT = 'Wait',
+  /** Cancel currently runninig task and run this task instead */
+  CANCEL = 'Cancel'
 }
 
 export class TaskRun {
@@ -26,19 +66,50 @@ export class TaskRun {
   cancelled = false;
   status?: vscode.StatusBarItem;
   statusCmdDisposable?: Disposable;
+  desc: TaskDescriptor;
 
   constructor(public task: Task) {
     this.state = State.INITIALIZED;
     this.log = new Logger({name: 'taskRun', parent: log, instance: task.name});
+    this.desc = new TaskDescriptor(task);
   }
 
-  async start(): Promise<void> {
+  async start(conflictPolicy?: TaskConfilictPolicy): Promise<void> {
+    const previous = allRuns.getValue(this.desc);
+    if (previous) {
+      this.log.warn('Task already running');
+      if (!conflictPolicy) {
+        conflictPolicy =
+            await vscode.window.showWarningMessage(
+                `Task "${
+                    this.task
+                        .name} is already running. Would like to wait for it, cancel it or abort?`,
+                {modal: true}, TaskConfilictPolicy.WAIT,
+                TaskConfilictPolicy.CANCEL, TaskConfilictPolicy.ABORT) as
+                TaskConfilictPolicy |
+            undefined;
+      }
+      switch (conflictPolicy) {
+        case undefined:
+        case TaskConfilictPolicy.ABORT:
+          this.state = State.ABORTED;
+          throw Error(`Task "${this.task.name}" aborted`);
+        case TaskConfilictPolicy.CANCEL:
+          this.state = State.WAITING;
+          await previous.cancel();
+          break;
+        case TaskConfilictPolicy.WAIT:
+          this.state = State.WAITING;
+          await previous.wait();
+          break;
+      }
+    }
+    allRuns.setValue(this.desc, this);
     this.state = State.EXECUTED;
     this.log.debug('Executing');
     this.execution = await vscode.tasks.executeTask(this.task);
     this.state = State.RUNNING;
     this.log.debug('Started');
-    allRuns.set(this.execution, this);
   }
 
   wait(): Promise<void> {
@@ -75,9 +146,10 @@ export class TaskRun {
         listenWrapped(tasks.onDidEndTask, TaskRun.onDidEndTask));
   }
 
-  static findRunningTask(name: string): TaskRun | undefined {
+  static findRunningTask(task: Task): TaskRun
+      |undefined {
     for (const run of allRuns.values())
-      if (run.task.name === name)
+      if (run.task.name === task.name)
         return run;
     return;
   }
@@ -85,9 +157,9 @@ export class TaskRun {
   // Private
 
   private static onDidEndTaskProcess(event: vscode.TaskProcessEndEvent) {
-    if (!allRuns.has(event.execution))
+    const self = allRuns.getValue(new TaskDescriptor(event.execution.task))!;
+    if (!self)
       return;
-    const self = allRuns.get(event.execution)!;
     self.exitCode = event.exitCode;
     self.state = State.PROCESS_ENDED;
     if (self.statusCmdDisposable)
@@ -98,9 +170,9 @@ export class TaskRun {
   }
 
   private static onDidStartTaskProcess(event: vscode.TaskProcessStartEvent) {
-    if (!allRuns.has(event.execution))
+    const self = allRuns.getValue(new TaskDescriptor(event.execution.task))!;
+    if (!self)
       return;
-    const self = allRuns.get(event.execution)!;
     self.pid = event.processId;
     self.state = State.PROCESS_STARTED;
     self.log.info(`Process started with pid ${self.pid}`);
@@ -111,7 +183,7 @@ export class TaskRun {
         if (self.terminal)
           self.terminal.show();
       });
-      self.status.text = '$(tools)' + self.task.name;
+      self.status.text = '$(tools)' + self.desc.toString();
       self.status.command = command;
       self.statusCmdDisposable = disposable;
       self.status.show();
@@ -123,9 +195,9 @@ export class TaskRun {
   }
 
   private static onDidEndTask(event: vscode.TaskEndEvent) {
-    if (!allRuns.has(event.execution))
+    const self = allRuns.getValue(new TaskDescriptor(event.execution.task))!;
+    if (!self)
       return;
-    const self = allRuns.get(event.execution)!;
     self.state = State.DONE;
     if (self.waitingContext) {
       if (self.cancelled) {
@@ -136,7 +208,7 @@ export class TaskRun {
         self.waitingContext.resolve();
       }
     }
-    allRuns.delete(event.execution);
+    allRuns.remove(self.desc);
   }
 
   private log: Logger;
@@ -175,4 +247,4 @@ function activate(context: vscode.ExtensionContext) {
 
 Modules.register(activate);
 
-const allRuns = new Map<TaskExecution, TaskRun>();
+const allRuns = new Dictionary<TaskDescriptor, TaskRun>();

@@ -1,18 +1,21 @@
 'use strict';
 
-import { Task, window, WorkspaceFolder, workspace, TaskDefinition, TaskScope, ShellExecution, TaskRevealKind, TaskPanelKind, TaskGroup, tasks, commands, QuickPickItem, ExtensionContext } from 'vscode';
+import { commands, ExtensionContext, Location, QuickPickItem, ShellExecution, Task, TaskDefinition, TaskGroup, TaskPanelKind, TaskRevealKind, tasks, TaskScope, window, workspace, WorkspaceFolder } from 'vscode';
+import { filterAsync, mapAsyncNoThrow, mapSomeAsync, MAP_UNDEFINED, mapAsyncSequential } from './async';
 import * as dialog from './dialog';
 import { registerCommandWrapped } from './exception';
-import { getDocumentRoot } from './fileUtils';
 import * as language from './language';
-import { log } from './logging';
-import * as remoteControl from './remoteControl';
-import { TaskCancelledError, TaskRun } from './taskRunner';
-import { mapObject, concatArrays } from './tsUtils';
-import { currentWorkspaceFolder, getCursorWordContext } from './utils';
-import * as glob from 'glob';
+import { log, LogLevel } from './logging';
 import { Modules } from './module';
-import { mapAsyncNoThrow, mapAsync } from './async';
+import * as nodejs from './nodejs';
+import { parseLocations } from './parseLocations';
+import * as remoteControl from './remoteControl';
+import { Subprocess } from './subprocess';
+import { TaskCancelledError, TaskRun, TaskConfilictPolicy } from './taskRunner';
+import { concatArrays, mapObject } from './tsUtils';
+import { currentWorkspaceFolder, getCursorWordContext } from './utils';
+import { GTAGS_PARSE_REGEX } from './gtags';
+import { peekLocation, globAsync } from './fileUtils';
 
 export enum Reveal {
   Focus = 'focus',
@@ -35,12 +38,13 @@ export enum Flag {
   autoRestart = 'autoRestart',
   reindex = 'reindex',
   build = 'build',
-  parseLocations = 'parseLocations', /* TODO: remove if not needed */
+  search = 'search',
 
   /** Task applies to any workspace folder (i.e. not current dir/file) */
-  anyWorkspaceFolder = 'anyWorkspaceFolder',
+  folder = 'folder',
 }
 
+/** Validation condition */
 interface When {
   fileExists?: string;
   fileMatches?: string;
@@ -54,10 +58,12 @@ interface Params {
   onSuccess?: EndAction;
   onFailure?: EndAction;
   exitCodes?: number[];
+  locationRegex?: string;
   reindex?: boolean;
   problemMatchers?: string | string[];
   flags?: Flag[];
 
+  /** Validation condition */
   when?: When;
 }
 
@@ -78,7 +84,8 @@ interface NamedParamsSet {
 }
 
 export async function runOneTime(name: string, params: Params) {
-  const run = new QcfgTask(name, params, new QcfgTaskContext());
+  const run = new QcfgTask(
+      name, params, false /* not from workspace */, new QcfgTaskContext());
   await run.run();
 }
 
@@ -87,109 +94,110 @@ export async function runOneTime(name: string, params: Params) {
  * current file, line, selected text etc.
  */
 class QcfgTaskContext {
+  SUBSTITUTE_VARS = [
+    'absoluteFile', 'relativeFile', 'relativeFileNoExt', 'cursorWord',
+    'workspaceFolder', 'lineNumber', 'selectedText', 'allWorkspaceFolders'
+  ];
 
-  /** Specify workspace folder for anyWorkspaceFolder task */
   constructor(folder?: WorkspaceFolder) {
     const editor = window.activeTextEditor;
+    this.workspaceFolder = folder || currentWorkspaceFolder();
     if (editor) {
       const document = editor.document;
-      this.substitute.absoluteFile = document.fileName;
+      this.vars.absoluteFile = document.fileName;
       if (!editor.selection.isEmpty)
-        this.substitute.selectedText = document.getText(editor.selection);
+        this.vars.selectedText = document.getText(editor.selection);
       if (editor.selection.isEmpty)
-        this.substitute.lineNumber = String(editor.selection.active.line + 1);
-      const word = getCursorWordContext();
-      if (word) {
-        this.substitute.cursorWord = word.word;
+        this.vars.lineNumber = String(editor.selection.active.line + 1);
+      const wordCtx = getCursorWordContext();
+      if (wordCtx) {
+        this.vars.cursorWord = wordCtx.word;
+      }
+      if (this.workspaceFolder) {
+        this.vars.workspaceFolder = this.workspaceFolder.uri.fsPath;
+        this.vars.relativeFile =
+            nodejs.path.relative(this.vars.workspaceFolder, document.fileName);
+        this.vars.relativeFileNoExt = this.vars.relativeFile.replace(/\.[^/.]+$/, '');
       }
     }
-    this.allowedVars = [
-      'cursorWord', 'workspaceFolder', 'selectedText', 'allWorkspaceFolders'
-    ];
     if (workspace.workspaceFolders)
-      this.substitute.allWorkspaceFolders =
+      this.vars.allWorkspaceFolders =
           workspace.workspaceFolders.map(wf => wf.uri.fsPath).join(' ');
-    if (folder) {
-      this.workspaceFolder = folder;
-    }
-    else {
-      // not anyWorkspaceFolder task
-      this.allowedVars.push(
-          'absoluteFile', 'relativeFile', 'relativeFileNoExt', 'lineNumber');
-      if (editor) {
-        const document = editor.document;
-        const root = getDocumentRoot(document);
-        if (root) {
-          const {workspaceFolder, relativePath} = root;
-          this.workspaceFolder = workspaceFolder;
-          this.substitute.relativeFile = relativePath;
-          this.substitute.relativeFileNoExt =
-              relativePath.replace(/\.[^/.]+$/, '');
-        }
-      }
-    }
-    if (this.workspaceFolder)
-      this.substitute.workspaceFolder = this.workspaceFolder.uri.fsPath;
   }
-  /** var not listed here will throw exception */
-  readonly allowedVars: string[];
-  readonly workspaceFolder?: WorkspaceFolder;
-  readonly substitute: Substitute = {};
-}
 
-const SUBSTITUTE_VARS = [
-  'absoluteFile', 'relativeFile', 'relativeFileNoExt', 'cursorWord',
-  'workspaceFolder', 'lineNumber', 'selectedText', 'allWorkspaceFolders'
-];
+  substitute(text: string): string {
+    return text.replace(/\$\{([a-zA-Z]+)\}/g, (_, varname) => {
+      if (!this.SUBSTITUTE_VARS.includes(varname))
+        throw new ParamsError(`Unexpected variable "${varname}"`);
+      const sub = this.vars[varname] as string | undefined;
+      if (!sub)
+        throw new SubstituteError(`Could not substitute var "${varname}"`);
+      return sub;
+    });
+  }
+
+  readonly workspaceFolder?: WorkspaceFolder;
+  readonly vars: Substitute = {};
+}
 
 type Substitute = {
   [name: string]: string
 };
 
-/** wrongly defined task */
+/**
+ * Task definition (params) has mistakes.
+ */
 class ParamsError extends Error {
   constructor(message: string) { super(message); }
 }
 
-/** validation error - task just won't be presented in list */
-class SubstituteError extends Error {
+/**
+ * Task is invalid for given context and won't be presented in list
+ */
+class ValidationError extends Error {
   constructor(message: string) { super(message); }
 }
 
-function substituteVars(cmd: string, substitute: Substitute): string {
-  return cmd.replace(/\$\{([a-zA-Z]+)\}/g, (_, varname) => {
-    if (!SUBSTITUTE_VARS.includes(varname))
-      throw new ParamsError(`Unexpected variable "${varname}"`);
-    const sub = substitute[varname] as string|undefined;
-    if (!sub)
-      throw new SubstituteError(`Could not substitute var "${varname}"`);
-    return sub;
-  });
+/**
+ * Could not substitue some variables.
+ */
+class SubstituteError extends ValidationError {
+  constructor(message: string) {
+    super('Some variables could not be substituted: ' + message);
+  }
 }
 
-async function checkCondition(params: Params, context: QcfgTaskContext):
-    Promise<QcfgTaskContext> {
+class ConditionError extends ValidationError {
+  constructor(message: string) {
+    super('Condition check failed: ' + message);
+  }
+}
+
+class MultiTaskError extends ValidationError {
+  constructor(message: string) {
+    super('Error resolving task in multiple folders: ' + message);
+  }
+}
+
+async function checkCondition(
+    params: Params, context: QcfgTaskContext): Promise<void> {
   const when = params.when || {};
-  const newContext = {...context, substitute: {...context.substitute}};
   if (Object.keys(when).length > 1)
     throw new ParamsError(
         'Only one property can be defined for \'when\' clause');
   if (when.fileExists) {
     if (!context.workspaceFolder)
-      throw new SubstituteError(
+      throw new ConditionError(
           '"fileExists" can only be checked in context of workspace folder');
-    const matches =
-        glob.sync(when.fileExists, {cwd: context.workspaceFolder.uri.path});
+    const matches = await globAsync(
+        when.fileExists, {cwd: context.workspaceFolder.uri.path});
     if (matches.isEmpty)
-      throw new SubstituteError(
+      throw new ConditionError(
           `Globbing for ${when.fileExists} returned no matches`);
-    newContext.substitute.whenFile = matches[0];
-    return newContext;
   }
   else if (when.fileMatches) {
     throw new ParamsError('TODO: when.fileMatches not implemented yet');
   }
-  return newContext;
 }
 
 function instantiateTask(
@@ -200,7 +208,7 @@ function instantiateTask(
   const scope = context.workspaceFolder || TaskScope.Global;
   const environ = {QCFG_VSCODE_PORT: String(remoteControl.port)};
   const shellExec = new ShellExecution(
-      substituteVars(params.command, context.substitute),
+      context.substitute(params.command),
       {cwd: params.cwd, env: environ});
   const task = new Task(
       def, scope, label, 'qcfg', shellExec, params.problemMatchers || []);
@@ -219,11 +227,15 @@ function instantiateTask(
   return task;
 }
 
-function handleError(label: string, err: any) {
-  if (err instanceof SubstituteError)
-    log.debug(`Error substituting variables in task "${label}": ${err.message}`);
-  else if (err instanceof ParamsError)
-    log.warn(`Error in parameters for task "${label}": ${err.message}`);
+function handleValidationError(
+    label: string, context: QcfgTaskContext|undefined, err: any) {
+  const contextStr = context ?
+      (context.workspaceFolder ? 'folder ' + context.workspaceFolder.name :
+                                 'current context') :
+      'multiple folders';
+  if (err instanceof ValidationError)
+    log.debug(
+        `Error validating task "${label}" for ${contextStr}: ${err.message}`);
   else
     throw err;
 }
@@ -248,55 +260,149 @@ function getQcfgTaskParams(): NamedParams[] {
 async function createQcfgTask(
     label: string, params: Params, context: QcfgTaskContext,
     fromWorkspace: boolean): Promise<QcfgTask> {
-  const newContext = await checkCondition(params, context);
-  return new QcfgTask(label, params, newContext, fromWorkspace);
+  await checkCondition(params, context);
+  return new QcfgTask(label, params, fromWorkspace, context);
 }
 
-/* /* REFACTOR: pass namedParams to inner functions  */
-async function createQcfgMultiTask(
+async function createQcfgTaskForFolders(
     namedParams: NamedParams,
     folderContexts: QcfgTaskContext[]): Promise<QcfgTask[]> {
   const {label, params, fromWorkspace} = namedParams;
-  return (await mapAsyncNoThrow(folderContexts, async context => {
-           return await createQcfgTask(
-               label, params, context, fromWorkspace);
-         }, (err, _) => handleError(label, err))).map(pair => pair[1]);
+  return mapSomeAsync(folderContexts, async context => {
+    try {
+      return await createQcfgTask(label, params, context, fromWorkspace);
+    } catch (err) {
+      handleValidationError(
+          label, context, err);
+      return MAP_UNDEFINED;
+    }
+  });
 }
 
-async function fetchQcfgTasks(): Promise<QcfgTask[]> {
+async function createQcfgMultiTask(
+    namedParams: NamedParams, folderContexts: QcfgTaskContext[],
+    allowSingle = false): Promise<QcfgMultiTask> {
+  const folderTasks = await createQcfgTaskForFolders(namedParams, folderContexts);
+  if (folderTasks.isEmpty)
+    throw new MultiTaskError('Folder task not valid for any workspace folder');
+  if (!allowSingle && folderTasks.length === 1) {
+    throw new MultiTaskError('Task valid for only one workspace folder');
+  }
+  return new QcfgMultiTask(
+      namedParams.label, namedParams.params, namedParams.fromWorkspace,
+      folderTasks);
+}
+
+async function createQcfgMultiTaskNoThrow(
+    namedParams: NamedParams, folderContexts: QcfgTaskContext[],
+    allowSingle = false): Promise<QcfgMultiTask[]> {
+  try {
+    return [await createQcfgMultiTask(
+        namedParams, folderContexts, allowSingle)];
+  } catch (err) {
+    handleValidationError(
+        namedParams.label, undefined /* multiple folders */, err);
+    return [];
+  }
+}
+
+async function createSearchMultiTask(
+    namedParams: NamedParams,
+    contexts: QcfgTaskContext[]): Promise<SearchMultiTask> {
+  const {label, params, fromWorkspace} = namedParams;
+  const validContexts = await filterAsync(contexts, async context => {
+    try {
+      await checkCondition(params, context);
+      return true;
+    } catch (err){
+      handleValidationError(label, context, err);
+      return false;
+    }
+  });
+  if (validContexts.isEmpty) {
+    throw new MultiTaskError('The task is not valid for any workspace folder');
+  }
+  return new SearchMultiTask(label, params, fromWorkspace, validContexts);
+}
+
+async function createSearchMultiTaskNoThrow(
+    namedParams: NamedParams, contexts: QcfgTaskContext[]) {
+  try {
+    return [await createSearchMultiTask(namedParams, contexts)];
+  } catch (err) {
+    handleValidationError(namedParams.label, undefined /* multiple folders */, err);
+    return [];
+  }
+}
+
+/**
+ * Fetch all possible tasks for given params
+ */
+async function fetchQcfgTasksForParams(
+    namedParams: NamedParams, currentContext: QcfgTaskContext,
+    folderContexts: QcfgTaskContext[]): Promise<BaseQcfgTask[]> {
+  const flags = (namedParams.params.flags || []);
+  const isFolderTask = flags.includes(Flag.folder);
+
+  if (flags.includes(Flag.search)) {
+    return createSearchMultiTaskNoThrow(
+        namedParams, isFolderTask ? folderContexts : [currentContext]);
+  }
+  if (isFolderTask) {
+    const folderTasks =
+        await createQcfgTaskForFolders(namedParams, folderContexts);
+    if (folderTasks.length > 1) {
+      for (const task of folderTasks) {
+        const folder = task.context.workspaceFolder!;
+        task.folderText = folder.name;
+        if (folder === currentContext.workspaceFolder)
+          task.folderText += ' (current)';
+      }
+      return concatArrays<BaseQcfgTask>(
+          folderTasks,
+          await createQcfgMultiTaskNoThrow(namedParams, folderContexts));
+    } else {
+      return folderTasks;
+    }
+  } else {
+    return createQcfgTaskForFolders(namedParams, [currentContext]);
+  }
+}
+
+async function fetchQcfgTasks(): Promise<BaseQcfgTask[]> {
   const allParams = getQcfgTaskParams();
 
   const currentContext = new QcfgTaskContext();
-  const folderContexts = (workspace.workspaceFolders ||
-                          []).map(folder => new QcfgTaskContext(folder));
+  const curFolder = currentWorkspaceFolder();
+  const folders = workspace.workspaceFolders || [];
 
-  const tasks = await mapAsync(allParams, async namedParams => {
-    const {label, params, fromWorkspace} = namedParams;
-    if (params.flags && params.flags.includes(Flag.anyWorkspaceFolder)) {
-      return createQcfgMultiTask(namedParams, folderContexts);
-    } else {
-      try {
-        return [await createQcfgTask(
-            label, params, currentContext, fromWorkspace)];
-      } catch (err) {
-        handleError(label, err);
-        return [];
-      }
-    }
-  });
+  // move current folder to the top of list
+  if (curFolder) {
+    folders.removeFirst(curFolder);
+    folders.unshift(curFolder);
+  }
+
+  const folderContexts = folders.map(folder => new QcfgTaskContext(folder));
+
+  const tasks = await mapSomeAsync<NamedParams, BaseQcfgTask[]>(
+      allParams, async namedParams => {
+        try {
+          return await fetchQcfgTasksForParams(
+              namedParams, currentContext, folderContexts);
+        } catch (err) {
+          if (err instanceof ParamsError) {
+            log.warn(`Error in parameters for task "${namedParams.label}": ${
+                err.message}`);
+            return MAP_UNDEFINED;
+          }
+          throw err;
+        }
+      });
 
   return concatArrays(...tasks);
 }
 
-// async function fetchQcfgMultiTasks(): Promise<QcfgTask[]>
-// {
-//  const allParams = getQcfgTaskParams();
-//   const folderContexts = (workspace.workspaceFolders ||
-//                           []).map(folder => new QcfgTaskContext(folder));
-
-// }
-
-let lastBuildTask: VscodeTask|undefined;
+let lastBuildTask: BaseTask|undefined;
 
 async function runDefaultBuildTask() {
   const qcfgTasks = await fetchQcfgTasks();
@@ -318,13 +424,14 @@ async function runLastBuildTask() {
 }
 
 abstract class BaseTask implements dialog.ListSelectable {
+  constructor(public folderText?: string) {}
+
   abstract run(): Promise<void>;
   abstract isBuild(): boolean;
 
   protected abstract isFromWorkspace(): boolean;
   protected abstract isBackground(): boolean;
   protected abstract fullName(): string;
-  protected abstract workspaceFolder(): WorkspaceFolder|undefined;
 
   protected prefixTags(): string {
     let res = '';
@@ -347,10 +454,8 @@ abstract class BaseTask implements dialog.ListSelectable {
 
   toQuickPickItem() {
     const item: QuickPickItem = {label: this.prefixTags() + this.fullName()};
-    const folder = this.workspaceFolder();
-    const curFolder = currentWorkspaceFolder();
-    if (folder && (folder !== curFolder)) {
-      item.description = folder.name;
+    if (this.folderText) {
+      item.description = this.folderText;
     }
     const tags = this.suffixTags();
     if (tags)
@@ -366,6 +471,11 @@ abstract class BaseTask implements dialog.ListSelectable {
 class VscodeTask extends BaseTask {
   constructor(protected task: Task) {
     super();
+    if (task.scope && task.scope !== TaskScope.Global &&
+        task.scope !== TaskScope.Workspace && workspace.workspaceFolders &&
+        workspace.workspaceFolders.length > 1) {
+      this.folderText = task.scope.name;
+    }
   }
 
   async run() {
@@ -386,15 +496,6 @@ class VscodeTask extends BaseTask {
     return this.task.isBackground;
   }
 
-  protected workspaceFolder() {
-    const task = this.task;
-    if (task.scope && task.scope !== TaskScope.Global &&
-        task.scope !== TaskScope.Workspace) {
-      return task.scope as WorkspaceFolder;
-    }
-    return undefined;
-  }
-
   fullName() {
     const task = this.task;
     let fullName = task.name;
@@ -406,34 +507,58 @@ class VscodeTask extends BaseTask {
   protected taskRun?: TaskRun;
 }
 
-
 function expandParamsOrCmd(paramsOrCmd: Params | string): Params
 {
   return (typeof paramsOrCmd === 'string') ? {command: paramsOrCmd as string} :
                                              (paramsOrCmd as Params);
 }
 
-class QcfgTask extends VscodeTask{
+
+export abstract class BaseQcfgTask extends BaseTask {
   constructor(
-      public label: string, private params: Params, context: QcfgTaskContext,
-      private fromWorkspace = true) {
-    super(instantiateTask(label, params, context));
+      public label: string, protected params: Params,
+      protected fromWorkspace = true) {
+    super();
   }
 
   protected isFromWorkspace() {
     return this.fromWorkspace;
   }
 
-  async run() {
-    const runningTask = TaskRun.findRunningTask(this.task.name);
-    if (runningTask && this.params.flags &&
-        (this.params.flags.includes(Flag.autoRestart)))
-      await runningTask.cancel();
+  protected isBackground() {
+    return false;
+  }
 
+  protected fullName() {
+    return 'qcfg: ' + this.label;
+  }
+
+  isBuild() {
+    return (this.params.flags || []).includes(Flag.build);
+  }
+}
+
+class QcfgTask extends BaseQcfgTask{
+  private task: Task;
+  protected taskRun?: TaskRun;
+
+  constructor(
+      label: string, params: Params, fromWorkspace: boolean,
+      readonly context: QcfgTaskContext) {
+    super(label, params, fromWorkspace);
+    this.task = instantiateTask(label, params, context);
+  }
+
+  async run() {
+    this.taskRun = new TaskRun(this.task!);
+    const conflictPolicy =
+        (this.params.flags && (this.params.flags.includes(Flag.autoRestart))) ?
+        TaskConfilictPolicy.CANCEL :
+        undefined;
+    await this.taskRun.start(conflictPolicy);
     try {
-      await super.run();
-    }
-    catch (err) {
+      await this.taskRun.wait();
+    } catch (err) {
       if (err instanceof TaskCancelledError)
         return;
       throw err;
@@ -484,6 +609,81 @@ class QcfgTask extends VscodeTask{
           window.showErrorMessage(`Task "${this.task.name}" failed`);
         break;
     }
+  }
+}
+
+class QcfgMultiTask extends BaseQcfgTask {
+  constructor(
+      label: string, params: Params, fromWorkspace: boolean,
+      private folderTasks: QcfgTask[]) {
+    super(label, params, fromWorkspace);
+    this.folderText = 'all folders';
+  }
+
+  run() {
+    return mapAsyncSequential(this.folderTasks, task => task.run())
+        .then<void>();
+  }
+}
+
+class SearchExecution {
+  private command: string;
+  private cwd: string;
+  private regex?: RegExp;
+
+  constructor(params: Params, context: QcfgTaskContext) {
+    this.command = context.substitute(params.command);
+    if (params.cwd)
+      this.cwd = context.substitute(params.cwd);
+    else if (context.workspaceFolder)
+      this.cwd = context.workspaceFolder.uri.path;
+    else if (workspace.workspaceFolders)
+      this.cwd = workspace.workspaceFolders[0].uri.fsPath;
+    else
+      this.cwd = process.cwd();
+    if (params.locationRegex === 'gtags')
+      this.regex = GTAGS_PARSE_REGEX;
+    else if (params.locationRegex) {
+      try {
+        this.regex = new RegExp(params.locationRegex);
+      } catch (err) {
+        throw new ParamsError(
+            'Invalid locationRegex regular expression: ' + err.message);
+      }
+    }
+  }
+
+  async getLocations(): Promise<Location[]> {
+    /* TEMP: remove loglevel */
+    const subproc =
+        new Subprocess(this.command, {cwd: this.cwd, logLevel: LogLevel.Debug});
+    const result = await subproc.wait();
+    return parseLocations(result.stdout, this.cwd, this.regex)
+        .map(parsedLoc => parsedLoc.location);
+  }
+}
+
+class SearchMultiTask extends BaseQcfgTask {
+  private executions: SearchExecution[];
+
+  constructor(
+      label: string, params: Params, fromWorkspace: boolean,
+      contexts: QcfgTaskContext[]) {
+    super(label, params, fromWorkspace);
+    this.folderText = 'search';
+    this.executions =
+        contexts.map(context => new SearchExecution(params, context));
+  }
+
+  async getLocations() {
+    const locsPerFolder =
+        await mapAsyncNoThrow(this.executions, exec => exec.getLocations());
+    return concatArrays(...locsPerFolder);
+  }
+
+  async run() {
+    const locations = await this.getLocations();
+    await peekLocation(locations);
   }
 }
 

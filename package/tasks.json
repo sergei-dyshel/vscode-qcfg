@@ -40,6 +40,10 @@
 										],
 										"default": "yes"
 									},
+									"locationRegex": {
+										"type": "string",
+										"description": "Regular expression to parse search results. vimgrep format by default. Predefined formats: gtags"
+									},
 									"flags": {
 										"type": "array",
 										"items": {
@@ -50,8 +54,8 @@
 												"autoRestart",
 												"reindex",
 												"build",
-												"parseLocations",
-												"anyWorkspaceFolder"
+												"search",
+												"folder"
 											]
 										}
 									},
@@ -139,6 +143,10 @@
 										],
 										"default": "yes"
 									},
+									"locationRegex": {
+										"type": "string",
+										"description": "Regular expression to parse search results. vimgrep format by default. Predefined formats: gtags"
+									},
 									"flags": {
 										"type": "array",
 										"items": {
@@ -149,8 +157,8 @@
 												"autoRestart",
 												"reindex",
 												"build",
-												"parseLocations",
-												"anyWorkspaceFolder"
+												"search",
+												"folder"
 											]
 										}
 									},

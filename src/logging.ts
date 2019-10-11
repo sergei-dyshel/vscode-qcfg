@@ -9,7 +9,7 @@ import { selectStringFromList } from './dialog';
 import { registerCommandWrapped, listenWrapped } from './exception';
 import { Modules } from './module';
 import { getCallsite } from './sourceMap';
-import * as stringFormat from 'string-format';
+import { formatString } from './stringUtils';
 
 type LogLevelStr = 'info'|'debug'|'trace';
 
@@ -33,45 +33,55 @@ export class Logger {
     }
   }
 
-  log(level: LogLevel, args: any[]) {
+  log(level: LogLevel, ...args: any[]) {
+    if (level < this.resolveLevel())
+      return;
+    return this.logImpl(level, 3, formatMessage(args));
+  }
+  logStr(level: LogLevel, fmt: string, ...args: any[]) {
+    if (level < this.resolveLevel())
+      return;
+    return this.logImpl(level, 3, formatMessageStr(fmt, args));
+  }
+  private logInternal(level: LogLevel, args: any[]) {
     if (level < this.resolveLevel())
       return;
     return this.logImpl(level, 4, formatMessage(args));
   }
-  logStr(level: LogLevel, fmt: string, args: any[]) {
+  private logStrInternal(level: LogLevel, fmt: string, args: any[]) {
     if (level < this.resolveLevel())
       return;
     return this.logImpl(level, 4, formatMessageStr(fmt, args));
   }
   trace(...args: any[]) {
-    this.log(LogLevel.Trace, args);
+    this.logInternal(LogLevel.Trace, args);
   }
   traceStr(fmt: string, ...args: any[]) {
-    this.logStr(LogLevel.Trace, fmt, args);
+    this.logStrInternal(LogLevel.Trace, fmt, args);
   }
   debug(...args: any[]) {
-    this.log(LogLevel.Debug, args);
+    this.logInternal(LogLevel.Debug, args);
   }
   debugStr(fmt: string, ...args: any[]) {
-    this.logStr(LogLevel.Debug, fmt, args);
+    this.logStrInternal(LogLevel.Debug, fmt, args);
   }
   info(...args: any[]) {
-    this.log(LogLevel.Info, args);
+    this.logInternal(LogLevel.Info, args);
   }
   infoStr(fmt: string, ...args: any[]) {
-    this.logStr(LogLevel.Info, fmt, args);
+    this.logStrInternal(LogLevel.Info, fmt, args);
   }
   notice(...args: any[]) {
-    this.log(LogLevel.Notice, args);
+    this.logInternal(LogLevel.Notice, args);
   }
   warn(...args: any[]) {
-    this.log(LogLevel.Warning, args);
+    this.logInternal(LogLevel.Warning, args);
   }
   error(...args: any[]) {
-    this.log(LogLevel.Error, args);
+    this.logInternal(LogLevel.Error, args);
   }
   fatal(...args: any[]): never {
-    return this.log(LogLevel.Fatal, args) as never;
+    return this.logInternal(LogLevel.Fatal, args) as never;
   }
   assert(condition: boolean|undefined|null|object, ...args: any[]) {
     if (!condition) {
@@ -143,13 +153,13 @@ export class Logger {
 export const log = new Logger();
 
 export enum LogLevel {
-  Trace,
-  Debug,
-  Info,
-  Notice,
-  Warning,
-  Error,
-  Fatal
+  Trace = 1,
+  Debug = 2,
+  Info = 3,
+  Notice = 4,
+  Warning = 5,
+  Error = 6,
+  Fatal = 7
 }
 
 export function str(x: any): string {
@@ -203,7 +213,7 @@ function formatMessageStr(fmt: string, args: any[]) {
   const normalizedArgs = args.map(arg => {
     return typeof arg === 'object' ? stringifyObject(arg) : arg;
   });
-  return stringFormat.default(fmt, ...normalizedArgs);
+  return formatString(fmt, ...normalizedArgs);
 }
 
 function getDate(): string {
@@ -336,7 +346,10 @@ function formatRecord(record: LogRecord): string
 class OutputChannelHandler extends Handler {
   constructor() {
     const envLevel = strToLevel(process.env.VSCODE_QCFG_LOGLEVEL || 'info');
-    const level = envLevel !== undefined ? envLevel : LogLevel.Info;
+    let level = envLevel !== undefined ? envLevel : LogLevel.Info;
+    /// #if DEBUG
+    level = LogLevel.Debug;
+    /// #endif
     super('OutputPanel', level);
     this.outputChannel = vscode.window.createOutputChannel('qcfg');
     for (const editor of vscode.window.visibleTextEditors) {

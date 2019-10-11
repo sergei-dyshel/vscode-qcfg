@@ -17,6 +17,9 @@ const RE2 = require('re2');
 import { registerCommandWrapped, handleErrors } from './exception';
 import { Modules } from './module';
 
+export const GTAGS_PARSE_REGEX =
+    /\S+\s+(?<line>[0-9]+)\s+(?<file>\S+)\s+(?<text>.*)/;
+
 async function findGtagsDir(dir: string) {
   while (true) {
     if (await fileUtils.exists(path.join(dir, 'GTAGS'))) {
@@ -44,7 +47,7 @@ async function onSaveAll(docs: saveAll.DocumentsInFolder) {
   log.info(`Gtags on ${docPaths} in "${docs.folder.name}"`);
   const cmd = 'gtags-update.sh ' + docPaths.join(' ');
   try {
-    await subprocess.exec(cmd, {cwd: gtagsDir});
+    await subprocess.executeSubprocess(cmd, {cwd: gtagsDir});
   } catch (err) {
     vscode.window.showErrorMessage('gtags update failed');
   }
@@ -58,7 +61,7 @@ async function updateDB() {
     if (!gtagsDir)
       continue;
     try {
-      const res = await subprocess.exec('q-gtags -c', {
+      const res = await subprocess.executeSubprocess('q-gtags -c', {
         cwd: gtagsDir,
         allowedCodes: [0, 2],
         statusBarMessage: 'gtags check'
@@ -113,7 +116,7 @@ namespace WorkspaceGtags {
   function onDidAccept() {
     const selected = quickPick!.selectedItems[0];
     const absPath = path.join(gtagsDir, selected.file);
-    fileUtils.openLocation(absPath, {line: selected.line, tag: selected.name});
+    fileUtils.openTagLocation(absPath, {line: selected.line, tag: selected.name});
     abortSearch();
     quickPick!.dispose();
     quickPick = undefined;
@@ -279,7 +282,7 @@ async function searchGtags(
 }
 
 async function searchDefinition(query: string, gtagsDir: string): Promise<TagInfo[]> {
-  const result = await subprocess.exec(
+  const result = await subprocess.executeSubprocess(
       ['global', '-d', '-x', '-n', query], {cwd: gtagsDir});
   const lines = result.stdout.split('\n');
   const tags = lines.filter((line) => line !== '').map(parseLine);
@@ -298,7 +301,7 @@ async function openDefinition() {
   log.assert(tags.length > 0, `No definitions found for ${tag}`);
   if (tags.length === 1) {
     const tag = tags[0];
-    fileUtils.openLocation(
+    fileUtils.openTagLocation(
         path.join(gtagsDir, tag.file), {line: tag.line, tag: tag.name});
     return;
   }

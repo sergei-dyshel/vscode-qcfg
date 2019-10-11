@@ -54,12 +54,6 @@
                 "when": "editorTextFocus"
             },
             {
-                "key": "ctrl+alt+up",
-                "mac": "cmd+alt+up",
-                "command": "qcfg.selection.selectSuperParent",
-                "when": "editorTextFocus"
-            },
-            {
                 "key": "alt+pageup",
                 "command": "qcfg.selection.left",
                 "when": "editorTextFocus"

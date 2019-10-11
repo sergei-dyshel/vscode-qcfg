@@ -13,16 +13,19 @@ export interface ParsedLocation {
   text?: string;
 }
 
-export function parseLocations(text: string, base?: string): ParsedLocation[] {
+export function parseLocations(
+    text: string, base: string, regex?: RegExp): ParsedLocation[] {
   const lines = text.match(/[^\r\n]+/g);
   if (!lines)
     return [];
-  return filterNonNull(lines.map(line => parseLocation(line, base)));
+  return filterNonNull(lines.map(line => parseLocation(line, base, regex)));
 }
 
-export function parseLocation(line: string, base?: string): ParsedLocation|
-    undefined {
-  const match = line.match(DEFAULT_PARSE_REGEX);
+export function parseLocation(
+    line: string, base: string, regex?: RegExp): ParsedLocation|undefined {
+  if (!regex)
+    regex = DEFAULT_PARSE_REGEX;
+  const match = line.match(regex);
   if (!match)
     return;
   const groups = match.groups!;

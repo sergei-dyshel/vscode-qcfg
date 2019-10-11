@@ -3,8 +3,16 @@
 import * as vscode from 'vscode';
 import * as nodejs from './nodejs';
 
+import * as glob from 'glob';
+
 import { log } from './logging';
 import { Uri } from 'vscode';
+import { getActiveTextEditor } from './utils';
+
+export const globSync = glob.sync;
+export const globAsync = nodejs.util.promisify(require('glob')) as (
+                             pattern: string, options?: glob.IOptions) =>
+                             Promise<string[]>;
 
 export function getDocumentRoot(document: vscode.TextDocument) {
   const wsPath = vscode.workspace.asRelativePath(document.fileName, true);
@@ -36,7 +44,20 @@ export function existsInRoot(
   return exists(nodejs.path.join(wsFolder.uri.fsPath, fileName));
 }
 
-export async function openLocation(
+export async function peekLocation(
+    locations: vscode.Location[]) {
+  if (locations.length === 1) {
+    const loc = locations[0];
+    await vscode.window.showTextDocument(loc.uri, {selection: loc.range});
+    return;
+  }
+  const editor = getActiveTextEditor();
+  await vscode.commands.executeCommand(
+      'editor.action.showReferences', editor.document.uri,
+      editor.selection.active, locations);
+}
+
+export async function openTagLocation(
     filePath: string, options: {line?: number, column?: number, tag?: string}) {
   const line0 = (options && options.line) ? options.line - 1 : 0;
   let col0 = (options && options.column) ? options.column - 1 : 0;

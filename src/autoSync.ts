@@ -63,7 +63,7 @@ async function onSaveAll(docs: saveAll.DocumentsInFolder) {
                                        command + ' ' + paths;
   log.debug('Running ', cmd);
   try {
-    await subprocess.exec(cmd, {cwd: docs.folder.uri.fsPath});
+    await subprocess.executeSubprocess(cmd, {cwd: docs.folder.uri.fsPath});
     if (state === State.Error) {
       state = State.On;
       setStatusBar();

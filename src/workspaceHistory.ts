@@ -7,7 +7,7 @@ import * as nodejs from './nodejs';
 import { selectFromList } from "./dialog";
 import { registerCommandWrapped } from "./exception";
 import { expandTemplate } from "./stringUtils";
-import { mapAsyncNoThrow } from "./async";
+import { mapAsyncNoThrowAndZip } from "./async";
 import { readJSON } from "./fileUtils";
 
 let extContext: ExtensionContext;
@@ -69,7 +69,7 @@ function toQuickPickItem(rootAndTitle: [string, string]): QuickPickItem {
 async function openFromHistory(newWindow: boolean) {
   const history: string[] = extContext.globalState.get(PERSISTENT_KEY, []);
   const current = getWorkspaceFile();
-  const histWithTitles = await mapAsyncNoThrow(
+  const histWithTitles = await mapAsyncNoThrowAndZip(
       history.filter(file => file !== current), getWorkspaceConfig);
   const rootAndTitle = await selectFromList(histWithTitles, toQuickPickItem, {
     matchOnDescription: true,

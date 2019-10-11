@@ -2,7 +2,9 @@
 
 import * as vscode from 'vscode';
 import * as child_process from 'child_process';
-import {log, Logger} from './logging';
+import {log, Logger, LogLevel} from './logging';
+
+const DEFAULT_LOG_LEVEL = LogLevel.Trace;
 
 export class ExecResult extends Error {
   constructor(
@@ -23,17 +25,20 @@ export class ExecResult extends Error {
   }
 }
 
-interface ExecOptions {
+interface SubprocessOptions {
   cwd?: string;
   env?: {[name: string]: string};
   maxBuffer?: number;
   allowedCodes?: number[];
   statusBarMessage?: string;
+  logLevel?: LogLevel;
 }
 
 export class Subprocess {
-  constructor(command: string|string[], private options?: ExecOptions) {
+  constructor(command: string|string[], private options?: SubprocessOptions) {
     this.waitingContext = {resolve: (_) => {}, reject: (_) => {}};
+    this.logLevel =
+        (options && options.logLevel) ? options.logLevel : DEFAULT_LOG_LEVEL;
     if (typeof (command) === 'string')
       this.process =
           child_process.exec(command, options || {}, this.callback.bind(this));
@@ -43,9 +48,9 @@ export class Subprocess {
           this.callback.bind(this));
     this.log = new Logger(
         {parent: log, instance: `pid=${this.process.pid}`, level: 'debug'});
-    /// #if DEBUG
-    this.log.trace(`started command ${command}`);
-    /// #endif
+    const cwd = (options && options.cwd) ? options.cwd : process.cwd;
+    this.log.logStr(
+        this.logLevel, 'started command "{}" in cwd "{}"', command, cwd);
     this.promise = new Promise<ExecResult>((resolve, reject) => {
       this.waitingContext = {resolve, reject};
     });
@@ -59,7 +64,7 @@ export class Subprocess {
   }
 
   kill(signal = 'SIGTERM') {
-    this.log.debug(`killing with ${signal}`);
+    this.log.log(this.logLevel, 'killing with {}', signal);
     this.process.kill(signal);
   }
 
@@ -69,8 +74,10 @@ export class Subprocess {
       const err = error as unknown as {code?: number, signal?: string};
       this.result.code = err.code || 0;
       this.result.signal = err.signal || "";
-      this.log.trace(`finished with code ${this.result.code} signal ${
-          this.result.signal}`);
+      this.log.log(
+          this.logLevel,
+          `finished with code ${this.result.code} signal ${
+              this.result.signal}`);
       if (!this.options || !this.options.allowedCodes ||
           !this.options.allowedCodes.includes(this.result.code!)) {
         this.waitingContext.reject(this.result);
@@ -78,11 +85,12 @@ export class Subprocess {
         this.waitingContext.resolve(this.result);
       }
     } else {
-      this.log.trace(`finished sucessfully`);
+      this.log.log(this.logLevel, `finished sucessfully`);
       this.waitingContext.resolve(this.result);
     }
   }
 
+  private logLevel: LogLevel;
   private result?: ExecResult;
   private log: Logger;
   private promise: Promise<ExecResult>;
@@ -93,7 +101,7 @@ export class Subprocess {
   private process: child_process.ChildProcess;
 }
 
-export function exec(
-    command: string|string[], options?: ExecOptions): Promise<ExecResult> {
+export function executeSubprocess(
+    command: string|string[], options?: SubprocessOptions): Promise<ExecResult> {
   return new Subprocess(command, options).wait();
 }

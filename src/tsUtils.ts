@@ -10,13 +10,6 @@ export function mapObject<V, R>(
   return result;
 }
 
-export function If<T>(cond: any, ifTrue: () => T, ifFalse: () => T): T {
-  if (cond)
-    return ifTrue();
-  else
-    return ifFalse();
-}
-
 export function mapNonNull<T, V>(
     array: T[], func: (elem: T) => V | null | undefined): V[] {
   return array.map(func)

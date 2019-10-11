@@ -1,7 +1,7 @@
 'use strict';
 
 import { Logger, log } from './logging';
-import { zipArrays } from './tsUtils';
+import { zipArrays, concatArrays } from './tsUtils';
 import { ExtensionContext } from 'vscode';
 import { Modules } from './module';
 
@@ -113,7 +113,46 @@ export async function mapAsyncSequential<V, R>(
   return result;
 }
 
-export async function mapAsyncNoThrow<V, R>(
+export class MapUndefined {}
+
+/**
+ * Special (singleton) return value for functions passed to mapSome* which will
+ * skip mapping for specific value.
+ */
+export const MAP_UNDEFINED = new MapUndefined();
+
+/**
+ * Map array through function and filter out those returned MAP_UNDEFINED.
+ * Return array of [value, <mapped value>] pairs.
+ */
+export async function mapSomeAsyncAndZip<V, R>(
+    arr: V[], func: (v: V) => Promise<R|MapUndefined>): Promise<Array<[V, R]>> {
+  const results: Array<R|MapUndefined> = await mapAsync(arr, func);
+  return zipArrays(arr, results).filter(tuple => {
+    return tuple[1] !== MAP_UNDEFINED;
+  }) as Array<[V, R]>;
+}
+
+/**
+ * Map array through function and filter out those returned MAP_UNDEFINED.
+ * Return array of mapped values.
+ */
+export async function mapSomeAsync<V, R>(
+    arr: V[], func: (v: V) => Promise<R|MapUndefined>): Promise<R[]> {
+  return (await mapSomeAsyncAndZip(arr, func)).map(pair => pair[1]);
+}
+
+/**
+ * Filter array through asynchronous predicate.
+ */
+export async function filterAsync<T>(
+    arr: T[], predicate: (v: T) => Promise<boolean>): Promise<T[]> {
+  return mapSomeAsync<T, T>(arr, async (v: T) => {
+    return (await predicate(v)) ? v : MAP_UNDEFINED;
+  });
+}
+
+export async function mapAsyncNoThrowAndZip<V, R>(
     arr: V[], func: (v: V) => Promise<R>,
     handler?: (err: any, v: V) => R | void|undefined): Promise<Array<[V, R]>> {
   const results: Array<R|undefined> = await mapAsync(arr, async (v: V) => {
@@ -134,6 +173,24 @@ export async function mapAsyncNoThrow<V, R>(
   }) as Array<[V, R]>;
 }
 
+export async function mapAsyncNoThrow<V, R>(
+    arr: V[], func: (v: V) => Promise<R>,
+    handler?: (err: any, v: V) => R | void|undefined): Promise<R[]> {
+  const result = await mapAsyncNoThrowAndZip(arr, func, handler);
+  return result.map(pair => pair[1]);
+}
+
+/**
+ * Concatenate arrays resolved from given array promises
+ */
+export async function concatArraysAsync<T>(...promises: Array<Promise<T[]>>):
+    Promise<T[]> {
+  if (promises.length === 0)
+    return [];
+  return concatArrays(...(await Promise.all(promises)));
+}
+
+
 let sequentialAsyncByDefault = false;
 
 function activate(_: ExtensionContext) {
@@ -142,7 +199,7 @@ function activate(_: ExtensionContext) {
   /// #endif
   log.infoStr(
       'Async mapping is {} by default',
-      sequentialAsyncByDefault ? 'sequential' : 'parallel');
+      sequentialAsyncByDefault ? 'SEQUENTIAL' : 'PARALLEL');
 }
 
 Modules.register(activate);
