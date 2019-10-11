@@ -24,6 +24,12 @@ npm_full_reinstall:
 	$(MAKE) npm_install
 	$(MAKE) npm_update
 
+TASKS_SCHEMA = tasks.schema.json
+
+$(TASKS_SCHEMA): src/tasks/taskParams.ts
+	npx ts-json-schema-generator -r -s -p $< -t ParamsMap > $@
+
+generate: package.json $(TASKS_SCHEMA)
 
 install: | package.json
 	rm -rf *.vsix >/dev/null

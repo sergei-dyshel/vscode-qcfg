@@ -4,10 +4,11 @@ import * as vscode from 'vscode';
 import * as nodejs from './nodejs';
 
 import * as glob from 'glob';
+import * as chokidar from 'chokidar';
 
 import { log } from './logging';
 import { Uri } from 'vscode';
-import { getActiveTextEditor } from './utils';
+import { getActiveTextEditor, DisposableLike } from './utils';
 
 export const globSync = glob.sync;
 export const globAsync = nodejs.util.promisify(require('glob')) as (
@@ -95,4 +96,52 @@ export async function openTagLocation(
 export async function readJSON(path: string): Promise<any> {
   return JSON.parse(new nodejs.util.TextDecoder('utf-8').decode(
       await vscode.workspace.fs.readFile(Uri.file(path))));
+}
+
+export enum FileWatcherEvent {
+  CREATED,
+  CHANGED,
+  DELETED
+}
+
+/**
+ * Watch file and call callback on when it is created/deleted/changed
+ */
+export function watchFile(
+    path: string, callback: (event: FileWatcherEvent) => any): DisposableLike {
+  return new FileWatcher(path, callback);
+}
+
+class FileWatcher implements DisposableLike{
+  private watcher: chokidar.FSWatcher;
+  constructor(
+      private path: string,
+      private callback: (event: FileWatcherEvent) => any) {
+    this.watcher = chokidar.watch(path, {
+      persistent: true,
+      ignoreInitial: true,
+      followSymlinks: true,
+      usePolling: false,
+    });
+    this.watcher.on('all', this.onEvent.bind(this));
+  }
+  private onEvent(eventName: string) {
+    switch (eventName) {
+      case 'change':
+        this.callback(FileWatcherEvent.CHANGED);
+        return;
+      case 'add':
+        this.callback(FileWatcherEvent.CREATED);
+        return;
+      case 'unlink':
+        this.callback(FileWatcherEvent.DELETED);
+        return;
+      default:
+        throw new Error(
+            `Unsupported event name "${eventName}" for file "${this.path}"`);
+    }
+  }
+  dispose() {
+    this.watcher.close();
+  }
 }

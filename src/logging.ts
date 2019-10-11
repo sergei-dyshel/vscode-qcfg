@@ -182,7 +182,7 @@ const FIRST_LINE_ID = '{vscode-qcfg.log}';
 let globalLevel: LogLevel = LogLevel.Debug;
 
 const LOG_LEVEL_STRINGS =
-    ['TRACE', 'DEBUG', 'INFO', 'NOTICE', 'WARN', 'ERROR', 'FATAL'];
+    ['', 'TRACE', 'DEBUG', 'INFO', 'NOTICE', 'WARN', 'ERROR', 'FATAL'];
 
 function levelToStr(level: LogLevel) {
   return LOG_LEVEL_STRINGS[level];
@@ -347,9 +347,9 @@ class OutputChannelHandler extends Handler {
   constructor() {
     const envLevel = strToLevel(process.env.VSCODE_QCFG_LOGLEVEL || 'info');
     let level = envLevel !== undefined ? envLevel : LogLevel.Info;
-    /// #if DEBUG
+/// #if DEBUG
     level = LogLevel.Debug;
-    /// #endif
+/// #endif
     super('OutputPanel', level);
     this.outputChannel = vscode.window.createOutputChannel('qcfg');
     for (const editor of vscode.window.visibleTextEditors) {

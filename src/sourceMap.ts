@@ -17,10 +17,17 @@ export function getCallsite(frame: number) {
   if (m)
     funcName = m[1];
   const tsPos = sourceMapSupport.mapSourcePosition(jsPos);
-  const basename = path.basename(tsPos.source);
+  // show up to 2 elements from path (do not include 'src')
+  const {base, dir} = path.parse(tsPos.source);
+  let filename = base;
+  if (dir) {
+    const dirbase = path.basename(dir);
+    if (dirbase !== 'src')
+      filename = path.join(dirbase, base);
+  }
   return {
-    location: `${basename}:${tsPos.line}:${tsPos.column}`,
-    fileName: basename,
+    location: `${filename}:${tsPos.line}:${tsPos.column}`,
+    fileName: filename,
     function: funcName
   };
 }

@@ -1,5 +1,11 @@
 {
     "tabnine.trigger": "off",
+    "json.schemas": [
+        {
+            "fileMatch": ["package/*.json"],
+            "url": "vscode://schemas/vscode-extensions"
+        }
+    ],
     "qcfg.tasks.workspace": {
         "build": {
             "command": "make install",

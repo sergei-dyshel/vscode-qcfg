@@ -15,3 +15,12 @@ export function baseName(filename: string) {
   const parsed = nodejs.path.parse(filename);
   return parsed.name;
 }
+
+/**
+ * Expand ~ and env variables
+ */
+export function expandPath(path: string)
+{
+  return path.replace(/^~(?=$|\/)/, nodejs.os.homedir());
+  /* TODO: expand env variables */
+}

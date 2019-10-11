@@ -20,6 +20,12 @@
   ],
   "main": "./dist/extension",
   "contributes": {
+    "jsonValidation": [
+      {
+        "fileMatch": "vscode-qcfg.tasks.json",
+        "url": "./tasks.schema.json"
+      }
+    ],
     "commands": [
       {
         "command": "qcfg.toggleReadOnly",
@@ -217,6 +223,16 @@
             "info",
             "warning"
           ]
+        },
+        "qcfg.configDir.global": {
+          "type": "string",
+          "description": "Global configuration directory for vscode-qcfg specific features (defaults to HOME directory)",
+          "default": "~"
+        },
+        "qcfg.configDir.workspace": {
+          "type": "string",
+          "description": "Workspace configuration direcotry for vsdode-qcfg specific features, relative to workspace file's directory or the only folder by default",
+          "default": "."
         }
       }
     },
@@ -282,14 +298,14 @@
 			{
 				"language": "qcfg-log",
 				"scopeName": "text.log.qcfg-log",
-				"path": "./syntaxes/qcfg-log.tmLanguage.json"
+        "path": "./syntaxes/qcfg-log.tmLanguage.json"
 			}
 		]
   },
   "scripts": {
     "vscode:prepublish": "make package.json && webpack --mode none",
     "tsc-compile": "tsc -p .",
-    "compile": "make package.json && webpack --mode none --env.DEBUG",
+    "compile": "make generate && webpack --mode none --env.DEBUG",
     "tsc-watch": "tsc -watch -p ./",
     "watch": "webpack --mode none --watch",
     "postinstall": "node ./node_modules/vscode/bin/install",
@@ -335,6 +351,7 @@
     "gts": "^0.9.0",
     "ifdef-loader": "^2.1.1",
     "json-merger": "^1.1.1",
+    "ts-json-schema-generator": "^0.54.0",
     "ts-loader": "^6.0.2",
     "ts-node": "^7.0.1",
     "tslint": "^5.17.0",

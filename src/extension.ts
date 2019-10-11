@@ -29,6 +29,8 @@ import * as windowState from './windowState';
 import * as syntaxTreeView from './syntaxTreeView';
 import * as workspaceHistory from './workspaceHistory';
 import * as multipleSelection from './multipleSelection';
+import * as config from './config';
+import * as tasksModule from './tasks/module';
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('Extension active');
@@ -62,7 +64,9 @@ export function activate(context: vscode.ExtensionContext) {
       locationTree,
       syntaxTreeView,
       workspaceHistory,
-      multipleSelection
+      multipleSelection,
+      config,
+      tasksModule
     };
 }
 

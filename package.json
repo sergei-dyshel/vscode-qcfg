@@ -20,6 +20,12 @@
   ],
   "main": "./dist/extension",
   "contributes": {
+    "jsonValidation": [
+      {
+        "fileMatch": "vscode-qcfg.tasks.json",
+        "url": "./tasks.schema.json"
+      }
+    ],
     "commands": [
       {
         "command": "qcfg.toggleReadOnly",
@@ -1663,6 +1669,16 @@
             "warning"
           ]
         },
+        "qcfg.configDir.global": {
+          "type": "string",
+          "description": "Global configuration directory for vscode-qcfg specific features (defaults to HOME directory)",
+          "default": "~"
+        },
+        "qcfg.configDir.workspace": {
+          "type": "string",
+          "description": "Workspace configuration direcotry for vsdode-qcfg specific features, relative to workspace file's directory or the only folder by default",
+          "default": "."
+        },
         "qcfg.tasks.global": {
           "type": "object",
           "description": "Tasks in qcfg format",
@@ -1990,7 +2006,7 @@
   "scripts": {
     "vscode:prepublish": "make package.json && webpack --mode none",
     "tsc-compile": "tsc -p .",
-    "compile": "make package.json && webpack --mode none --env.DEBUG",
+    "compile": "make generate && webpack --mode none --env.DEBUG",
     "tsc-watch": "tsc -watch -p ./",
     "watch": "webpack --mode none --watch",
     "postinstall": "node ./node_modules/vscode/bin/install",
@@ -2019,9 +2035,7 @@
     "tree-sitter-cpp": "^0.13.15",
     "tree-sitter-python": "^0.13.6",
     "tree-sitter-typescript": "^0.13.6",
-    "ts-json-schema-generator": "^0.54.0",
-    "typescript-collections": "^1.1.4",
-    "typescript-json-schema": "^0.40.0"
+    "typescript-collections": "^1.1.4"
   },
   "devDependencies": {
     "@types/clipboardy": "^1.1.0",
@@ -2038,6 +2052,7 @@
     "gts": "^0.9.0",
     "ifdef-loader": "^2.1.1",
     "json-merger": "^1.1.1",
+    "ts-json-schema-generator": "^0.54.0",
     "ts-loader": "^6.0.2",
     "ts-node": "^7.0.1",
     "tslint": "^5.17.0",

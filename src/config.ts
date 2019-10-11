@@ -1,0 +1,185 @@
+'use strict';
+
+import { ConfigurationChangeEvent, ExtensionContext, workspace, Disposable } from "vscode";
+import { listenWrapped } from "./exception";
+import { watchFile } from "./fileUtils";
+import { log } from "./logging";
+import { Modules } from "./module";
+import * as nodejs from './nodejs';
+import { expandPath } from "./pathUtils";
+import { DisposableLike } from "./utils";
+
+/**
+ * Subscribe to configuration updates on section
+ */
+export function watchConfigVariable(
+    section: string, callback: () => any): DisposableLike {
+  return listenWrapped(
+      workspace.onDidChangeConfiguration, (event: ConfigurationChangeEvent) => {
+        if (event.affectsConfiguration(section))
+          callback();
+      });
+}
+
+/**
+ * Global and workspace config file paths, as returned by @watchConfigFile
+ */
+export interface ConfigFilePair {
+  global?: string;
+  workspace?: string;
+}
+
+/**
+ * Watch configuration file in global in and workspace configuration directories
+ */
+export function watchConfigFile(
+    fileName: string, callback: (_: ConfigFilePair) => any):
+    {configFilePair: ConfigFilePair, disposable: DisposableLike} {
+  const watcher = configDirWatcher.watch(fileName, callback);
+  return {configFilePair: watcher.current(), disposable: watcher};
+}
+
+const GLOBAL_VAR = 'qcfg.configDir.global';
+const WORKSPACE_VAR = 'qcfg.configDir.workspace';
+
+function parseGlobalDir(): string {
+  const raw = workspace.getConfiguration().get<string>(GLOBAL_VAR);
+  const defaultValue = nodejs.os.homedir();
+  if (!raw)
+    return defaultValue;
+  const expanded = expandPath(raw);
+  if (!nodejs.path.isAbsolute(expanded)) {
+    log.warn(`Global config dir path '${raw}' is not absolute`);
+    return defaultValue;
+  }
+  return expanded;
+}
+
+function getWorkspaceDir(): string|undefined {
+  const root = workspace.workspaceFile;
+  if (root) {
+    if (root.scheme === 'untitled')
+      return undefined;
+    return nodejs.path.dirname(root.fsPath);
+  }
+  const folders = workspace.workspaceFolders;
+  if (!folders)
+    return undefined;
+  return folders[0].uri.fsPath;
+}
+
+function parseWorkspaceDir(): string|undefined {
+  const raw = workspace.getConfiguration().get<string>(WORKSPACE_VAR);
+  const workspaceDir = getWorkspaceDir();
+  if (!raw)
+    return workspaceDir;
+  if (nodejs.path.isAbsolute(raw))
+    return raw;
+  if (!workspaceDir)
+    return undefined;
+  return nodejs.path.resolve(workspaceDir, raw);
+}
+
+class ConfigDirWatcher implements Disposable {
+  private globalDir = parseGlobalDir();
+  private workspaceDir = parseWorkspaceDir();
+
+  private configDisposable = Disposable.from(
+      watchConfigVariable(GLOBAL_VAR, this.onConfigVarChanged.bind(this)),
+      watchConfigVariable(WORKSPACE_VAR, this.onConfigVarChanged.bind(this)));
+
+  private pairWatchers = new Map<string, ConfigPairWatcher>();
+
+  watch(fileName: string, callback: (_: ConfigFilePair) => any): ConfigPairWatcher {
+    if (this.pairWatchers.has(fileName))
+      throw new Error(`Configuration file "${fileName}" is already being watched`);
+    const watcher = new ConfigPairWatcher(
+      fileName, this.globalDir, this.workspaceDir, callback, () => {
+        this.pairWatchers.delete(fileName);
+      });
+    this.pairWatchers.set(fileName, watcher);
+    return watcher;
+  }
+
+  onConfigVarChanged() {
+
+  }
+
+  dispose() {
+    this.configDisposable.dispose();
+    this.pairWatchers.forEach(pairWatcher => pairWatcher.dispose());
+  }
+}
+
+class ConfigFileWatcher implements DisposableLike {
+  private watcher?: DisposableLike;
+
+  constructor(
+      public currentPath: string|undefined,
+      private callback: () => any) {
+    this.watch();
+  }
+  reset(newPath: string|undefined) {
+    this.dispose();
+    this.currentPath = newPath;
+    this.watch();
+  }
+  dispose() {
+    if (this.watcher)
+      this.watcher.dispose();
+  }
+  private watch() {
+    if (this.currentPath)
+      this.watcher = watchFile(this.currentPath, this.callback);
+  }
+}
+
+function checkExists(path: string|undefined) {
+  return path && nodejs.fs.existsSync(path) ? path : undefined;
+}
+
+function resolveIfNonNull(first: string|undefined, second: string) {
+  return first ? nodejs.path.resolve(first, second) : undefined;
+}
+
+class ConfigPairWatcher implements DisposableLike {
+  private global: ConfigFileWatcher;
+  private workspace: ConfigFileWatcher;
+
+  constructor(
+      public fileName: string, globalDir: string,
+      workspaceDir: string|undefined,
+      private callback: (_: ConfigFilePair) => any, private onDispose: () => void) {
+    this.global = new ConfigFileWatcher(
+        nodejs.path.resolve(globalDir, fileName), this.onAnyChanged.bind(this));
+    this.workspace = new ConfigFileWatcher(
+        resolveIfNonNull(workspaceDir, fileName), this.onAnyChanged.bind(this));
+  }
+  reset(globalDir: string, workspaceDir: string|undefined) {
+    this.global.reset(nodejs.path.resolve(globalDir, this.fileName));
+    this.workspace.reset(resolveIfNonNull(workspaceDir, this.fileName));
+  }
+  current(): ConfigFilePair {
+    return {
+      global: checkExists(this.global.currentPath),
+      workspace: checkExists(this.workspace.currentPath)
+    };
+  }
+  dispose() {
+    this.global.dispose();
+    this.workspace.dispose();
+    this.onDispose();
+  }
+  private onAnyChanged() {
+    this.callback(this.current());
+  }
+}
+
+let configDirWatcher: ConfigDirWatcher;
+
+function activate(context: ExtensionContext) {
+  configDirWatcher = new ConfigDirWatcher();
+  context.subscriptions.push(configDirWatcher);
+}
+
+Modules.register(activate);

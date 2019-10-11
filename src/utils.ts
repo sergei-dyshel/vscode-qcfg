@@ -7,6 +7,10 @@ import { getDocumentWorkspaceFolder } from './fileUtils';
 import { log } from './logging';
 
 
+export interface DisposableLike {
+  dispose(): any;
+}
+
 // XXX: currently unused
 export namespace Context {
   const contexts = new Set<string>();

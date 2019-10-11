@@ -1,0 +1,228 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": {
+    "anyOf": [
+      {
+        "$ref": "#/definitions/Params"
+      },
+      {
+        "type": "string"
+      }
+    ]
+  },
+  "definitions": {
+    "BaseProcessTaskFlag": {
+      "anyOf": [
+        {
+          "enum": [
+            "build"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "Task applies to any workspace folder (i.e. not current dir/file)",
+          "enum": [
+            "folder"
+          ],
+          "type": "string"
+        }
+      ]
+    },
+    "Params": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/TerminalTaskParams"
+        },
+        {
+          "$ref": "#/definitions/ProcessTaskParams"
+        },
+        {
+          "$ref": "#/definitions/SearchTaskParams"
+        }
+      ]
+    },
+    "ProcessTaskParams": {
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "type": "string"
+        },
+        "cwd": {
+          "type": "string"
+        },
+        "flags": {
+          "items": {
+            "$ref": "#/definitions/BaseProcessTaskFlag"
+          },
+          "type": "array"
+        },
+        "type": {
+          "enum": [
+            "process"
+          ],
+          "type": "string"
+        },
+        "when": {
+          "additionalProperties": false,
+          "properties": {
+            "fileExists": {
+              "type": "string"
+            },
+            "fileMatches": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "command",
+        "type"
+      ],
+      "type": "object"
+    },
+    "Reveal": {
+      "enum": [
+        "focus",
+        "yes",
+        "no"
+      ],
+      "type": "string"
+    },
+    "SearchTaskParams": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "enum": [
+            "search"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "type": "object"
+    },
+    "TerminalTaskParams": {
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "type": "string"
+        },
+        "cwd": {
+          "type": "string"
+        },
+        "exitCodes": {
+          "items": {
+            "type": "number"
+          },
+          "type": "array"
+        },
+        "flags": {
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/BaseProcessTaskFlag"
+              },
+              {
+                "enum": [
+                  "clear"
+                ],
+                "type": "string"
+              },
+              {
+                "enum": [
+                  "dedicatedPanel"
+                ],
+                "type": "string"
+              },
+              {
+                "enum": [
+                  "reindex"
+                ],
+                "type": "string"
+              },
+              {
+                "enum": [
+                  "autoRestart"
+                ],
+                "type": "string"
+              }
+            ]
+          },
+          "type": "array"
+        },
+        "locationRegex": {
+          "type": "string"
+        },
+        "onFailure": {
+          "enum": [
+            "none",
+            "auto",
+            "hide",
+            "dispose",
+            "show",
+            "notify"
+          ],
+          "type": "string"
+        },
+        "onSuccess": {
+          "enum": [
+            "none",
+            "auto",
+            "hide",
+            "dispose",
+            "show",
+            "notify"
+          ],
+          "type": "string"
+        },
+        "problemMatchers": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          ]
+        },
+        "reindex": {
+          "type": "boolean"
+        },
+        "reveal": {
+          "$ref": "#/definitions/Reveal",
+          "default": "focus",
+          "description": "Reveal terminal when running"
+        },
+        "type": {
+          "enum": [
+            "terminal"
+          ],
+          "type": "string"
+        },
+        "when": {
+          "additionalProperties": false,
+          "properties": {
+            "fileExists": {
+              "type": "string"
+            },
+            "fileMatches": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "command"
+      ],
+      "type": "object"
+    }
+  },
+  "type": "object"
+}
