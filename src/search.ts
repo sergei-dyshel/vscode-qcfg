@@ -12,7 +12,7 @@ import { Subprocess } from './subprocess';
 import {currentWorkspaceFolder, getCursorWordContext} from './utils';
 import { registerCommandWrapped } from './exception';
 import { Modules } from './module';
-import { ParsedLocation, parseLocations } from './parseLocations';
+import { ParsedLocation, parseLocations, ParseLocationFormat } from './parseLocations';
 
 const TODO_CATEGORIES =
     ['TODO', 'XXX', 'TEMP', 'FIXME', 'REFACTOR', 'OPTIMIZE'];
@@ -48,7 +48,10 @@ async function searchTodos() {
   if (res.code === 1) {
     vscode.window.showWarningMessage(`No ${patterns} items were found`);
   } else {
-    setLocations(patterns, parseLocations(res.stdout, folder.uri.fsPath));
+    setLocations(
+        patterns,
+        parseLocations(
+            res.stdout, folder.uri.fsPath, ParseLocationFormat.VIMGREP));
   }
 }
 

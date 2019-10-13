@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import {window, Uri, QuickPickItem} from 'vscode';
 import { handleErrors } from './exception';
 import { Modules } from './module';
+import * as lodash from 'lodash';
 
 // export function selectFromList<T extends QuickPickItem>(
 //     items: T[], options?: vscode.QuickPickOptions): Thenable<T|undefined> {
@@ -105,15 +106,14 @@ export async function selectFromListMru<T>(
     toPersistentLabel: (x: T) => string,
     options?: vscode.QuickPickOptions): Promise<T|undefined> {
   const labels: string[] = extContext.globalState.get(persistentKey, []);
-  const mruItems = items.map((item, origIndex) => {
+  let mruItems = items.map((item, origIndex) => {
     let index = labels.indexOf(toPersistentLabel(item));
     if (index === -1)
       index = origIndex + labels.length;
     return {item, index};
   });
-  mruItems.sort(
-      (x, y) =>
-          (y.index === -1 ? -1 : (x.index === -1 ? 1 : x.index - y.index)));
+  mruItems = lodash.sortBy(mruItems, x => x.index);
+  // mruItems.sort((x, y) => (x.index - y.index));
   const selectedMru = await selectFromList(
       mruItems, (item) => toQuickPickItem(item.item), options);
   if (!selectedMru)

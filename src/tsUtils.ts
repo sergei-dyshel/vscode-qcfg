@@ -2,12 +2,17 @@
 
 import { MultiDictionary } from "typescript-collections";
 
-export function mapObject<V, R>(
+export function mapObjectValues<V, R>(
     obj: {[key: string]: V}, func: (k: string, v: V) => R): {[key: string]: R} {
   const res: {[key: string]: R} = {};
-  const entryObjs = Object.entries(obj).map(([k, v]) => ({[k]: func(k, v)}));
+  const entryObjs = mapObjectToArray(obj, (k, v) => ({[k]: func(k, v)}));
   const result = Object.assign(res, ...entryObjs);
   return result;
+}
+
+export function mapObjectToArray<V, R>(
+    obj: {[key: string]: V}, func: (k: string, v: V) => R): R[] {
+  return Object.entries(obj).map(([k, v]) => func(k, v));
 }
 
 export function mapNonNull<T, V>(

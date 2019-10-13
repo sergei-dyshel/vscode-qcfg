@@ -17,9 +17,6 @@ const RE2 = require('re2');
 import { registerCommandWrapped, handleErrors } from './exception';
 import { Modules } from './module';
 
-export const GTAGS_PARSE_REGEX =
-    /\S+\s+(?<line>[0-9]+)\s+(?<file>\S+)\s+(?<text>.*)/;
-
 async function findGtagsDir(dir: string) {
   while (true) {
     if (await fileUtils.exists(path.join(dir, 'GTAGS'))) {

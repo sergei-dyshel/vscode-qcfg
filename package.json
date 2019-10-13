@@ -374,7 +374,7 @@
         "key": "ctrl+k ctrl+l",
         "mac": "cmd+k cmd+l",
         "command": "qcfg.tasks.runQcfg",
-        "args": "jump2line"
+        "args": "parse_locations_and_peek"
       },
       {
         "key": "alt+g",
@@ -2020,9 +2020,11 @@
   },
   "dependencies": {
     "callsites": "^3.1.0",
+    "chokidar": "^3.2.1",
     "clipboardy": "^1.2.3",
     "glob": "^7.1.4",
     "jsonc-parser": "^2.1.0",
+    "lodash": "^4.17.15",
     "minimatch": "^3.0.4",
     "node-loader": "^0.6.0",
     "re2": "^1.10.0",
@@ -2040,6 +2042,7 @@
   "devDependencies": {
     "@types/clipboardy": "^1.1.0",
     "@types/glob": "^7.1.1",
+    "@types/lodash": "^4.14.144",
     "@types/minimatch": "^3.0.3",
     "@types/mocha": "^2.2.42",
     "@types/node": "^8.10.49",

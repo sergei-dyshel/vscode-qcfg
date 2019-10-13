@@ -22,7 +22,6 @@ import * as remoteControl from './remoteControl';
 import * as saveAll from './saveAll';
 import * as search from './search';
 import * as taskRunner from './taskRunner';
-import * as tasks from './tasks';
 import * as treeSitter from './treeSitter';
 import * as treeView from './treeView';
 import * as windowState from './windowState';
@@ -30,7 +29,7 @@ import * as syntaxTreeView from './syntaxTreeView';
 import * as workspaceHistory from './workspaceHistory';
 import * as multipleSelection from './multipleSelection';
 import * as config from './config';
-import * as tasksModule from './tasks/module';
+import * as tasksMain from './tasks/main';
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('Extension active');
@@ -41,7 +40,6 @@ export function activate(context: vscode.ExtensionContext) {
     // history.activate(context);
     (console as any).qcfg = {
       nodejs,
-      tasks,
       language,
       editing,
       autoSync,
@@ -66,7 +64,7 @@ export function activate(context: vscode.ExtensionContext) {
       workspaceHistory,
       multipleSelection,
       config,
-      tasksModule
+      tasksMain
     };
 }
 

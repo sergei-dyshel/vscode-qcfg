@@ -3,10 +3,10 @@
 import * as lc from 'vscode-languageclient';
 import { log } from './logging';
 import * as nodejs from './nodejs';
-import * as jsoncParser from 'jsonc-parser';
 
 import * as vscode from 'vscode';
 import { Modules } from './module';
+import { parseJsonFileSync } from './json';
 
 export function getLanguageConfig(id: string): vscode.LanguageConfiguration|
     undefined {
@@ -84,7 +84,7 @@ function fetchLangConfigs()
       const langFilePath =
           nodejs.path.join(ext.extensionPath, langData.configuration);
       const langConfig: vscode.LanguageConfiguration =
-          jsoncParser.parse(nodejs.fs.readFileSync(langFilePath).toString());
+          parseJsonFileSync(langFilePath);
       langConfigs[langId] = langConfig;
     }
   }

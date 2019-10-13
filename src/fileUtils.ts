@@ -45,11 +45,19 @@ export function existsInRoot(
   return exists(nodejs.path.join(wsFolder.uri.fsPath, fileName));
 }
 
+/**
+ * Show peek dialog in case of multiple location or jump to the only
+ * location (optionally search for tag in the line)
+ */
 export async function peekLocation(
-    locations: vscode.Location[]) {
+    locations: vscode.Location[], tagForSingle?: string) {
   if (locations.length === 1) {
     const loc = locations[0];
-    await vscode.window.showTextDocument(loc.uri, {selection: loc.range});
+    if (loc.range.isEmpty && tagForSingle)
+      await openTagLocation(
+          loc.uri.fsPath, {line: loc.range.start.line + 1, tag: tagForSingle});
+    else
+      await vscode.window.showTextDocument(loc.uri, {selection: loc.range});
     return;
   }
   const editor = getActiveTextEditor();

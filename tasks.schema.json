@@ -14,19 +14,89 @@
     "BaseProcessTaskFlag": {
       "anyOf": [
         {
-          "enum": [
-            "build"
-          ],
-          "type": "string"
+          "$ref": "#/definitions/Flag.BUILD"
         },
         {
-          "description": "Task applies to any workspace folder (i.e. not current dir/file)",
-          "enum": [
-            "folder"
-          ],
-          "type": "string"
+          "$ref": "#/definitions/Flag.FOLDER"
+        },
+        {
+          "$ref": "#/definitions/Flag.HIDDEN"
         }
       ]
+    },
+    "EndAction": {
+      "enum": [
+        "none",
+        "auto",
+        "hide",
+        "dispose",
+        "show",
+        "notify"
+      ],
+      "type": "string"
+    },
+    "Flag": {
+      "enum": [
+        "dedicatedPanel",
+        "clear",
+        "autoRestart",
+        "reindex",
+        "build",
+        "hidden",
+        "folder"
+      ],
+      "type": "string"
+    },
+    "Flag.AUTO_RESTART": {
+      "enum": [
+        "autoRestart"
+      ],
+      "type": "string"
+    },
+    "Flag.BUILD": {
+      "enum": [
+        "build"
+      ],
+      "type": "string"
+    },
+    "Flag.CLEAR": {
+      "enum": [
+        "clear"
+      ],
+      "type": "string"
+    },
+    "Flag.DEDICATED_PANEL": {
+      "enum": [
+        "dedicatedPanel"
+      ],
+      "type": "string"
+    },
+    "Flag.FOLDER": {
+      "description": "Task applies to any workspace folder (i.e. not current dir/file)",
+      "enum": [
+        "folder"
+      ],
+      "type": "string"
+    },
+    "Flag.HIDDEN": {
+      "description": "Task is hidden when from pick list, i.e. can be run only directly",
+      "enum": [
+        "hidden"
+      ],
+      "type": "string"
+    },
+    "Flag.REINDEX": {
+      "enum": [
+        "reindex"
+      ],
+      "type": "string"
+    },
+    "LocationFormat": {
+      "enum": [
+        "vimgrep",
+        "gtags"
+      ],
+      "type": "string"
     },
     "Params": {
       "anyOf": [
@@ -35,11 +105,23 @@
         },
         {
           "$ref": "#/definitions/ProcessTaskParams"
-        },
-        {
-          "$ref": "#/definitions/SearchTaskParams"
         }
       ]
+    },
+    "ParseOutput": {
+      "additionalProperties": false,
+      "properties": {
+        "format": {
+          "$ref": "#/definitions/LocationFormat"
+        },
+        "tag": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "format"
+      ],
+      "type": "object"
     },
     "ProcessTaskParams": {
       "additionalProperties": false,
@@ -50,29 +132,33 @@
         "cwd": {
           "type": "string"
         },
+        "exitCodes": {
+          "default": [
+          ],
+          "description": "Expected process exit codes",
+          "items": {
+            "type": "number"
+          },
+          "type": "array"
+        },
         "flags": {
           "items": {
             "$ref": "#/definitions/BaseProcessTaskFlag"
           },
           "type": "array"
         },
-        "type": {
-          "enum": [
-            "process"
-          ],
+        "parseOutput": {
+          "$ref": "#/definitions/ParseOutput",
+          "description": "Extract locations from output using predefined format or custom regular expression"
+        },
+        "title": {
           "type": "string"
         },
+        "type": {
+          "$ref": "#/definitions/TaskType.PROCESS"
+        },
         "when": {
-          "additionalProperties": false,
-          "properties": {
-            "fileExists": {
-              "type": "string"
-            },
-            "fileMatches": {
-              "type": "string"
-            }
-          },
-          "type": "object"
+          "$ref": "#/definitions/When"
         }
       },
       "required": [
@@ -89,20 +175,25 @@
       ],
       "type": "string"
     },
-    "SearchTaskParams": {
-      "additionalProperties": false,
-      "properties": {
-        "type": {
-          "enum": [
-            "search"
-          ],
-          "type": "string"
-        }
-      },
-      "required": [
-        "type"
+    "TaskType": {
+      "enum": [
+        "process",
+        "terminal",
+        "search"
       ],
-      "type": "object"
+      "type": "string"
+    },
+    "TaskType.PROCESS": {
+      "enum": [
+        "process"
+      ],
+      "type": "string"
+    },
+    "TaskType.TERMINAL": {
+      "enum": [
+        "terminal"
+      ],
+      "type": "string"
     },
     "TerminalTaskParams": {
       "additionalProperties": false,
@@ -114,6 +205,9 @@
           "type": "string"
         },
         "exitCodes": {
+          "default": [
+          ],
+          "description": "Expected process exit codes",
           "items": {
             "type": "number"
           },
@@ -126,57 +220,26 @@
                 "$ref": "#/definitions/BaseProcessTaskFlag"
               },
               {
-                "enum": [
-                  "clear"
-                ],
-                "type": "string"
+                "$ref": "#/definitions/Flag.CLEAR"
               },
               {
-                "enum": [
-                  "dedicatedPanel"
-                ],
-                "type": "string"
+                "$ref": "#/definitions/Flag.DEDICATED_PANEL"
               },
               {
-                "enum": [
-                  "reindex"
-                ],
-                "type": "string"
+                "$ref": "#/definitions/Flag.REINDEX"
               },
               {
-                "enum": [
-                  "autoRestart"
-                ],
-                "type": "string"
+                "$ref": "#/definitions/Flag.AUTO_RESTART"
               }
             ]
           },
           "type": "array"
         },
-        "locationRegex": {
-          "type": "string"
-        },
         "onFailure": {
-          "enum": [
-            "none",
-            "auto",
-            "hide",
-            "dispose",
-            "show",
-            "notify"
-          ],
-          "type": "string"
+          "$ref": "#/definitions/EndAction"
         },
         "onSuccess": {
-          "enum": [
-            "none",
-            "auto",
-            "hide",
-            "dispose",
-            "show",
-            "notify"
-          ],
-          "type": "string"
+          "$ref": "#/definitions/EndAction"
         },
         "problemMatchers": {
           "anyOf": [
@@ -199,28 +262,32 @@
           "default": "focus",
           "description": "Reveal terminal when running"
         },
-        "type": {
-          "enum": [
-            "terminal"
-          ],
+        "title": {
           "type": "string"
         },
+        "type": {
+          "$ref": "#/definitions/TaskType.TERMINAL"
+        },
         "when": {
-          "additionalProperties": false,
-          "properties": {
-            "fileExists": {
-              "type": "string"
-            },
-            "fileMatches": {
-              "type": "string"
-            }
-          },
-          "type": "object"
+          "$ref": "#/definitions/When"
         }
       },
       "required": [
-        "command"
+        "command",
+        "type"
       ],
+      "type": "object"
+    },
+    "When": {
+      "additionalProperties": false,
+      "properties": {
+        "fileExists": {
+          "type": "string"
+        },
+        "fileMatches": {
+          "type": "string"
+        }
+      },
       "type": "object"
     }
   },

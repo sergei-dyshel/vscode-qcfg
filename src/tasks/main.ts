@@ -1,0 +1,295 @@
+'use strict';
+
+import { commands, ExtensionContext, TaskGroup, tasks, workspace } from 'vscode';
+import { mapSomeAsync, MAP_UNDEFINED, filterAsync } from '../async';
+import { ConfigFilePair, watchConfigFile } from "../config";
+import * as dialog from '../dialog';
+import { registerCommandWrapped } from '../exception';
+import { globAsync } from '../fileUtils';
+import { parseJsonFileSync } from '../json';
+import { log } from '../logging';
+import { Modules } from '../module';
+import { concatArrays, mapObjectToArray } from '../tsUtils';
+import { currentWorkspaceFolder } from '../utils';
+import { BaseProcessTaskParams, ConfParamsSet, Params, TerminalTaskParams, TaskType, ProcessTaskParams, Flag } from './params';
+import { TaskContext, ConditionError, ParamsError, TerminalTask, TerminalMultiTask, BaseExecTask, VscodeTask, BaseTask, ValidationError, FetchInfo, ProcessTask, ProcessMultiTask } from './types';
+
+const CONFIG_FILE = 'vscode-qcfg.tasks.json';
+
+export async function runOneTime(name: string, params: TerminalTaskParams) {
+  const run = new TerminalTask(
+      params, {label: name, fromWorkspace: false}, new TaskContext());
+  await run.run();
+}
+
+async function checkCondition(
+    params: BaseProcessTaskParams, context: TaskContext): Promise<void> {
+  const when = params.when || {};
+  if (Object.keys(when).length > 1)
+    throw new ParamsError(
+        'Only one property can be defined for \'when\' clause');
+  if (when.fileExists) {
+    if (!context.workspaceFolder)
+      throw new ConditionError(
+          '"fileExists" can only be checked in context of workspace folder');
+    const matches = await globAsync(
+        when.fileExists, {cwd: context.workspaceFolder.uri.path});
+    if (matches.isEmpty)
+      throw new ConditionError(
+          `Globbing for ${when.fileExists} returned no matches`);
+  }
+  else if (when.fileMatches) {
+    throw new ParamsError('TODO: when.fileMatches not implemented yet');
+  }
+}
+
+function handleValidationError(
+    label: string, context: TaskContext|undefined, err: any) {
+  const contextStr = context ?
+      (context.workspaceFolder ? 'folder ' + context.workspaceFolder.name :
+                                 'current context') :
+      'multiple folders';
+  if (err instanceof ValidationError)
+    log.debug(
+        `Error validating task "${label}" for ${contextStr}: ${err.message}`);
+  else
+    throw err;
+}
+
+interface FolderTask<P> {
+  new(params: P, info: FetchInfo, context: TaskContext): BaseExecTask;
+}
+
+interface MultiFolderTask<P> {
+  new(params: P, info: FetchInfo, folderContexts: TaskContext[]): BaseExecTask;
+}
+
+class TaskGenerator<P extends BaseProcessTaskParams> {
+  constructor(
+      private single: FolderTask<P>, private multi: MultiFolderTask<P>,
+      private params: P, private info: FetchInfo,
+      private currentContext: TaskContext,
+      private folderContexts: TaskContext[]) {}
+
+  run() {
+    if (this.params.flags && this.params.flags.includes(Flag.FOLDER))
+      return this.genFolderTasks();
+    else
+      return this.genCurrentTask();
+  }
+
+  private async createTask(context: TaskContext) {
+    await checkCondition(this.params, context);
+    return new this.single(this.params, this.info, context);
+  }
+
+  private async filterValidContexts() {
+    return filterAsync(this.folderContexts, async context => {
+      try {
+        await this.createTask(context);
+        return true;
+      } catch (err) {
+        handleValidationError(this.info.label, context, err);
+        return false;
+      }
+    });
+  }
+
+  private async genFolderTasks() {
+    const validContexts = await this.filterValidContexts();
+    const tasks: BaseExecTask[] = [];
+    if (validContexts.isEmpty)
+      return tasks;
+    if (validContexts.length === 1)
+      tasks.push(await this.createTask(validContexts[0]));
+    else {
+      const currentFolder = currentWorkspaceFolder();
+      for (const context of validContexts) {
+        if (context.workspaceFolder === currentFolder)
+          tasks.push(await this.createTask(context));
+      }
+      tasks.push(new this.multi(this.params, this.info, validContexts));
+    }
+    return tasks;
+  }
+
+  private async genCurrentTask() {
+    try {
+      return [await this.createTask(this.currentContext)];
+    } catch (err) {
+      handleValidationError(this.info.label, this.currentContext, err);
+      return [];
+    }
+  }
+}
+
+/**
+ * Fetch all possible tasks for given params
+ */
+async function fetchQcfgTasksForParams(
+    fetchedParams: FetchedParams, currentContext: TaskContext,
+    folderContexts: TaskContext[]): Promise<BaseExecTask[]> {
+  const {fetchInfo, params} = fetchedParams;
+
+  switch (params.type) {
+    case TaskType.PROCESS:
+      const processGenerator = new TaskGenerator<ProcessTaskParams>(
+          ProcessTask, ProcessMultiTask, params, fetchInfo, currentContext,
+          folderContexts);
+      return await processGenerator.run();
+    case TaskType.TERMINAL:
+      const terminalGenerator = new TaskGenerator<TerminalTaskParams>(
+          TerminalTask, TerminalMultiTask, params, fetchInfo, currentContext,
+          folderContexts);
+      return await terminalGenerator.run();
+  }
+}
+
+interface FetchOptions {
+  showHidden?: boolean;
+}
+
+async function fetchQcfgTasks(options?: FetchOptions): Promise<BaseExecTask[]> {
+  const currentContext = new TaskContext();
+  const curFolder = currentWorkspaceFolder();
+  const folders = workspace.workspaceFolders || [];
+
+  // move current folder to the top of list
+  if (curFolder) {
+    folders.removeFirst(curFolder);
+    folders.unshift(curFolder);
+  }
+
+  const folderContexts = folders.map(folder => new TaskContext(folder));
+
+  const filteredParams = configuredParams.filter(fetchedParams => {
+    const {params} = fetchedParams;
+    if (!params.flags)
+      params.flags = [];
+    if (params.flags.includes(Flag.HIDDEN) && !((options || {}).showHidden))
+      return false;
+    return true;
+  });
+
+  const tasks = await mapSomeAsync<FetchedParams, BaseExecTask[]>(
+      filteredParams, async fetchedParams => {
+        try {
+          return await fetchQcfgTasksForParams(
+              fetchedParams, currentContext, folderContexts);
+        } catch (err) {
+          if (err instanceof ParamsError) {
+            log.warn(`Error in parameters for task "${
+                fetchedParams.fetchInfo.label}": ${err.message}`);
+            return MAP_UNDEFINED;
+          }
+          throw err;
+        }
+      });
+
+  return concatArrays(...tasks);
+}
+
+let lastBuildTask: BaseTask|undefined;
+
+async function runDefaultBuildTask() {
+  const qcfgTasks = await fetchQcfgTasks();
+  for (const task of qcfgTasks)
+    if (task.label === 'build')
+      return task.run();
+  const allTasks = await tasks.fetchTasks();
+  for (const task of allTasks)
+    if (task.group === TaskGroup.Build)
+      return commands.executeCommand('workbench.action.tasks.build');
+}
+
+async function runLastBuildTask() {
+  if (lastBuildTask) {
+    await lastBuildTask.run();
+    return;
+  }
+  await runDefaultBuildTask();
+}
+
+function expandParamsOrCmd(paramsOrCmd: Params | string): Params
+{
+  return (typeof paramsOrCmd === 'string') ?
+      {command: paramsOrCmd, type: TaskType.TERMINAL} :
+      paramsOrCmd;
+}
+
+async function showTasks() {
+  const [qcfgTasks, rawVscodeTasks] =
+      await Promise.all([fetchQcfgTasks(), tasks.fetchTasks()]);
+  const vscodeTasks = rawVscodeTasks.map(task => new VscodeTask(task));
+  const allTasks = [...qcfgTasks, ...vscodeTasks];
+  const anyTask = await dialog.selectObjectFromListMru(allTasks, 'tasks');
+  if (!anyTask)
+    return;
+  if (anyTask.isBuild())
+    lastBuildTask = anyTask;
+  anyTask.run();
+}
+
+async function runQcfgTask(name: string)
+{
+  const tasks = await fetchQcfgTasks({showHidden: true});
+  for (const task of tasks) {
+    if (name === task.label) {
+      await task.run();
+      return;
+    }
+  }
+  log.error(`Qcfg task "${name}" is not available`);
+}
+
+interface FetchedParams {
+  fetchInfo: FetchInfo;
+  params: Params;
+}
+
+const configuredParams: FetchedParams[] = [];
+
+function loadConfig(filePair: ConfigFilePair) {
+  const allTasks: ConfParamsSet = {};
+  const workspaceTasks: ConfParamsSet = {};
+  if (filePair.global) {
+    try {
+      const globalTasks: ConfParamsSet = parseJsonFileSync(filePair.global);
+      log.debug('Loaded tasks from ' + filePair.global);
+      Object.assign(allTasks, globalTasks);
+    }
+    catch (err) {
+      log.error('Could not load JSON file ' + filePair.global);
+    }
+  }
+  if (filePair.workspace) {
+    try {
+      const workspaceTasks = parseJsonFileSync(filePair.workspace);
+      log.debug('Loaded tasks from ' + filePair.workspace);
+      Object.assign(allTasks, workspaceTasks);
+    }
+    catch (err) {
+      log.error('Could not load JSON file ' + filePair.workspace);
+    }
+  }
+  if (!filePair.global && !filePair.workspace)
+    log.info('No tasks config files found');
+  configuredParams.length = 0;
+  configuredParams.push(...mapObjectToArray(allTasks, (label, paramsOrCmd) => {
+    const fetchInfo: FetchInfo = {label, fromWorkspace: (workspaceTasks[label] !== undefined)};
+    return {fetchInfo, params: expandParamsOrCmd(paramsOrCmd)};
+  }));
+}
+
+function activate(context: ExtensionContext) {
+  const {configFilePair, disposable} = watchConfigFile(CONFIG_FILE, loadConfig);
+  loadConfig(configFilePair);
+  context.subscriptions.push(
+      disposable,
+      registerCommandWrapped('qcfg.tasks.build.last', runLastBuildTask),
+      registerCommandWrapped('qcfg.tasks.build.default', runDefaultBuildTask),
+      registerCommandWrapped('qcfg.tasks.runQcfg', runQcfgTask),
+      registerCommandWrapped('qcfg.tasks.show', showTasks));
+}
+
+Modules.register(activate);
