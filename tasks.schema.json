@@ -236,10 +236,12 @@
           "type": "array"
         },
         "onFailure": {
-          "$ref": "#/definitions/EndAction"
+          "$ref": "#/definitions/EndAction",
+          "default": "auto"
         },
         "onSuccess": {
-          "$ref": "#/definitions/EndAction"
+          "$ref": "#/definitions/EndAction",
+          "default": "auto"
         },
         "problemMatchers": {
           "anyOf": [
@@ -252,6 +254,8 @@
               },
               "type": "array"
             }
+          ],
+          "default": [
           ]
         },
         "reindex": {
@@ -259,7 +263,7 @@
         },
         "reveal": {
           "$ref": "#/definitions/Reveal",
-          "default": "focus",
+          "default": "yes",
           "description": "Reveal terminal when running"
         },
         "title": {
@@ -282,9 +286,11 @@
       "additionalProperties": false,
       "properties": {
         "fileExists": {
+          "description": "File exists of given glob pattern",
           "type": "string"
         },
         "fileMatches": {
+          "description": "Current file matches glob pattern",
           "type": "string"
         }
       },

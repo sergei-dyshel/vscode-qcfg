@@ -54,9 +54,11 @@ export class Subprocess {
     this.promise = new Promise<ExecResult>((resolve, reject) => {
       this.waitingContext = {resolve, reject};
     });
-    if (this.options && this.options.statusBarMessage)
-      vscode.window.setStatusBarMessage(
-          this.options.statusBarMessage, this.promise);
+    if (this.options && this.options.statusBarMessage) {
+      this.status = vscode.window.createStatusBarItem();
+      this.status.text = '$(tool) ' + this.options.statusBarMessage;
+      this.status.show();
+    }
   }
 
   wait(): Promise<ExecResult> {
@@ -69,6 +71,8 @@ export class Subprocess {
   }
 
   private callback(error: Error|null, stdout: string, stderr: string) {
+    if (this.status)
+      this.status.dispose();
     this.result = new ExecResult(this.process.pid, stdout, stderr);
     if (error) {
       const err = error as unknown as {code?: number, signal?: string};
@@ -99,6 +103,7 @@ export class Subprocess {
     reject: (result: ExecResult|Error) => void
   };
   private process: child_process.ChildProcess;
+  status?: vscode.StatusBarItem;
 }
 
 export function executeSubprocess(

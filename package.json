@@ -132,7 +132,7 @@
         "title": "qcfg: Show list of tasks"
       },
       {
-        "command": "qcfg.tasks.runQcfg",
+        "command": "qcfg.tasks.runConfigured",
         "title": "qcfg: Run specific task"
       },
       {
@@ -142,6 +142,14 @@
       {
         "command": "qcfg.tasks.build.default",
         "title": "qcfg: Run default build task"
+      },
+      {
+        "command": "qcfg.tasks.editGlobalConfig",
+        "title": "qcfg: Edit global tasks configuration"
+      },
+      {
+        "command": "qcfg.tasks.editWorkspaceConfig",
+        "title": "qcfg: Edit workspace tasks configuration"
       },
       {
         "command": "qcfg.alternate.switch",
@@ -367,30 +375,24 @@
       },
       {
         "key": "alt+s",
-        "command": "qcfg.tasks.runQcfg",
-        "args": "syg"
+        "command": "qcfg.tasks.runConfigured",
+        "args": [
+          "syg",
+          {
+            "folder": "all"
+          }
+        ]
       },
       {
         "key": "ctrl+k ctrl+l",
         "mac": "cmd+k cmd+l",
-        "command": "qcfg.tasks.runQcfg",
-        "args": "parse_locations_and_peek"
-      },
-      {
-        "key": "alt+g",
-        "command": "qcfg.tasks.runQcfg",
-        "args": "gtags_cursor"
-      },
-      {
-        "key": "ctrl+k ctrl+g",
-        "mac": "cmd+k cmd+g",
-        "command": "qcfg.tasks.runQcfg",
-        "args": "gtags"
-      },
-      {
-        "key": "alt+.",
-        "command": "qcfg.tasks.runQcfg",
-        "args": "rg_word"
+        "command": "qcfg.tasks.runConfigured",
+        "args": [
+          "jump2line",
+          {
+            "folder": "all"
+          }
+        ]
       },
       {
         "key": "alt+up",
@@ -1678,212 +1680,6 @@
           "type": "string",
           "description": "Workspace configuration direcotry for vsdode-qcfg specific features, relative to workspace file's directory or the only folder by default",
           "default": "."
-        },
-        "qcfg.tasks.global": {
-          "type": "object",
-          "description": "Tasks in qcfg format",
-          "additionalProperties": {
-            "anyOf": [
-              {
-                "type": "object",
-                "properties": {
-                  "command": {
-                    "type": "string"
-                  },
-                  "reveal": {
-                    "type": "string",
-                    "enum": [
-                      "focus",
-                      "yes",
-                      "no"
-                    ],
-                    "default": "yes"
-                  },
-                  "locationRegex": {
-                    "type": "string",
-                    "description": "Regular expression to parse search results. vimgrep format by default. Predefined formats: gtags"
-                  },
-                  "flags": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "enum": [
-                        "dedicatedPanel",
-                        "clear",
-                        "autoRestart",
-                        "reindex",
-                        "build",
-                        "search",
-                        "folder"
-                      ]
-                    }
-                  },
-                  "onSuccess": {
-                    "type": "string",
-                    "default": "auto",
-                    "enum": [
-                      "none",
-                      "auto",
-                      "hide",
-                      "dispose",
-                      "show",
-                      "notify"
-                    ]
-                  },
-                  "onFailure": {
-                    "type": "string",
-                    "default": "auto",
-                    "enum": [
-                      "none",
-                      "auto",
-                      "hide",
-                      "dispose",
-                      "show",
-                      "notify"
-                    ]
-                  },
-                  "problemMatchers": {
-                    "anyOf": [
-                      {
-                        "type": "array",
-                        "items": {
-                          "type": "string"
-                        },
-                        "default": []
-                      },
-                      {
-                        "type": "string"
-                      }
-                    ]
-                  },
-                  "when": {
-                    "type": "object",
-                    "description": "Condition when task is valid",
-                    "properties": {
-                      "fileExists": {
-                        "type": "string",
-                        "description": "File exists of given glob pattern"
-                      },
-                      "fileMatches": {
-                        "type": "string",
-                        "description": "Current file matches glob pattern"
-                      }
-                    }
-                  }
-                },
-                "required": [
-                  "command"
-                ]
-              },
-              {
-                "type": "string",
-                "description": "Command to run with default task params"
-              }
-            ]
-          }
-        },
-        "qcfg.tasks.workspace": {
-          "type": "object",
-          "description": "Tasks in qcfg format",
-          "additionalProperties": {
-            "anyOf": [
-              {
-                "type": "object",
-                "properties": {
-                  "command": {
-                    "type": "string"
-                  },
-                  "reveal": {
-                    "type": "string",
-                    "enum": [
-                      "focus",
-                      "yes",
-                      "no"
-                    ],
-                    "default": "yes"
-                  },
-                  "locationRegex": {
-                    "type": "string",
-                    "description": "Regular expression to parse search results. vimgrep format by default. Predefined formats: gtags"
-                  },
-                  "flags": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "enum": [
-                        "dedicatedPanel",
-                        "clear",
-                        "autoRestart",
-                        "reindex",
-                        "build",
-                        "search",
-                        "folder"
-                      ]
-                    }
-                  },
-                  "onSuccess": {
-                    "type": "string",
-                    "default": "auto",
-                    "enum": [
-                      "none",
-                      "auto",
-                      "hide",
-                      "dispose",
-                      "show",
-                      "notify"
-                    ]
-                  },
-                  "onFailure": {
-                    "type": "string",
-                    "default": "auto",
-                    "enum": [
-                      "none",
-                      "auto",
-                      "hide",
-                      "dispose",
-                      "show",
-                      "notify"
-                    ]
-                  },
-                  "problemMatchers": {
-                    "anyOf": [
-                      {
-                        "type": "array",
-                        "items": {
-                          "type": "string"
-                        },
-                        "default": []
-                      },
-                      {
-                        "type": "string"
-                      }
-                    ]
-                  },
-                  "when": {
-                    "type": "object",
-                    "description": "Condition when task is valid",
-                    "properties": {
-                      "fileExists": {
-                        "type": "string",
-                        "description": "File exists of given glob pattern"
-                      },
-                      "fileMatches": {
-                        "type": "string",
-                        "description": "Current file matches glob pattern"
-                      }
-                    }
-                  }
-                },
-                "required": [
-                  "command"
-                ]
-              },
-              {
-                "type": "string",
-                "description": "Command to run with default task params"
-              }
-            ]
-          }
         },
         "qcfg.alternate.mapping": {
           "type": "object",

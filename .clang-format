@@ -4,3 +4,6 @@ ColumnLimit:     80
 AllowShortLoopsOnASingleLine: false
 AllowShortBlocksOnASingleLine: false
 AllowShortIfStatementsOnASingleLine: false
+JavaScriptQuotes: Single
+JavaScriptWrapImports: true
+BreakStringLiterals: false

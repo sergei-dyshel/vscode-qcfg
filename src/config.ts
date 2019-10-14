@@ -55,6 +55,13 @@ function parseGlobalDir(): string {
   return expanded;
 }
 
+/**
+ * Get configuration file names (without checking if they exist)
+ */
+export function getConfigFileNames(fileName: string): ConfigFilePair {
+  return configDirWatcher.getFileNames(fileName);
+}
+
 function getWorkspaceDir(): string|undefined {
   const root = workspace.workspaceFile;
   if (root) {
@@ -80,6 +87,9 @@ function parseWorkspaceDir(): string|undefined {
   return nodejs.path.resolve(workspaceDir, raw);
 }
 
+/**
+ * Watches global/workspace config dir variables in settings
+ */
 class ConfigDirWatcher implements Disposable {
   private globalDir = parseGlobalDir();
   private workspaceDir = parseWorkspaceDir();
@@ -101,8 +111,20 @@ class ConfigDirWatcher implements Disposable {
     return watcher;
   }
 
-  onConfigVarChanged() {
+  getFileNames(fileName: string): ConfigFilePair {
+    return {
+      global: nodejs.path.resolve(this.globalDir, fileName),
+      workspace: this.workspaceDir ?
+          nodejs.path.resolve(this.workspaceDir, fileName) :
+          undefined
+    };
+  }
 
+  onConfigVarChanged() {
+    this.globalDir = parseGlobalDir();
+    this.workspaceDir = parseWorkspaceDir();
+    this.pairWatchers.forEach(
+        watcher => watcher.reset(this.globalDir, this.workspaceDir));
   }
 
   dispose() {
@@ -111,6 +133,9 @@ class ConfigDirWatcher implements Disposable {
   }
 }
 
+/**
+ * Watches specific configuration file
+ */
 class ConfigFileWatcher implements DisposableLike {
   private watcher?: DisposableLike;
 
@@ -142,6 +167,9 @@ function resolveIfNonNull(first: string|undefined, second: string) {
   return first ? nodejs.path.resolve(first, second) : undefined;
 }
 
+/**
+ * Watches pair of global/workspace configuration files
+ */
 class ConfigPairWatcher implements DisposableLike {
   private global: ConfigFileWatcher;
   private workspace: ConfigFileWatcher;

@@ -5,9 +5,6 @@ json_merger := npx json-merger --pretty \
 	--error-on-file-not-found --error-on-ref-not-found --output
 my_merger := npx ts-node src/merge.ts
 
-$(d)/tasks.json: $(d)/tasks.merge.json $(d)/tasks.base.json
-	$(json_merger) $@ $<
-
 $(d)/relativeJumps.json: src/generateRelativeJumps.ts
 	npx ts-node $< >$@
 

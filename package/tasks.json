@@ -1,275 +1,67 @@
 {
-	"contributes": {
-		"commands": [
-			{
-				"command": "qcfg.tasks.show",
-				"title": "qcfg: Show list of tasks"
+    "contributes": {
+        "commands": [
+            {
+                "command": "qcfg.tasks.show",
+                "title": "qcfg: Show list of tasks"
+            },
+            {
+                "command": "qcfg.tasks.runConfigured",
+                "title": "qcfg: Run specific task"
+            },
+            {
+                "command": "qcfg.tasks.build.last",
+                "title": "qcfg: Run last build task"
+            },
+            {
+                "command": "qcfg.tasks.build.default",
+                "title": "qcfg: Run default build task"
 			},
 			{
-				"command": "qcfg.tasks.runQcfg",
-				"title": "qcfg: Run specific task"
+				"command": "qcfg.tasks.editGlobalConfig",
+				"title": "qcfg: Edit global tasks configuration"
 			},
 			{
-				"command": "qcfg.tasks.build.last",
-				"title": "qcfg: Run last build task"
-			},
-			{
-				"command": "qcfg.tasks.build.default",
-				"title": "qcfg: Run default build task"
+				"command": "qcfg.tasks.editWorkspaceConfig",
+				"title": "qcfg: Edit workspace tasks configuration"
 			}
-		],
-		"configuration": {
-			"properties": {
-				"qcfg.tasks.global": {
-					"type": "object",
-					"description": "Tasks in qcfg format",
-					"additionalProperties": {
-						"anyOf": [
-							{
-								"type": "object",
-								"properties": {
-									"command": {
-										"type": "string"
-									},
-									"reveal": {
-										"type": "string",
-										"enum": [
-											"focus",
-											"yes",
-											"no"
-										],
-										"default": "yes"
-									},
-									"locationRegex": {
-										"type": "string",
-										"description": "Regular expression to parse search results. vimgrep format by default. Predefined formats: gtags"
-									},
-									"flags": {
-										"type": "array",
-										"items": {
-											"type": "string",
-											"enum": [
-												"dedicatedPanel",
-												"clear",
-												"autoRestart",
-												"reindex",
-												"build",
-												"search",
-												"folder"
-											]
-										}
-									},
-									"onSuccess": {
-										"type": "string",
-										"default": "auto",
-										"enum": [
-											"none",
-											"auto",
-											"hide",
-											"dispose",
-											"show",
-											"notify"
-										]
-									},
-									"onFailure": {
-										"type": "string",
-										"default": "auto",
-										"enum": [
-											"none",
-											"auto",
-											"hide",
-											"dispose",
-											"show",
-											"notify"
-										]
-									},
-									"problemMatchers": {
-										"anyOf": [
-											{
-												"type": "array",
-												"items": {
-													"type": "string"
-												},
-												"default": []
-											},
-											{
-												"type": "string"
-											}
-										]
-									},
-									"when": {
-										"type": "object",
-										"description": "Condition when task is valid",
-										"properties": {
-											"fileExists": {
-												"type": "string",
-												"description": "File exists of given glob pattern"
-											},
-											"fileMatches": {
-												"type": "string",
-												"description": "Current file matches glob pattern"
-											}
-										}
-									}
-								},
-								"required": [
-									"command"
-								]
-							},
-							{
-								"type": "string",
-								"description": "Command to run with default task params"
-							}
-						]
+        ],
+        "keybindings": [
+            {
+                "key": "alt+t",
+                "command": "qcfg.tasks.show"
+            },
+            {
+                "key": "ctrl+k ctrl+b",
+                "mac": "cmd+k cmd+b",
+                "command": "qcfg.tasks.build.last"
+            },
+            {
+                "key": "ctrl+k ctrl+shift+b",
+                "mac": "cmd+k cmd+shift+b",
+                "command": "qcfg.tasks.build.default"
+            },
+            {
+                "key": "alt+s",
+                "command": "qcfg.tasks.runConfigured",
+				"args": [
+					"syg",
+					{
+						"folder": "all"
 					}
-				},
-				"qcfg.tasks.workspace": {
-					"type": "object",
-					"description": "Tasks in qcfg format",
-					"additionalProperties": {
-						"anyOf": [
-							{
-								"type": "object",
-								"properties": {
-									"command": {
-										"type": "string"
-									},
-									"reveal": {
-										"type": "string",
-										"enum": [
-											"focus",
-											"yes",
-											"no"
-										],
-										"default": "yes"
-									},
-									"locationRegex": {
-										"type": "string",
-										"description": "Regular expression to parse search results. vimgrep format by default. Predefined formats: gtags"
-									},
-									"flags": {
-										"type": "array",
-										"items": {
-											"type": "string",
-											"enum": [
-												"dedicatedPanel",
-												"clear",
-												"autoRestart",
-												"reindex",
-												"build",
-												"search",
-												"folder"
-											]
-										}
-									},
-									"onSuccess": {
-										"type": "string",
-										"default": "auto",
-										"enum": [
-											"none",
-											"auto",
-											"hide",
-											"dispose",
-											"show",
-											"notify"
-										]
-									},
-									"onFailure": {
-										"type": "string",
-										"default": "auto",
-										"enum": [
-											"none",
-											"auto",
-											"hide",
-											"dispose",
-											"show",
-											"notify"
-										]
-									},
-									"problemMatchers": {
-										"anyOf": [
-											{
-												"type": "array",
-												"items": {
-													"type": "string"
-												},
-												"default": []
-											},
-											{
-												"type": "string"
-											}
-										]
-									},
-									"when": {
-										"type": "object",
-										"description": "Condition when task is valid",
-										"properties": {
-											"fileExists": {
-												"type": "string",
-												"description": "File exists of given glob pattern"
-											},
-											"fileMatches": {
-												"type": "string",
-												"description": "Current file matches glob pattern"
-											}
-										}
-									}
-								},
-								"required": [
-									"command"
-								]
-							},
-							{
-								"type": "string",
-								"description": "Command to run with default task params"
-							}
-						]
+				]
+            },
+            {
+                "key": "ctrl+k ctrl+l",
+                "mac": "cmd+k cmd+l",
+                "command": "qcfg.tasks.runConfigured",
+				"args": [
+					"jump2line",
+					{
+						"folder": "all"
 					}
-				}
-			}
-		},
-		"keybindings": [
-			{
-				"key": "alt+t",
-				"command": "qcfg.tasks.show"
-			},
-			{
-				"key": "ctrl+k ctrl+b",
-				"mac": "cmd+k cmd+b",
-				"command": "qcfg.tasks.build.last"
-			},
-			{
-				"key": "ctrl+k ctrl+shift+b",
-				"mac": "cmd+k cmd+shift+b",
-				"command": "qcfg.tasks.build.default"
-			},
-			{
-				"key": "alt+s",
-				"command": "qcfg.tasks.runQcfg",
-				"args": "syg"
-			},
-			{
-				"key": "ctrl+k ctrl+l",
-				"mac": "cmd+k cmd+l",
-				"command": "qcfg.tasks.runQcfg",
-				"args": "jump2line"
-			},
-			{
-				"key": "alt+g",
-				"command": "qcfg.tasks.runQcfg",
-				"args": "gtags_cursor"
-			},
-			{
-				"key": "ctrl+k ctrl+g",
-				"mac": "cmd+k cmd+g",
-				"command": "qcfg.tasks.runQcfg",
-				"args": "gtags"
-			},
-			{
-				"key": "alt+.",
-				"command": "qcfg.tasks.runQcfg",
-				"args": "rg_word"
-			}
-		]
-	}
+				]
+            }
+        ]
+    }
 }

@@ -37,7 +37,10 @@ export enum TaskType {
 export type BaseProcessTaskFlag = Flag.BUILD|Flag.FOLDER|Flag.HIDDEN;
 
 interface When {
+  /** File exists of given glob pattern */
   fileExists?: string;
+
+  /** Current file matches glob pattern */
   fileMatches?: string;
 }
 
@@ -63,13 +66,27 @@ export interface TerminalTaskParams extends BaseProcessTaskParams {
 
   /**
    * Reveal terminal when running
-   * @default "focus"
+   * @default "yes"
    */
   reveal?: Reveal;
+
+  /**
+   * @default "auto"
+   */
   onSuccess?: EndAction;
+
+  /**
+   * @default "auto"
+   */
   onFailure?: EndAction;
+
   reindex?: boolean;
+
+  /**
+   * @default []
+   */
   problemMatchers?: string|string[];
+
   flags?: Array<BaseProcessTaskFlag|Flag.CLEAR|Flag.DEDICATED_PANEL|
                 Flag.REINDEX|Flag.AUTO_RESTART>;
 }

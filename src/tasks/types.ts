@@ -391,6 +391,7 @@ export class ProcessTask extends BaseExecTask {
     const subproc = new Subprocess(this.command, {
       cwd: this.cwd,
       logLevel: LogLevel.Debug,
+      statusBarMessage: this.info.label,
       allowedCodes: this.params.exitCodes
     });
     try {

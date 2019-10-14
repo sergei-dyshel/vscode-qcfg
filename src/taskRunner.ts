@@ -183,7 +183,11 @@ export class TaskRun {
         if (self.terminal)
           self.terminal.show();
       });
-      self.status.text = '$(tools)' + self.desc.toString();
+      if (self.task.scope && (self.task.scope !== vscode.TaskScope.Global && self.task.scope !== vscode.TaskScope.Workspace))
+        self.status.text = '$(tools)' +
+            `${self.task.name} (${self.task.scope.name})`;
+      else
+        self.status.text = '$(tools)' + self.task.name;
       self.status.command = command;
       self.statusCmdDisposable = disposable;
       self.status.show();
