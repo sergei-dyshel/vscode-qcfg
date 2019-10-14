@@ -25,7 +25,7 @@ function emit() {
 
 function onDidSaveTextDocument(document: vscode.TextDocument) {
   const {workspaceFolder: wsFolder} =
-      fileUtils.getDocumentRootThrowing(document);
+      fileUtils.getDocumentRootThrowing(document.fileName);
   const docPath = vscode.workspace.asRelativePath(document.fileName);
   log.debug('onDidSaveTextDocument:', docPath);
 

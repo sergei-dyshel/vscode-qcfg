@@ -105,6 +105,9 @@
         },
         {
           "$ref": "#/definitions/ProcessTaskParams"
+        },
+        {
+          "$ref": "#/definitions/SearchTaskParams"
         }
       ]
     },
@@ -175,6 +178,43 @@
       ],
       "type": "string"
     },
+    "SearchTaskParams": {
+      "additionalProperties": false,
+      "properties": {
+        "flags": {
+          "items": {
+            "$ref": "#/definitions/Flag.HIDDEN"
+          },
+          "type": "array"
+        },
+        "isCaseSensitive": {
+          "type": "boolean"
+        },
+        "isRegExp": {
+          "type": "boolean"
+        },
+        "isWordMatch": {
+          "type": "boolean"
+        },
+        "query": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/TaskType.SEARCH"
+        },
+        "when": {
+          "$ref": "#/definitions/When"
+        }
+      },
+      "required": [
+        "query",
+        "type"
+      ],
+      "type": "object"
+    },
     "TaskType": {
       "enum": [
         "process",
@@ -186,6 +226,12 @@
     "TaskType.PROCESS": {
       "enum": [
         "process"
+      ],
+      "type": "string"
+    },
+    "TaskType.SEARCH": {
+      "enum": [
+        "search"
       ],
       "type": "string"
     },

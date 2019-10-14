@@ -44,21 +44,21 @@ interface When {
   fileMatches?: string;
 }
 
-interface BaseTaskParams {
+export interface BaseTaskParams {
   title?: string;
   type: TaskType;
+  when?: When;
+  flags?: Flag[];
 }
 
 export interface BaseProcessTaskParams extends BaseTaskParams {
   command: string;
   cwd?: string;
-  when?: When;
   /**
    * Expected process exit codes
    * @default []
    */
   exitCodes?: number[];
-  flags?: Flag[];
 }
 
 export interface TerminalTaskParams extends BaseProcessTaskParams {
@@ -112,9 +112,14 @@ export interface ProcessTaskParams extends BaseProcessTaskParams {
 
 export interface SearchTaskParams extends BaseTaskParams {
   type: TaskType.SEARCH;
+  query: string;
+  isRegExp?: boolean;
+  isCaseSensitive?: boolean;
+  isWordMatch?: boolean;
+  flags?: Flag.HIDDEN[];
 }
 
-export type Params = TerminalTaskParams|ProcessTaskParams;
+export type Params = TerminalTaskParams|ProcessTaskParams|SearchTaskParams;
 
 
 export interface ConfParamsSet {

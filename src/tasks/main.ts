@@ -11,8 +11,8 @@ import { log } from '../logging';
 import { Modules } from '../module';
 import { concatArrays, mapObjectToArray } from '../tsUtils';
 import {currentWorkspaceFolder} from '../utils';
-import { BaseProcessTaskParams, ConfParamsSet, Params, TerminalTaskParams, TaskType, ProcessTaskParams, Flag } from './params';
-import { TaskContext, ConditionError, ParamsError, TerminalTask, TerminalMultiTask, BaseExecTask, VscodeTask, BaseTask, ValidationError, FetchInfo, ProcessTask, ProcessMultiTask } from './types';
+import { ConfParamsSet, Params, TerminalTaskParams, TaskType, ProcessTaskParams, Flag, SearchTaskParams, BaseTaskParams } from './params';
+import { TaskContext, ConditionError, ParamsError, TerminalTask, TerminalMultiTask, BaseQcfgTask, VscodeTask, BaseTask, ValidationError, FetchInfo, ProcessTask, ProcessMultiTask, SearchTask, SearchMultiTask, isFolderTask } from './types';
 import * as nodejs from '../nodejs';
 
 const CONFIG_FILE = 'vscode-qcfg.tasks.json';
@@ -24,7 +24,7 @@ export async function runOneTime(name: string, params: TerminalTaskParams) {
 }
 
 async function checkCondition(
-    params: BaseProcessTaskParams, context: TaskContext): Promise<void> {
+    params: BaseTaskParams, context: TaskContext): Promise<void> {
   const when = params.when || {};
   if (Object.keys(when).length > 1)
     throw new ParamsError(
@@ -58,18 +58,14 @@ function handleValidationError(
 }
 
 interface FolderTask<P> {
-  new(params: P, info: FetchInfo, context: TaskContext): BaseExecTask;
+  new(params: P, info: FetchInfo, context: TaskContext): BaseQcfgTask;
 }
 
 interface MultiFolderTask<P> {
-  new(params: P, info: FetchInfo, folderContexts: TaskContext[]): BaseExecTask;
+  new(params: P, info: FetchInfo, folderContexts: TaskContext[]): BaseQcfgTask;
 }
 
-function isFolderTask(params: BaseProcessTaskParams) {
-  return params.flags && params.flags.includes(Flag.FOLDER);
-}
-
-class TaskGenerator<P extends BaseProcessTaskParams> {
+class TaskGenerator<P extends BaseTaskParams> {
   constructor(
       private single: FolderTask<P>,
       private multi: MultiFolderTask<P>,
@@ -110,7 +106,7 @@ class TaskGenerator<P extends BaseProcessTaskParams> {
 
   private async genFolderTasks(folderContexts: TaskContext[]) {
     const validContexts = await this.filterValidContexts(folderContexts);
-    const tasks: BaseExecTask[] = [];
+    const tasks: BaseQcfgTask[] = [];
     if (validContexts.isEmpty)
       return tasks;
     if (validContexts.length === 1)
@@ -145,6 +141,9 @@ function createTaskGenerator(fetchedParams: FetchedParams) {
     case TaskType.TERMINAL:
       return new TaskGenerator<TerminalTaskParams>(
           TerminalTask, TerminalMultiTask, params, fetchInfo);
+    case TaskType .SEARCH:
+      return new TaskGenerator<SearchTaskParams>(
+          SearchTask, SearchMultiTask, params, fetchInfo);
   }
 }
 
@@ -152,7 +151,7 @@ interface FetchOptions {
   showHidden?: boolean;
 }
 
-async function fetchQcfgTasks(options?: FetchOptions): Promise<BaseExecTask[]> {
+async function fetchQcfgTasks(options?: FetchOptions): Promise<BaseQcfgTask[]> {
   const currentContext = new TaskContext();
   const curFolder = currentWorkspaceFolder();
   const folders = workspace.workspaceFolders || [];
@@ -174,7 +173,7 @@ async function fetchQcfgTasks(options?: FetchOptions): Promise<BaseExecTask[]> {
     return true;
   });
 
-  const tasks = await mapSomeAsync<FetchedParams, BaseExecTask[]>(
+  const tasks = await mapSomeAsync<FetchedParams, BaseQcfgTask[]>(
       filteredParams, async fetchedParams => {
         try {
           const generator = createTaskGenerator(fetchedParams);

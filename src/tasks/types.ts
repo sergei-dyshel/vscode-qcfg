@@ -1,9 +1,9 @@
 'use strict';
 
 import { ListSelectable } from "../dialog";
-import { QuickPickItem, Task, TaskScope, workspace, TaskGroup, WorkspaceFolder, window, TaskPanelKind, TaskDefinition, ShellExecution, TaskRevealKind, commands, Location} from "vscode";
+import { QuickPickItem, Task, TaskScope, workspace, TaskGroup, WorkspaceFolder, window, TaskPanelKind, TaskDefinition, ShellExecution, TaskRevealKind, commands, Location, TextSearchQuery, FindTextInFilesOptions} from "vscode";
 import { TaskRun } from "../taskRunner";
-import { TerminalTaskParams, ProcessTaskParams, Flag, Reveal, EndAction, LocationFormat } from "./params";
+import { TerminalTaskParams, ProcessTaskParams, Flag, Reveal, EndAction, LocationFormat, SearchTaskParams, BaseTaskParams, TaskType } from "./params";
 import { currentWorkspaceFolder, getCursorWordContext } from "../utils";
 import * as nodejs from '../nodejs';
 import * as remoteControl from '../remoteControl';
@@ -14,11 +14,17 @@ import { TaskCancelledError, TaskConfilictPolicy} from '../taskRunner';
 import { mapAsyncSequential, mapAsync } from "../async";
 import { LogLevel, log } from "../logging";
 import { concatArrays } from "../tsUtils";
-import { peekLocation } from "../fileUtils";
+import { peekLocation, getDocumentWorkspaceFolder } from "../fileUtils";
+import { searchInFiles } from "../search";
 
 export interface FetchInfo {
   label: string;
   fromWorkspace: boolean;
+}
+
+export function isFolderTask(params: BaseTaskParams) {
+  return (params.flags && params.flags.includes(Flag.FOLDER)) ||
+      params.type === TaskType.SEARCH;
 }
 
 /**
@@ -41,9 +47,13 @@ export class TaskContext {
         this.vars.selectedText = document.getText(editor.selection);
       if (editor.selection.isEmpty)
         this.vars.lineNumber = String(editor.selection.active.line + 1);
-      const wordCtx = getCursorWordContext();
-      if (wordCtx) {
-        this.vars.cursorWord = wordCtx.word;
+      if (!editor.selection.isEmpty) {
+        this.vars.cursorWord = document.getText(editor.selection);
+      } else {
+        const wordCtx = getCursorWordContext();
+        if (wordCtx) {
+          this.vars.cursorWord = wordCtx.word;
+        }
       }
       if (this.workspaceFolder) {
         this.vars.workspaceFolder = this.workspaceFolder.uri.fsPath;
@@ -195,9 +205,10 @@ export class VscodeTask extends BaseTask {
   protected taskRun?: TaskRun;
 }
 
-export abstract class BaseExecTask extends BaseTask {
+export abstract class BaseQcfgTask extends BaseTask {
   constructor(
-      protected readonly params: TerminalTaskParams|ProcessTaskParams,
+      protected readonly params: TerminalTaskParams|ProcessTaskParams|
+      SearchTaskParams,
       protected readonly info: FetchInfo) {
     super();
   }
@@ -227,7 +238,7 @@ export abstract class BaseExecTask extends BaseTask {
   }
 }
 
-export class TerminalTask extends BaseExecTask {
+export class TerminalTask extends BaseQcfgTask {
   private task: Task;
   protected taskRun?: TaskRun;
 
@@ -235,7 +246,7 @@ export class TerminalTask extends BaseExecTask {
       protected params: TerminalTaskParams, info: FetchInfo,
       context: TaskContext) {
     super(params, info);
-    if (params.flags && params.flags.includes(Flag.FOLDER)) {
+    if (isFolderTask(params)) {
       this.folderText = context.workspaceFolder!.name;
     }
     this.params = params;
@@ -325,7 +336,7 @@ export class TerminalTask extends BaseExecTask {
   }
 }
 
-export class TerminalMultiTask extends BaseExecTask {
+export class TerminalMultiTask extends BaseQcfgTask {
   private folderTasks: TerminalTask[];
   constructor(
       params: TerminalTaskParams, info: FetchInfo,
@@ -343,7 +354,7 @@ export class TerminalMultiTask extends BaseExecTask {
   }
 }
 
-export class ProcessTask extends BaseExecTask {
+export class ProcessTask extends BaseQcfgTask {
   private command: string;
   private cwd: string;
   private parseFormat?: ParseLocationFormat;
@@ -383,8 +394,7 @@ export class ProcessTask extends BaseExecTask {
     if (this.parseFormat === undefined)
       throw Error('Output parsing not defined for this task');
     const output = await this.runAndGetOutput();
-    return parseLocations(output, this.cwd, this.parseFormat)
-        .map(parsedLoc => parsedLoc.location);
+    return parseLocations(output, this.cwd, this.parseFormat);
   }
 
   private async runAndGetOutput(): Promise<string> {
@@ -420,7 +430,7 @@ export class ProcessTask extends BaseExecTask {
   }
 }
 
-export class ProcessMultiTask extends BaseExecTask {
+export class ProcessMultiTask extends BaseQcfgTask {
   private parseOutput = false;
   private parseTag?: string;
   private folderTasks: ProcessTask[];
@@ -429,7 +439,6 @@ export class ProcessMultiTask extends BaseExecTask {
       params: ProcessTaskParams, info: FetchInfo,
       folderContexts: TaskContext[]) {
     super(params, info);
-    this.folderText = 'all folders';
     this.folderTasks =
         folderContexts.map(context => new ProcessTask(params, info, context));
     this.folderText =
@@ -459,5 +468,58 @@ export class ProcessMultiTask extends BaseExecTask {
     } else {
       await Promise.all(this.folderTasks.map(task => task.run()));
     }
+  }
+}
+
+export class SearchMultiTask extends BaseQcfgTask {
+  private query: TextSearchQuery;
+  private options: FindTextInFilesOptions;
+  private folders: WorkspaceFolder[];
+
+  constructor(
+      params: SearchTaskParams, info: FetchInfo,
+      folderContexts: TaskContext[]) {
+    super(params, info);
+    this.folderText =
+        folderContexts.map(context => context.workspaceFolder!.name).join(', ');
+
+    this.folders = folderContexts.map(context => {
+      if (!context.workspaceFolder)
+        throw new Error('Search task can only be defined for workspace folder');
+      return context.workspaceFolder;
+    });
+    this.query = {
+      pattern: folderContexts[0].substitute(params.query),
+      isRegExp: params.isRegExp,
+      isCaseSensitive: params.isCaseSensitive,
+      isWordMatch: params.isWordMatch
+    };
+    this.options = {
+        // XXX: there is a bug that happens when RelativePattern is used, it
+        // causes search to return partial results, so we must use filtering
+        // instead
+
+        // include: new RelativePattern(context.workspaceFolder.uri.fsPath,
+        // '**')
+    };
+  }
+  async getLocations() {
+    const locations = await searchInFiles(this.query, this.options);
+    return locations.filter(location => {
+      const folder = getDocumentWorkspaceFolder(location.uri.fsPath);
+      if (!folder)
+        return false;
+      return this.folders.includes(folder);
+    });
+  }
+
+  async run() {
+    await peekLocation(await this.getLocations());
+  }
+}
+
+export class SearchTask extends SearchMultiTask {
+  constructor(params: SearchTaskParams, info: FetchInfo, context: TaskContext) {
+    super(params, info, [context]);
   }
 }

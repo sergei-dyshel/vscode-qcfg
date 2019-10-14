@@ -53,7 +53,7 @@ export function currentWorkspaceFolder(): vscode.WorkspaceFolder | undefined {
   const editor = window.activeTextEditor;
   if (!editor)
     return;
-  return getDocumentWorkspaceFolder(editor.document);
+  return getDocumentWorkspaceFolder(editor.document.fileName);
 }
 
 export interface CursorWordContext {

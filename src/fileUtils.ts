@@ -15,9 +15,9 @@ export const globAsync = nodejs.util.promisify(require('glob')) as (
                              pattern: string, options?: glob.IOptions) =>
                              Promise<string[]>;
 
-export function getDocumentRoot(document: vscode.TextDocument) {
-  const wsPath = vscode.workspace.asRelativePath(document.fileName, true);
-  const relativePath = vscode.workspace.asRelativePath(document.fileName, false);
+export function getDocumentRoot(fileName: string) {
+  const wsPath = vscode.workspace.asRelativePath(fileName, true);
+  const relativePath = vscode.workspace.asRelativePath(fileName, false);
   const [wsDir] = wsPath.split(nodejs.path.sep, 1);
   for (const workspaceFolder of (vscode.workspace.workspaceFolders || [])) {
     if (workspaceFolder.name === wsDir)
@@ -26,15 +26,15 @@ export function getDocumentRoot(document: vscode.TextDocument) {
   return;
 }
 
-export function getDocumentRootThrowing(document: vscode.TextDocument) {
+export function getDocumentRootThrowing(fileName: string) {
   return log.assertNonNull(
-      getDocumentRoot(document),
-      `Could not get workspace folder of ${document.fileName}`);
+      getDocumentRoot(fileName),
+      `Could not get workspace folder of ${fileName}`);
 }
 
-export function getDocumentWorkspaceFolder(document: vscode.TextDocument)
+export function getDocumentWorkspaceFolder(fileName: string)
 {
-  const docRoot = getDocumentRoot(document);
+  const docRoot = getDocumentRoot(fileName);
   return docRoot ? docRoot.workspaceFolder : undefined;
 }
 

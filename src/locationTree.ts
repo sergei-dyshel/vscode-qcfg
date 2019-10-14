@@ -17,7 +17,7 @@ export function setLocations(
   const dict = new MultiDictionary<Uri, ParsedLocation>();
   const fileNodes: FileNode[] = [];
   for (const parsedLoc of parsedLocations)
-    dict.setValue(parsedLoc.location.uri, parsedLoc);
+    dict.setValue(parsedLoc.uri, parsedLoc);
   for (const uri of dict.keys()) {
     const fileNode = new FileNode(uri);
     fileNodes.push(fileNode);
@@ -161,16 +161,16 @@ class LocationNode extends StaticTreeNode {
     const text = log.assertNonNull(parsedLoc.text);
     const trimOffset = text.length - text.trimLeft().length;
     super(log.assertNonNull(text.trim()));
-    this.uri = parsedLoc.location.uri;
+    this.uri = parsedLoc.uri;
     this.allowRemoval();
-    this.treeItem.id = str(parsedLoc.location);
+    this.treeItem.id = str(parsedLoc);
     const label = this.treeItem.label as vscode.TreeItemLabel;
-    this.line = parsedLoc.location.range.start.line;
+    this.line = parsedLoc.range.start.line;
     label.highlights = [[
-      parsedLoc.location.range.start.character - trimOffset,
-      parsedLoc.location.range.end.character - trimOffset
+      parsedLoc.range.start.character - trimOffset,
+      parsedLoc.range.end.character - trimOffset
     ]];
-    this.fetchDocument(parsedLoc.location);
+    this.fetchDocument(parsedLoc);
   }
   async show() {
     const document = await vscode.workspace.openTextDocument(this.uri);

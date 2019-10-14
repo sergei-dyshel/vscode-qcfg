@@ -23,7 +23,7 @@ function openOrCreateTerminal(name: string, cwd: string) {
 
 function terminalInWorkspaceFolder() {
   const document = getActiveTextEditor().document;
-  const {workspaceFolder: wsFolder} = fileUtils.getDocumentRootThrowing(document);
+  const {workspaceFolder: wsFolder} = fileUtils.getDocumentRootThrowing(document.fileName);
   openOrCreateTerminal(wsFolder.name, wsFolder.uri.fsPath);
 }
 

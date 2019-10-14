@@ -35,7 +35,7 @@ async function switchToAlternate() {
   }
   for (const ext of altExts) {
     const shortName = baseName(filePath) + ext;
-    const folder = log.assertNonNull(fileUtils.getDocumentWorkspaceFolder(document));
+    const folder = log.assertNonNull(fileUtils.getDocumentWorkspaceFolder(filePath));
     const pattern = new vscode.RelativePattern(folder, '**/' + shortName);
     const files = await workspace.findFiles(pattern);
     if (files.length === 1) {

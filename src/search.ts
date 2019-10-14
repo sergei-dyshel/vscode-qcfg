@@ -17,19 +17,19 @@ import { ParsedLocation, parseLocations, ParseLocationFormat } from './parseLoca
 const TODO_CATEGORIES =
     ['TODO', 'XXX', 'TEMP', 'FIXME', 'REFACTOR', 'OPTIMIZE'];
 
-async function searchInFiles(query: TextSearchQuery) {
+export async function searchInFiles(
+    query: TextSearchQuery, options: vscode.FindTextInFilesOptions = {}) {
   const locations: ParsedLocation[] = [];
   await vscode.workspace.findTextInFiles(
-      query, (result: vscode.TextSearchResult) => {
+      query, options, (result: vscode.TextSearchResult) => {
         const match = result as vscode.TextSearchMatch;
         const ranges: Range[] = match.ranges instanceof Range ?
             [match.ranges] :
             match.ranges as Range[];
         for (const range of ranges)
-          locations.push({
-            location: new vscode.Location(match.uri, range),
-            text: match.preview.text
-          });
+          locations.push(
+              new ParsedLocation(match.uri, range, match.preview.text),
+          );
       });
   return locations;
 }
@@ -75,9 +75,7 @@ async function searchWord(panel: boolean)
   if (panel)
     setLocations(`Word "${word}"`, parsedLocations, true /* reveal */);
   else
-    await peekLocations(
-        editorCurrentLocation(editor),
-        parsedLocations.map(parsedLoc => parsedLoc.location));
+    await peekLocations(editorCurrentLocation(editor), parsedLocations);
 }
 
 async function searchStructField()

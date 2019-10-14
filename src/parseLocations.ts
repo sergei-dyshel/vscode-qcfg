@@ -1,6 +1,6 @@
 'use strict';
 
-import { Uri, Position, Location, WorkspaceFolder, workspace } from "vscode";
+import { Uri, Position, Location, WorkspaceFolder, workspace, Range } from "vscode";
 import { filterNonNull, concatArrays } from "./tsUtils";
 import * as nodejs from './nodejs';
 import { Subprocess } from "./subprocess";
@@ -18,9 +18,13 @@ export enum ParseLocationFormat {
   GTAGS
 }
 
-export interface ParsedLocation {
-  location: Location;
-  text?: string;
+export class ParsedLocation extends Location {
+  constructor(
+      fileOrUri: string|Uri, rangeOrPosition: Range|Position, public text?: string) {
+    super(
+        (fileOrUri instanceof Uri) ? fileOrUri : Uri.file(fileOrUri),
+        rangeOrPosition);
+  }
 }
 
 export function parseLocations(
@@ -55,11 +59,10 @@ export function parseLocation(
   } else {
     column = Number(groups.column);
   }
-  const location = new Location(
-      Uri.file(nodejs.path.resolve(base || '', groups.file)),
-      new Position(Number(groups.line) - 1, column - 1));
-  const text = groups.text ? groups.text : "";
-  return {location, text};
+  return new ParsedLocation(
+      nodejs.path.resolve(base || '', groups.file),
+      new Position(Number(groups.line) - 1, column - 1),
+      groups.text ? groups.text : '');
 }
 
 export async function gatherLocationsFromFolder(

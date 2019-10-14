@@ -62,7 +62,7 @@ async function getTags(
   const log = new Logger({instance: document.fileName, level: 'debug'});
   if (!langConfig)
       return [];
-  const docRoot = getDocumentRoot(document);
+  const docRoot = getDocumentRoot(document.fileName);
   if (!docRoot)
       return [];
   const {workspaceFolder, relativePath} = docRoot;
