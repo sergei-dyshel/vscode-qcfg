@@ -234,6 +234,8 @@ export abstract class BaseQcfgTask extends BaseTask {
   }
 
   isBuild() {
+    if (this.params.type === TaskType.SEARCH)
+      return false;
     return (this.params.flags || []).includes(Flag.BUILD);
   }
 }
@@ -488,11 +490,12 @@ export class SearchMultiTask extends BaseQcfgTask {
         throw new Error('Search task can only be defined for workspace folder');
       return context.workspaceFolder;
     });
+    const flags = params.flags || [];
     this.query = {
       pattern: folderContexts[0].substitute(params.query),
-      isRegExp: params.isRegExp,
-      isCaseSensitive: params.isCaseSensitive,
-      isWordMatch: params.isWordMatch
+      isRegExp: flags.includes(Flag.REGEX),
+      isCaseSensitive: flags.includes(Flag.CASE),
+      isWordMatch: flags.includes(Flag.WORD)
     };
     this.options = {
         // XXX: there is a bug that happens when RelativePattern is used, it
@@ -514,7 +517,11 @@ export class SearchMultiTask extends BaseQcfgTask {
   }
 
   async run() {
-    await peekLocation(await this.getLocations());
+    const matches = await this.getLocations();
+    if (matches.isEmpty)
+      window.showWarningMessage('No matches found');
+    else
+      await peekLocation(matches);
   }
 }
 

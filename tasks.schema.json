@@ -43,7 +43,10 @@
         "reindex",
         "build",
         "hidden",
-        "folder"
+        "folder",
+        "regex",
+        "word",
+        "case"
       ],
       "type": "string"
     },
@@ -56,6 +59,12 @@
     "Flag.BUILD": {
       "enum": [
         "build"
+      ],
+      "type": "string"
+    },
+    "Flag.CASE": {
+      "enum": [
+        "case"
       ],
       "type": "string"
     },
@@ -85,9 +94,21 @@
       ],
       "type": "string"
     },
+    "Flag.REGEX": {
+      "enum": [
+        "regex"
+      ],
+      "type": "string"
+    },
     "Flag.REINDEX": {
       "enum": [
         "reindex"
+      ],
+      "type": "string"
+    },
+    "Flag.WORD": {
+      "enum": [
+        "word"
       ],
       "type": "string"
     },
@@ -183,18 +204,22 @@
       "properties": {
         "flags": {
           "items": {
-            "$ref": "#/definitions/Flag.HIDDEN"
+            "anyOf": [
+              {
+                "$ref": "#/definitions/Flag.HIDDEN"
+              },
+              {
+                "$ref": "#/definitions/Flag.REGEX"
+              },
+              {
+                "$ref": "#/definitions/Flag.WORD"
+              },
+              {
+                "$ref": "#/definitions/Flag.CASE"
+              }
+            ]
           },
           "type": "array"
-        },
-        "isCaseSensitive": {
-          "type": "boolean"
-        },
-        "isRegExp": {
-          "type": "boolean"
-        },
-        "isWordMatch": {
-          "type": "boolean"
         },
         "query": {
           "type": "string"

@@ -26,6 +26,11 @@ export enum Flag {
 
   /** Task applies to any workspace folder (i.e. not current dir/file) */
   FOLDER = 'folder',
+
+  // Search specific flags
+  REGEX = 'regex',
+  WORD = 'word',
+  CASE = 'case',
 }
 
 export enum TaskType {
@@ -113,10 +118,7 @@ export interface ProcessTaskParams extends BaseProcessTaskParams {
 export interface SearchTaskParams extends BaseTaskParams {
   type: TaskType.SEARCH;
   query: string;
-  isRegExp?: boolean;
-  isCaseSensitive?: boolean;
-  isWordMatch?: boolean;
-  flags?: Flag.HIDDEN[];
+  flags?: Array<Flag.HIDDEN|Flag.REGEX|Flag.WORD|Flag.CASE>;
 }
 
 export type Params = TerminalTaskParams|ProcessTaskParams|SearchTaskParams;

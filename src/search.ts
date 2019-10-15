@@ -20,6 +20,7 @@ const TODO_CATEGORIES =
 export async function searchInFiles(
     query: TextSearchQuery, options: vscode.FindTextInFilesOptions = {}) {
   const locations: ParsedLocation[] = [];
+  log.debug(`Searching for "${query.pattern}"`);
   await vscode.workspace.findTextInFiles(
       query, options, (result: vscode.TextSearchResult) => {
         const match = result as vscode.TextSearchMatch;
