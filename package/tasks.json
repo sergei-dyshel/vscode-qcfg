@@ -6,10 +6,6 @@
                 "title": "qcfg: Show list of tasks"
             },
             {
-                "command": "qcfg.tasks.runConfigured",
-                "title": "qcfg: Run specific task"
-            },
-            {
                 "command": "qcfg.tasks.build.last",
                 "title": "qcfg: Run last build task"
             },

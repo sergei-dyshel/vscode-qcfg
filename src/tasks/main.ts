@@ -236,28 +236,27 @@ interface TaskRunOptions {
   folder?: 'all'|WorkspaceFolder;
 }
 
-async function getConfiguredTask(name: string, options?: TaskRunOptions) {
-  const fetchedParams = configuredParams.firstOf(
-      fetchedParams => fetchedParams.fetchInfo.label === name);
-  if (!fetchedParams)
-    throw new Error(`Task "${name}" is not available`);
+async function createTask(
+    fetchedParams: FetchedParams,
+    options?: TaskRunOptions): Promise<BaseQcfgTask> {
   const generator = createTaskGenerator(fetchedParams);
-  const {params} = fetchedParams;
+  const {fetchInfo, params} = fetchedParams;
+  const {label} = fetchInfo;
   if (options && options.folder) {
     if (options.folder === 'all') {
       if (isFolderTask(params)) {
         const folders = workspace.workspaceFolders || [];
         if (folders.isEmpty)
-          throw new Error(`Task "${name}" can only run in workspace folder`);
+          throw new Error(`Task "${label}" can only run in workspace folder`);
         const folderContexts = folders.map(folder => new TaskContext(folder));
         return generator.genMultiTask(folderContexts);
       } else
-        throw new Error(`Task "${name}" is not folder task`);
+        throw new Error(`Task "${label}" is not folder task`);
     } else {
       try {
         return generator.createTask(new TaskContext(options.folder));
       } catch (err) {
-        throw new Error(`Task "${name}" is not valid in folder "${
+        throw new Error(`Task "${label}" is not valid in folder "${
             options.folder.name}": ${err.message}`);
       }
     }
@@ -266,21 +265,33 @@ async function getConfiguredTask(name: string, options?: TaskRunOptions) {
         return generator.createTask(new TaskContext());
       } catch (err) {
         throw new Error(
-            `Task "${name}" is not valid current context : ${err.message}`);
+            `Task "${label}" is not valid current context : ${err.message}`);
       }
   }
 }
 
-export async function runConfiguredTask(
+export async function runTask(
+    label: string, params: Params, options?: TaskRunOptions) {
+  const fetchedParams = {fetchInfo: {label, fromWorkspace: false}, params};
+  const task = await createTask(fetchedParams, options);
+  await task.run();
+}
+
+async function runConfiguredTask(
     name: string, options?: TaskRunOptions) {
-  const task = await getConfiguredTask(name, options);
+  const fetchedParams = configuredParams.firstOf(
+      fetchedParams => fetchedParams.fetchInfo.label === name);
+  if (!fetchedParams)
+    throw new Error(`Task "${name}" is not available`);
+  const task = await createTask(fetchedParams, options);
   await task.run();
 }
 
 async function runConfiguredTaskCmd(arg: string|[string, TaskRunOptions]) {
-  const task = typeof (arg) === 'string' ? await getConfiguredTask(arg) :
-                                           await getConfiguredTask(...arg);
-  await task.run();
+  if (typeof (arg) === 'string')
+    await runConfiguredTask(arg);
+  else
+    await runConfiguredTask(...arg);
 }
 
 

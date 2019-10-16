@@ -49,7 +49,11 @@
       },
       {
         "command": "qcfg.gtags.definition",
-        "title": "qcfg: Open gtags definition"
+        "title": "qcfg: Open gtags definition (current folder and up)"
+      },
+      {
+        "command": "qcfg.gtags.definitionInWorkspace",
+        "title": "qcfg: Open gtags definition (in workspace)"
       },
       {
         "command": "qcfg.search.word.peek",
@@ -165,7 +169,7 @@
         },
         {
                 "key": "alt+d",
-                "command": "qcfg.gtags.definition"
+                "command": "qcfg.gtags.definitionInWorkspace"
         },
         {
                 "key": "alt+r",

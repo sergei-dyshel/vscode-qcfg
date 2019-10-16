@@ -16,6 +16,8 @@ import {parseNumber, buildFuzzyPattern, splitWithRemainder, buildAbbrevPattern} 
 const RE2 = require('re2');
 import { registerCommandWrapped, handleErrors } from './exception';
 import { Modules } from './module';
+import { runTask } from './tasks/main';
+import { Params, TaskType, Flag, LocationFormat } from './tasks/params';
 
 async function findGtagsDir(dir: string) {
   while (true) {
@@ -309,6 +311,17 @@ async function openDefinition() {
       editor.selection.active, locations);
 }
 
+function openDefinitionInWorkspace() {
+  const params: Params = {
+    'command': 'global -d -x -n ${cursorWord}',
+    'type': TaskType.PROCESS,
+    'parseOutput': {'format': LocationFormat.GTAGS, 'tag': '${cursorWord}'},
+    'flags': [Flag.FOLDER],
+    'when': {'fileExists': 'GTAGS'}
+  };
+  runTask('gtags_def', params, {folder: 'all'});
+}
+
 class GtagsDefinitionProvider implements vscode.DefinitionProvider {
   async provideDefinition(
       document: vscode.TextDocument, position: vscode.Position,
@@ -370,11 +383,12 @@ function activate(context: vscode.ExtensionContext) {
       vscode.languages.registerWorkspaceSymbolProvider(
           new GtagsGlobalSymbolsProvider()),
       registerCommandWrapped('qcfg.gtags.definition', openDefinition),
+      registerCommandWrapped(
+          'qcfg.gtags.definitionInWorkspace', openDefinitionInWorkspace),
       vscode.languages.registerDefinitionProvider(
           '*', new GtagsDefinitionProvider()),
       vscode.languages.registerHoverProvider('*', new GtagsHoverProvider()),
-      registerCommandWrapped(
-          'qcfg.gtags.workspace', WorkspaceGtags.run));
+      registerCommandWrapped('qcfg.gtags.workspace', WorkspaceGtags.run));
 }
 
 Modules.register(activate);
