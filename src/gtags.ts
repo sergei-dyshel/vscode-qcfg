@@ -333,6 +333,7 @@ class GtagsDefinitionProvider implements vscode.DefinitionProvider {
           return;
         break;
       case 'typescript':
+      case 'lua':
         return;
     }
     const gtagsDir = log.assertNonNull(
@@ -357,6 +358,7 @@ class GtagsHoverProvider implements vscode.HoverProvider {
           return;
         break;
       case 'typescript':
+      case 'lua':
         return;
     }
     if (document.fileName.startsWith('extension-output'))
