@@ -1,6 +1,6 @@
 'use strict';
 
-import { ExtensionContext, Range, Selection, TextDocument, TextDocumentChangeEvent, TextDocumentContentChangeEvent, TextEditor, TextEditorSelectionChangeEvent, window, workspace } from 'vscode';
+import { ExtensionContext, Range, Selection, TextDocument, TextDocumentChangeEvent, TextDocumentContentChangeEvent, TextEditor, workspace } from 'vscode';
 import { adjustOffsetRangeAfterChange, NumRange, offsetToRange, rangeToOffset } from './documentUtils';
 import { listenWrapped, registerCommandWrapped, CheckError } from './exception';
 import { Logger } from './logging';
@@ -8,68 +8,125 @@ import { DefaultMap, filterNonNull } from './tsUtils';
 import { getActiveTextEditor } from './utils';
 import { Modules } from './module';
 import * as nodejs from './nodejs';
+import { LiveRange } from './liveLocation';
+import { offsetPosition } from './textUtils';
 
+const HISTORY_SIZE = 10;
 // private
 
+/* TODO: unexport */
+export abstract class History<T> {
+  protected backward: T[] = [];
+  protected forward: T[] = [];
+  private cutForward: boolean;
+
+  abstract goTo(state: T): void;
+
+  constructor(private maxSize: number, opts?: {cutForward: boolean}) {
+    this.cutForward = opts && opts.cutForward ? true : false;
+  }
+
+  top(): T|undefined {
+    return this.backward.top;
+  }
+
+  replaceTop(state: T) {
+    this.backward.pop();
+    if (!this.cutForward)
+      this.backward.concat(this.forward.reverse());
+    this.backward.push(state);
+    this.forward = [];
+  }
+
+  push(state: T) {
+    this.forward = [];
+    if (!this.cutForward)
+      this.backward.concat(this.forward.reverse());
+    this.backward.push(state);
+    if (this.backward.length > this.maxSize)
+      this.backward.shift();
+  }
+
+  goBackward() {
+    const state = this.backward.pop();
+    if (!state)
+      throw new CheckError('No backward history');
+    this.forward.push(state);
+    this.goTo(state);
+  }
+
+  goForward() {
+    const state = this.forward.pop();
+    if (!state)
+      throw new CheckError('No forward history');
+    this.backward.push(state);
+    this.goTo(state);
+  }
+
+  remove(state: T) {
+    this.forward.removeFirst(state);
+    this.backward.removeFirst(state);
+  }
+}
+
 class DocumentHistory {
+  private ranges: LiveRange[];
+  private index = 0;
+
   constructor(private document: TextDocument) {
     const base = nodejs.path.parse(document.fileName).base;
     this.log = new Logger({instance: base, level: 'trace'});
   }
-  private backward: NumRange[][] = [];
-  private forward: NumRange[][] = [];
+  private savedSelection?: Selection;
 
-  private savedSelection?: NumRange[];
-
-  processTextChange(changes: readonly TextDocumentContentChangeEvent[]) {
-    this.log.trace(changes);
-    this.backward = this.backward.concat(this.forward.reverse());
-    this.forward = [];
-    const prevBackward = this.backward;
-    this.backward =
-        this.backward.map(ranges => adjustRangesAfterChange(ranges, changes))
-            .filter(ranges => ranges.length > 0);
-    this.log.trace(
-        'changed history from {} to {}', prevBackward, this.backward);
-    const ranges = textChangeToRanges(changes);
-    this.log.trace('current ranges', ranges);
-    if (!this.backward.isEmpty) {
-      this.log.trace('previous ranges', this.backward.top);
-      const merge = tryMerge(this.backward.top!, ranges);
-      if (merge) {
-        this.backward.pop();
-        this.backward.push(merge);
-        this.log.trace('Merged with previous, pushing', merge);
-        return;
+  processTextChange(change: TextDocumentContentChangeEvent) {
+    if (change.text.length === 0)
+      return;
+    this.log.trace(change);
+    const range = new Range(
+        change.range.start,
+        offsetPosition(this.document, change.range.start, change.text.length));
+    const lrange = new LiveRange(this.document, range, {
+      mergeOnReplace: true,
+      onInvalidated: () => {
+        this.ranges.removeFirst(lrange);
       }
-    }
-    this.backward.push(ranges);
-    this.log.trace('Pushing', ranges);
+    });
+    this.savedSelection = undefined;
+    this.ranges.push(lrange);
+    if (this.ranges.length > HISTORY_SIZE)
+      this.ranges.shift();
+    this.index = this.ranges.length;
+    this.log.trace('Pushing', lrange);
   }
 
-  goBackward(selection: Selection[]): NumRange[] {
-    if (this.backward.isEmpty)
+  goBackward(selection: Selection): Selection {
+    if (!this.savedSelection)
+      this.savedSelection = selection;
+    else if (this.index === 0)
       throw new CheckError('No backward  history');
-    const ranges = this.backward.pop()!;
-    const selectionRanges = rangesToOffset(this.document, selection);
-    selectionRanges.sort(NumRange.prototype.compareTo);
-    if (this.forward.isEmpty)
-      this.savedSelection = selectionRanges;
-    this.forward.push(ranges);
-    this.log.debug(
-        `Going backward (${this.backward.length} more backward items, ${
-            this.forward.length} forward items)`);
-    return ranges;
+    else
+      --this.index;
+    this.log.debugStr(
+        'Going backward, ({} more backward items, {} forward items)',
+        this.index, this.ranges.length - this.index);
+    return this.ranges[this.index].range.asSelection();
   }
 
-  goForward(): NumRange[] {
-    if (this.forward.isEmpty)
-      throw new CheckError('No more forward history');
-    this.backward.push(this.forward.pop()!);
-    this.log.debug(`Going forward (${this.backward.length} backward items, ${
-        this.forward.length} forward items)`);
-    if (this.forward.isEmpty)
-      return this.savedSelection!;
+  goForward(): Selection {
+    if (this.index === this.ranges.length) {
+      if (this.savedSelection) {
+        const selection = this.savedSelection;
+        this.savedSelection = undefined;
+        return selection;
+      } else
+        throw new CheckError('No more forward history');
+    }
+    ++this.index;
+    this.log.debugStr(
+      'Going forward, ({} more backward items, {} forward items)',
+      this.index, this.ranges.length - this.index);
+   this.backward.push(this.forward.pop()!);
     return this.forward.top!;
   }
 
@@ -122,8 +179,6 @@ function onDidChangeTextDocument(event: TextDocumentChangeEvent) {
   docHistory.processTextChange(event.contentChanges);
 }
 
-function onDidChangeTextEditorSelection(_: TextEditorSelectionChangeEvent) {}
-
 function selectRanges(editor: TextEditor, ranges: Range[]) {
   const selections: Selection[] = [];
   if (!ranges.length)
@@ -161,9 +216,6 @@ function goForward() {
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
       listenWrapped(workspace.onDidChangeTextDocument, onDidChangeTextDocument),
-      listenWrapped(
-          window.onDidChangeTextEditorSelection,
-          onDidChangeTextEditorSelection),
       registerCommandWrapped('qcfg.edit.previous', goBackward),
       registerCommandWrapped('qcfg.edit.next', goForward));
 }

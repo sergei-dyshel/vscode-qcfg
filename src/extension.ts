@@ -30,6 +30,7 @@ import * as workspaceHistory from './workspaceHistory';
 import * as multipleSelection from './multipleSelection';
 import * as config from './config';
 import * as tasksMain from './tasks/main';
+import * as liveLocation from './liveLocation';
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('Extension active');
@@ -64,7 +65,8 @@ export function activate(context: vscode.ExtensionContext) {
       workspaceHistory,
       multipleSelection,
       config,
-      tasksMain
+      tasksMain,
+      liveLocation
     };
 }
 
