@@ -164,6 +164,7 @@ const LIST_NODE_TYPES: string[] = [
   'field_declaration_list',
   'declaration_list',
   'translation_unit',
+  'parameter_list'
 ];
 
 function isListNode(node: SyntaxNode) {
