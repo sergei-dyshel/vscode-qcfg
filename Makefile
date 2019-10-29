@@ -6,16 +6,10 @@ npm_pre_install:
 	npm install json-merger deepmerge ts-node typescript @types/node
 
 npm_install: | package.json
-	npm_config_target=4.2.5 \
-	npm_config_disturl=https://atom.io/download/atom-shell \
-	JOBS=$(shell nproc) \
-	npm install
+	./npm-wrapper.sh install
 
 npm_update: | package.json
-	npm_config_target=4.2.5 \
-	npm_config_disturl=https://atom.io/download/atom-shell \
-	JOBS=$(shell nproc) \
-	npm update
+	./npm-wrapper update
 
 npm_full_reinstall:
 	rm -rf package.json node_modules
