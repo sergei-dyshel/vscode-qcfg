@@ -25,9 +25,12 @@ interface LanguageConfig {
 
 const languageConfig: {[language: string]: LanguageConfig} = {
   python: {parser: require('tree-sitter-python')},
-  c: {parser: require('tree-sitter-cpp')},
+  c: {parser: require('tree-sitter-c')},
   cpp: {parser: require('tree-sitter-cpp')},
   typescript: {parser: require('tree-sitter-typescript')},
+  shellscript: {parser: require('tree-sitter-bash')},
+  go: {parser: require('tree-sitter-go')},
+  lua: {parser: require('tree-sitter-lua')},
 };
 
 declare module 'tree-sitter' {

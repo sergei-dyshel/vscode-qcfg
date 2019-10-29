@@ -1830,9 +1830,14 @@
     "string-format": "^2.0.0",
     "superstring": "^2.4.0",
     "tree-sitter": "^0.15.4",
+    "tree-sitter-bash": "^0.16.0",
+    "tree-sitter-c": "^0.15.2",
     "tree-sitter-cpp": "^0.13.15",
+    "tree-sitter-go": "^0.15.0",
+    "tree-sitter-lua": "^1.6.0",
     "tree-sitter-python": "^0.13.6",
     "tree-sitter-typescript": "^0.13.6",
+    "tree-sitter-yaml": "^0.1.0",
     "typescript-collections": "^1.1.4"
   },
   "devDependencies": {
