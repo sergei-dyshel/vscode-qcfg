@@ -15,7 +15,7 @@ import { Modules } from './module';
 import { ParsedLocation, parseLocations, ParseLocationFormat } from './parseLocations';
 
 const TODO_CATEGORIES =
-    ['TODO', 'XXX', 'TEMP', 'FIXME', 'REFACTOR', 'OPTIMIZE'];
+    ['TODO', 'XXX', 'TEMP', 'FIXME', 'REFACTOR', 'OPTIMIZE', 'DOCS', 'STUB'];
 
 export async function searchInFiles(
     query: TextSearchQuery, options: vscode.FindTextInFilesOptions = {}) {
