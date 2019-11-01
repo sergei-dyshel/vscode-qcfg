@@ -1,5 +1,9 @@
 {
     "tabnine.trigger": "off",
+    "[typescript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "editor.formatOnSave": true,
     "json.schemas": [
         {
             "fileMatch": ["package/*.json"],
