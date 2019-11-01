@@ -278,6 +278,10 @@
       {
         "command": "qcfg.formatSelectedFilesInExplorer",
         "title": "Format selected files"
+      },
+      {
+        "command": "qcfg.formatSelectedFilesInSCM",
+        "title": "Format selected files"
       }
     ],
     "keybindings": [
@@ -1804,6 +1808,11 @@
       "explorer/context": [
         {
           "command": "qcfg.formatSelectedFilesInExplorer"
+        }
+      ],
+      "scm/resourceState/context": [
+        {
+          "command": "qcfg.formatSelectedFilesInSCM"
         }
       ]
     }
