@@ -274,6 +274,10 @@
       {
         "command": "qcfg.multipleSelection.unselectMarked",
         "title": "qcfg: Multiple selections - unselect marked"
+      },
+      {
+        "command": "qcfg.formatSelectedFilesInExplorer",
+        "title": "Format selected files"
       }
     ],
     "keybindings": [
@@ -1795,6 +1799,11 @@
           "command": "qcfg.treeView.expandNode",
           "when": "view == qcfgTreeView",
           "group": "inline"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "qcfg.formatSelectedFilesInExplorer"
         }
       ]
     }

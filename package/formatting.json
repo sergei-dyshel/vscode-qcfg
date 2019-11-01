@@ -1,0 +1,17 @@
+{
+    "contributes": {
+        "commands": [
+            {
+            "command": "qcfg.formatSelectedFilesInExplorer",
+            "title": "Format selected files"
+            }
+        ],
+        "menus": {
+            "explorer/context": [
+                {
+                    "command": "qcfg.formatSelectedFilesInExplorer"
+                }
+            ]
+        }
+    }
+}

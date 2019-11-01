@@ -1,5 +1,5 @@
 deps := common tasks alternate treeSitter autoSync editing treeView \
-	relativeJumps navigation multipleSelection macTermBindings
+	relativeJumps navigation multipleSelection macTermBindings formatting
 deps_files := $(patsubst %,$(d)/%.json,$(deps))
 json_merger := npx json-merger --pretty \
 	--error-on-file-not-found --error-on-ref-not-found --output
