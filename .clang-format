@@ -1,9 +1,9 @@
 Language:        JavaScript
 BasedOnStyle:    Google
 ColumnLimit:     80
+AllowShortFunctionsOnASingleLine: true
 AllowShortLoopsOnASingleLine: false
 AllowShortBlocksOnASingleLine: false
 AllowShortIfStatementsOnASingleLine: false
 JavaScriptQuotes: Single
-JavaScriptWrapImports: true
 BreakStringLiterals: false
