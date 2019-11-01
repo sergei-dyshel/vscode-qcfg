@@ -279,7 +279,7 @@ export class TerminalTask extends BaseQcfgTask {
     this.taskRun = new TaskRun(this.task!);
     const conflictPolicy =
         (this.params.flags && (this.params.flags.includes(Flag.AUTO_RESTART))) ?
-        TaskConfilictPolicy.CANCEL :
+        TaskConfilictPolicy.CANCEL_PREVIOUS :
         undefined;
     await this.taskRun.start(conflictPolicy);
     try {

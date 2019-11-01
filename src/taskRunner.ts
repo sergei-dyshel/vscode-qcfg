@@ -50,11 +50,11 @@ class TaskDescriptor {
  */
 export enum TaskConfilictPolicy {
   /** Abort current task */
-  ABORT = 'Abort',
+  ABORT_CURRENT = 'Abort current',
   /** Queue current task after the one currently running */
   WAIT = 'Wait',
   /** Cancel currently runninig task and run this task instead */
-  CANCEL = 'Cancel'
+  CANCEL_PREVIOUS = 'Cancel previous'
 }
 
 export class TaskRun {
@@ -77,7 +77,6 @@ export class TaskRun {
   async start(conflictPolicy?: TaskConfilictPolicy): Promise<void> {
     const previous = allRuns.getValue(this.desc);
     if (previous) {
-      this.log.warn('Task already running');
       if (!conflictPolicy) {
         conflictPolicy =
             await vscode.window.showWarningMessage(
@@ -85,16 +84,16 @@ export class TaskRun {
                     this.task
                         .name} is already running. Would like to wait for it, cancel it or abort?`,
                 {modal: true}, TaskConfilictPolicy.WAIT,
-                TaskConfilictPolicy.CANCEL, TaskConfilictPolicy.ABORT) as
-                TaskConfilictPolicy |
+                TaskConfilictPolicy.CANCEL_PREVIOUS,
+                TaskConfilictPolicy.ABORT_CURRENT) as TaskConfilictPolicy |
             undefined;
       }
       switch (conflictPolicy) {
         case undefined:
-        case TaskConfilictPolicy.ABORT:
+        case TaskConfilictPolicy.ABORT_CURRENT:
           this.state = State.ABORTED;
           throw Error(`Task "${this.task.name}" aborted`);
-        case TaskConfilictPolicy.CANCEL:
+        case TaskConfilictPolicy.CANCEL_PREVIOUS:
           this.state = State.WAITING;
           await previous.cancel();
           break;
@@ -107,7 +106,13 @@ export class TaskRun {
     allRuns.setValue(this.desc, this);
     this.state = State.EXECUTED;
     this.log.debug('Executing');
-    this.execution = await vscode.tasks.executeTask(this.task);
+    try {
+      this.execution = await vscode.tasks.executeTask(this.task);
+    } catch (err) {
+      this.log.debug('executeTask failed: ' + err.message);
+      allRuns.remove(this.desc);
+      return err;
+    }
     this.state = State.RUNNING;
     this.log.debug('Started');
   }
@@ -115,9 +120,10 @@ export class TaskRun {
   wait(): Promise<void> {
     if (this.waitingPromise)
       return this.waitingPromise;
-    this.waitingPromise = new Promise((resolve: () => void, reject: (err: Error) => void) => {
-      this.waitingContext = {resolve, reject};
-    });
+    this.waitingPromise =
+        new Promise((resolve: () => void, reject: (err: Error) => void) => {
+          this.waitingContext = {resolve, reject};
+        });
     return this.waitingPromise;
   }
 
