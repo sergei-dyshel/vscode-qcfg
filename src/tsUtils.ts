@@ -187,8 +187,8 @@ declare global {
 Array.prototype.forEachRight = function<T>(
   this: T[],
   callbackfn: (value: T, index: number, array: T[]) => void
-) {
-  this.reduceRight((_, cur, index, array) => {
+): void {
+  return this.reduceRight((_, cur, index, array) => {
     callbackfn(cur, index, array);
     return undefined;
   }, undefined);

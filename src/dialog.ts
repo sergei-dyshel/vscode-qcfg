@@ -94,7 +94,7 @@ export async function selectFromList<T>(
   toQuickPickItem: (x: T) => QuickPickItem,
   options?: vscode.QuickPickOptions
 ): Promise<T | undefined> {
-  const qpItems = items.map(item => ({ item: item, ...toQuickPickItem(item) }));
+  const qpItems = items.map(item => ({ item, ...toQuickPickItem(item) }));
   const selected = await window.showQuickPick(qpItems, options);
   if (selected) return selected.item;
   return;

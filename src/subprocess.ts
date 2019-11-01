@@ -98,7 +98,7 @@ export class Subprocess {
       if (
         !this.options ||
         !this.options.allowedCodes ||
-        !this.options.allowedCodes.includes(this.result.code!)
+        !this.options.allowedCodes.includes(this.result.code)
       ) {
         this.waitingContext.reject(this.result);
       } else {

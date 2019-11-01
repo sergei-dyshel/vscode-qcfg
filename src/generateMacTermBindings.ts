@@ -20,7 +20,7 @@ const keybindings: KeyBinding[] = [];
 
 for (const [key, code] of Object.entries(mapping)) {
   keybindings.push({
-    key: key,
+    key,
     command: 'workbench.action.terminal.sendSequence',
     when: 'terminalFocus && isMac',
     args: { text: code }

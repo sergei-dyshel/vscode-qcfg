@@ -216,7 +216,7 @@ export class VscodeTask extends BaseTask {
   }
 
   async run() {
-    this.taskRun = new TaskRun(this.task!);
+    this.taskRun = new TaskRun(this.task);
     await this.taskRun.start();
     await this.taskRun.wait();
   }
@@ -331,7 +331,7 @@ export class TerminalTask extends BaseQcfgTask {
   }
 
   async run() {
-    this.taskRun = new TaskRun(this.task!);
+    this.taskRun = new TaskRun(this.task);
     const conflictPolicy =
       this.params.flags && this.params.flags.includes(Flag.AUTO_RESTART)
         ? TaskConfilictPolicy.CANCEL_PREVIOUS
@@ -346,8 +346,8 @@ export class TerminalTask extends BaseQcfgTask {
 
     const params = this.params;
     const exitCodes = params.exitCodes || [0];
-    const success = exitCodes.includes(this.taskRun!.exitCode!);
-    const term = this.taskRun!.terminal;
+    const success = exitCodes.includes(this.taskRun.exitCode!);
+    const term = this.taskRun.terminal;
     if (success && params.flags && params.flags.includes(Flag.REINDEX))
       language.reindex();
     let action = success ? params.onSuccess : params.onFailure;

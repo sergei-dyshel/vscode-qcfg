@@ -26,7 +26,7 @@ export const TREE_ITEM_REMOVABLE_CONTEXT = 'removable';
 export function activate(context: ExtensionContext) {
   const opts: TreeViewOptions<TreeNode> = {
     showCollapseAll: true,
-    treeDataProvider: treeDataProvider
+    treeDataProvider
   };
   treeView = window.createTreeView('qcfgTreeView', opts);
   context.subscriptions.push(
