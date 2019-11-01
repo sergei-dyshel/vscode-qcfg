@@ -98,18 +98,46 @@ export function minNumber<T>(...args: T[]): T {
   return args.map(x => (x as unknown as number)).min() as unknown as T;
 }
 
-export class ReverseArrayIterator<T> implements IterableIterator<T> {
-  private idx: number;
-  constructor(private array: T[]) {
-    this.idx = array.length;
+export class ArrayIterator<T> implements IterableIterator<T> {
+  private cur: number;
+  constructor(
+      private array: T[], start: number, private end: number, private step: number) {
+    if (this.step === 0)
+        throw new Error('Can not iterate with step -1');
+    this.cur = start;
   }
   next(): IteratorResult<T> {
-    this.idx--;
-    return {done: this.idx < 0, value: this.array[this.idx]};
+    const result = {done: this.reachedEnd(), value: this.array[this.cur]};
+    this.cur += this.step;
+    return result;
+  }
+  private reachedEnd(): boolean {
+    if (this.step > 0)
+      return this.cur >= this.end;
+    return this.cur < this.end;
   }
   [Symbol.iterator]() {
     return this;
   }
+}
+
+export class ZipIterator<T, U> implements IterableIterator<[T, U]> {
+  constructor(private iter1: Iterator<T>, private iter2: Iterator<U>) {}
+  next(): IteratorResult<[T, U]> {
+    const result1 = this.iter1.next();
+    const result2 = this.iter2.next();
+    if (result1.done || result2.done)
+      return {done: true, value: undefined};
+    return {done: false, value: [result1.value, result2.value]};
+  }
+  [Symbol.iterator]() {
+    return this;
+  }
+}
+
+export function izip<T, U>(
+    iter1: Iterable<T>, iter2: Iterable<U>): Iterable<[T, U]> {
+  return new ZipIterator(iter1[Symbol.iterator](), iter2[Symbol.iterator]());
 }
 
 declare global {
@@ -117,7 +145,9 @@ declare global {
     /**
      * Iterate over array in reverse order.
      */
-    reverseIter(): ReverseArrayIterator<T>;
+    reverseIter(): Iterable<T>;
+    iter(start: number, end: number, step?: number): Iterable<T>;
+    pairIter(): Iterable<[T, T]>;
     readonly top: T|undefined;
     readonly isEmpty: boolean;
     min(cmp?: (x: T, y: T) => number): T|undefined;
@@ -125,16 +155,37 @@ declare global {
     equals(that: T[], eq?: (x: T, y: T) => boolean): boolean;
     removeFirst(val: T): boolean;
     firstOf(cond: (val: T) => boolean): T|undefined;
+    forEachRight(callbackfn: (value: T, index: number, array: T[]) => void): void;
   }
 
   interface ReadonlyArray<T> {
-    reverseIter(): ReverseArrayIterator<T>;
+    reverseIter(): Iterable<T>;
+    iter(start: number, end: number, step?: number): Iterable<T>;
+    pairIter(): Iterable<[T, T]>;
     readonly isEmpty: boolean;
   }
 }
 
+Array.prototype.forEachRight = function<T>(
+    this: T[], callbackfn: (value: T, index: number, array: T[]) => void) {
+  this.reduceRight((_, cur, index, array) => {
+    callbackfn(cur, index, array);
+    return undefined;
+  }, undefined);
+}
+
+Array.prototype.iter = function<T>(
+    this: T[], start: number, end: number, step?: number) {
+  return new ArrayIterator<T>(this, start, end, step || 1);
+};
+
 Array.prototype.reverseIter = function<T>(this: T[]) {
-  return new ReverseArrayIterator<T>(this);
+  return this.iter(this.length - 1, 0, -1);
+};
+
+Array.prototype.pairIter = function<T>(this: T[]) {
+  return izip(
+      this.iter(0, this.length - 1), this.iter(1, this.length));
 };
 
 Array.prototype.removeFirst = function<T>(this: T[], val: T): boolean {
