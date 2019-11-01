@@ -1,76 +1,100 @@
 'use strict';
 
-import { ExtensionContext, Range, Selection, TextDocument, TextDocumentChangeEvent, TextDocumentContentChangeEvent, TextEditor, TextEditorSelectionChangeEvent, window, workspace } from 'vscode';
-import { adjustOffsetRangeAfterChange, NumRange, offsetToRange, rangeToOffset } from './documentUtils';
+import { ExtensionContext, Range, Selection, TextDocument, TextDocumentChangeEvent, TextDocumentContentChangeEvent, workspace, window, TextEditorSelectionChangeEvent, StatusBarItem, TextEditor, StatusBarAlignment } from 'vscode';
 import { listenWrapped, registerCommandWrapped, CheckError } from './exception';
 import { Logger } from './logging';
-import { DefaultMap, filterNonNull } from './tsUtils';
+import { DefaultMap } from './tsUtils';
 import { getActiveTextEditor } from './utils';
 import { Modules } from './module';
 import * as nodejs from './nodejs';
+import { LiveRange } from './liveLocation';
+import { offsetPosition } from './textUtils';
+import { NumRange } from './documentUtils';
+import { formatString } from './stringUtils';
 
-// private
+const HISTORY_SIZE = 20;
+
+let status: StatusBarItem;
+let lastDocHistory: DocumentHistory|undefined;
+
+function changeToOffsetRange(change: TextDocumentContentChangeEvent) {
+  return NumRange.withLength(change.rangeOffset, change.text.length);
+}
 
 class DocumentHistory {
+  private ranges: LiveRange[] = [];
+  private index = 0;
+  private savedSelection?: Selection;
+
   constructor(private document: TextDocument) {
     const base = nodejs.path.parse(document.fileName).base;
     this.log = new Logger({instance: base, level: 'trace'});
   }
-  private backward: NumRange[][] = [];
-  private forward: NumRange[][] = [];
 
-  private savedSelection?: NumRange[];
+  get length() { return this.ranges.length; }
+  get current() { return this.index; }
 
-  processTextChange(changes: readonly TextDocumentContentChangeEvent[]) {
-    this.log.trace(changes);
-    this.backward = this.backward.concat(this.forward.reverse());
-    this.forward = [];
-    const prevBackward = this.backward;
-    this.backward =
-        this.backward.map(ranges => adjustRangesAfterChange(ranges, changes))
-            .filter(ranges => ranges.length > 0);
-    this.log.trace(
-        'changed history from {} to {}', prevBackward, this.backward);
-    const ranges = textChangeToRanges(changes);
-    this.log.trace('current ranges', ranges);
-    if (!this.backward.isEmpty) {
-      this.log.trace('previous ranges', this.backward.top);
-      const merge = tryMerge(this.backward.top!, ranges);
-      if (merge) {
-        this.backward.pop();
-        this.backward.push(merge);
-        this.log.trace('Merged with previous, pushing', merge);
-        return;
+  processTextChange(change: TextDocumentContentChangeEvent) {
+    if (change.text.length === 0)
+      return;
+    this.log.trace(change);
+    const top = this.ranges.top;
+    if (top && top.offsetRange.contains(changeToOffsetRange(change)))
+      return;
+    const range = new Range(
+        change.range.start,
+        offsetPosition(this.document, change.range.start, change.text.length));
+    const lrange = new LiveRange(this.document, range, {
+      mergeOnReplace: true,
+      onInvalidated: () => {
+        this.ranges.removeFirst(lrange);
+        this.resetIndex();
       }
-    }
-    this.backward.push(ranges);
-    this.log.trace('Pushing', ranges);
+    });
+    lrange.register();
+    this.ranges.push(lrange);
+    if (this.ranges.length > HISTORY_SIZE)
+      this.ranges.shift();
+    this.resetIndex();
+    this.log.trace('Pushing', lrange);
   }
 
-  goBackward(selection: Selection[]): NumRange[] {
-    if (this.backward.isEmpty)
+  currentSelection(): Selection|undefined {
+    if (this.index >= this.ranges.length)
+      return undefined;
+    return this.ranges[this.index].range.asSelection();
+  }
+
+  resetIndex() {
+    this.index = this.ranges.length;
+    this.savedSelection = undefined;
+  }
+
+  goBackward(selection: Selection): Selection {
+    if (this.index === 0)
       throw new CheckError('No backward  history');
-    const ranges = this.backward.pop()!;
-    const selectionRanges = rangesToOffset(this.document, selection);
-    selectionRanges.sort(NumRange.prototype.compareTo);
-    if (this.forward.isEmpty)
-      this.savedSelection = selectionRanges;
-    this.forward.push(ranges);
-    this.log.debug(
-        `Going backward (${this.backward.length} more backward items, ${
-            this.forward.length} forward items)`);
-    return ranges;
+    if (this.index === this.ranges.length)
+      this.savedSelection = selection;
+    --this.index;
+    this.log.debugStr(
+        'Going backward, ({} more backward items, {} forward items)',
+        this.index, this.ranges.length - this.index);
+    return this.currentSelection()!;
   }
 
-  goForward(): NumRange[] {
-    if (this.forward.isEmpty)
-      throw new CheckError('No more forward history');
-    this.backward.push(this.forward.pop()!);
-    this.log.debug(`Going forward (${this.backward.length} backward items, ${
-        this.forward.length} forward items)`);
-    if (this.forward.isEmpty)
-      return this.savedSelection!;
-    return this.forward.top!;
+  goForward(): Selection {
+    if (this.index === this.ranges.length)
+        throw new CheckError('No more forward history');
+    ++this.index;
+    if (this.index === this.ranges.length) {
+      const selection = this.savedSelection!;
+      this.savedSelection = undefined;
+      return selection;
+    }
+    this.log.debugStr(
+      'Going forward, ({} more backward items, {} forward items)',
+      this.index, this.ranges.length - this.index);
+    return this.currentSelection()!;
   }
 
   private log: Logger;
@@ -79,91 +103,78 @@ class DocumentHistory {
 const history = new DefaultMap<TextDocument, DocumentHistory>(
     (document) => new DocumentHistory(document));
 
-function textChangeToRanges(changes: readonly TextDocumentContentChangeEvent[]):
-    NumRange[] {
-  const ranges: NumRange[] = [];
-  let delta = 0;
-  for (const change of changes.reverseIter()) {
-    if (change.text !== "")
-      ranges.push(
-          NumRange.withLength(change.rangeOffset + delta, change.text.length));
-    delta += (change.text.length - change.rangeLength);
-  }
-  return ranges;
-}
-
-function adjustRangesAfterChange(
-    ranges: NumRange[],
-    changes: readonly TextDocumentContentChangeEvent[]): NumRange[] {
-  return filterNonNull(
-      ranges.map(range => adjustOffsetRangeAfterChange(range, changes)));
-}
-
-function tryMerge(x: NumRange[], y: NumRange[]): NumRange[]|undefined {
-  if (x.length !== y.length)
-    return;
-  const result: NumRange[] = [];
-  for (let i = 0; i < x.length; ++i) {
-    const merged = x[i].union(y[i]);
-    if (!merged)
-      return;
-    result.push(merged);
-  }
-  return result;
-}
-
 function onDidChangeTextDocument(event: TextDocumentChangeEvent) {
   const document = event.document;
+  const changes = event.contentChanges;
   if (document.fileName.startsWith('extension-output'))
     return;
-  if (event.contentChanges.isEmpty)
+  if (changes.isEmpty || changes.length > 1)
     return;
   const docHistory = history.get(document);
-  docHistory.processTextChange(event.contentChanges);
+  docHistory.processTextChange(changes[0]);
+  endHistoryNavigation();
 }
 
-function onDidChangeTextEditorSelection(_: TextEditorSelectionChangeEvent) {}
-
-function selectRanges(editor: TextEditor, ranges: Range[]) {
-  const selections: Selection[] = [];
-  if (!ranges.length)
+function onDidChangeTextEditorSelection(event: TextEditorSelectionChangeEvent) {
+  const document = event.textEditor.document;
+  if (document.fileName.startsWith('extension-output'))
     return;
-  for (const range of ranges)
-    selections.push(range.asSelection());
-  editor.selections = selections;
-  editor.revealRange(new Range(ranges[0].start, ranges.top!.end));
+  if (!history.has(document))
+    return;
+  const docHistory = history.get(document);
+  const historySelection = docHistory.currentSelection();
+  if (historySelection && event.selections.length === 1 &&
+      event.selections[0].isEqual(historySelection))
+    return;
+  endHistoryNavigation();
 }
 
-function rangesToOffset(document: TextDocument, ranges: Range[]): NumRange[] {
-  return ranges.map(range => rangeToOffset(document, range));
+function endHistoryNavigation() {
+  if (lastDocHistory)
+    lastDocHistory.resetIndex();
+  lastDocHistory = undefined;
+  status.hide();
 }
 
-function offsetToRanges(document: TextDocument, ranges: NumRange[]): Range[] {
-  return ranges.map(range => offsetToRange(document, range));
+function startHistoryNavigation(docHistory: DocumentHistory) {
+  lastDocHistory = docHistory;
+  status.text =
+      formatString(`edit ${docHistory.current} / ${docHistory.length}`);
+  status.show();
+}
+
+function onDidChangeActiveTextEditor(_: TextEditor|undefined) {
+  endHistoryNavigation();
 }
 
 function goBackward() {
   const editor = getActiveTextEditor();
   const document = editor.document;
   const docHistory = history.get(document);
-  const offsetRanges  = docHistory.goBackward(editor.selections);
-  selectRanges(editor, offsetToRanges(document, offsetRanges));
+  editor.selection = docHistory.goBackward(editor.selection);
+  editor.revealRange(editor.selection);
+  startHistoryNavigation(docHistory);
 }
 
 function goForward() {
   const editor = getActiveTextEditor();
   const document = editor.document;
   const docHistory = history.get(document);
-  const offsetRanges = docHistory.goForward();
-  selectRanges(editor, offsetToRanges(document, offsetRanges));
+  editor.selection = docHistory.goForward();
+  editor.revealRange(editor.selection);
+  startHistoryNavigation(docHistory);
 }
 
 function activate(context: ExtensionContext) {
+  status = window.createStatusBarItem(StatusBarAlignment.Right);
+  status.color = 'yellow';
   context.subscriptions.push(
+      status,
       listenWrapped(workspace.onDidChangeTextDocument, onDidChangeTextDocument),
       listenWrapped(
           window.onDidChangeTextEditorSelection,
           onDidChangeTextEditorSelection),
+      listenWrapped(window.onDidChangeActiveTextEditor, onDidChangeActiveTextEditor),
       registerCommandWrapped('qcfg.edit.previous', goBackward),
       registerCommandWrapped('qcfg.edit.next', goForward));
 }
