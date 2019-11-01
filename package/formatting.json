@@ -2,14 +2,23 @@
     "contributes": {
         "commands": [
             {
-            "command": "qcfg.formatSelectedFilesInExplorer",
-            "title": "Format selected files"
+                "command": "qcfg.formatSelectedFilesInExplorer",
+                "title": "Format selected files"
+            },
+            {
+                "command": "qcfg.formatSelectedFilesInSCM",
+                "title": "Format selected files"
             }
         ],
         "menus": {
             "explorer/context": [
                 {
                     "command": "qcfg.formatSelectedFilesInExplorer"
+                }
+            ],
+            "scm/resourceState/context": [
+                {
+                    "command": "qcfg.formatSelectedFilesInSCM"
                 }
             ]
         }
