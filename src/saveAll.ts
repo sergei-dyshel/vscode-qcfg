@@ -17,28 +17,29 @@ export const onEvent: vscode.Event<DocumentsInFolder> = emmiter.event;
 
 function emit() {
   savedFiles.forEach((documents, folder, _map) => {
-    const docsInFolder: DocumentsInFolder = {folder, documents};
+    const docsInFolder: DocumentsInFolder = { folder, documents };
     emmiter.fire(docsInFolder);
   });
   savedFiles.clear();
 }
 
 function onDidSaveTextDocument(document: vscode.TextDocument) {
-  const {workspaceFolder: wsFolder} =
-      fileUtils.getDocumentRootThrowing(document.fileName);
+  const { workspaceFolder: wsFolder } = fileUtils.getDocumentRootThrowing(
+    document.fileName
+  );
   const docPath = vscode.workspace.asRelativePath(document.fileName);
   log.debug('onDidSaveTextDocument:', docPath);
 
   if (savedFiles.has(wsFolder))
     log.assertNonNull(savedFiles.get(wsFolder)).push(document);
-  else
-    savedFiles.set(wsFolder, [document]);
+  else savedFiles.set(wsFolder, [document]);
   setTimeout(emit, 200);
 }
 
 function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
-      vscode.workspace.onDidSaveTextDocument(onDidSaveTextDocument));
+    vscode.workspace.onDidSaveTextDocument(onDidSaveTextDocument)
+  );
 }
 
 Modules.register(activate);

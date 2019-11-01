@@ -12,7 +12,7 @@ export enum EndAction {
   HIDE = 'hide',
   DISPOSE = 'dispose',
   SHOW = 'show',
-  NOTIFY = 'notify',
+  NOTIFY = 'notify'
 }
 
 export enum Flag {
@@ -30,16 +30,16 @@ export enum Flag {
   // Search specific flags
   REGEX = 'regex',
   WORD = 'word',
-  CASE = 'case',
+  CASE = 'case'
 }
 
 export enum TaskType {
   PROCESS = 'process',
   TERMINAL = 'terminal',
-  SEARCH = 'search',
+  SEARCH = 'search'
 }
 
-export type BaseProcessTaskFlag = Flag.BUILD|Flag.FOLDER|Flag.HIDDEN;
+export type BaseProcessTaskFlag = Flag.BUILD | Flag.FOLDER | Flag.HIDDEN;
 
 interface When {
   /** File exists of given glob pattern */
@@ -90,10 +90,15 @@ export interface TerminalTaskParams extends BaseProcessTaskParams {
   /**
    * @default []
    */
-  problemMatchers?: string|string[];
+  problemMatchers?: string | string[];
 
-  flags?: Array<BaseProcessTaskFlag|Flag.CLEAR|Flag.DEDICATED_PANEL|
-                Flag.REINDEX|Flag.AUTO_RESTART>;
+  flags?: Array<
+    | BaseProcessTaskFlag
+    | Flag.CLEAR
+    | Flag.DEDICATED_PANEL
+    | Flag.REINDEX
+    | Flag.AUTO_RESTART
+  >;
 }
 
 export enum LocationFormat {
@@ -118,12 +123,11 @@ export interface ProcessTaskParams extends BaseProcessTaskParams {
 export interface SearchTaskParams extends BaseTaskParams {
   type: TaskType.SEARCH;
   query: string;
-  flags?: Array<Flag.HIDDEN|Flag.REGEX|Flag.WORD|Flag.CASE>;
+  flags?: Array<Flag.HIDDEN | Flag.REGEX | Flag.WORD | Flag.CASE>;
 }
 
-export type Params = TerminalTaskParams|ProcessTaskParams|SearchTaskParams;
-
+export type Params = TerminalTaskParams | ProcessTaskParams | SearchTaskParams;
 
 export interface ConfParamsSet {
-  [name: string]: Params|string;
+  [name: string]: Params | string;
 }

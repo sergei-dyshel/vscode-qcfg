@@ -5,9 +5,12 @@ import { ExtensionContext } from 'vscode';
 import * as nodejs from './nodejs';
 
 export namespace Modules {
-  export function register(activate: ActivationFunc, deactivate?: ActivationFunc) {
+  export function register(
+    activate: ActivationFunc,
+    deactivate?: ActivationFunc
+  ) {
     const name = nodejs.path.parse(getCallsite(2).fileName).name;
-    modules.push({name, activate, deactivate});
+    modules.push({ name, activate, deactivate });
   }
 
   export function activateAll(context: ExtensionContext) {
@@ -18,8 +21,7 @@ export namespace Modules {
 
   export function deactivateAll(context: ExtensionContext) {
     for (const module of modules.reverseIter()) {
-      if (module.deactivate)
-          module.deactivate(context);
+      if (module.deactivate) module.deactivate(context);
     }
   }
 

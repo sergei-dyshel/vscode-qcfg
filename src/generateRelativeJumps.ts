@@ -1,15 +1,18 @@
 'use strict';
 
-import { KeyBinding, PackageJson, Key } from "./packageJson";
+import { KeyBinding, PackageJson, Key } from './packageJson';
 
 const START_LINE = 5;
 const END_LINE = START_LINE * 10;
 
 const keybindings: KeyBinding[] = [];
 
-function createKey(num: number, mod: 'ctrl'|'alt', macMod: 'cmd'|'alt'): Key[] {
-  if (num < 10)
-    return [{key: `${mod}+${num}`, mac: `${macMod}+${num}`}];
+function createKey(
+  num: number,
+  mod: 'ctrl' | 'alt',
+  macMod: 'cmd' | 'alt'
+): Key[] {
+  if (num < 10) return [{ key: `${mod}+${num}`, mac: `${macMod}+${num}` }];
   else {
     const digit1 = Math.floor(num / 10);
     const digit2 = num % 10;
@@ -18,7 +21,10 @@ function createKey(num: number, mod: 'ctrl'|'alt', macMod: 'cmd'|'alt'): Key[] {
         key: `${mod}+${digit1} ${mod}+${digit2}`,
         mac: `${macMod}+${digit1} ${macMod}+${digit2}`
       },
-      {key: `${mod}+${digit1} ${digit2}`, mac: `${macMod}+${digit1} ${digit2}`}
+      {
+        key: `${mod}+${digit1} ${digit2}`,
+        mac: `${macMod}+${digit1} ${digit2}`
+      }
     ];
   }
 }
@@ -39,7 +45,7 @@ for (let i = START_LINE; i < END_LINE; ++i) {
 }
 
 const json: PackageJson = {
-  contributes: {keybindings}
+  contributes: { keybindings }
 };
 
 process.stdout.write(JSON.stringify(json, undefined, 2));

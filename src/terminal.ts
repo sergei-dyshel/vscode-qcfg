@@ -3,30 +3,34 @@
 import * as vscode from 'vscode';
 import { log } from './logging';
 import * as remoteControl from './remoteControl';
-import {parseNumber} from './stringUtils';
+import { parseNumber } from './stringUtils';
 
 let nextId = 0;
 
 interface TerminalProcessOptions {
   cwd?: string;
-  env?: {[name: string]: string|null};
+  env?: { [name: string]: string | null };
 }
 
 export class TerminalProcess {
   constructor(
-      name: string, command: string|string[],
-      readonly options?: TerminalProcessOptions) {
+    name: string,
+    command: string | string[],
+    readonly options?: TerminalProcessOptions
+  ) {
     this.genId = nextId;
     nextId += 1;
-    const fullCmd = (typeof (command) === 'string') ?
-        ['/bin/bash', '-c', command] :
-        command;
-    const shellArgs =
-        [remoteControl.port.toString(), this.genId.toString(), ...fullCmd];
+    const fullCmd =
+      typeof command === 'string' ? ['/bin/bash', '-c', command] : command;
+    const shellArgs = [
+      remoteControl.port.toString(),
+      this.genId.toString(),
+      ...fullCmd
+    ];
     const opts: vscode.TerminalOptions = {
       name,
-      env: (options ? options.env : undefined),
-      cwd: (options ? options.cwd : undefined),
+      env: options ? options.env : undefined,
+      cwd: options ? options.cwd : undefined,
       shellPath: '/home/sergei/qyron-config/scripts/vscode-run-in-terminal.sh',
       shellArgs
     };
@@ -35,12 +39,12 @@ export class TerminalProcess {
   }
 
   wait(): Promise<number> {
-    if (this.waitingContext)
-      return this.waitingContext.promise;
+    if (this.waitingContext) return this.waitingContext.promise;
     const promise = new Promise<number>(
-        (resolve: (exitCode: number) => void, reject: (err: any) => void) => {
-          this.waitingContext = {promise, resolve, reject};
-        });
+      (resolve: (exitCode: number) => void, reject: (err: any) => void) => {
+        this.waitingContext = { promise, resolve, reject };
+      }
+    );
     return promise;
   }
 
@@ -53,8 +57,7 @@ export class TerminalProcess {
       const process = TerminalProcess.activeProcesses[i];
       if (process.genId === genId) {
         process.exitCode = exitCode;
-        if (process.waitingContext)
-          process.waitingContext.resolve(exitCode);
+        if (process.waitingContext) process.waitingContext.resolve(exitCode);
         TerminalProcess.activeProcesses.splice(i, 1);
         return;
       }
@@ -69,13 +72,10 @@ export class TerminalProcess {
   private genId: number;
 
   private waitingContext?: {
-    promise: Promise<number>,
-    resolve: (exitCode: number) => void,
-    reject: (err: any) => void
+    promise: Promise<number>;
+    resolve: (exitCode: number) => void;
+    reject: (err: any) => void;
   };
 }
 
-export function processExit(_args: string[])
-{
-
-}
+export function processExit(_args: string[]) {}

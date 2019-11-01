@@ -14,16 +14,14 @@ export function getCallsite(frame: number) {
   // strip everything before last '.' (happens for callbacks)
   let funcName = site.getFunctionName() || '';
   const m = funcName.match(/\.?([^.]+)$/);
-  if (m)
-    funcName = m[1];
+  if (m) funcName = m[1];
   const tsPos = sourceMapSupport.mapSourcePosition(jsPos);
   // show up to 2 elements from path (do not include 'src')
-  const {base, dir} = path.parse(tsPos.source);
+  const { base, dir } = path.parse(tsPos.source);
   let filename = base;
   if (dir) {
     const dirbase = path.basename(dir);
-    if (dirbase !== 'src')
-      filename = path.join(dirbase, base);
+    if (dirbase !== 'src') filename = path.join(dirbase, base);
   }
   return {
     location: `${filename}:${tsPos.line}:${tsPos.column}`,

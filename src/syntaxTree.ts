@@ -3,7 +3,17 @@
 import { TextBuffer } from 'superstring';
 import * as Parser from 'tree-sitter';
 import { SyntaxNode, Tree as SyntaxTree } from 'tree-sitter';
-import { ExtensionContext, Position, Range, TextDocument, TextDocumentChangeEvent, workspace, window, EventEmitter, Event } from 'vscode';
+import {
+  ExtensionContext,
+  Position,
+  Range,
+  TextDocument,
+  TextDocumentChangeEvent,
+  workspace,
+  window,
+  EventEmitter,
+  Event
+} from 'vscode';
 import { NumRange } from './documentUtils';
 import { listenWrapped } from './exception';
 import { Modules } from './module';
@@ -23,20 +33,18 @@ interface LanguageConfig {
   parser: any;
 }
 
-const languageConfig: {[language: string]: LanguageConfig} = {
-  python: {parser: require('tree-sitter-python')},
-  c: {parser: require('tree-sitter-c')},
-  cpp: {parser: require('tree-sitter-cpp')},
-  typescript: {parser: require('tree-sitter-typescript')},
-  shellscript: {parser: require('tree-sitter-bash')},
-  go: {parser: require('tree-sitter-go')},
-  lua: {parser: require('tree-sitter-lua')},
+const languageConfig: { [language: string]: LanguageConfig } = {
+  python: { parser: require('tree-sitter-python') },
+  c: { parser: require('tree-sitter-c') },
+  cpp: { parser: require('tree-sitter-cpp') },
+  typescript: { parser: require('tree-sitter-typescript') },
+  shellscript: { parser: require('tree-sitter-bash') },
+  go: { parser: require('tree-sitter-go') },
+  lua: { parser: require('tree-sitter-lua') }
 };
 
 declare module 'tree-sitter' {
-  class SyntaxNode {
-
-  }
+  class SyntaxNode {}
   interface SyntaxNode {
     readonly nodeType: SyntaxNode.Type;
     readonly offsetRange: NumRange;
@@ -45,12 +53,26 @@ declare module 'tree-sitter' {
     readonly end: Position;
   }
   namespace SyntaxNode {
-    export type Type = 'identifier'|'declaration'|'function_definition'|
-        'decorated_definition'|'class_definition'|'preproc_include'|
-        'system_lib_string'|'string_literal'|'scoped_identifier'|
-        'namespace_identifier'|'function_declarator'|'number_literal'|
-        'type_qualifier'|'primitive_type'|'type_identifier'|'template_type'|
-        'scoped_type_identifier'|'type_descriptor'|'storage_class_specifier';
+    export type Type =
+      | 'identifier'
+      | 'declaration'
+      | 'function_definition'
+      | 'decorated_definition'
+      | 'class_definition'
+      | 'preproc_include'
+      | 'system_lib_string'
+      | 'string_literal'
+      | 'scoped_identifier'
+      | 'namespace_identifier'
+      | 'function_declarator'
+      | 'number_literal'
+      | 'type_qualifier'
+      | 'primitive_type'
+      | 'type_identifier'
+      | 'template_type'
+      | 'scoped_type_identifier'
+      | 'type_descriptor'
+      | 'storage_class_specifier';
   }
 }
 
@@ -103,8 +125,7 @@ Object.defineProperty(SyntaxNode.prototype, 'offsetRange', {
 Object.defineProperty(SyntaxNode.prototype, 'range', {
   get(): Range {
     const this_ = this as SyntaxNode;
-    if (!this.range_)
-      this.range_ = new Range(this_.start, this_.end);
+    if (!this.range_) this.range_ = new Range(this_.start, this_.end);
     return this.range_;
   }
 });
@@ -113,8 +134,10 @@ Object.defineProperty(SyntaxNode.prototype, 'start', {
   get(): Position {
     const this_ = this as SyntaxNode;
     if (!this.start_)
-      this.start_ =
-          new Position(this_.startPosition.row, this_.startPosition.column);
+      this.start_ = new Position(
+        this_.startPosition.row,
+        this_.startPosition.column
+      );
     return this.start_;
   }
 });
@@ -135,8 +158,7 @@ namespace Parsers {
     if (!(language in languageConfig))
       throw new Error(`Syntax tree not available for language "${language}"`);
     const parsers = parserPool.get(language);
-    if (!parsers.isEmpty)
-      return parsers.pop()!;
+    if (!parsers.isEmpty) return parsers.pop()!;
     const parser = new Parser.default();
     parser.setLanguage(languageConfig[language].parser);
     return parser;
@@ -149,8 +171,9 @@ namespace Parsers {
 
 class DocumentContext {
   constructor(private document: TextDocument) {
-    this.log =
-        new Logger({instance: nodejs.path.parse(document.fileName).name});
+    this.log = new Logger({
+      instance: nodejs.path.parse(document.fileName).name
+    });
   }
   private tree?: SyntaxTree;
   private promiseContext?: PromiseContext<SyntaxTree>;
@@ -160,10 +183,9 @@ class DocumentContext {
   private isUpdating = false;
 
   async update() {
-    if (this.isUpdating)
-      return;
+    if (this.isUpdating) return;
     const parser = Parsers.get(this.document.languageId);
-    const parserAsync = parser as any as ParserWithAsync;
+    const parserAsync = (parser as any) as ParserWithAsync;
     const buf = new TextBuffer(this.document.getText());
     this.isUpdating = true;
     while (true) {
@@ -171,24 +193,23 @@ class DocumentContext {
       try {
         // TODO: make using previous tree configurable (may crash)
         const start = Date.now();
-        this.tree = await parserAsync.parseTextBuffer(
-            buf, this.tree, {syncOperationCount: 1000});
+        this.tree = await parserAsync.parseTextBuffer(buf, this.tree, {
+          syncOperationCount: 1000
+        });
         const end = Date.now();
         this.log.debug(`Parsing took ${(end - start) / 1000} seconds`);
         if (generation === this.generation_) {
-          emmiter.fire({document: this.document, tree: this.tree});
+          emmiter.fire({ document: this.document, tree: this.tree });
           if (this.promiseContext) {
             this.promiseContext.resolve(this.tree);
             this.promiseContext = undefined;
           }
           break;
         }
-      }
-      catch (err) {
+      } catch (err) {
         this.log.error(err);
         this.tree = undefined;
-        if (this.promiseContext)
-          this.promiseContext.reject(err);
+        if (this.promiseContext) this.promiseContext.reject(err);
         this.promiseContext = undefined;
         break;
       }
@@ -207,12 +228,10 @@ class DocumentContext {
 
   async get(): Promise<SyntaxTree> {
     if (this.timer.isSet || this.isUpdating) {
-      if (!this.promiseContext)
-        this.promiseContext = new PromiseContext();
+      if (!this.promiseContext) this.promiseContext = new PromiseContext();
       return this.promiseContext.promise;
     }
-    if (this.tree)
-      return this.tree;
+    if (this.tree) return this.tree;
     this.promiseContext = new PromiseContext();
     this.update();
     return this.promiseContext.promise;
@@ -220,36 +239,45 @@ class DocumentContext {
 }
 
 const trees = new DefaultMap<TextDocument, DocumentContext>(
-    (document) => new DocumentContext(document));
+  document => new DocumentContext(document)
+);
 
 function checkDocumentSupported(document: TextDocument) {
   if (!SyntaxTrees.isDocumentSupported(document))
     throw new Error(
-        `Syntax tree not available for language "${document.languageId}"`);
+      `Syntax tree not available for language "${document.languageId}"`
+    );
 }
 
 function onDidChangeTextDocument(event: TextDocumentChangeEvent) {
   const document = event.document;
-  if ((window.activeTextEditor &&
-       window.activeTextEditor.document === document &&
-       SyntaxTrees.supportedLanguages.includes(document.languageId)) ||
-      trees.has(document))
+  if (
+    (window.activeTextEditor &&
+      window.activeTextEditor.document === document &&
+      SyntaxTrees.supportedLanguages.includes(document.languageId)) ||
+    trees.has(document)
+  )
     trees.get(document).update();
 }
 
 // parseTextBuffer is missing in tree-sitter definitions
 interface ParserWithAsync {
-  parseTextBuffer(buf: TextBuffer, oldTree?: SyntaxTree, config?: {
-    syncOperationCount: number
-  }): Promise<SyntaxTree>;
+  parseTextBuffer(
+    buf: TextBuffer,
+    oldTree?: SyntaxTree,
+    config?: {
+      syncOperationCount: number;
+    }
+  ): Promise<SyntaxTree>;
 }
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
-      listenWrapped(
-          workspace.onDidCloseTextDocument, document => trees.delete(document)),
-      listenWrapped(
-          workspace.onDidChangeTextDocument, onDidChangeTextDocument));
+    listenWrapped(workspace.onDidCloseTextDocument, document =>
+      trees.delete(document)
+    ),
+    listenWrapped(workspace.onDidChangeTextDocument, onDidChangeTextDocument)
+  );
 }
 
 Modules.register(activate);

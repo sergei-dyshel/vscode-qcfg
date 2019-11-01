@@ -5,7 +5,7 @@ import * as language from './language';
 import * as saveAll from './saveAll';
 import { log } from './logging';
 import * as subprocess from './subprocess';
-import {setTimeoutPromise} from './nodeUtils';
+import { setTimeoutPromise } from './nodeUtils';
 import { registerCommandWrapped } from './exception';
 import { Modules } from './module';
 
@@ -45,35 +45,36 @@ function toggle() {
 }
 
 async function onSaveAll(docs: saveAll.DocumentsInFolder) {
-  if (state === State.Off)
-    return;
+  if (state === State.Off) return;
 
-  const command =
-      vscode.workspace.getConfiguration('qcfg').get<string>('autoSync.command');
+  const command = vscode.workspace
+    .getConfiguration('qcfg')
+    .get<string>('autoSync.command');
 
-  if (!command)
-    return;
+  if (!command) return;
 
-  const docPaths = docs.documents.map(
-      (doc) => vscode.workspace.asRelativePath(doc.fileName, false));
+  const docPaths = docs.documents.map(doc =>
+    vscode.workspace.asRelativePath(doc.fileName, false)
+  );
   log.info('Auto syncing ', docPaths, 'in', docs.folder.name);
 
   const paths = docPaths.join(' ');
-  const cmd = command.includes('{}') ? command.replace('{}', paths) :
-                                       command + ' ' + paths;
+  const cmd = command.includes('{}')
+    ? command.replace('{}', paths)
+    : command + ' ' + paths;
   log.debug('Running ', cmd);
   try {
-    await subprocess.executeSubprocess(cmd, {cwd: docs.folder.uri.fsPath});
+    await subprocess.executeSubprocess(cmd, { cwd: docs.folder.uri.fsPath });
     if (state === State.Error) {
       state = State.On;
       setStatusBar();
     }
-  }
-  catch (err) {
+  } catch (err) {
     const error = err as subprocess.ExecResult;
     if (state !== State.Error) {
-      vscode.window.showErrorMessage(`autoSync failed with ${error.code}, ${
-          error.signal} stdout: ${error.stdout} stderr: ${error.stderr}`);
+      vscode.window.showErrorMessage(
+        `autoSync failed with ${error.code}, ${error.signal} stdout: ${error.stdout} stderr: ${error.stderr}`
+      );
       state = State.Error;
       setStatusBar();
     }
@@ -81,21 +82,22 @@ async function onSaveAll(docs: saveAll.DocumentsInFolder) {
   }
   log.debug('Waiting before sending didSave to clients');
   await setTimeoutPromise(1000);
-  for (const doc of docs.documents)
-      language.sendDidSave(doc);
+  for (const doc of docs.documents) language.sendDidSave(doc);
 }
 
 function activate(context: vscode.ExtensionContext) {
   status = vscode.window.createStatusBarItem();
   status.command = 'qcfg.autoSync.toggle';
 
-  state =
-      vscode.workspace.getConfiguration('qcfg').get('autoSync.enabled', false) ?
-      State.On :
-      State.Off;
+  state = vscode.workspace
+    .getConfiguration('qcfg')
+    .get('autoSync.enabled', false)
+    ? State.On
+    : State.Off;
   setStatusBar();
   context.subscriptions.push(
-      registerCommandWrapped('qcfg.autoSync.toggle', toggle));
+    registerCommandWrapped('qcfg.autoSync.toggle', toggle)
+  );
   context.subscriptions.push(saveAll.onEvent(onSaveAll));
 }
 

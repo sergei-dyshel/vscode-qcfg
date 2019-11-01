@@ -1,6 +1,20 @@
 'use strict';
 
-import { TreeItem, TreeItem2, ProviderResult, TreeItemCollapsibleState, ExtensionContext, TreeViewOptions, window, TreeViewExpansionEvent, TreeViewSelectionChangeEvent, TreeViewVisibilityChangeEvent, TreeItemLabel, TreeDataProvider, TreeView } from 'vscode';
+import {
+  TreeItem,
+  TreeItem2,
+  ProviderResult,
+  TreeItemCollapsibleState,
+  ExtensionContext,
+  TreeViewOptions,
+  window,
+  TreeViewExpansionEvent,
+  TreeViewSelectionChangeEvent,
+  TreeViewVisibilityChangeEvent,
+  TreeItemLabel,
+  TreeDataProvider,
+  TreeView
+} from 'vscode';
 import { callIfNonNull } from './tsUtils';
 import { log } from './logging';
 import { registerCommandWrapped, listenWrapped } from './exception';
@@ -12,36 +26,40 @@ export const TREE_ITEM_REMOVABLE_CONTEXT = 'removable';
 export function activate(context: ExtensionContext) {
   const opts: TreeViewOptions<TreeNode> = {
     showCollapseAll: true,
-    'treeDataProvider': treeDataProvider
+    treeDataProvider: treeDataProvider
   };
   treeView = window.createTreeView('qcfgTreeView', opts);
   context.subscriptions.push(
-      treeView, registerCommandWrapped('qcfg.treeView.removeNode', removeNode),
-      registerCommandWrapped('qcfg.treeView.expandNode', expandNode),
-      listenWrapped(
-          treeView.onDidExpandElement,
-          (event: TreeViewExpansionEvent<TreeNode>) => {
-            callIfNonNull(event.element.onDidExpand, event.element);
-          }),
-      listenWrapped(
-          treeView.onDidCollapseElement,
-          (event: TreeViewExpansionEvent<TreeNode>) => {
-            callIfNonNull(event.element.onDidCollapse, event.element);
-          }),
-      listenWrapped(
-          treeView.onDidChangeSelection,
-          (event: TreeViewSelectionChangeEvent<TreeNode>) => {
-            if (currentProvider)
-              callIfNonNull(
-                  currentProvider.onDidChangeSelection, event.selection);
-          }),
-      listenWrapped(
-          treeView.onDidChangeVisibility,
-          (event: TreeViewVisibilityChangeEvent) => {
-            if (currentProvider)
-              callIfNonNull(
-                  currentProvider.onDidChangeVisibility, event.visible);
-          }));
+    treeView,
+    registerCommandWrapped('qcfg.treeView.removeNode', removeNode),
+    registerCommandWrapped('qcfg.treeView.expandNode', expandNode),
+    listenWrapped(
+      treeView.onDidExpandElement,
+      (event: TreeViewExpansionEvent<TreeNode>) => {
+        callIfNonNull(event.element.onDidExpand, event.element);
+      }
+    ),
+    listenWrapped(
+      treeView.onDidCollapseElement,
+      (event: TreeViewExpansionEvent<TreeNode>) => {
+        callIfNonNull(event.element.onDidCollapse, event.element);
+      }
+    ),
+    listenWrapped(
+      treeView.onDidChangeSelection,
+      (event: TreeViewSelectionChangeEvent<TreeNode>) => {
+        if (currentProvider)
+          callIfNonNull(currentProvider.onDidChangeSelection, event.selection);
+      }
+    ),
+    listenWrapped(
+      treeView.onDidChangeVisibility,
+      (event: TreeViewVisibilityChangeEvent) => {
+        if (currentProvider)
+          callIfNonNull(currentProvider.onDidChangeVisibility, event.visible);
+      }
+    )
+  );
 }
 
 export interface TreeNode {
@@ -63,14 +81,12 @@ export interface TreeProvider {
 export namespace QcfgTreeView {
   export function setProvider(provider: TreeProvider) {
     // TODO: run onUnset method of current provider, check if this is the same provider
-    if (currentProvider !== provider)
-      currentProvider = provider;
+    if (currentProvider !== provider) currentProvider = provider;
     refresh();
   }
 
   export function refresh() {
-    if (!currentProvider)
-      return;
+    if (!currentProvider) return;
     onChangeEmitter.fire();
     if (currentProvider.getMessage)
       treeView.message = currentProvider.getMessage();
@@ -89,8 +105,7 @@ export namespace QcfgTreeView {
   export async function revealTree(node?: TreeNode, options?: RevealOptions) {
     if (!node) {
       const nodes = await log.assertNonNull(currentProvider).getTrees();
-      if (!nodes || nodes.length === 0)
-        return;
+      if (!nodes || nodes.length === 0) return;
       node = nodes[0];
     }
     return treeView.reveal(node, options);
@@ -102,22 +117,25 @@ export namespace QcfgTreeView {
 }
 
 export class StaticTreeNode implements TreeNode {
-  constructor(label?: TreeItemLabel|string) {
+  constructor(label?: TreeItemLabel | string) {
     if (label) {
       if (typeof label === 'string') {
-        this.treeItem = new TreeItem2({label});
+        this.treeItem = new TreeItem2({ label });
       } else {
         this.treeItem = new TreeItem2(label);
       }
-    }
-    else {
-      this.treeItem = new TreeItem2({label: ''});
+    } else {
+      this.treeItem = new TreeItem2({ label: '' });
       this.treeItem.label = undefined;
     }
   }
 
-  get isRoot() { return this.parent === undefined; }
-  get isLeaf() { return this.children.length === 0; }
+  get isRoot() {
+    return this.parent === undefined;
+  }
+  get isLeaf() {
+    return this.children.length === 0;
+  }
 
   addChild(child: StaticTreeNode) {
     log.assert(child.isRoot);
@@ -128,23 +146,19 @@ export class StaticTreeNode implements TreeNode {
   }
 
   detachChildren(): StaticTreeNode[] {
-    for (const child of this.children)
-      child.parent_ = undefined;
+    for (const child of this.children) child.parent_ = undefined;
     const ret = this.children_;
     this.children_ = [];
     return ret;
   }
 
   addChildren(children: StaticTreeNode[]) {
-    for (const child of children)
-      this.addChild(child);
+    for (const child of children) this.addChild(child);
   }
 
   applyRecursively(func: (_: StaticTreeNode) => boolean) {
-    if (!func(this))
-      return;
-    for (const child of this.children_)
-      child.applyRecursively(func);
+    if (!func(this)) return;
+    for (const child of this.children_) child.applyRecursively(func);
   }
 
   sortChildren(cmpFunc?: StaticTreeNode.Compare) {
@@ -152,14 +166,12 @@ export class StaticTreeNode implements TreeNode {
   }
 
   sortChildrenRecursively(cmpFunc?: StaticTreeNode.Compare) {
-    for (const child of this.children)
-      child.sortChildrenRecursively(cmpFunc);
+    for (const child of this.children) child.sortChildrenRecursively(cmpFunc);
     this.sortChildren(cmpFunc);
   }
 
   remove() {
-    if (!this.parent)
-      throw new Error('Can not remove root node');
+    if (!this.parent) throw new Error('Can not remove root node');
     const parent = this.parent;
     this.parent_ = undefined;
     log.assert(parent.children_.removeFirst(this));
@@ -170,11 +182,11 @@ export class StaticTreeNode implements TreeNode {
   get children(): StaticTreeNode[] {
     return this.children_;
   }
-  get parent(): StaticTreeNode|undefined {
+  get parent(): StaticTreeNode | undefined {
     return this.parent_;
   }
   allowRemoval() {
-    this.treeItem.contextValue = TREE_ITEM_REMOVABLE_CONTEXT ;
+    this.treeItem.contextValue = TREE_ITEM_REMOVABLE_CONTEXT;
   }
   setExpanded() {
     this.treeItem.collapsibleState = TreeItemCollapsibleState.Expanded;
@@ -184,9 +196,15 @@ export class StaticTreeNode implements TreeNode {
   }
 
   // interface implementation
-  getTreeItem() { return this.treeItem; }
-  getChildren() { return this.children; }
-  getParent() { return this.parent; }
+  getTreeItem() {
+    return this.treeItem;
+  }
+  getChildren() {
+    return this.children;
+  }
+  getParent() {
+    return this.parent;
+  }
 
   protected children_: StaticTreeNode[] = [];
   private parent_?: StaticTreeNode;
@@ -196,22 +214,25 @@ export namespace StaticTreeNode {
   export type Compare = (a: StaticTreeNode, b: StaticTreeNode) => number;
 
   export function applyRecursively(
-      nodes: StaticTreeNode[], func: (_: StaticTreeNode) => boolean) {
-    for (const node of nodes)
-      node.applyRecursively(func);
+    nodes: StaticTreeNode[],
+    func: (_: StaticTreeNode) => boolean
+  ) {
+    for (const node of nodes) node.applyRecursively(func);
   }
 
   export function sortNodes(nodes: StaticTreeNode[], cmpFunc?: Compare) {
     nodes.sort(
-        (cmpFunc ||
+      cmpFunc ||
         ((a, b) =>
-              ((a.treeItem.label || '').localeCompare(b.treeItem.label || '')))));
+          (a.treeItem.label || '').localeCompare(b.treeItem.label || ''))
+    );
   }
 
-  export function sortNodesRecursively(nodes: StaticTreeNode[], cmpFunc?: Compare)
-  {
-    for (const node of nodes)
-      node.sortChildrenRecursively(cmpFunc);
+  export function sortNodesRecursively(
+    nodes: StaticTreeNode[],
+    cmpFunc?: Compare
+  ) {
+    for (const node of nodes) node.sortChildrenRecursively(cmpFunc);
     sortNodes(nodes, cmpFunc);
   }
 }
@@ -226,8 +247,7 @@ const treeDataProvider: TreeDataProvider<TreeNode> = {
     return node.getTreeItem();
   },
   getChildren(node?: TreeNode) {
-    if (node)
-      return node.getChildren();
+    if (node) return node.getChildren();
     if (currentProvider) {
       log.debug('Refreshing the tree');
       return currentProvider.getTrees();
@@ -244,13 +264,14 @@ function removeNode(...args: any[]) {
   const provider = log.assertNonNull(currentProvider);
   if (!provider.removeNode)
     throw new Error(
-        'TreeProvider with removable nodes must provide removeNode method');
+      'TreeProvider with removable nodes must provide removeNode method'
+    );
   provider.removeNode(node);
 }
 
 function expandNode(...args: any[]) {
   const node = log.assertNonNull(args[0]) as TreeNode;
-  treeView.reveal(node, {expand: 3});
+  treeView.reveal(node, { expand: 3 });
 }
 
 let treeView: TreeView<TreeNode>;

@@ -14,10 +14,11 @@ export class CheckError extends Error {
   }
 }
 
-export function wrapWithErrorHandler<T extends(...args: any[]) => any, R>(
-    func: T, handler: (error: any) => R): (...funcArgs: Parameters<T>) =>
-    ReturnType<T>| R {
-  return (...args: Parameters<T>): ReturnType<T>|R => {
+export function wrapWithErrorHandler<T extends (...args: any[]) => any, R>(
+  func: T,
+  handler: (error: any) => R
+): (...funcArgs: Parameters<T>) => ReturnType<T> | R {
+  return (...args: Parameters<T>): ReturnType<T> | R => {
     try {
       return func(...args);
     } catch (exc) {
@@ -26,11 +27,16 @@ export function wrapWithErrorHandler<T extends(...args: any[]) => any, R>(
   };
 }
 
-export function
-wrapWithErrorHandlerAsync<T extends(...args: any[]) => Promise<any>, R>(
-    func: T, handler: (error: any) => R): (...funcArgs: Parameters<T>) =>
-    Promise<PromiseType<ReturnType<T>>|R>| R {
-  return (...args: Parameters<T>): Promise<PromiseType<ReturnType<T>>| R>|R => {
+export function wrapWithErrorHandlerAsync<
+  T extends (...args: any[]) => Promise<any>,
+  R
+>(
+  func: T,
+  handler: (error: any) => R
+): (...funcArgs: Parameters<T>) => Promise<PromiseType<ReturnType<T>> | R> | R {
+  return (
+    ...args: Parameters<T>
+  ): Promise<PromiseType<ReturnType<T>> | R> | R => {
     try {
       return func(...args).catch(exc => handler(exc));
     } catch (exc) {
@@ -39,77 +45,87 @@ wrapWithErrorHandlerAsync<T extends(...args: any[]) => Promise<any>, R>(
   };
 }
 
-export function handleErrors<T extends(...args: any[]) => any>(func: T):
-    (...funcArgs: Parameters<T>) => ReturnType<T>| void {
+export function handleErrors<T extends (...args: any[]) => any>(
+  func: T
+): (...funcArgs: Parameters<T>) => ReturnType<T> | void {
   return wrapWithErrorHandler(func, stdErrorHandler);
 }
 
-export function handleErrorsAsync<T extends(...args: any[]) => Promise<any>>(
-    func: T): (...funcArgs: Parameters<T>) =>
-    Promise<PromiseType<ReturnType<T>>> {
+export function handleErrorsAsync<T extends (...args: any[]) => Promise<any>>(
+  func: T
+): (...funcArgs: Parameters<T>) => Promise<PromiseType<ReturnType<T>>> {
   return wrapWithErrorHandlerAsync(func, stdErrorHandler);
 }
 
-
 export function registerCommandWrapped(
-    command: string, callback: (...args: any[]) => any,
-    thisArg?: any): Disposable {
+  command: string,
+  callback: (...args: any[]) => any,
+  thisArg?: any
+): Disposable {
   return vscode.commands.registerCommand(
-      command,
-      wrapWithErrorHandler(
-          callback, error => handleErrorDuringCommand(command, error)),
-      thisArg);
+    command,
+    wrapWithErrorHandler(callback, error =>
+      handleErrorDuringCommand(command, error)
+    ),
+    thisArg
+  );
 }
 
 export function registerTextEditorCommandWrapped(
-    command: string,
-    callback: (
-        textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit,
-        ...args: any[]) => void,
-    thisArg?: any): Disposable {
+  command: string,
+  callback: (
+    textEditor: vscode.TextEditor,
+    edit: vscode.TextEditorEdit,
+    ...args: any[]
+  ) => void,
+  thisArg?: any
+): Disposable {
   return vscode.commands.registerTextEditorCommand(
-      command,
-      wrapWithErrorHandler(
-          callback, error => handleErrorDuringCommand(command, error)),
-      thisArg);
+    command,
+    wrapWithErrorHandler(callback, error =>
+      handleErrorDuringCommand(command, error)
+    ),
+    thisArg
+  );
 }
 
-
 export function listenWrapped<T>(
-    event: vscode.Event<T>, listener: (e: T) => any, thisArgs?: any,
-    disposables?: Disposable[]): Disposable {
+  event: vscode.Event<T>,
+  listener: (e: T) => any,
+  thisArgs?: any,
+  disposables?: Disposable[]
+): Disposable {
   return event(
-      wrapWithErrorHandler(listener, handleErrorDuringEvent), thisArgs,
-      disposables);
+    wrapWithErrorHandler(listener, handleErrorDuringEvent),
+    thisArgs,
+    disposables
+  );
 }
 
 // private
 
 function simplifyErrorStack(stack: string) {
   const idx = stack.search(/\n\s+at.*extensionHostProcess.js/);
-  if (idx !== -1)
-    stack = stack.substr(0, idx);
-  const extPath =
-      vscode.extensions.getExtension('QyRoN.vscode-qcfg')!.extensionPath;
+  if (idx !== -1) stack = stack.substr(0, idx);
+  const extPath = vscode.extensions.getExtension('QyRoN.vscode-qcfg')!
+    .extensionPath;
   return replaceAll(stack, extPath + '/', '');
 }
 
 function handleErrorDuringCommand(command: string, error: any) {
   try {
     stdErrorHandler(error, `Command "${command}": `);
-  } catch (_) {
-  }
+  } catch (_) {}
 }
 
 function stdErrorHandler(error: any, prefix = ''): never {
   if (error instanceof CheckError) {
     log.info(`${prefix}Check failed: ${error.message}`);
-    showStatusBarMessage(error.message, {color: 'red'});
+    showStatusBarMessage(error.message, { color: 'red' });
   } else if (error instanceof Error) {
     const stack = simplifyErrorStack(error.stack || '');
     log.error(`${prefix}${stack}`);
-  } else
-    log.error(`${prefix}${String(error)}`);
+  } else log.error(`${prefix}${String(error)}`);
   throw error;
 }
 

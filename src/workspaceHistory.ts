@@ -1,19 +1,26 @@
 'use strict';
 
-import { ExtensionContext, workspace, QuickPickItem, commands, Uri, FileType } from "vscode";
-import { Modules } from "./module";
-import { log } from "./logging";
+import {
+  ExtensionContext,
+  workspace,
+  QuickPickItem,
+  commands,
+  Uri,
+  FileType
+} from 'vscode';
+import { Modules } from './module';
+import { log } from './logging';
 import * as nodejs from './nodejs';
-import { selectFromList } from "./dialog";
-import { registerCommandWrapped } from "./exception";
-import { expandTemplate } from "./stringUtils";
-import { mapAsyncNoThrowAndZip } from "./async";
-import { readJSON } from "./fileUtils";
+import { selectFromList } from './dialog';
+import { registerCommandWrapped } from './exception';
+import { expandTemplate } from './stringUtils';
+import { mapAsyncNoThrowAndZip } from './async';
+import { readJSON } from './fileUtils';
 
 let extContext: ExtensionContext;
 const PERSISTENT_KEY = 'workspaceHistory';
 
-function getWorkspaceFile(): string|undefined {
+function getWorkspaceFile(): string | undefined {
   if (workspace.workspaceFile) {
     if (workspace.workspaceFile.scheme === 'untitled') {
       log.debug('Opened untitled project');
@@ -23,7 +30,10 @@ function getWorkspaceFile(): string|undefined {
     return workspace.workspaceFile.fsPath;
   }
   if (workspace.workspaceFolders) {
-    log.debug('Opened workspace folder', workspace.workspaceFolders[0].uri.fsPath);
+    log.debug(
+      'Opened workspace folder',
+      workspace.workspaceFolders[0].uri.fsPath
+    );
     return workspace.workspaceFolders[0].uri.fsPath;
   }
   return undefined;
@@ -32,20 +42,26 @@ function getWorkspaceFile(): string|undefined {
 function expandTitle(root: string, title: string): string {
   const rootBase = nodejs.path.basename(root, '.code-workspace');
   const rootDir1 = nodejs.path.basename(nodejs.path.dirname(root));
-  const rootDir2 =
-      nodejs.path.basename(nodejs.path.dirname(nodejs.path.dirname(root)));
+  const rootDir2 = nodejs.path.basename(
+    nodejs.path.dirname(nodejs.path.dirname(root))
+  );
   const rootDir3 = nodejs.path.basename(
-      nodejs.path.dirname(nodejs.path.dirname(nodejs.path.dirname(root))));
-  return expandTemplate(title, {rootBase, rootDir1, rootDir2, rootDir3}, true);
+    nodejs.path.dirname(nodejs.path.dirname(nodejs.path.dirname(root)))
+  );
+  return expandTemplate(
+    title,
+    { rootBase, rootDir1, rootDir2, rootDir3 },
+    true
+  );
 }
 
-async function getWorkspaceConfig(root: string): Promise<string>
-{
+async function getWorkspaceConfig(root: string): Promise<string> {
   const stat = await workspace.fs.stat(Uri.file(root));
   if (stat.type & FileType.Directory) {
     try {
-      const settings =
-          await readJSON(nodejs.path.join(root, '.vscode', 'settings.json'));
+      const settings = await readJSON(
+        nodejs.path.join(root, '.vscode', 'settings.json')
+      );
       return expandTitle(root, settings['window.title']);
     } catch (_) {
       return nodejs.path.basename(root);
@@ -63,36 +79,38 @@ async function getWorkspaceConfig(root: string): Promise<string>
 
 function toQuickPickItem(rootAndTitle: [string, string]): QuickPickItem {
   const [root, title] = rootAndTitle;
-  return {label: title, description: root};
+  return { label: title, description: root };
 }
 
 async function openFromHistory(newWindow: boolean) {
   const history: string[] = extContext.globalState.get(PERSISTENT_KEY, []);
   const current = getWorkspaceFile();
   const histWithTitles = await mapAsyncNoThrowAndZip(
-      history.filter(file => file !== current), getWorkspaceConfig);
+    history.filter(file => file !== current),
+    getWorkspaceConfig
+  );
   const rootAndTitle = await selectFromList(histWithTitles, toQuickPickItem, {
     matchOnDescription: true,
     placeHolder: newWindow ? 'Open in NEW window' : 'Open in SAME window'
   });
-  if (!rootAndTitle)
-    return;
+  if (!rootAndTitle) return;
   const [root] = rootAndTitle;
-  await commands.executeCommand(
-      'vscode.openFolder', Uri.file(root), newWindow);
+  await commands.executeCommand('vscode.openFolder', Uri.file(root), newWindow);
 }
 
 async function activate(context: ExtensionContext) {
   context.subscriptions.push(
-      registerCommandWrapped(
-          'qcfg.openRecent.sameWindow', () => openFromHistory(false)),
-      registerCommandWrapped(
-          'qcfg.openRecent.newWindow', () => openFromHistory(true)));
+    registerCommandWrapped('qcfg.openRecent.sameWindow', () =>
+      openFromHistory(false)
+    ),
+    registerCommandWrapped('qcfg.openRecent.newWindow', () =>
+      openFromHistory(true)
+    )
+  );
 
   extContext = context;
   const wsFile = getWorkspaceFile();
-  if (!wsFile)
-        return;
+  if (!wsFile) return;
   const globalState = extContext.globalState;
   const history: string[] = globalState.get(PERSISTENT_KEY, []);
   history.removeFirst(wsFile);

@@ -19,8 +19,7 @@ export function baseName(filename: string) {
 /**
  * Expand ~ and env variables
  */
-export function expandPath(path: string)
-{
+export function expandPath(path: string) {
   return path.replace(/^~(?=$|\/)/, nodejs.os.homedir());
   /* TODO: expand env variables */
 }

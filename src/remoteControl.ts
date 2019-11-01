@@ -19,7 +19,7 @@ async function handleOpen(location: string, folder: string) {
   log.assert(path.isAbsolute(folder), `"${folder}" is not absolute path`);
   let wsFolder: vscode.WorkspaceFolder | undefined;
   let found = false;
-  for (wsFolder of (workspace.workspaceFolders || []))
+  for (wsFolder of workspace.workspaceFolders || [])
     if (wsFolder.uri.fsPath === folder) {
       found = true;
       break;
@@ -28,13 +28,11 @@ async function handleOpen(location: string, folder: string) {
     log.info(`"${folder}" does not correspond to this workspace's folder`);
     return;
   }
-  const [file, line = undefined, column = undefined] =
-      location.split(':');
-  if (!file)
-    log.fatal('Filename missing');
+  const [file, line = undefined, column = undefined] = location.split(':');
+  if (!file) log.fatal('Filename missing');
 
   let fullPath: string;
-    if (path.isAbsolute(file)) {
+  if (path.isAbsolute(file)) {
     if (!file.startsWith(folder))
       log.fatal(`File "${file}" does not belong to "${wsFolder.name}"`);
     fullPath = file;
@@ -45,9 +43,8 @@ async function handleOpen(location: string, folder: string) {
       log.fatal(`File "${file}" does not exist in "${wsFolder.name}"`);
   }
   const lineNo = parseNumber(line);
-  const colNo = column === "" ? 1 : parseNumber(column, 1);
-  if (lineNo === undefined)
-    return;
+  const colNo = column === '' ? 1 : parseNumber(column, 1);
+  if (lineNo === undefined) return;
   const pos = new vscode.Position(lineNo - 1, colNo - 1);
 
   let editor = getActiveTextEditor();
@@ -55,7 +52,7 @@ async function handleOpen(location: string, folder: string) {
   const selection = new vscode.Selection(pos, pos);
   if (document.uri.fsPath !== fullPath) {
     document = await workspace.openTextDocument(fullPath);
-    editor = await window.showTextDocument(document, {selection});
+    editor = await window.showTextDocument(document, { selection });
     editor.show();
     return;
   }
@@ -85,16 +82,19 @@ function handleCmd(cmd: string) {
 }
 
 function activate(_context: vscode.ExtensionContext) {
-  const server = net.createServer((socket) => {
-    socket.on('data', handleErrors((data) => {
-                handleCmd(data.toString());
-              }));
+  const server = net.createServer(socket => {
+    socket.on(
+      'data',
+      handleErrors(data => {
+        handleCmd(data.toString());
+      })
+    );
   });
   server.listen(port, '127.0.0.1');
   server.on('listening', () => {
     log.info(`Listening on port ${port}`);
   });
-  server.on('error', (err) => {
+  server.on('error', err => {
     const error = err as NodeJS.ErrnoException;
     if (error.code === 'EADDRINUSE') {
       log.debug(`Port ${port} already in use`);

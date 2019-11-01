@@ -1,6 +1,6 @@
 'use strict';
 
-import {promisify} from 'util';
+import { promisify } from 'util';
 
 export const setTimeoutPromise = promisify(setTimeout);
 export const setImmediatePromise = promisify(setImmediate);
@@ -26,10 +26,8 @@ export class Timer {
 
   clear() {
     if (this.timer)
-      if (this.type === TimerType.TIMEOUT)
-        clearTimeout(this.timer);
-      else if (this.type === TimerType.INTERVAL)
-        clearInterval(this.timer);
+      if (this.type === TimerType.TIMEOUT) clearTimeout(this.timer);
+      else if (this.type === TimerType.INTERVAL) clearInterval(this.timer);
   }
 
   get isSet() {

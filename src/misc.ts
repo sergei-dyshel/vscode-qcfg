@@ -2,11 +2,11 @@
 
 import * as vscode from 'vscode';
 import * as path from 'path';
-import {selectStringFromListMru} from './dialog';
+import { selectStringFromListMru } from './dialog';
 
 import * as fileUtils from './fileUtils';
-import {getActiveTextEditor} from './utils';
-import {window, workspace} from 'vscode';
+import { getActiveTextEditor } from './utils';
+import { window, workspace } from 'vscode';
 import { registerCommandWrapped } from './exception';
 import { Modules } from './module';
 
@@ -17,13 +17,15 @@ function openOrCreateTerminal(name: string, cwd: string) {
       return;
     }
   }
-  const terminal = window.createTerminal({name, cwd});
+  const terminal = window.createTerminal({ name, cwd });
   terminal.show();
 }
 
 function terminalInWorkspaceFolder() {
   const document = getActiveTextEditor().document;
-  const {workspaceFolder: wsFolder} = fileUtils.getDocumentRootThrowing(document.fileName);
+  const { workspaceFolder: wsFolder } = fileUtils.getDocumentRootThrowing(
+    document.fileName
+  );
   openOrCreateTerminal(wsFolder.name, wsFolder.uri.fsPath);
 }
 
@@ -37,17 +39,18 @@ function terminalInFileFolder() {
 async function runCommand() {
   const commands = await vscode.commands.getCommands();
   const cmd = await selectStringFromListMru(commands, 'qcfg.runCommand');
-  if (cmd)
-    vscode.commands.executeCommand(cmd);
+  if (cmd) vscode.commands.executeCommand(cmd);
 }
 
 function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
-      registerCommandWrapped(
-          'qcfg.terminal.inWorkspaceFolder', terminalInWorkspaceFolder),
-      registerCommandWrapped(
-          'qcfg.terminal.inFileFolder', terminalInFileFolder),
-      registerCommandWrapped('qcfg.runCommand', runCommand));
+    registerCommandWrapped(
+      'qcfg.terminal.inWorkspaceFolder',
+      terminalInWorkspaceFolder
+    ),
+    registerCommandWrapped('qcfg.terminal.inFileFolder', terminalInFileFolder),
+    registerCommandWrapped('qcfg.runCommand', runCommand)
+  );
 }
 
 Modules.register(activate);

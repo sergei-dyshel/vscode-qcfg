@@ -35,43 +35,43 @@ import * as documentCache from './documentCache';
 import * as formatting from './formatting';
 
 export function activate(context: vscode.ExtensionContext) {
-    console.log('Extension active');
+  console.log('Extension active');
 
-    Modules.activateAll(context);
-    logging.log.info(`Activated ${logging.str(Modules.fileNames())}`);
+  Modules.activateAll(context);
+  logging.log.info(`Activated ${logging.str(Modules.fileNames())}`);
 
-    // history.activate(context);
-    (console as any).qcfg = {
-      nodejs,
-      language,
-      editing,
-      autoSync,
-      gtags,
-      ctags,
-      saveAll,
-      treeSitter,
-      alternate,
-      misc,
-      readOnlyProject,
-      editHistory,
-      dialog,
-      remoteControl,
-      windowState,
-      search,
-      colorTheme,
-      taskRunner,
-      fuzzySearch,
-      treeView,
-      locationTree,
-      syntaxTreeView,
-      workspaceHistory,
-      multipleSelection,
-      config,
-      tasksMain,
-      liveLocation,
-      documentCache,
-      formatting
-    };
+  // history.activate(context);
+  (console as any).qcfg = {
+    nodejs,
+    language,
+    editing,
+    autoSync,
+    gtags,
+    ctags,
+    saveAll,
+    treeSitter,
+    alternate,
+    misc,
+    readOnlyProject,
+    editHistory,
+    dialog,
+    remoteControl,
+    windowState,
+    search,
+    colorTheme,
+    taskRunner,
+    fuzzySearch,
+    treeView,
+    locationTree,
+    syntaxTreeView,
+    workspaceHistory,
+    multipleSelection,
+    config,
+    tasksMain,
+    liveLocation,
+    documentCache,
+    formatting
+  };
 }
 
 // this method is called when your extension is deactivated

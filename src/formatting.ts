@@ -1,8 +1,8 @@
 'use strict';
 
-import { ExtensionContext, commands, Uri, window } from "vscode";
-import { Modules } from "./module";
-import { log } from "./logging";
+import { ExtensionContext, commands, Uri, window } from 'vscode';
+import { Modules } from './module';
+import { log } from './logging';
 
 // inspired by https://github.com/lacroixdavid1/vscode-format-context-menu
 
@@ -25,8 +25,10 @@ async function formatFilesInExplorer(clickedFile: Uri, selectedFiles: Uri[]) {
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
-      commands.registerCommand(
-          'qcfg.formatSelectedFilesInExplorer', formatFilesInExplorer),
+    commands.registerCommand(
+      'qcfg.formatSelectedFilesInExplorer',
+      formatFilesInExplorer
+    )
   );
 }
 

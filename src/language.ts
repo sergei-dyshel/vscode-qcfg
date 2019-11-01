@@ -8,13 +8,13 @@ import * as vscode from 'vscode';
 import { Modules } from './module';
 import { parseJsonFileSync } from './json';
 
-export function getLanguageConfig(id: string): vscode.LanguageConfiguration|
-    undefined {
+export function getLanguageConfig(
+  id: string
+): vscode.LanguageConfiguration | undefined {
   return langConfigs[id];
 }
 
-export function availableLanguageConfigs(): string[]
-{
+export function availableLanguageConfigs(): string[] {
   return Object.keys(langConfigs);
 }
 
@@ -22,8 +22,7 @@ export function isLspActive() {
   const extensions = ['cquery-project.cquery', 'ccls-project.ccls'];
   for (const extName of extensions) {
     const extension = vscode.extensions.getExtension(extName);
-    if (extension && extension.isActive)
-      return true;
+    if (extension && extension.isActive) return true;
   }
   return false;
 }
@@ -39,11 +38,9 @@ export function sendDidSave(document: vscode.TextDocument) {
   const extensions = ['cquery-project.cquery', 'ccls-project.ccls'];
   for (const extName of extensions) {
     const extension = vscode.extensions.getExtension(extName);
-    if (!extension || !extension.isActive)
-      continue;
+    if (!extension || !extension.isActive) continue;
     const exports: object = extension.exports;
-    if (typeof (exports) !== 'object' || !('languageClient' in exports))
-      continue;
+    if (typeof exports !== 'object' || !('languageClient' in exports)) continue;
     const langClient: lc.LanguageClient = (exports as any).languageClient;
 
     langClient.sendNotification('textDocument/didSave', params);
@@ -62,29 +59,29 @@ export function reindex() {
   }
 }
 
-function fetchLangConfigs()
-{
+function fetchLangConfigs() {
   for (const ext of vscode.extensions.all) {
     const json = ext.packageJSON;
     // All vscode default extensions ids starts with "vscode."
-    if (!json.contributes)
-      continue;
-    for (const themeData of (json.contributes.themes || [])) {
+    if (!json.contributes) continue;
+    for (const themeData of json.contributes.themes || []) {
       const label = themeData.label as string;
       const fullPath = nodejs.path.join(ext.extensionPath, themeData.path);
-      if (!nodejs.fs.existsSync(fullPath))
-        continue;
+      if (!nodejs.fs.existsSync(fullPath)) continue;
       colorThemeFiles[label] = fullPath;
     }
-    for (const langData of (json.contributes.languages || [])) {
+    for (const langData of json.contributes.languages || []) {
       const langId: string = langData.id;
       if (!langData.configuration) {
         continue;
       }
-      const langFilePath =
-          nodejs.path.join(ext.extensionPath, langData.configuration);
-      const langConfig: vscode.LanguageConfiguration =
-          parseJsonFileSync(langFilePath);
+      const langFilePath = nodejs.path.join(
+        ext.extensionPath,
+        langData.configuration
+      );
+      const langConfig: vscode.LanguageConfiguration = parseJsonFileSync(
+        langFilePath
+      );
       langConfigs[langId] = langConfig;
     }
   }
@@ -99,8 +96,8 @@ function fetchLangConfigs()
 }
 
 /* TODO: move extension parsing to separate file */
-const langConfigs: {[id: string]: vscode.LanguageConfiguration} = {};
-export const colorThemeFiles: {[id: string]: string} = {};
+const langConfigs: { [id: string]: vscode.LanguageConfiguration } = {};
+export const colorThemeFiles: { [id: string]: string } = {};
 
 function activate(_: vscode.ExtensionContext) {
   fetchLangConfigs();

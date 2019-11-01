@@ -13,10 +13,16 @@ class JsonParseError extends Error {
   }
 }
 
-export function parseJsonFileSync(path: string, options?: JsonParseOptions): any {
+export function parseJsonFileSync(
+  path: string,
+  options?: JsonParseOptions
+): any {
   const errors: jsoncParser.ParseError[] = [];
   const json = jsoncParser.parse(
-      nodejs.fs.readFileSync(path).toString(), errors, options);
+    nodejs.fs.readFileSync(path).toString(),
+    errors,
+    options
+  );
   if (errors.length > 0 && options && options.forbidErrors)
     throw new JsonParseError('Errors occured while parsing JSON', errors);
   return json;

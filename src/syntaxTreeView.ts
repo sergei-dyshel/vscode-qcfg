@@ -1,29 +1,42 @@
 'use strict';
 
-import { SyntaxNode } from "tree-sitter";
-import { ExtensionContext, Range, TextDocument, TextEditorSelectionChangeEvent, TreeItemLabel, window } from 'vscode';
-import { listenWrapped, registerCommandWrapped } from "./exception";
-import { log, str } from "./logging";
-import { Modules } from "./module";
-import { ellipsize } from "./stringUtils";
-import { onSyntaxTreeUpdated, SyntaxTrees, SyntaxTreeUpdatedEvent } from "./syntaxTree";
-import { QcfgTreeView, StaticTreeNode, TreeProvider } from "./treeView";
+import { SyntaxNode } from 'tree-sitter';
+import {
+  ExtensionContext,
+  Range,
+  TextDocument,
+  TextEditorSelectionChangeEvent,
+  TreeItemLabel,
+  window
+} from 'vscode';
+import { listenWrapped, registerCommandWrapped } from './exception';
+import { log, str } from './logging';
+import { Modules } from './module';
+import { ellipsize } from './stringUtils';
+import {
+  onSyntaxTreeUpdated,
+  SyntaxTrees,
+  SyntaxTreeUpdatedEvent
+} from './syntaxTree';
+import { QcfgTreeView, StaticTreeNode, TreeProvider } from './treeView';
 
 const ELLIPSIZE_LEN = 20;
 
 const treeProvider: TreeProvider = {
-  async getTrees(): Promise<SyntaxTreeViewNode[]|undefined> {
+  async getTrees(): Promise<SyntaxTreeViewNode[] | undefined> {
     const editor = window.activeTextEditor;
-    if (!editor || !editor.document ||
-        !SyntaxTrees.isDocumentSupported(editor.document)) {
+    if (
+      !editor ||
+      !editor.document ||
+      !SyntaxTrees.isDocumentSupported(editor.document)
+    ) {
       currentRoot = undefined;
       return [];
     }
     const document = editor.document;
     const tree = await SyntaxTrees.get(document);
     if (!currentRoot || currentRoot.syntaxNode !== tree.rootNode) {
-      if (rootCache.has(document))
-        currentRoot = rootCache.get(document)!;
+      if (rootCache.has(document)) currentRoot = rootCache.get(document)!;
       else {
         currentRoot = new SyntaxTreeViewNode(tree.rootNode, document);
         rootCache.set(document, currentRoot);
@@ -33,8 +46,7 @@ const treeProvider: TreeProvider = {
   },
   getMessage() {
     const editor = window.activeTextEditor;
-    if (!editor)
-      return 'No editor opened';
+    if (!editor) return 'No editor opened';
     const document = editor.document;
     if (!SyntaxTrees.isDocumentSupported(document))
       return `Language ${document.languageId} is not supported`;
@@ -42,39 +54,45 @@ const treeProvider: TreeProvider = {
   },
   onDidChangeSelection(nodes: SyntaxTreeViewNode[]) {
     const editor = window.activeTextEditor;
-    if (!editor)
-      return;
+    if (!editor) return;
     editor.selections = nodes.map(node => node.syntaxNode.range.asSelection());
     editor.revealRange(editor.selection);
   },
   onDidChangeVisibility(visible: boolean) {
-    if (!visible || !currentRoot)
-      return;
-
+    if (!visible || !currentRoot) return;
   }
 };
 
-let currentRoot: SyntaxTreeViewNode|undefined;
+let currentRoot: SyntaxTreeViewNode | undefined;
 const rootCache = new Map<TextDocument, SyntaxTreeViewNode>();
 
 function buildNodeLabel(
-    node: SyntaxNode, document: TextDocument): TreeItemLabel|string {
+  node: SyntaxNode,
+  document: TextDocument
+): TreeItemLabel | string {
   const name = buildNodeName(node, document);
-  if (!name)
-    return node.type;
-  return {label: `${name} (${node.type})`, highlights: [[0, name.length]]};
+  if (!name) return node.type;
+  return { label: `${name} (${node.type})`, highlights: [[0, name.length]] };
 }
 
-function buildNodeName(node: SyntaxNode, document: TextDocument): string|undefined {
+function buildNodeName(
+  node: SyntaxNode,
+  document: TextDocument
+): string | undefined {
   const lang = document.languageId;
   if (lang === 'python') {
-    if (node.nodeType === 'decorated_definition' && node.lastNamedChild &&
-        node.lastNamedChild.nodeType === 'function_definition')
+    if (
+      node.nodeType === 'decorated_definition' &&
+      node.lastNamedChild &&
+      node.lastNamedChild.nodeType === 'function_definition'
+    )
       return buildNodeName(node.lastNamedChild, document);
-    if ((node.nodeType === 'function_definition' ||
-         node.nodeType === 'class_definition') &&
-        node.firstNamedChild &&
-        node.firstNamedChild.nodeType === 'identifier') {
+    if (
+      (node.nodeType === 'function_definition' ||
+        node.nodeType === 'class_definition') &&
+      node.firstNamedChild &&
+      node.firstNamedChild.nodeType === 'identifier'
+    ) {
       return node.firstNamedChild.text;
     }
   }
@@ -88,26 +106,34 @@ function buildNodeName(node: SyntaxNode, document: TextDocument): string|undefin
         break;
       case 'function_definition':
       case 'declaration':
-        if (node.firstNamedChild &&
-            node.firstNamedChild.nodeType === 'function_declarator')
+        if (
+          node.firstNamedChild &&
+          node.firstNamedChild.nodeType === 'function_declarator'
+        )
           return buildNodeName(node.firstNamedChild, document);
-        if (node.namedChildCount >= 2 &&
-            node.namedChild(1)!.nodeType === 'function_declarator')
+        if (
+          node.namedChildCount >= 2 &&
+          node.namedChild(1)!.nodeType === 'function_declarator'
+        )
           return buildNodeName(node.namedChild(1)!, document);
-        if (node.namedChildCount >= 3 &&
-            node.namedChild(2)!.nodeType === 'function_declarator')
+        if (
+          node.namedChildCount >= 3 &&
+          node.namedChild(2)!.nodeType === 'function_declarator'
+        )
           return buildNodeName(node.namedChild(2)!, document);
         break;
       case 'function_declarator':
-        if (node.firstNamedChild &&
-            (node.firstNamedChild.nodeType === 'scoped_identifier' ||
-             node.firstNamedChild.nodeType === 'identifier'))
+        if (
+          node.firstNamedChild &&
+          (node.firstNamedChild.nodeType === 'scoped_identifier' ||
+            node.firstNamedChild.nodeType === 'identifier')
+        )
           return buildNodeName(node.firstNamedChild, document);
     }
   }
-  switch(node.nodeType) {
+  switch (node.nodeType) {
     case 'string_literal':
-        return ellipsize(node.text, ELLIPSIZE_LEN);
+      return ellipsize(node.text, ELLIPSIZE_LEN);
     case 'identifier':
     case 'namespace_identifier':
     case 'number_literal':
@@ -129,15 +155,13 @@ class SyntaxTreeViewNode extends StaticTreeNode {
   constructor(public syntaxNode: SyntaxNode, private document: TextDocument) {
     super(buildNodeLabel(syntaxNode, document));
     log.assert(syntaxNode.isNamed);
-    if (syntaxNode.namedChildCount > 0)
-      this.setCollapsed();
+    if (syntaxNode.namedChildCount > 0) this.setCollapsed();
     this.treeItem.id = this.calcId();
   }
 
   private calcId(): string {
     const editor = window.activeTextEditor;
-    if (!editor)
-      return '';
+    if (!editor) return '';
     const document = editor.document;
     const range = this.syntaxNode.range;
     const obj = {
@@ -151,8 +175,9 @@ class SyntaxTreeViewNode extends StaticTreeNode {
   get children(): SyntaxTreeViewNode[] {
     if (this.syntaxNode.namedChildCount > 0 && super.children.length === 0) {
       for (let i = 0; i < this.syntaxNode.namedChildCount; ++i)
-        this.addChild(new SyntaxTreeViewNode(
-            this.syntaxNode.namedChild(i)!, this.document));
+        this.addChild(
+          new SyntaxTreeViewNode(this.syntaxNode.namedChild(i)!, this.document)
+        );
     }
     return super.children as SyntaxTreeViewNode[];
   }
@@ -161,63 +186,61 @@ class SyntaxTreeViewNode extends StaticTreeNode {
 async function showTree() {
   QcfgTreeView.setProvider(treeProvider);
   await treeProvider.getTrees();
-  if (!currentRoot)
-    return;
-  const node =
-      findContainingNode(currentRoot, window.activeTextEditor!.selection);
-  if (node)
-    selectAndRememberNode(node, true /* focus */);
+  if (!currentRoot) return;
+  const node = findContainingNode(
+    currentRoot,
+    window.activeTextEditor!.selection
+  );
+  if (node) selectAndRememberNode(node, true /* focus */);
 }
 
 function onTreeUpdated(event: SyntaxTreeUpdatedEvent) {
   rootCache.delete(event.document);
-  if (QcfgTreeView.isCurrentProvider(treeProvider))
-    QcfgTreeView.refresh();
+  if (QcfgTreeView.isCurrentProvider(treeProvider)) QcfgTreeView.refresh();
 }
 
 function onTextEditorChanged() {
-  if (!QcfgTreeView.isCurrentProvider(treeProvider))
-    return;
+  if (!QcfgTreeView.isCurrentProvider(treeProvider)) return;
   QcfgTreeView.refresh();
 }
 
-function selectAndRememberNode(node: SyntaxTreeViewNode, focus = false)
-{
-  QcfgTreeView.revealTree(node, {select: true, focus});
+function selectAndRememberNode(node: SyntaxTreeViewNode, focus = false) {
+  QcfgTreeView.revealTree(node, { select: true, focus });
 }
 
 async function onSelectionChanged(event: TextEditorSelectionChangeEvent) {
-  if (!QcfgTreeView.isCurrentProvider(treeProvider) ||
-      !SyntaxTrees.isDocumentSupported(event.textEditor.document) ||
-      !QcfgTreeView.isVisible())
+  if (
+    !QcfgTreeView.isCurrentProvider(treeProvider) ||
+    !SyntaxTrees.isDocumentSupported(event.textEditor.document) ||
+    !QcfgTreeView.isVisible()
+  )
     return;
   const roots = await treeProvider.getTrees();
-  if (!roots || roots.isEmpty)
-    return;
+  if (!roots || roots.isEmpty) return;
   const root = roots[0] as SyntaxTreeViewNode;
   const node = findContainingNode(root, event.textEditor.selection);
-  if (node)
-    selectAndRememberNode(node);
+  if (node) selectAndRememberNode(node);
 }
 
 function findContainingNode(
-    node: SyntaxTreeViewNode, selection: Range): SyntaxTreeViewNode|undefined {
-  if (!node.syntaxNode.range.contains(selection))
-    return;
+  node: SyntaxTreeViewNode,
+  selection: Range
+): SyntaxTreeViewNode | undefined {
+  if (!node.syntaxNode.range.contains(selection)) return;
   for (const child of node.children) {
     const descendant = findContainingNode(child, selection);
-    if (descendant)
-      return descendant;
+    if (descendant) return descendant;
   }
   return node;
 }
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
-      registerCommandWrapped('qcfg.syntaxTree.show', showTree),
-      listenWrapped(window.onDidChangeActiveTextEditor, onTextEditorChanged),
-      listenWrapped(window.onDidChangeTextEditorSelection, onSelectionChanged),
-      listenWrapped(onSyntaxTreeUpdated, onTreeUpdated));
+    registerCommandWrapped('qcfg.syntaxTree.show', showTree),
+    listenWrapped(window.onDidChangeActiveTextEditor, onTextEditorChanged),
+    listenWrapped(window.onDidChangeTextEditorSelection, onSelectionChanged),
+    listenWrapped(onSyntaxTreeUpdated, onTreeUpdated)
+  );
 }
 
 Modules.register(activate);

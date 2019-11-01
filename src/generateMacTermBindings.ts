@@ -1,6 +1,6 @@
 'use strict';
 
-import { PackageJson, KeyBinding } from "./packageJson";
+import { PackageJson, KeyBinding } from './packageJson';
 
 const mapping = {
   'cmd+a': '\x01',
@@ -12,23 +12,23 @@ const mapping = {
   'cmd+p': '\x10',
   'cmd+u': '\x15',
   'cmd+shift+k': '\x0b',
-  'alt+b': "\x1bb",
-  'alt+f': "\x1bf"
+  'alt+b': '\x1bb',
+  'alt+f': '\x1bf'
 };
 
 const keybindings: KeyBinding[] = [];
 
 for (const [key, code] of Object.entries(mapping)) {
   keybindings.push({
-    'key': key,
-    'command': 'workbench.action.terminal.sendSequence',
-    'when': 'terminalFocus && isMac',
-    'args': {'text': code}
+    key: key,
+    command: 'workbench.action.terminal.sendSequence',
+    when: 'terminalFocus && isMac',
+    args: { text: code }
   });
 }
 
 const json: PackageJson = {
-  contributes: {keybindings}
+  contributes: { keybindings }
 };
 
 process.stdout.write(JSON.stringify(json, undefined, 2));

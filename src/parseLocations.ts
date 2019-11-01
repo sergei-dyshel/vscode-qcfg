@@ -1,17 +1,21 @@
 'use strict';
 
-import { Uri, Position, Location, WorkspaceFolder, workspace, Range } from "vscode";
-import { filterNonNull, concatArrays } from "./tsUtils";
+import {
+  Uri,
+  Position,
+  Location,
+  WorkspaceFolder,
+  workspace,
+  Range
+} from 'vscode';
+import { filterNonNull, concatArrays } from './tsUtils';
 import * as nodejs from './nodejs';
-import { Subprocess } from "./subprocess";
+import { Subprocess } from './subprocess';
 
-const VIMGREP_PARSE_REGEX =
-    /^(?<file>.+?):(?<line>\d+)(:(?<column>\d+))?(: (?<text>.*))?$/;
-
+const VIMGREP_PARSE_REGEX = /^(?<file>.+?):(?<line>\d+)(:(?<column>\d+))?(: (?<text>.*))?$/;
 
 /* gtags line has whitespace-trimmed text so we can't use to for tag searching */
-const GTAGS_PARSE_REGEX =
-    /(?<tag>\S+)\s+(?<line>[0-9]+)\s+(?<file>\S+) (?<text>.*)/;
+const GTAGS_PARSE_REGEX = /(?<tag>\S+)\s+(?<line>[0-9]+)\s+(?<file>\S+) (?<text>.*)/;
 
 export enum ParseLocationFormat {
   VIMGREP,
@@ -20,18 +24,24 @@ export enum ParseLocationFormat {
 
 export class ParsedLocation extends Location {
   constructor(
-      fileOrUri: string|Uri, rangeOrPosition: Range|Position, public text?: string) {
+    fileOrUri: string | Uri,
+    rangeOrPosition: Range | Position,
+    public text?: string
+  ) {
     super(
-        (fileOrUri instanceof Uri) ? fileOrUri : Uri.file(fileOrUri),
-        rangeOrPosition);
+      fileOrUri instanceof Uri ? fileOrUri : Uri.file(fileOrUri),
+      rangeOrPosition
+    );
   }
 }
 
 export function parseLocations(
-    text: string, base: string, format: ParseLocationFormat): ParsedLocation[] {
+  text: string,
+  base: string,
+  format: ParseLocationFormat
+): ParsedLocation[] {
   const lines = text.match(/[^\r\n]+/g);
-  if (!lines)
-    return [];
+  if (!lines) return [];
   return filterNonNull(lines.map(line => parseLocation(line, base, format)));
 }
 
@@ -45,14 +55,15 @@ function formatToRegex(format: ParseLocationFormat): RegExp {
 }
 
 export function parseLocation(
-    line: string, base: string, format: ParseLocationFormat): ParsedLocation|undefined {
+  line: string,
+  base: string,
+  format: ParseLocationFormat
+): ParsedLocation | undefined {
   const regex = formatToRegex(format);
   const match = line.match(regex);
-  if (!match)
-    return;
+  if (!match) return;
   const groups = match.groups!;
-  if (!groups.file)
-      return;
+  if (!groups.file) return;
   let column = 1;
   if (!groups.column) {
     column = 1;
@@ -60,16 +71,21 @@ export function parseLocation(
     column = Number(groups.column);
   }
   return new ParsedLocation(
-      nodejs.path.resolve(base || '', groups.file),
-      new Position(Number(groups.line) - 1, column - 1),
-      groups.text ? groups.text : '');
+    nodejs.path.resolve(base || '', groups.file),
+    new Position(Number(groups.line) - 1, column - 1),
+    groups.text ? groups.text : ''
+  );
 }
 
 export async function gatherLocationsFromFolder(
-    cmd: string, folder: WorkspaceFolder,
-    format: ParseLocationFormat): Promise<ParsedLocation[]> {
-  const subproc =
-      new Subprocess(cmd, {cwd: folder.uri.fsPath, allowedCodes: [0, 1]});
+  cmd: string,
+  folder: WorkspaceFolder,
+  format: ParseLocationFormat
+): Promise<ParsedLocation[]> {
+  const subproc = new Subprocess(cmd, {
+    cwd: folder.uri.fsPath,
+    allowedCodes: [0, 1]
+  });
   const res = await subproc.wait();
   if (res.code === 0)
     return parseLocations(res.stdout, folder.uri.fsPath, format);
@@ -77,8 +93,13 @@ export async function gatherLocationsFromFolder(
 }
 
 export async function gatherLocationsFromWorkspace(
-    cmd: string, format: ParseLocationFormat): Promise<ParsedLocation[]> {
-  const locations = await Promise.all(workspace.workspaceFolders!.map(
-      folder => gatherLocationsFromFolder(cmd, folder, format)));
+  cmd: string,
+  format: ParseLocationFormat
+): Promise<ParsedLocation[]> {
+  const locations = await Promise.all(
+    workspace.workspaceFolders!.map(folder =>
+      gatherLocationsFromFolder(cmd, folder, format)
+    )
+  );
   return concatArrays<ParsedLocation>(...locations);
 }

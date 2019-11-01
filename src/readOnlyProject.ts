@@ -7,7 +7,6 @@ import { Modules } from './module';
 
 const MEMENTO_KEY = 'qcfgIsReadOnly';
 
-
 let status: vscode.StatusBarItem;
 let context: vscode.ExtensionContext;
 
@@ -25,18 +24,16 @@ function toggle() {
 }
 
 function updateStatus() {
-  if (getState())
-    status.show();
-  else
-    status.hide();
+  if (getState()) status.show();
+  else status.hide();
 }
 
 function onDidChangeTextDocument(_: TextDocumentChangeEvent) {
-  if (!getState())
-    return;
+  if (!getState()) return;
 
-  window.showErrorMessage(
-      'Current workspace is marked as READ-ONLY', {modal: true});
+  window.showErrorMessage('Current workspace is marked as READ-ONLY', {
+    modal: true
+  });
 }
 
 function activate(extContext: vscode.ExtensionContext) {
@@ -47,9 +44,9 @@ function activate(extContext: vscode.ExtensionContext) {
   updateStatus();
 
   context.subscriptions.push(
-      registerCommandWrapped('qcfg.toggleReadOnly', toggle),
-      listenWrapped(
-          workspace.onDidChangeTextDocument, onDidChangeTextDocument));
+    registerCommandWrapped('qcfg.toggleReadOnly', toggle),
+    listenWrapped(workspace.onDidChangeTextDocument, onDidChangeTextDocument)
+  );
 }
 
 Modules.register(activate);

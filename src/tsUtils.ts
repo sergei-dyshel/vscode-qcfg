@@ -1,31 +1,37 @@
 'use strict';
 
-import { MultiDictionary } from "typescript-collections";
+import { MultiDictionary } from 'typescript-collections';
 
 export function mapObjectValues<V, R>(
-    obj: {[key: string]: V}, func: (k: string, v: V) => R): {[key: string]: R} {
-  const res: {[key: string]: R} = {};
-  const entryObjs = mapObjectToArray(obj, (k, v) => ({[k]: func(k, v)}));
+  obj: { [key: string]: V },
+  func: (k: string, v: V) => R
+): { [key: string]: R } {
+  const res: { [key: string]: R } = {};
+  const entryObjs = mapObjectToArray(obj, (k, v) => ({ [k]: func(k, v) }));
   const result = Object.assign(res, ...entryObjs);
   return result;
 }
 
 export function mapObjectToArray<V, R>(
-    obj: {[key: string]: V}, func: (k: string, v: V) => R): R[] {
+  obj: { [key: string]: V },
+  func: (k: string, v: V) => R
+): R[] {
   return Object.entries(obj).map(([k, v]) => func(k, v));
 }
 
 export function mapNonNull<T, V>(
-    array: T[], func: (elem: T) => V | null | undefined): V[] {
-  return array.map(func)
-      .filter(x => (x !== null && x !== undefined))
-      .map(x => x!);
+  array: T[],
+  func: (elem: T) => V | null | undefined
+): V[] {
+  return array
+    .map(func)
+    .filter(x => x !== null && x !== undefined)
+    .map(x => x!);
 }
 
-export function filterNonNull<T>(array: Array<T|null|undefined>): T[] {
-  return array.filter(x => (x !== null && x !== undefined)).map(x => x!);
+export function filterNonNull<T>(array: Array<T | null | undefined>): T[] {
+  return array.filter(x => x !== null && x !== undefined).map(x => x!);
 }
-
 
 /**
  * Map array with optional exception handler.
@@ -36,14 +42,15 @@ export function filterNonNull<T>(array: Array<T|null|undefined>): T[] {
  * If handler returns values it will be added to result.
  */
 export function mapWithThrow<T, V>(
-    array: T[], func: (elem: T) => V,
-    handler?: (elem: T, err: Error) => (V|void|undefined)): Array<[T, V]> {
-  const res: Array<V|undefined> = [];
+  array: T[],
+  func: (elem: T) => V,
+  handler?: (elem: T, err: Error) => V | void | undefined
+): Array<[T, V]> {
+  const res: Array<V | undefined> = [];
   for (const elem of array) {
     try {
       res.push(func(elem));
-    }
-    catch (err) {
+    } catch (err) {
       if (handler) {
         const val = handler(elem, err);
         res.push(val ? val : undefined);
@@ -52,18 +59,19 @@ export function mapWithThrow<T, V>(
       }
     }
   }
-  return zipArrays(array, res).filter(pair => pair[1] !== undefined) as
-      Array<[T, V]>;
+  return zipArrays(array, res).filter(pair => pair[1] !== undefined) as Array<
+    [T, V]
+  >;
 }
 
 export function concatArrays<T>(...arrays: T[][]): T[] {
-  if (arrays.length === 0)
-    return [];
+  if (arrays.length === 0) return [];
   return arrays[0].concat(...arrays.slice(1));
 }
 
-export function upcastReadonlyArray<B, T extends B>(arr: ReadonlyArray<B>):
-    ReadonlyArray<T> {
+export function upcastReadonlyArray<B, T extends B>(
+  arr: ReadonlyArray<B>
+): ReadonlyArray<T> {
   return arr as ReadonlyArray<T>;
 }
 
@@ -71,49 +79,56 @@ export function upcastArray<B, T extends B>(arr: B[]): T[] {
   return arr as T[];
 }
 
-export function callIfNonNull<R>(func: (() => R)|undefined): R|undefined;
+export function callIfNonNull<R>(func: (() => R) | undefined): R | undefined;
 export function callIfNonNull<T, R>(
-    func: ((_: T) => R)|undefined, _: T): R|undefined;
+  func: ((_: T) => R) | undefined,
+  _: T
+): R | undefined;
 export function callIfNonNull<T1, T2, R>(
-    func: ((_: T1, __: T2) => R)|undefined, _: T1, __: T2): R|undefined;
+  func: ((_: T1, __: T2) => R) | undefined,
+  _: T1,
+  __: T2
+): R | undefined;
 export function callIfNonNull(func: any, ...args: any[]) {
-  if (func)
-    return func(...args);
+  if (func) return func(...args);
   return;
 }
 
 export function groupBy<K, T>(
-    array: T[], keyFunc: (_: T) => K): MultiDictionary<K, T> {
+  array: T[],
+  keyFunc: (_: T) => K
+): MultiDictionary<K, T> {
   const dict = new MultiDictionary<K, T>();
-  for (const elem of array)
-    dict.setValue(keyFunc(elem), elem);
+  for (const elem of array) dict.setValue(keyFunc(elem), elem);
   return dict;
 }
 
 export function maxNumber<T>(...args: T[]): T {
-  return args.map(x => (x as unknown as number)).max() as unknown as T;
+  return (args.map(x => (x as unknown) as number).max() as unknown) as T;
 }
 
 export function minNumber<T>(...args: T[]): T {
-  return args.map(x => (x as unknown as number)).min() as unknown as T;
+  return (args.map(x => (x as unknown) as number).min() as unknown) as T;
 }
 
 export class ArrayIterator<T> implements IterableIterator<T> {
   private cur: number;
   constructor(
-      private array: T[], start: number, private end: number, private step: number) {
-    if (this.step === 0)
-        throw new Error('Can not iterate with step -1');
+    private array: T[],
+    start: number,
+    private end: number,
+    private step: number
+  ) {
+    if (this.step === 0) throw new Error('Can not iterate with step -1');
     this.cur = start;
   }
   next(): IteratorResult<T> {
-    const result = {done: this.reachedEnd(), value: this.array[this.cur]};
+    const result = { done: this.reachedEnd(), value: this.array[this.cur] };
     this.cur += this.step;
     return result;
   }
   private reachedEnd(): boolean {
-    if (this.step > 0)
-      return this.cur >= this.end;
+    if (this.step > 0) return this.cur >= this.end;
     return this.cur < this.end;
   }
   [Symbol.iterator]() {
@@ -126,9 +141,8 @@ export class ZipIterator<T, U> implements IterableIterator<[T, U]> {
   next(): IteratorResult<[T, U]> {
     const result1 = this.iter1.next();
     const result2 = this.iter2.next();
-    if (result1.done || result2.done)
-      return {done: true, value: undefined};
-    return {done: false, value: [result1.value, result2.value]};
+    if (result1.done || result2.done) return { done: true, value: undefined };
+    return { done: false, value: [result1.value, result2.value] };
   }
   [Symbol.iterator]() {
     return this;
@@ -136,7 +150,9 @@ export class ZipIterator<T, U> implements IterableIterator<[T, U]> {
 }
 
 export function izip<T, U>(
-    iter1: Iterable<T>, iter2: Iterable<U>): Iterable<[T, U]> {
+  iter1: Iterable<T>,
+  iter2: Iterable<U>
+): Iterable<[T, U]> {
   return new ZipIterator(iter1[Symbol.iterator](), iter2[Symbol.iterator]());
 }
 
@@ -148,14 +164,16 @@ declare global {
     reverseIter(): Iterable<T>;
     iter(start: number, end: number, step?: number): Iterable<T>;
     pairIter(): Iterable<[T, T]>;
-    readonly top: T|undefined;
+    readonly top: T | undefined;
     readonly isEmpty: boolean;
-    min(cmp?: (x: T, y: T) => number): T|undefined;
-    max(cmp?: (x: T, y: T) => number): T|undefined;
+    min(cmp?: (x: T, y: T) => number): T | undefined;
+    max(cmp?: (x: T, y: T) => number): T | undefined;
     equals(that: T[], eq?: (x: T, y: T) => boolean): boolean;
     removeFirst(val: T): boolean;
-    firstOf(cond: (val: T) => boolean): T|undefined;
-    forEachRight(callbackfn: (value: T, index: number, array: T[]) => void): void;
+    firstOf(cond: (val: T) => boolean): T | undefined;
+    forEachRight(
+      callbackfn: (value: T, index: number, array: T[]) => void
+    ): void;
   }
 
   interface ReadonlyArray<T> {
@@ -167,15 +185,21 @@ declare global {
 }
 
 Array.prototype.forEachRight = function<T>(
-    this: T[], callbackfn: (value: T, index: number, array: T[]) => void) {
+  this: T[],
+  callbackfn: (value: T, index: number, array: T[]) => void
+) {
   this.reduceRight((_, cur, index, array) => {
     callbackfn(cur, index, array);
     return undefined;
   }, undefined);
-}
+};
 
 Array.prototype.iter = function<T>(
-    this: T[], start: number, end: number, step?: number) {
+  this: T[],
+  start: number,
+  end: number,
+  step?: number
+) {
   return new ArrayIterator<T>(this, start, end, step || 1);
 };
 
@@ -184,68 +208,66 @@ Array.prototype.reverseIter = function<T>(this: T[]) {
 };
 
 Array.prototype.pairIter = function<T>(this: T[]) {
-  return izip(
-      this.iter(0, this.length - 1), this.iter(1, this.length));
+  return izip(this.iter(0, this.length - 1), this.iter(1, this.length));
 };
 
 Array.prototype.removeFirst = function<T>(this: T[], val: T): boolean {
   const index = this.indexOf(val);
-  if (index === -1)
-    return false;
+  if (index === -1) return false;
   this.splice(index, 1);
   return true;
 };
 
 function numberCompare<T>(x: T, y: T): number {
-  const xNum = x as unknown as number;
-  const yNum = y as unknown as number;
-  if (xNum < yNum)
-    return -1;
-  else if (xNum === yNum)
-    return 0;
+  const xNum = (x as unknown) as number;
+  const yNum = (y as unknown) as number;
+  if (xNum < yNum) return -1;
+  else if (xNum === yNum) return 0;
   return 1;
 }
 
-function defaultEquals<T>(a: T, b:T) {
+function defaultEquals<T>(a: T, b: T) {
   return a === b;
 }
 
-Array.prototype.firstOf = function<T>(this: T[], cond: (val: T) => boolean): T|
-    undefined {
+Array.prototype.firstOf = function<T>(
+  this: T[],
+  cond: (val: T) => boolean
+): T | undefined {
   const idx = this.findIndex(cond);
-  if (idx === -1)
-    return undefined;
+  if (idx === -1) return undefined;
   return this[idx];
 };
 
 Array.prototype.equals = function<T>(
-    this: T[], that: T[], eq: (x: T, y: T) => boolean = defaultEquals) {
-  if (this.length !== that.length)
-    return false;
-  for (let i = 0; i < this.length; ++i)
-    if (!eq(this[i], that[i]))
-      return false;
+  this: T[],
+  that: T[],
+  eq: (x: T, y: T) => boolean = defaultEquals
+) {
+  if (this.length !== that.length) return false;
+  for (let i = 0; i < this.length; ++i) if (!eq(this[i], that[i])) return false;
   return true;
 };
 
 Array.prototype.min = function<T>(
-    this: T[], cmp: (x: T, y: T) => number = numberCompare) {
-  if (!this.length)
-    return;
+  this: T[],
+  cmp: (x: T, y: T) => number = numberCompare
+) {
+  if (!this.length) return;
   return this.reduce((x, y) => (cmp(x, y) === -1 ? x : y));
 };
 
 Array.prototype.max = function<T>(
-    this: T[], cmp: (x: T, y: T) => number = numberCompare) {
-  if (!this.length)
-    return;
+  this: T[],
+  cmp: (x: T, y: T) => number = numberCompare
+) {
+  if (!this.length) return;
   return this.reduce((x, y) => (cmp(x, y) === -1 ? y : x));
 };
 
 Object.defineProperty(Array.prototype, 'top', {
   get<T>(): T | undefined {
-    if (this.length > 0)
-      return this[this.length - 1];
+    if (this.length > 0) return this[this.length - 1];
     return undefined;
   }
 });
@@ -262,17 +284,16 @@ export class DefaultMap<K, V> extends Map<K, V> {
   }
   get(key: K): V {
     let val = super.get(key);
-    if (val)
-      return val;
+    if (val) return val;
     val = this.factory(key);
     this.set(key, val);
     return val;
   }
 }
 
-export type PromiseType<T extends Promise<any>> =
-    T extends Promise<infer R>? R : any;
-
+export type PromiseType<T extends Promise<any>> = T extends Promise<infer R>
+  ? R
+  : any;
 
 export function zipArrays<T1, T2>(a: T1[], b: T2[]): Array<[T1, T2]> {
   return a.map((k, i) => [k, b[i]]);

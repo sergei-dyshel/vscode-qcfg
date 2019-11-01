@@ -13,6 +13,6 @@ export interface KeyBinding extends Key {
 
 export interface PackageJson {
   contributes?: {
-    keybindings?: KeyBinding[]
+    keybindings?: KeyBinding[];
   };
 }

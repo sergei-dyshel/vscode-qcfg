@@ -1,19 +1,27 @@
 'use strict';
 
 import * as path from 'path';
-import { MultiDictionary } from "typescript-collections";
+import { MultiDictionary } from 'typescript-collections';
 import * as vscode from 'vscode';
-import { Location, Uri } from "vscode";
-import { adjustOffsetRangeAfterChange, NumRange, offsetToRange, rangeToOffset } from './documentUtils';
+import { Location, Uri } from 'vscode';
+import {
+  adjustOffsetRangeAfterChange,
+  NumRange,
+  offsetToRange,
+  rangeToOffset
+} from './documentUtils';
 import { listenWrapped } from './exception';
 import { log, str } from './logging';
 import { isSubPath } from './pathUtils';
-import { StaticTreeNode, TreeProvider, QcfgTreeView } from "./treeView";
+import { StaticTreeNode, TreeProvider, QcfgTreeView } from './treeView';
 import { Modules } from './module';
 import { ParsedLocation } from './parseLocations';
 
 export function setLocations(
-    message: string, parsedLocations: ParsedLocation[], reveal = true) {
+  message: string,
+  parsedLocations: ParsedLocation[],
+  reveal = true
+) {
   const dict = new MultiDictionary<Uri, ParsedLocation>();
   const fileNodes: FileNode[] = [];
   for (const parsedLoc of parsedLocations)
@@ -30,18 +38,17 @@ export function setLocations(
   StaticTreeNode.sortNodesRecursively(nodes, (a, b) => {
     if (a instanceof LocationNode && b instanceof LocationNode)
       return a.line - b.line;
-    if (a instanceof DirNode && b instanceof FileNode)
-      return -1;
-    if (a instanceof FileNode && b instanceof DirNode)
-      return 1;
-    return log.assertInstanceOf(a, UriNode)
-        .fsPath.localeCompare(log.assertInstanceOf(b, UriNode).fsPath);
+    if (a instanceof DirNode && b instanceof FileNode) return -1;
+    if (a instanceof FileNode && b instanceof DirNode) return 1;
+    return log
+      .assertInstanceOf(a, UriNode)
+      .fsPath.localeCompare(log.assertInstanceOf(b, UriNode).fsPath);
   });
   currentTrees = nodes;
   currentMessage = message;
   QcfgTreeView.setProvider(provider);
   if (reveal)
-    QcfgTreeView.revealTree(undefined, {select: false, focus: false});
+    QcfgTreeView.revealTree(undefined, { select: false, focus: false });
 }
 
 // private
@@ -50,7 +57,9 @@ namespace TreeBuilder {
   type Tree = FileNode | Forest;
   interface Forest extends Map<string, Tree> {}
 
-  function createForest() { return new Map<string, Tree>(); }
+  function createForest() {
+    return new Map<string, Tree>();
+  }
 
   function insert(forest: Forest, components: string[], file: FileNode) {
     if (components.length === 1) {
@@ -64,8 +73,7 @@ namespace TreeBuilder {
       forest.set(comp, subforest);
       insert(subforest, components, file);
       return;
-    }
-    else if (tree instanceof Map) {
+    } else if (tree instanceof Map) {
       insert(tree, components, file);
       return;
     } else {
@@ -76,15 +84,14 @@ namespace TreeBuilder {
   export function buildDirHierarchy(files: FileNode[]): StaticTreeNode[] {
     const forest = build(files);
     compress(forest);
-    return convertToHierarchy(forest, "");
+    return convertToHierarchy(forest, '');
   }
 
   function build(files: FileNode[]): Forest {
     const forest = createForest();
     for (const file of files) {
       const components = file.fsPath.split(path.sep);
-      if (components[0] === '')
-        components.shift();
+      if (components[0] === '') components.shift();
       insert(forest, components, file);
     }
     return forest;
@@ -93,27 +100,25 @@ namespace TreeBuilder {
   function compress(forest: Forest) {
     for (const entry of forest) {
       const [comp, tree] = entry;
-      if (!(tree instanceof Map))
-        continue;
+      if (!(tree instanceof Map)) continue;
       compress(tree);
-      if (tree.size > 1)
-        continue;
+      if (tree.size > 1) continue;
       const [subcomp, subtree] = tree.entries().next().value;
-      if (!(subtree instanceof Map))
-        continue;
+      if (!(subtree instanceof Map)) continue;
       forest.delete(comp);
       forest.set(path.join(comp, subcomp), subtree);
     }
   }
 
-  function convertToHierarchy(forest: Forest, prefix: string): StaticTreeNode[] {
+  function convertToHierarchy(
+    forest: Forest,
+    prefix: string
+  ): StaticTreeNode[] {
     const nodes: StaticTreeNode[] = [];
     for (let [subpath, tree] of forest) {
-      if (tree instanceof FileNode)
-        nodes.push(tree);
+      if (tree instanceof FileNode) nodes.push(tree);
       else if (tree instanceof Map) {
-        if (prefix === "")
-          subpath = path.sep + subpath;
+        if (prefix === '') subpath = path.sep + subpath;
         const newPrefix = path.join(prefix, subpath);
         const dirNode = new DirNode(newPrefix, subpath);
         dirNode.addChildren(convertToHierarchy(tree, newPrefix));
@@ -134,8 +139,12 @@ class UriNode extends StaticTreeNode {
     this.allowRemoval();
   }
 
-  get uri() { return this.treeItem.resourceUri!; }
-  get fsPath() { return this.uri.fsPath; }
+  get uri() {
+    return this.treeItem.resourceUri!;
+  }
+  get fsPath() {
+    return this.uri.fsPath;
+  }
 }
 
 class DirNode extends UriNode {
@@ -150,7 +159,7 @@ class DirNode extends UriNode {
 
 class FileNode extends UriNode {
   constructor(uri: Uri) {
-    super(uri, "");
+    super(uri, '');
     this.treeItem.iconPath = vscode.ThemeIcon.File;
     this.setExpanded();
   }
@@ -166,16 +175,21 @@ class LocationNode extends StaticTreeNode {
     this.treeItem.id = str(parsedLoc);
     const label = this.treeItem.label as vscode.TreeItemLabel;
     this.line = parsedLoc.range.start.line;
-    label.highlights = [[
-      parsedLoc.range.start.character - trimOffset,
-      parsedLoc.range.end.character - trimOffset
-    ]];
+    label.highlights = [
+      [
+        parsedLoc.range.start.character - trimOffset,
+        parsedLoc.range.end.character - trimOffset
+      ]
+    ];
     this.fetchDocument(parsedLoc);
   }
   async show() {
     const document = await vscode.workspace.openTextDocument(this.uri);
-    const selection = offsetToRange(document, log.assertNonNull(this.offsetRange));
-    vscode.window.showTextDocument(this.uri, {selection});
+    const selection = offsetToRange(
+      document,
+      log.assertNonNull(this.offsetRange)
+    );
+    vscode.window.showTextDocument(this.uri, { selection });
   }
   private async fetchDocument(location: Location) {
     const document = await vscode.workspace.openTextDocument(this.uri);
@@ -188,8 +202,7 @@ class LocationNode extends StaticTreeNode {
 
 function onDidChangeTextDocument(event: vscode.TextDocumentChangeEvent) {
   const document = event.document;
-  if (!currentTrees || !QcfgTreeView.isCurrentProvider(provider))
-    return;
+  if (!currentTrees || !QcfgTreeView.isCurrentProvider(provider)) return;
   StaticTreeNode.applyRecursively(currentTrees, node => {
     if (node instanceof DirNode && isSubPath(node.fsPath, document.fileName))
       return true;
@@ -197,7 +210,9 @@ function onDidChangeTextDocument(event: vscode.TextDocumentChangeEvent) {
       return true;
     if (node instanceof LocationNode)
       node.offsetRange = adjustOffsetRangeAfterChange(
-          log.assertNonNull(node.offsetRange), event.contentChanges);
+        log.assertNonNull(node.offsetRange),
+        event.contentChanges
+      );
     return false;
   });
 }
@@ -210,25 +225,26 @@ const provider: TreeProvider = {
     return currentMessage;
   },
   removeNode(node: StaticTreeNode) {
-    if (node.isRoot)
-      log.assert(currentTrees!.removeFirst(node));
+    if (node.isRoot) log.assert(currentTrees!.removeFirst(node));
     node.remove();
   },
   onDidChangeSelection(nodes: StaticTreeNode[]) {
-    if (nodes.length !== 1)
-      return;
+    if (nodes.length !== 1) return;
     const node = nodes[0];
-    if (node instanceof LocationNode)
-      node.show();
+    if (node instanceof LocationNode) node.show();
   }
 };
 
 function activate(context: vscode.ExtensionContext) {
-  context.subscriptions.push(listenWrapped(
-      vscode.workspace.onDidChangeTextDocument, onDidChangeTextDocument));
+  context.subscriptions.push(
+    listenWrapped(
+      vscode.workspace.onDidChangeTextDocument,
+      onDidChangeTextDocument
+    )
+  );
 }
 
 Modules.register(activate);
 
-let currentTrees: StaticTreeNode[]|undefined;
-let currentMessage = "";
+let currentTrees: StaticTreeNode[] | undefined;
+let currentMessage = '';

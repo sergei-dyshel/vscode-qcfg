@@ -21,7 +21,6 @@ export enum State {
   ABORTED
 }
 
-
 /**
  * Two tasks with same descriptor can not run at the same time.
  *
@@ -70,7 +69,11 @@ export class TaskRun {
 
   constructor(public task: Task) {
     this.state = State.INITIALIZED;
-    this.log = new Logger({name: 'taskRun', parent: log, instance: task.name});
+    this.log = new Logger({
+      name: 'taskRun',
+      parent: log,
+      instance: task.name
+    });
     this.desc = new TaskDescriptor(task);
   }
 
@@ -78,15 +81,13 @@ export class TaskRun {
     const previous = allRuns.getValue(this.desc);
     if (previous) {
       if (!conflictPolicy) {
-        conflictPolicy =
-            await vscode.window.showWarningMessage(
-                `Task "${
-                    this.task
-                        .name} is already running. Would like to wait for it, cancel it or abort?`,
-                {modal: true}, TaskConfilictPolicy.WAIT,
-                TaskConfilictPolicy.CANCEL_PREVIOUS,
-                TaskConfilictPolicy.ABORT_CURRENT) as TaskConfilictPolicy |
-            undefined;
+        conflictPolicy = (await vscode.window.showWarningMessage(
+          `Task "${this.task.name} is already running. Would like to wait for it, cancel it or abort?`,
+          { modal: true },
+          TaskConfilictPolicy.WAIT,
+          TaskConfilictPolicy.CANCEL_PREVIOUS,
+          TaskConfilictPolicy.ABORT_CURRENT
+        )) as TaskConfilictPolicy | undefined;
       }
       switch (conflictPolicy) {
         case undefined:
@@ -118,45 +119,42 @@ export class TaskRun {
   }
 
   wait(): Promise<void> {
-    if (this.waitingPromise)
-      return this.waitingPromise;
-    this.waitingPromise =
-        new Promise((resolve: () => void, reject: (err: Error) => void) => {
-          this.waitingContext = {resolve, reject};
-        });
+    if (this.waitingPromise) return this.waitingPromise;
+    this.waitingPromise = new Promise(
+      (resolve: () => void, reject: (err: Error) => void) => {
+        this.waitingContext = { resolve, reject };
+      }
+    );
     return this.waitingPromise;
   }
 
   async cancel() {
     this.log.assert(
-        this.state === State.RUNNING || this.state === State.PROCESS_STARTED,
-        `Can not cancel task in state ${State[this.state]}`);
+      this.state === State.RUNNING || this.state === State.PROCESS_STARTED,
+      `Can not cancel task in state ${State[this.state]}`
+    );
     this.log.info('Cancelled');
     this.cancelled = true;
     this.execution!.terminate();
     try {
       await this.wait();
-    }
-    catch (err) {
-      if (this.cancelled && (err instanceof TaskCancelledError))
-        return;
+    } catch (err) {
+      if (this.cancelled && err instanceof TaskCancelledError) return;
       throw err;
     }
   }
 
   static activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
-        listenWrapped(tasks.onDidEndTaskProcess, TaskRun.onDidEndTaskProcess),
-        listenWrapped(
-            tasks.onDidStartTaskProcess, TaskRun.onDidStartTaskProcess),
-        listenWrapped(tasks.onDidEndTask, TaskRun.onDidEndTask));
+      listenWrapped(tasks.onDidEndTaskProcess, TaskRun.onDidEndTaskProcess),
+      listenWrapped(tasks.onDidStartTaskProcess, TaskRun.onDidStartTaskProcess),
+      listenWrapped(tasks.onDidEndTask, TaskRun.onDidEndTask)
+    );
   }
 
-  static findRunningTask(task: Task): TaskRun
-      |undefined {
+  static findRunningTask(task: Task): TaskRun | undefined {
     for (const run of allRuns.values())
-      if (run.task.name === task.name)
-        return run;
+      if (run.task.name === task.name) return run;
     return;
   }
 
@@ -164,50 +162,48 @@ export class TaskRun {
 
   private static onDidEndTaskProcess(event: vscode.TaskProcessEndEvent) {
     const self = allRuns.getValue(new TaskDescriptor(event.execution.task))!;
-    if (!self)
-      return;
+    if (!self) return;
     self.exitCode = event.exitCode;
     self.state = State.PROCESS_ENDED;
-    if (self.statusCmdDisposable)
-      self.statusCmdDisposable!.dispose();
-    if (self.status)
-      self.status!.dispose();
+    if (self.statusCmdDisposable) self.statusCmdDisposable!.dispose();
+    if (self.status) self.status!.dispose();
     self.log.info(`Process ended with exitCode ${self.exitCode}`);
   }
 
   private static onDidStartTaskProcess(event: vscode.TaskProcessStartEvent) {
     const self = allRuns.getValue(new TaskDescriptor(event.execution.task))!;
-    if (!self)
-      return;
+    if (!self) return;
     self.pid = event.processId;
     self.state = State.PROCESS_STARTED;
     self.log.info(`Process started with pid ${self.pid}`);
     self.terminal = findTaskTerminal(self.task);
     if (!self.task.isBackground) {
       self.status = vscode.window.createStatusBarItem();
-      const {command, disposable} = registerTemporaryCommand(() => {
-        if (self.terminal)
-          self.terminal.show();
+      const { command, disposable } = registerTemporaryCommand(() => {
+        if (self.terminal) self.terminal.show();
       });
-      if (self.task.scope && (self.task.scope !== vscode.TaskScope.Global && self.task.scope !== vscode.TaskScope.Workspace))
-        self.status.text = '$(tools)' +
-            `${self.task.name} (${self.task.scope.name})`;
-      else
-        self.status.text = '$(tools)' + self.task.name;
+      if (
+        self.task.scope &&
+        (self.task.scope !== vscode.TaskScope.Global &&
+          self.task.scope !== vscode.TaskScope.Workspace)
+      )
+        self.status.text =
+          '$(tools)' + `${self.task.name} (${self.task.scope.name})`;
+      else self.status.text = '$(tools)' + self.task.name;
       self.status.command = command;
       self.statusCmdDisposable = disposable;
       self.status.show();
     }
     if (self.terminal && vscode.window.activeTerminal === self.terminal) {
       vscode.commands.executeCommand(
-          'workbench.action.terminal.scrollToBottom');
+        'workbench.action.terminal.scrollToBottom'
+      );
     }
   }
 
   private static onDidEndTask(event: vscode.TaskEndEvent) {
     const self = allRuns.getValue(new TaskDescriptor(event.execution.task))!;
-    if (!self)
-      return;
+    if (!self) return;
     self.state = State.DONE;
     if (self.waitingContext) {
       if (self.cancelled) {
@@ -223,7 +219,10 @@ export class TaskRun {
 
   private log: Logger;
   private waitingPromise?: Promise<void>;
-  private waitingContext?: {resolve: () => void, reject: (err: Error) => void};
+  private waitingContext?: {
+    resolve: () => void;
+    reject: (err: Error) => void;
+  };
 }
 
 function findTaskTerminal(task: Task): vscode.Terminal | undefined {
@@ -237,9 +236,7 @@ function findTaskTerminal(task: Task): vscode.Terminal | undefined {
   for (const name of [taskName, wsTaskName])
     cands.push('Task - ' + name, 'Task - qcfg: ' + name);
   for (const term of vscode.window.terminals) {
-    for (const cand of cands)
-      if (term.name === cand)
-        return term;
+    for (const cand of cands) if (term.name === cand) return term;
   }
   return undefined;
 }

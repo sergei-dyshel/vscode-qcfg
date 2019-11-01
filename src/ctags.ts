@@ -1,13 +1,13 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import {SymbolKind} from 'vscode';
+import { SymbolKind } from 'vscode';
 import { Logger } from './logging';
 import * as subprocess from './subprocess';
 
-import {getActiveTextEditor} from './utils';
-import {getDocumentRoot} from './fileUtils';
-import {isLspActive} from './language';
+import { getActiveTextEditor } from './utils';
+import { getDocumentRoot } from './fileUtils';
+import { isLspActive } from './language';
 import { Modules } from './module';
 
 interface LanguageConfig {
@@ -15,13 +15,13 @@ interface LanguageConfig {
   kinds?: string;
 }
 
-const languageConfigs: {[id: string]: LanguageConfig} = {
+const languageConfigs: { [id: string]: LanguageConfig } = {
   c: {},
-  cpp: {lang: 'c++'},
+  cpp: { lang: 'c++' },
   python: {}
 };
 
-const ctagsToVscodeKind: {[name: string]: SymbolKind} = {
+const ctagsToVscodeKind: { [name: string]: SymbolKind } = {
   macro: SymbolKind.Constant,
   enumerator: SymbolKind.EnumMember,
   function: SymbolKind.Function,
@@ -43,7 +43,7 @@ const ctagsToVscodeKind: {[name: string]: SymbolKind} = {
   namespace: SymbolKind.Namespace,
   // Python specific
   module: SymbolKind.Module,
-  unknown: SymbolKind.File, // not good
+  unknown: SymbolKind.File // not good
 };
 
 interface TagInfo {
@@ -56,43 +56,54 @@ interface TagInfo {
 }
 
 async function getTags(
-    document: vscode.TextDocument,
-    token: vscode.CancellationToken): Promise<TagInfo[]> {
+  document: vscode.TextDocument,
+  token: vscode.CancellationToken
+): Promise<TagInfo[]> {
   const langConfig = languageConfigs[document.languageId];
-  const log = new Logger({instance: document.fileName, level: 'debug'});
-  if (!langConfig)
-      return [];
+  const log = new Logger({ instance: document.fileName, level: 'debug' });
+  if (!langConfig) return [];
   const docRoot = getDocumentRoot(document.fileName);
-  if (!docRoot)
-      return [];
-  const {workspaceFolder, relativePath} = docRoot;
+  if (!docRoot) return [];
+  const { workspaceFolder, relativePath } = docRoot;
   const proc = new subprocess.Subprocess(
-      [
-        'ctags', '--sort=no',
-        `--language-force=${langConfig.lang || document.languageId}`,
-        '--output-format=json', '--fields=*', relativePath
-      ],
-      {cwd: workspaceFolder.uri.fsPath, maxBuffer: 1 * 1024 * 1024});
+    [
+      'ctags',
+      '--sort=no',
+      `--language-force=${langConfig.lang || document.languageId}`,
+      '--output-format=json',
+      '--fields=*',
+      relativePath
+    ],
+    { cwd: workspaceFolder.uri.fsPath, maxBuffer: 1 * 1024 * 1024 }
+  );
   log.trace('Started');
   token.onCancellationRequested(() => {
     log.trace('Cancelled');
     proc.kill();
   });
   const result = await proc.wait();
-  if (token.isCancellationRequested)
-    return [];
+  if (token.isCancellationRequested) return [];
   const lines = result.stdout.split('\n');
-  const tags = lines.filter((line) => line !== '').map(parseLine);
+  const tags = lines.filter(line => line !== '').map(parseLine);
   log.trace(`Returned ${lines.length} results`);
   return tags;
 }
 
-function tag2Symbol(tag: TagInfo, document: vscode.TextDocument): vscode.SymbolInformation {
-  const location =
-      new vscode.Location(document.uri, new vscode.Position(tag.line - 1, 0));
+function tag2Symbol(
+  tag: TagInfo,
+  document: vscode.TextDocument
+): vscode.SymbolInformation {
+  const location = new vscode.Location(
+    document.uri,
+    new vscode.Position(tag.line - 1, 0)
+  );
   const kind = ctagsToVscodeKind[tag.kind] || SymbolKind.File;
   return new vscode.SymbolInformation(
-      tag.name, kind, tag.scope || '', location);
+    tag.name,
+    kind,
+    tag.scope || '',
+    location
+  );
 }
 function parseLine(line: string): TagInfo {
   return JSON.parse(line) as TagInfo;
@@ -100,13 +111,13 @@ function parseLine(line: string): TagInfo {
 
 class DocumentSymbolProvider implements vscode.DocumentSymbolProvider {
   async provideDocumentSymbols(
-      document: vscode.TextDocument, token: vscode.CancellationToken):
-      Promise<vscode.SymbolInformation[]|undefined> {
+    document: vscode.TextDocument,
+    token: vscode.CancellationToken
+  ): Promise<vscode.SymbolInformation[] | undefined> {
     switch (document.languageId) {
       case 'cpp':
       case 'c':
-        if (isLspActive())
-          return;
+        if (isLspActive()) return;
         break;
       case 'typescript':
         return;
@@ -120,8 +131,11 @@ class DocumentSymbolProvider implements vscode.DocumentSymbolProvider {
 
 function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
-      vscode.languages.registerDocumentSymbolProvider(
-          '*', new DocumentSymbolProvider()));
+    vscode.languages.registerDocumentSymbolProvider(
+      '*',
+      new DocumentSymbolProvider()
+    )
+  );
 }
 
 Modules.register(activate);
