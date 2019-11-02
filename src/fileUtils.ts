@@ -42,6 +42,7 @@ export function getDocumentWorkspaceFolder(fileName: string) {
 
 // tslint:disable-next-line: deprecation
 export const exists = nodejs.util.promisify(nodejs.fs.exists);
+export const realPath = nodejs.util.promisify(nodejs.fs.realpath);
 
 export function existsInRoot(
   wsFolder: vscode.WorkspaceFolder,
@@ -117,14 +118,6 @@ export async function openTagLocation(
   }
   editor!.selection = selection;
   editor!.revealRange(editor!.selection);
-}
-
-export async function readJSON(path: string): Promise<any> {
-  return JSON.parse(
-    new nodejs.util.TextDecoder('utf-8').decode(
-      await vscode.workspace.fs.readFile(vscode.Uri.file(path))
-    )
-  );
 }
 
 export enum FileWatcherEvent {

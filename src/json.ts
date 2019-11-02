@@ -2,6 +2,7 @@
 
 import * as jsoncParser from 'jsonc-parser';
 import * as nodejs from './nodejs';
+import { Uri, workspace } from 'vscode';
 
 interface JsonParseOptions extends jsoncParser.ParseOptions {
   forbidErrors?: boolean;
@@ -13,17 +14,27 @@ class JsonParseError extends Error {
   }
 }
 
+export function parseJson(text: string, options?: JsonParseOptions) {
+  const errors: jsoncParser.ParseError[] = [];
+  const json = jsoncParser.parse(text, errors, options);
+  if (errors.length > 0 && options && options.forbidErrors)
+    throw new JsonParseError('Errors occured while parsing JSON', errors);
+  return json;
+}
+
 export function parseJsonFileSync(
   path: string,
   options?: JsonParseOptions
 ): any {
-  const errors: jsoncParser.ParseError[] = [];
-  const json = jsoncParser.parse(
-    nodejs.fs.readFileSync(path).toString(),
-    errors,
+  return parseJson(nodejs.fs.readFileSync(path).toString(), options);
+}
+
+export async function parseJsonFileAsync(
+  path: string,
+  options?: JsonParseOptions
+): Promise<any> {
+  return parseJson(
+    (await workspace.fs.readFile(Uri.file(path))).toString(),
     options
   );
-  if (errors.length > 0 && options && options.forbidErrors)
-    throw new JsonParseError('Errors occured while parsing JSON', errors);
-  return json;
 }

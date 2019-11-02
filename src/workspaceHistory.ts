@@ -15,7 +15,7 @@ import { selectFromList } from './dialog';
 import { registerAsyncCommandWrapped } from './exception';
 import { expandTemplate } from './stringUtils';
 import { mapAsyncNoThrowAndZip } from './async';
-import { readJSON } from './fileUtils';
+import { parseJsonFileAsync } from './json';
 
 let extContext: ExtensionContext;
 const PERSISTENT_KEY = 'workspaceHistory';
@@ -57,24 +57,29 @@ function expandTitle(root: string, title: string): string {
 
 async function getWorkspaceConfig(root: string): Promise<string> {
   const stat = await workspace.fs.stat(Uri.file(root));
-  if (stat.type & FileType.Directory) {
-    try {
-      const settings = await readJSON(
-        nodejs.path.join(root, '.vscode', 'settings.json')
-      );
-      return expandTitle(root, settings['window.title']);
-    } catch (_) {
-      return nodejs.path.basename(root);
-    }
-  } else if (stat.type & FileType.File) {
-    try {
-      const settings = await readJSON(root);
-      return expandTitle(root, settings['settings']['window.title']);
-    } catch (_) {
-      return nodejs.path.basename(nodejs.path.dirname(root));
-    }
+  switch (stat.type) {
+    case FileType.Directory:
+      try {
+        const settings = await parseJsonFileAsync(
+          nodejs.path.join(root, '.vscode', 'settings.json')
+        );
+        return expandTitle(root, settings['window.title']);
+      } catch (_) {
+        return nodejs.path.basename(root);
+      }
+      break;
+    case FileType.File:
+    case FileType.SymbolicLink:
+      try {
+        const settings = await parseJsonFileAsync(root);
+        return expandTitle(root, settings['settings']['window.title']);
+      } catch (_) {
+        return nodejs.path.basename(nodejs.path.dirname(root));
+      }
+      break;
+    default:
+      throw new Error('Workspace is not workspace folder nor .code-workspace');
   }
-  throw new Error('Workspace is not workspace folder nor .code-workspace');
 }
 
 function toQuickPickItem(rootAndTitle: [string, string]): QuickPickItem {
@@ -115,7 +120,7 @@ async function activate(context: ExtensionContext) {
   const history: string[] = globalState.get(PERSISTENT_KEY, []);
   history.removeFirst(wsFile);
   history.unshift(wsFile);
-  // await globalState.update(PERSISTENT_KEY, history);
+  await globalState.update(PERSISTENT_KEY, history);
 }
 
 Modules.register(activate);
