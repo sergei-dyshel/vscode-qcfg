@@ -7,7 +7,6 @@ import * as glob from 'glob';
 import * as chokidar from 'chokidar';
 
 import { log } from './logging';
-import { Uri } from 'vscode';
 import { getActiveTextEditor, DisposableLike } from './utils';
 
 export const globSync = glob.sync;
@@ -40,6 +39,7 @@ export function getDocumentWorkspaceFolder(fileName: string) {
 }
 
 export const exists = nodejs.util.promisify(nodejs.fs.exists);
+export const realPath = nodejs.util.promisify(nodejs.fs.realpath);
 
 export function existsInRoot(
   wsFolder: vscode.WorkspaceFolder,
@@ -116,14 +116,6 @@ export async function openTagLocation(
   }
   editor!.selection = selection;
   editor!.revealRange(editor!.selection);
-}
-
-export async function readJSON(path: string): Promise<any> {
-  return JSON.parse(
-    new nodejs.util.TextDecoder('utf-8').decode(
-      await vscode.workspace.fs.readFile(Uri.file(path))
-    )
-  );
 }
 
 export enum FileWatcherEvent {
