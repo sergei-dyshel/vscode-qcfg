@@ -8,7 +8,8 @@ import {
   workspace,
   WorkspaceFolder,
   window,
-  Uri
+  Uri,
+  Task
 } from 'vscode';
 import { mapSomeAsync, MAP_UNDEFINED, filterAsync } from '../async';
 import { ConfigFilePair, watchConfigFile, getConfigFileNames } from '../config';
@@ -101,7 +102,9 @@ function handleValidationError(
     log.debug(
       `Error validating task "${label}" for ${contextStr}: ${err.message}`
     );
-  else throw err;
+  else {
+    throw err;
+  }
 }
 
 interface FolderTask<P> {
@@ -274,10 +277,18 @@ function expandParamsOrCmd(paramsOrCmd: Params | string): Params {
     : paramsOrCmd;
 }
 
+async function fetchVscodeTasksChecked(): Promise<Task[]> {
+  try {
+    return await tasks.fetchTasks();
+  } catch (err) {
+    return [];
+  }
+}
+
 async function showTasks() {
   const [qcfgTasks, rawVscodeTasks] = await Promise.all([
     fetchQcfgTasks(),
-    tasks.fetchTasks()
+    fetchVscodeTasksChecked()
   ]);
   const vscodeTasks = rawVscodeTasks.map(task => new VscodeTask(task));
   const allTasks = [...qcfgTasks, ...vscodeTasks];
