@@ -242,12 +242,11 @@ function stringifyTextEditor(editor: vscode.TextEditor) {
 
 function stringifyObject(x: object): string {
   if (x instanceof vscode.Uri) {
-    if (x.scheme === 'file') return x.fsPath;
-    else return x.toString();
+    return workspace.asRelativePath(x);
   } else if ('fileName' in x && 'uri' in x) {
     // TextDocument
     const doc = x as vscode.TextDocument;
-    const relpath = workspace.asRelativePath(doc.fileName);
+    const relpath = stringifyObject(doc.uri);
     return `<${relpath}>`;
   } else if ('document' in x && 'viewColumn' in x) {
     // TextEditor

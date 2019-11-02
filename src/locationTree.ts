@@ -208,11 +208,13 @@ function onDidChangeTextDocument(event: vscode.TextDocumentChangeEvent) {
       return true;
     if (node instanceof FileNode && node.fsPath === document.uri.fsPath)
       return true;
-    if (node instanceof LocationNode)
+    if (node instanceof LocationNode) {
       node.offsetRange = adjustOffsetRangeAfterChange(
         log.assertNonNull(node.offsetRange),
         event.contentChanges
       );
+      if (!node.offsetRange) node.remove();
+    }
     return false;
   });
 }
