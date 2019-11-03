@@ -1,11 +1,21 @@
 'use strict';
 
-import * as vscode from 'vscode';
 import { log } from './logging';
-import { workspace, commands } from 'vscode';
+import {
+  workspace,
+  commands,
+  ExtensionContext,
+  ConfigurationTarget,
+  window,
+  Uri
+} from 'vscode';
 import { colorThemeFiles } from './language';
 import { selectStringFromList } from './dialog';
-import { registerCommandWrapped, listenWrapped } from './exception';
+import {
+  registerCommandWrapped,
+  listenWrapped,
+  handleAsyncStd
+} from './exception';
 import { Modules } from './module';
 
 const SECTION = 'workbench.colorTheme';
@@ -13,7 +23,7 @@ const MEMENTO_PERSIST_KEY = 'qcfg.colors.persistent';
 const MEMENTO_THEME_KEY = 'qcfg.colors.theme';
 const INVALID = 'invalid_theme';
 
-let extContext: vscode.ExtensionContext;
+let extContext: ExtensionContext;
 
 function isPersisted() {
   return extContext.workspaceState.get(MEMENTO_PERSIST_KEY, false);
@@ -41,12 +51,12 @@ function getSettingsTheme(): string | undefined {
 
 async function setSettingsTheme(theme: string | undefined) {
   const conf = workspace.getConfiguration();
-  await conf.update(SECTION, theme, vscode.ConfigurationTarget.Workspace);
+  await conf.update(SECTION, theme, ConfigurationTarget.Workspace);
 }
 
-async function selectWorkspaceTheme(_extContext: vscode.ExtensionContext) {
+async function selectWorkspaceTheme() {
   await setPersisted(false);
-  vscode.window.showWarningMessage(
+  await window.showWarningMessage(
     'Clearing workspace theme, persist explicitly again after you choose'
   );
   await setSettingsTheme(INVALID);
@@ -57,8 +67,10 @@ async function selectWorkspaceTheme(_extContext: vscode.ExtensionContext) {
   await commands.executeCommand('workbench.action.selectTheme');
 }
 
-async function persistWorkspaceTheme(_extContext: vscode.ExtensionContext) {
-  if (isPersisted()) vscode.window.showWarningMessage('Already persisted');
+async function persistWorkspaceTheme() {
+  if (isPersisted()) {
+    await window.showWarningMessage('Already persisted');
+  }
   const settingsTheme = getSettingsTheme();
   log.assert(
     settingsTheme !== INVALID && settingsTheme !== undefined,
@@ -68,10 +80,10 @@ async function persistWorkspaceTheme(_extContext: vscode.ExtensionContext) {
   await setPersistedTheme(settingsTheme);
 }
 
-async function clearWorkspaceTheme(_extContext: vscode.ExtensionContext) {
-  setSettingsTheme(undefined);
-  setPersisted(false);
-  setPersistedTheme(undefined);
+async function clearWorkspaceTheme() {
+  await setSettingsTheme(undefined);
+  await setPersisted(false);
+  await setPersistedTheme(undefined);
 }
 
 async function onConfigurationChanged() {
@@ -88,13 +100,14 @@ async function onConfigurationChanged() {
 async function inspectTheme() {
   const themes = Object.keys(colorThemeFiles);
   const theme = await selectStringFromList(themes);
-  if (theme)
-    vscode.window.showTextDocument(vscode.Uri.file(colorThemeFiles[theme]));
+  if (theme) {
+    await window.showTextDocument(Uri.file(colorThemeFiles[theme]));
+  }
 }
 
-function activate(context: vscode.ExtensionContext) {
+function activate(context: ExtensionContext) {
   extContext = context;
-  onConfigurationChanged();
+  handleAsyncStd(onConfigurationChanged());
   context.subscriptions.push(
     listenWrapped(workspace.onDidChangeConfiguration, onConfigurationChanged),
     registerCommandWrapped('qcfg.colors.select', selectWorkspaceTheme),

@@ -18,6 +18,7 @@ class Item implements vscode.QuickPickItem {
 let valueFromPreviousInvocation = '';
 let lastSelected: Item | undefined = undefined;
 
+// tslint:disable-next-line: max-func-body-length
 function showFuzzySearch() {
   log.info('called');
   // Build the entries we will show the user. One entry for each non-empty line,
@@ -27,20 +28,23 @@ function showFuzzySearch() {
   const lines: string[] = editor.document.getText().split(/\r?\n/);
   const quickPickEntries: Item[] = [];
   for (let i = 0; i < lines.length; ++i) {
-    if (lines[i]) {
-      const line = `${(i + 1).toString()}: ${lines[i].trim()}`;
-      if (line.length > 60) {
-        quickPickEntries.push(new Item(line.substring(0, 58) + '…', i + 1));
-        quickPickEntries.push(
-          new Item(
-            `${(i + 1).toString()}: …${lines[i]
-              .trim()
-              .substring(line.length - 60 + 1)}`,
-            i + 1
-          )
-        );
-      } else quickPickEntries.push(new Item(line, i + 1));
+    if (!lines[i]) {
+      continue;
     }
+    const line = `${(i + 1).toString()}: ${lines[i].trim()}`;
+    if (line.length <= 60) {
+      quickPickEntries.push(new Item(line, i + 1));
+      continue;
+    }
+    quickPickEntries.push(new Item(line.substring(0, 58) + '…', i + 1));
+    quickPickEntries.push(
+      new Item(
+        `${(i + 1).toString()}: …${lines[i]
+          .trim()
+          .substring(line.length - 60 + 1)}`,
+        i + 1
+      )
+    );
   }
 
   // Setup basic quick pick.
@@ -87,16 +91,17 @@ function showFuzzySearch() {
   let hasPreviewValue = previewValue.length > 0;
   pick.onDidChangeValue(
     handleErrors(value => {
-      if (hasPreviewValue) {
-        hasPreviewValue = false;
+      if (!hasPreviewValue) {
+        return;
+      }
+      hasPreviewValue = false;
 
-        // Try to figure out what text the user typed. Assumes that the user
-        // typed at most one character.
-        for (let i = 0; i < value.length; ++i) {
-          if (previewValue.charAt(i) !== value.charAt(i)) {
-            pick.value = value.charAt(i);
-            break;
-          }
+      // Try to figure out what text the user typed. Assumes that the user
+      // typed at most one character.
+      for (let i = 0; i < value.length; ++i) {
+        if (previewValue.charAt(i) !== value.charAt(i)) {
+          pick.value = value.charAt(i);
+          break;
         }
       }
     })

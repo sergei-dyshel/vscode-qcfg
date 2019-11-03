@@ -5,9 +5,9 @@ import * as fileUtils from './fileUtils';
 import * as saveAll from './saveAll';
 import { log, Logger } from './logging';
 import * as subprocess from './subprocess';
+import * as nodejs from './nodejs';
 import { PromiseQueue } from './async';
 
-import * as path from 'path';
 import * as child_process from 'child_process';
 import * as readline from 'readline';
 import { isLspActive } from './language';
@@ -19,20 +19,24 @@ import {
   buildAbbrevPattern
 } from './stringUtils';
 const RE2 = require('re2');
-import { registerCommandWrapped, handleErrors } from './exception';
+import {
+  registerCommandWrapped,
+  handleErrors,
+  handleAsyncStd
+} from './exception';
 import { Modules } from './module';
 import { runTask } from './tasks/main';
 import { Params, TaskType, Flag, LocationFormat } from './tasks/params';
 
 async function findGtagsDir(dir: string) {
   while (true) {
-    if (await fileUtils.exists(path.join(dir, 'GTAGS'))) {
+    if (await fileUtils.exists(nodejs.path.join(dir, 'GTAGS'))) {
       return dir;
-    } else if (dir === '/') {
-      return undefined;
-    } else {
-      dir = path.dirname(dir);
     }
+    if (dir === '/') {
+      return undefined;
+    }
+    dir = nodejs.path.dirname(dir);
   }
 }
 
@@ -41,12 +45,11 @@ async function onSaveAll(docs: saveAll.DocumentsInFolder) {
   if (!gtagsDir) {
     log.debug(`No GTAGS in ${docs.folder.name}`);
     return;
-  } else {
-    log.debug(`Found GTAGS in ${gtagsDir}`);
   }
+  log.debug(`Found GTAGS in ${gtagsDir}`);
 
   const docPaths = docs.documents.map(doc =>
-    path.relative(gtagsDir, doc.uri.fsPath)
+    nodejs.path.relative(gtagsDir, doc.uri.fsPath)
   );
 
   log.info(`Gtags on ${docPaths} in "${docs.folder.name}"`);
@@ -54,7 +57,7 @@ async function onSaveAll(docs: saveAll.DocumentsInFolder) {
   try {
     await subprocess.executeSubprocess(cmd, { cwd: gtagsDir });
   } catch (err) {
-    vscode.window.showErrorMessage('gtags update failed');
+    await vscode.window.showErrorMessage(`gtags update failed: ${err.message}`);
   }
 }
 
@@ -71,9 +74,9 @@ async function updateDB() {
         statusBarMessage: 'gtags check'
       });
       if (res.code === 2)
-        vscode.window.showInformationMessage('gtags db regenerated');
+        await vscode.window.showInformationMessage('gtags db regenerated');
     } catch (err) {
-      vscode.window.showErrorMessage(
+      await vscode.window.showErrorMessage(
         `gtags db check failed: ${(err as Error).message}`
       );
     }
@@ -93,12 +96,14 @@ namespace WorkspaceGtags {
   let currentQeury: string;
   let currentItems: Item[];
   let limitReached = false;
-  const log = new Logger({ name: 'workspaceGtags', parent: rootLogger });
+  const logger = new Logger({ name: 'workspaceGtags', parent: rootLogger });
   let re2pattern: any;
 
   export async function run() {
     const editor = getActiveTextEditor();
-    gtagsDir = log.assertNonNull(await findGtagsDir(editor.document.fileName));
+    gtagsDir = logger.assertNonNull(
+      await findGtagsDir(editor.document.fileName)
+    );
     quickPick = vscode.window.createQuickPick();
     quickPick.onDidHide(handleErrors(onHide));
     quickPick.onDidAccept(handleErrors(abortSearch));
@@ -120,23 +125,25 @@ namespace WorkspaceGtags {
 
   function onDidAccept() {
     const selected = quickPick!.selectedItems[0];
-    const absPath = path.join(gtagsDir, selected.file);
-    fileUtils.openTagLocation(absPath, {
-      line: selected.line,
-      tag: selected.name
-    });
+    const absPath = nodejs.path.join(gtagsDir, selected.file);
+    handleAsyncStd(
+      fileUtils.openTagLocation(absPath, {
+        line: selected.line,
+        tag: selected.name
+      })
+    );
     abortSearch();
     quickPick!.dispose();
     quickPick = undefined;
   }
 
   function onNewQuery(query: string) {
-    log.debug(`New query: "${query}"`);
+    logger.debug(`New query: "${query}"`);
     currentQeury = query;
     re2pattern = new RE2(buildFuzzyPattern(query), 'i');
     if (query.startsWith(searchedQuery) && !limitReached) {
       currentItems = searchResults.filter(item => re2pattern.test(item.label));
-      log.debug(
+      logger.debug(
         `Reused results from previous query "${searchedQuery}", filtered ${currentItems.length} out of ${searchResults.length} items`
       );
       updateItems();
@@ -148,7 +155,7 @@ namespace WorkspaceGtags {
 
   function abortSearch() {
     if (searchProcess) {
-      log.debug('Aborting search');
+      logger.debug('Aborting search');
       reader.close();
       searchProcess.stdout.destroy();
       searchProcess.kill();
@@ -166,7 +173,7 @@ namespace WorkspaceGtags {
     limitReached = false;
     const spawnOptions: child_process.SpawnOptions = { cwd: gtagsDir };
     const pattern = buildFuzzyPattern(query);
-    log.debug(`Searching pattern "${pattern}"`);
+    logger.debug(`Searching pattern "${pattern}"`);
     searchProcess = child_process.spawn(
       'global',
       ['-i', '-n', '-x', '-d', pattern + '.*'],
@@ -175,16 +182,18 @@ namespace WorkspaceGtags {
     reader = readline.createInterface(searchProcess.stdout);
     reader.on('line', onLine);
     reader.on('close', () => {
-      log.debug(
+      logger.debug(
         `Search yielded ${searchResults.length} results, ${currentItems.length} results are filtered`
       );
       if (!searchResults) updateItems();
     });
     searchProcess.on('exit', (code, signal) => {
-      log.debug(`Search process exited with code ${code} signal ${signal}`);
+      logger.debug(`Search process exited with code ${code} signal ${signal}`);
       if (code || (signal && signal !== 'SIGTERM' && signal !== 'SIGPIPE')) {
-        vscode.window.showErrorMessage(
-          `gtags (pattern: ${pattern} exited with code ${code} signal ${signal}`
+        handleAsyncStd(
+          vscode.window.showErrorMessage(
+            `gtags (pattern: ${pattern} exited with code ${code} signal ${signal}`
+          )
         );
       }
     });
@@ -192,10 +201,10 @@ namespace WorkspaceGtags {
 
   function onLine(line: string) {
     if (searchResults.length === LIMIT) {
-      log.debug(`Reached limit of ${LIMIT}`);
+      logger.debug(`Reached limit of ${LIMIT}`);
       abortSearch();
       if (currentQeury !== searchedQuery) {
-        log.debug(`Restarting search with new query ${currentQeury}`);
+        logger.debug(`Restarting search with new query ${currentQeury}`);
         startSearch(currentQeury);
       } else {
         limitReached = true;
@@ -214,7 +223,9 @@ namespace WorkspaceGtags {
     const tag = parseLine(line);
     return {
       label: tag.name,
-      description: `${path.basename(tag.file)}   ${tag.line}  ${tag.text}`,
+      description: `${nodejs.path.basename(tag.file)}   ${tag.line}  ${
+        tag.text
+      }`,
       ...tag
     };
   }
@@ -229,7 +240,7 @@ interface TagInfo {
 
 function tagToLocation(tag: TagInfo, gtagsDir: string): vscode.Location {
   return new vscode.Location(
-    vscode.Uri.file(path.join(gtagsDir, tag.file)),
+    vscode.Uri.file(nodejs.path.join(gtagsDir, tag.file)),
     new vscode.Position(tag.line - 1, 0)
   );
 }
@@ -246,7 +257,7 @@ function parseLine(line: string): TagInfo {
 }
 
 function tag2Symbol(tag: TagInfo, gtagsDir: string): vscode.SymbolInformation {
-  const fullpath = vscode.Uri.file(path.join(gtagsDir, tag.file));
+  const fullpath = vscode.Uri.file(nodejs.path.join(gtagsDir, tag.file));
   const location = new vscode.Position(tag.line, 0);
   return new vscode.SymbolInformation(
     tag.name,
@@ -291,17 +302,21 @@ async function searchGtags(
     `global -d -x -n "${regex}.*" | head -n100`,
     { cwd: gtagsDir, maxBuffer: 1 * 1024 * 1024 }
   );
-  const log = new Logger({ name: source, parent: rootLogger, instance: query });
-  log.debug('Started');
+  const logger = new Logger({
+    name: source,
+    parent: rootLogger,
+    instance: query
+  });
+  logger.debug('Started');
   token.onCancellationRequested(() => {
-    log.debug('Cancelled');
+    logger.debug('Cancelled');
     proc.kill();
   });
   const result = await proc.wait();
   if (token.isCancellationRequested) return [];
   const lines = result.stdout.split('\n');
   const tags = lines.filter(line => line !== '').map(parseLine);
-  log.debug(`Returned ${lines.length} results`);
+  logger.debug(`Returned ${lines.length} results`);
   return tags;
 }
 
@@ -314,8 +329,7 @@ async function searchDefinition(
     { cwd: gtagsDir }
   );
   const lines = result.stdout.split('\n');
-  const tags = lines.filter(line => line !== '').map(parseLine);
-  return tags;
+  return lines.filter(line => line !== '').map(parseLine);
 }
 
 async function openDefinition() {
@@ -325,21 +339,23 @@ async function openDefinition() {
     'GTAGS not found'
   );
   log.assert(editor.selection.isEmpty, 'Selection is not empty');
-  const word = editor.document.getWordRangeAtPosition(editor.selection.active);
-  const range = log.assertNonNull(word, 'Not on word');
-  const tag = editor.document.getText(range);
-  const tags = await searchDefinition(tag, gtagsDir);
-  log.assert(tags.length > 0, `No definitions found for ${tag}`);
+  const wordRange = editor.document.getWordRangeAtPosition(
+    editor.selection.active
+  );
+  const range = log.assertNonNull(wordRange, 'Not on word');
+  const word = editor.document.getText(range);
+  const tags = await searchDefinition(word, gtagsDir);
+  log.assert(tags.length > 0, `No definitions found for ${word}`);
   if (tags.length === 1) {
     const tag = tags[0];
-    fileUtils.openTagLocation(path.join(gtagsDir, tag.file), {
+    await fileUtils.openTagLocation(nodejs.path.join(gtagsDir, tag.file), {
       line: tag.line,
       tag: tag.name
     });
     return;
   }
   const locations = tags.map(tag => tagToLocation(tag, gtagsDir));
-  vscode.commands.executeCommand(
+  await vscode.commands.executeCommand(
     'editor.action.showReferences',
     editor.document.uri,
     editor.selection.active,
@@ -347,7 +363,7 @@ async function openDefinition() {
   );
 }
 
-function openDefinitionInWorkspace() {
+async function openDefinitionInWorkspace() {
   const params: Params = {
     command: 'global -d -x -n ${cursorWord}',
     type: TaskType.PROCESS,
@@ -355,7 +371,7 @@ function openDefinitionInWorkspace() {
     flags: [Flag.FOLDER],
     when: { fileExists: 'GTAGS' }
   };
-  runTask('gtags_def', params, { folder: 'all' });
+  await runTask('gtags_def', params, { folder: 'all' });
 }
 
 class GtagsDefinitionProvider implements vscode.DefinitionProvider {
@@ -377,10 +393,10 @@ class GtagsDefinitionProvider implements vscode.DefinitionProvider {
       await findGtagsDir(document.fileName),
       'GTAGS not found'
     );
-    const word = document.getWordRangeAtPosition(position);
-    const range = log.assertNonNull(word, 'Not on word');
-    const tag = document.getText(range);
-    const tags = await searchGtags('definition', tag, tag, gtagsDir, token);
+    const wordRange = document.getWordRangeAtPosition(position);
+    const range = log.assertNonNull(wordRange, 'Not on word');
+    const word = document.getText(range);
+    const tags = await searchGtags('definition', word, word, gtagsDir, token);
     return tags.map(tag => tagToLocation(tag, gtagsDir));
   }
 }
@@ -418,7 +434,7 @@ class GtagsHoverProvider implements vscode.HoverProvider {
 }
 function activate(context: vscode.ExtensionContext) {
   const queue = new PromiseQueue('gtags');
-  queue.add(updateDB, 'gtags check');
+  handleAsyncStd(queue.add(updateDB, 'gtags check'));
   setInterval(queue.queued(updateDB, 'gtags check'), 30000);
   context.subscriptions.push(
     saveAll.onEvent(queue.queued(onSaveAll)),

@@ -1,7 +1,12 @@
 'use strict';
 
-import * as vscode from 'vscode';
-import { window, workspace } from 'vscode';
+import {
+  window,
+  workspace,
+  Uri,
+  RelativePattern,
+  ExtensionContext
+} from 'vscode';
 import * as fileUtils from './fileUtils';
 import * as path from 'path';
 import { log } from './logging';
@@ -27,38 +32,43 @@ async function switchToAlternate() {
     mapping[ext],
     `No alternate mapping configured for ${ext}`
   );
-  const altFiles = altExts.map(ext => stripExt(filePath) + ext);
+  const altFiles = altExts.map(altExt => stripExt(filePath) + altExt);
   for (const alt of altFiles) {
     const exists = await fileUtils.exists(alt);
-    if (exists) {
-      window.showTextDocument(vscode.Uri.file(alt), {
+    if (!exists) continue;
+    await window.showTextDocument(Uri.file(alt), {
+      viewColumn: editor.viewColumn
+    });
+    return;
+  }
+  for (const altExt of altExts) {
+    const shortName = baseName(filePath) + altExt;
+    const folder = log.assertNonNull(
+      fileUtils.getDocumentWorkspaceFolder(filePath)
+    );
+    const pattern = new RelativePattern(folder, '**/' + shortName);
+    const files = await workspace.findFiles(pattern);
+    if (files.length === 0) {
+      continue;
+    }
+    if (files.length === 1) {
+      await window.showTextDocument(files[0], {
         viewColumn: editor.viewColumn
       });
       return;
     }
-  }
-  for (const ext of altExts) {
-    const shortName = baseName(filePath) + ext;
-    const folder = log.assertNonNull(
-      fileUtils.getDocumentWorkspaceFolder(filePath)
+    await window.showWarningMessage(
+      `Multiple options for alternate file of "${relPath}"`,
+      ...files.map(uri => uri.fsPath)
     );
-    const pattern = new vscode.RelativePattern(folder, '**/' + shortName);
-    const files = await workspace.findFiles(pattern);
-    if (files.length === 1) {
-      window.showTextDocument(files[0], { viewColumn: editor.viewColumn });
-      return;
-    } else if (files.length > 1) {
-      window.showWarningMessage(
-        `Multiple options for alternate file of "${relPath}"`,
-        ...files.map(uri => uri.fsPath)
-      );
-      return;
-    }
+    return;
   }
-  window.showWarningMessage(`Alternate file for "${relPath}" does not exist`);
+  await window.showWarningMessage(
+    `Alternate file for "${relPath}" does not exist`
+  );
 }
 
-function activate(context: vscode.ExtensionContext) {
+function activate(context: ExtensionContext) {
   context.subscriptions.push(
     registerCommandWrapped('qcfg.alternate.switch', switchToAlternate)
   );

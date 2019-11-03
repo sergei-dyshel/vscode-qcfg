@@ -1,5 +1,6 @@
 'use strict';
 
+/* REFACTOR: import specific stuff from vscode */
 import * as vscode from 'vscode';
 import * as nodejs from './nodejs';
 
@@ -7,10 +8,10 @@ import * as glob from 'glob';
 import * as chokidar from 'chokidar';
 
 import { log } from './logging';
-import { Uri } from 'vscode';
 import { getActiveTextEditor, DisposableLike } from './utils';
 
 export const globSync = glob.sync;
+// tslint:disable-next-line: no-unnecessary-type-assertion
 export const globAsync = nodejs.util.promisify(require('glob')) as (
   pattern: string,
   options?: glob.IOptions
@@ -39,6 +40,7 @@ export function getDocumentWorkspaceFolder(fileName: string) {
   return docRoot ? docRoot.workspaceFolder : undefined;
 }
 
+// tslint:disable-next-line: deprecation
 export const exists = nodejs.util.promisify(nodejs.fs.exists);
 
 export function existsInRoot(
@@ -83,7 +85,7 @@ export async function openTagLocation(
   const line0 = options && options.line ? options.line - 1 : 0;
   let col0 = options && options.column ? options.column - 1 : 0;
 
-  let editor = vscode.window.activeTextEditor;
+  const editor = vscode.window.activeTextEditor;
   const mustOpenNewEditor = !editor || editor.document.uri.fsPath !== filePath;
   const document = mustOpenNewEditor
     ? await vscode.workspace.openTextDocument(filePath)
@@ -107,11 +109,10 @@ export async function openTagLocation(
     const viewColumn: vscode.ViewColumn | undefined = editor
       ? editor.viewColumn
       : undefined;
-    editor = await vscode.window.showTextDocument(document, {
+    await vscode.window.showTextDocument(document, {
       viewColumn,
       selection
     });
-    editor.show();
     return;
   }
   editor!.selection = selection;
@@ -121,7 +122,7 @@ export async function openTagLocation(
 export async function readJSON(path: string): Promise<any> {
   return JSON.parse(
     new nodejs.util.TextDecoder('utf-8').decode(
-      await vscode.workspace.fs.readFile(Uri.file(path))
+      await vscode.workspace.fs.readFile(vscode.Uri.file(path))
     )
   );
 }

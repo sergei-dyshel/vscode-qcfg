@@ -23,5 +23,9 @@ export function clearStatusBarMessage() {
   if (statusBarMsgItem) statusBarMsgItem.dispose();
 }
 
+/**
+ * Private
+ */
+
 let statusBarMsgItem: StatusBarItem | undefined;
 const timer = new Timer();

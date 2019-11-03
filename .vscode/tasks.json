@@ -18,6 +18,11 @@
             "runOptions": {
 				"runOn": "folderOpen",
             }
+		},
+		{
+			"label": "tslint",
+			"type": "shell",
+			"command": "npx tslint --project tsconfig.json --config tslint.json --format stylish",
 		}
-	]
+	],
 }

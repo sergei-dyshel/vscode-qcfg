@@ -12,21 +12,21 @@ function createKey(
   mod: 'ctrl' | 'alt',
   macMod: 'cmd' | 'alt'
 ): Key[] {
-  if (num < 10) return [{ key: `${mod}+${num}`, mac: `${macMod}+${num}` }];
-  else {
-    const digit1 = Math.floor(num / 10);
-    const digit2 = num % 10;
-    return [
-      {
-        key: `${mod}+${digit1} ${mod}+${digit2}`,
-        mac: `${macMod}+${digit1} ${macMod}+${digit2}`
-      },
-      {
-        key: `${mod}+${digit1} ${digit2}`,
-        mac: `${macMod}+${digit1} ${digit2}`
-      }
-    ];
+  if (num < 10) {
+    return [{ key: `${mod}+${num}`, mac: `${macMod}+${num}` }];
   }
+  const digit1 = Math.floor(num / 10);
+  const digit2 = num % 10;
+  return [
+    {
+      key: `${mod}+${digit1} ${mod}+${digit2}`,
+      mac: `${macMod}+${digit1} ${macMod}+${digit2}`
+    },
+    {
+      key: `${mod}+${digit1} ${digit2}`,
+      mac: `${macMod}+${digit1} ${digit2}`
+    }
+  ];
 }
 
 for (let i = START_LINE; i < END_LINE; ++i) {

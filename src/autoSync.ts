@@ -61,7 +61,7 @@ async function onSaveAll(docs: saveAll.DocumentsInFolder) {
   const paths = docPaths.join(' ');
   const cmd = command.includes('{}')
     ? command.replace('{}', paths)
-    : command + ' ' + paths;
+    : `${command} ${paths}`;
   log.debug('Running ', cmd);
   try {
     await subprocess.executeSubprocess(cmd, { cwd: docs.folder.uri.fsPath });
@@ -72,7 +72,7 @@ async function onSaveAll(docs: saveAll.DocumentsInFolder) {
   } catch (err) {
     const error = err as subprocess.ExecResult;
     if (state !== State.Error) {
-      vscode.window.showErrorMessage(
+      await vscode.window.showErrorMessage(
         `autoSync failed with ${error.code}, ${error.signal} stdout: ${error.stdout} stderr: ${error.stderr}`
       );
       state = State.Error;

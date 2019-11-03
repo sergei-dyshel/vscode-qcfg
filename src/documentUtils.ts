@@ -103,11 +103,10 @@ export function adjustOffsetRangeAfterChange(
           delta
         );
       else return;
+    } else if (changeEnd < range.end) {
+      range = new NumRange(range.start, range.end + delta);
     } else {
-      // changeStart > range.start
-      if (changeEnd < range.end)
-        range = new NumRange(range.start, range.end + delta);
-      else return new NumRange(range.start, Math.min(changeStart, range.end));
+      return new NumRange(range.start, Math.min(changeStart, range.end));
     }
   }
   return range;

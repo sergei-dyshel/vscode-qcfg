@@ -10,9 +10,9 @@ import {
   TextEditorRevealType,
   ExtensionContext,
   workspace,
-  ConfigurationTarget
+  ConfigurationTarget,
+  Position
 } from 'vscode';
-import { Position } from 'vscode';
 import * as clipboardy from 'clipboardy';
 
 import {
@@ -29,7 +29,8 @@ import { getActiveTextEditor, getCursorWordContext } from './utils';
 import { forceNonTemporary, resetTemporary } from './history';
 import {
   registerCommandWrapped,
-  registerTextEditorCommandWrapped
+  registerTextEditorCommandWrapped,
+  executeCommandHandled
 } from './exception';
 import { Modules } from './module';
 import { lineIndentation } from './documentUtils';
@@ -74,15 +75,15 @@ function swapCursorAndAnchor(editor: TextEditor) {
   });
 }
 
-function cloneEditorBeside(): void {
+async function cloneEditorBeside() {
   log.assert(window.activeTextEditor);
   const editor = window.activeTextEditor as TextEditor;
   const columns = new Set<ViewColumn>();
-  for (const editor of window.visibleTextEditors)
-    if (editor.viewColumn) columns.add(editor.viewColumn);
+  for (const visEditor of window.visibleTextEditors)
+    if (visEditor.viewColumn) columns.add(visEditor.viewColumn);
 
   if (columns.size === 1) {
-    commands.executeCommand('workbench.action.splitEditor');
+    executeCommandHandled('workbench.action.splitEditor');
     return;
   }
   let newColumn: ViewColumn;
@@ -100,10 +101,9 @@ function cloneEditorBeside(): void {
   const visible = editor.visibleRanges[0];
   const pos = editor.selection.active;
   const doc = editor.document;
-  window.showTextDocument(doc, newColumn).then(newEditor => {
-    newEditor.selection = new Selection(pos, pos);
-    newEditor.revealRange(visible, TextEditorRevealType.InCenter);
-  });
+  const newEditor = await window.showTextDocument(doc, newColumn);
+  newEditor.selection = new Selection(pos, pos);
+  newEditor.revealRange(visible, TextEditorRevealType.InCenter);
 }
 
 type DirectionArg = 'up' | 'down' | 'left' | 'right';
@@ -135,16 +135,15 @@ async function syncEditorToDirection(args: any[]) {
     return;
   }
   // console.log(`Active editor ${editor.viewColumn}, new column ${newColumn}`);
-  window.showTextDocument(doc, adjEditor).then(newEditor => {
-    newEditor.selection = new Selection(pos, pos);
-    newEditor.revealRange(visible, TextEditorRevealType.InCenter);
-  });
+  const newEditor = await window.showTextDocument(doc, adjEditor);
+  newEditor.selection = new Selection(pos, pos);
+  newEditor.revealRange(visible, TextEditorRevealType.InCenter);
 }
 
-function smartPaste(editor: TextEditor, edit: TextEditorEdit) {
+async function smartPaste(editor: TextEditor, edit: TextEditorEdit) {
   const text = clipboardy.readSync();
   if (!text.endsWith('\n') || editor.selections.length > 1) {
-    commands.executeCommand('editor.action.clipboardPasteAction');
+    await commands.executeCommand('editor.action.clipboardPasteAction');
     return;
   }
   const selection = editor.selection;
@@ -153,10 +152,10 @@ function smartPaste(editor: TextEditor, edit: TextEditorEdit) {
     const lineStart = new Position(cursor.line, 0);
     edit.replace(lineStart, text);
   } else if (selection.end.character === 0) {
-    commands.executeCommand('editor.action.clipboardPasteAction');
+    await commands.executeCommand('editor.action.clipboardPasteAction');
   } else {
     selectLines();
-    commands.executeCommand('editor.action.clipboardPasteAction');
+    await commands.executeCommand('editor.action.clipboardPasteAction');
   }
 }
 
@@ -237,7 +236,7 @@ function selectWordUnderCursor() {
 
 type LineNumberConf = 'on' | 'off' | 'interval' | 'relative';
 
-function toggleRelativeNumbers() {
+async function toggleRelativeNumbers() {
   const SECTION = 'editor.lineNumbers';
   const conf = workspace.getConfiguration();
   const info = conf.inspect<string>(SECTION)!;
@@ -246,10 +245,10 @@ function toggleRelativeNumbers() {
   const value = (info.globalValue || info.defaultValue) as LineNumberConf;
   switch (value) {
     case 'on':
-      conf.update(SECTION, 'relative', ConfigurationTarget.Global);
+      await conf.update(SECTION, 'relative', ConfigurationTarget.Global);
       break;
     case 'relative':
-      conf.update(SECTION, 'on', ConfigurationTarget.Global);
+      await conf.update(SECTION, 'on', ConfigurationTarget.Global);
       break;
     default:
       throw Error(`"${SECTION} has value of '${value}`);

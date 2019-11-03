@@ -1,7 +1,15 @@
 'use strict';
 
-import * as vscode from 'vscode';
-import { SymbolKind } from 'vscode';
+import {
+  SymbolKind,
+  TextDocument,
+  CancellationToken,
+  SymbolInformation,
+  Location,
+  Position,
+  ExtensionContext,
+  languages
+} from 'vscode';
 import { Logger } from './logging';
 import * as subprocess from './subprocess';
 
@@ -56,8 +64,8 @@ interface TagInfo {
 }
 
 async function getTags(
-  document: vscode.TextDocument,
-  token: vscode.CancellationToken
+  document: TextDocument,
+  token: CancellationToken
 ): Promise<TagInfo[]> {
   const langConfig = languageConfigs[document.languageId];
   const log = new Logger({ instance: document.fileName, level: 'debug' });
@@ -89,31 +97,20 @@ async function getTags(
   return tags;
 }
 
-function tag2Symbol(
-  tag: TagInfo,
-  document: vscode.TextDocument
-): vscode.SymbolInformation {
-  const location = new vscode.Location(
-    document.uri,
-    new vscode.Position(tag.line - 1, 0)
-  );
+function tag2Symbol(tag: TagInfo, document: TextDocument): SymbolInformation {
+  const location = new Location(document.uri, new Position(tag.line - 1, 0));
   const kind = ctagsToVscodeKind[tag.kind] || SymbolKind.File;
-  return new vscode.SymbolInformation(
-    tag.name,
-    kind,
-    tag.scope || '',
-    location
-  );
+  return new SymbolInformation(tag.name, kind, tag.scope || '', location);
 }
 function parseLine(line: string): TagInfo {
   return JSON.parse(line) as TagInfo;
 }
 
-class DocumentSymbolProvider implements vscode.DocumentSymbolProvider {
+class DocumentSymbolProvider implements DocumentSymbolProvider {
   async provideDocumentSymbols(
-    document: vscode.TextDocument,
-    token: vscode.CancellationToken
-  ): Promise<vscode.SymbolInformation[] | undefined> {
+    document: TextDocument,
+    token: CancellationToken
+  ): Promise<SymbolInformation[] | undefined> {
     switch (document.languageId) {
       case 'cpp':
       case 'c':
@@ -124,17 +121,13 @@ class DocumentSymbolProvider implements vscode.DocumentSymbolProvider {
     }
     const editor = getActiveTextEditor();
     const tags = await getTags(editor.document, token);
-    const symbols = tags.map(tag => tag2Symbol(tag, document));
-    return symbols;
+    return tags.map(tag => tag2Symbol(tag, document));
   }
 }
 
-function activate(context: vscode.ExtensionContext) {
+function activate(context: ExtensionContext) {
   context.subscriptions.push(
-    vscode.languages.registerDocumentSymbolProvider(
-      '*',
-      new DocumentSymbolProvider()
-    )
+    languages.registerDocumentSymbolProvider('*', new DocumentSymbolProvider())
   );
 }
 

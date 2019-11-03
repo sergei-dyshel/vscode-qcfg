@@ -1,14 +1,28 @@
 'use strict';
 
-import * as vscode from 'vscode';
-import { Task, tasks } from 'vscode';
-import { Disposable } from 'vscode-jsonrpc';
-import { log, Logger } from './logging';
-import { registerTemporaryCommand } from './utils';
-import { listenWrapped } from './exception';
-import { Modules } from './module';
 import { Dictionary } from 'typescript-collections';
-// import { Dictionary } from 'typescript-collections';
+import {
+  Task,
+  tasks,
+  TaskExecution,
+  Terminal,
+  StatusBarItem,
+  window,
+  ExtensionContext,
+  TaskProcessEndEvent,
+  TaskProcessStartEvent,
+  TaskScope,
+  TaskEndEvent,
+  WorkspaceFolder
+} from 'vscode';
+import { Disposable } from 'vscode-jsonrpc';
+import {
+  listenWrapped,
+  executeCommandHandled
+} from './exception';
+import { log, Logger } from './logging';
+import { Modules } from './module';
+import { registerTemporaryCommand } from './utils';
 
 export enum State {
   INITIALIZED,
@@ -58,12 +72,12 @@ export enum TaskConfilictPolicy {
 
 export class TaskRun {
   state: State;
-  execution?: vscode.TaskExecution;
+  execution?: TaskExecution;
   exitCode?: number;
   pid?: number;
-  terminal?: vscode.Terminal;
+  terminal?: Terminal;
   cancelled = false;
-  status?: vscode.StatusBarItem;
+  status?: StatusBarItem;
   statusCmdDisposable?: Disposable;
   desc: TaskDescriptor;
 
@@ -81,7 +95,7 @@ export class TaskRun {
     const previous = allRuns.getValue(this.desc);
     if (previous) {
       if (!conflictPolicy) {
-        conflictPolicy = (await vscode.window.showWarningMessage(
+        conflictPolicy = (await window.showWarningMessage(
           `Task "${this.task.name} is already running. Would like to wait for it, cancel it or abort?`,
           { modal: true },
           TaskConfilictPolicy.WAIT,
@@ -108,7 +122,7 @@ export class TaskRun {
     this.state = State.EXECUTED;
     this.log.debug('Executing');
     try {
-      this.execution = await vscode.tasks.executeTask(this.task);
+      this.execution = await tasks.executeTask(this.task);
     } catch (err) {
       this.log.debug('executeTask failed: ' + err.message);
       allRuns.remove(this.desc);
@@ -120,6 +134,7 @@ export class TaskRun {
 
   wait(): Promise<void> {
     if (this.waitingPromise) return this.waitingPromise;
+    // tslint:disable-next-line: promise-must-complete
     this.waitingPromise = new Promise(
       (resolve: () => void, reject: (err: Error) => void) => {
         this.waitingContext = { resolve, reject };
@@ -144,7 +159,7 @@ export class TaskRun {
     }
   }
 
-  static activate(context: vscode.ExtensionContext) {
+  static activate(context: ExtensionContext) {
     context.subscriptions.push(
       listenWrapped(tasks.onDidEndTaskProcess, TaskRun.onDidEndTaskProcess),
       listenWrapped(tasks.onDidStartTaskProcess, TaskRun.onDidStartTaskProcess),
@@ -160,17 +175,17 @@ export class TaskRun {
 
   // Private
 
-  private static onDidEndTaskProcess(event: vscode.TaskProcessEndEvent) {
+  private static onDidEndTaskProcess(event: TaskProcessEndEvent) {
     const self = allRuns.getValue(new TaskDescriptor(event.execution.task))!;
     if (!self) return;
     self.exitCode = event.exitCode;
     self.state = State.PROCESS_ENDED;
-    if (self.statusCmdDisposable) self.statusCmdDisposable!.dispose();
-    if (self.status) self.status!.dispose();
+    if (self.statusCmdDisposable) self.statusCmdDisposable.dispose();
+    if (self.status) self.status.dispose();
     self.log.info(`Process ended with exitCode ${self.exitCode}`);
   }
 
-  private static onDidStartTaskProcess(event: vscode.TaskProcessStartEvent) {
+  private static onDidStartTaskProcess(event: TaskProcessStartEvent) {
     const self = allRuns.getValue(new TaskDescriptor(event.execution.task))!;
     if (!self) return;
     self.pid = event.processId;
@@ -178,14 +193,14 @@ export class TaskRun {
     self.log.info(`Process started with pid ${self.pid}`);
     self.terminal = findTaskTerminal(self.task);
     if (!self.task.isBackground) {
-      self.status = vscode.window.createStatusBarItem();
+      self.status = window.createStatusBarItem();
       const { command, disposable } = registerTemporaryCommand(() => {
         if (self.terminal) self.terminal.show();
       });
       if (
         self.task.scope &&
-        (self.task.scope !== vscode.TaskScope.Global &&
-          self.task.scope !== vscode.TaskScope.Workspace)
+        (self.task.scope !== TaskScope.Global &&
+          self.task.scope !== TaskScope.Workspace)
       )
         self.status.text =
           '$(tools)' + `${self.task.name} (${self.task.scope.name})`;
@@ -194,14 +209,12 @@ export class TaskRun {
       self.statusCmdDisposable = disposable;
       self.status.show();
     }
-    if (self.terminal && vscode.window.activeTerminal === self.terminal) {
-      vscode.commands.executeCommand(
-        'workbench.action.terminal.scrollToBottom'
-      );
+    if (self.terminal && window.activeTerminal === self.terminal) {
+      executeCommandHandled('workbench.action.terminal.scrollToBottom');
     }
   }
 
-  private static onDidEndTask(event: vscode.TaskEndEvent) {
+  private static onDidEndTask(event: TaskEndEvent) {
     const self = allRuns.getValue(new TaskDescriptor(event.execution.task))!;
     if (!self) return;
     self.state = State.DONE;
@@ -225,17 +238,17 @@ export class TaskRun {
   };
 }
 
-function findTaskTerminal(task: Task): vscode.Terminal | undefined {
+function findTaskTerminal(task: Task): Terminal | undefined {
   const taskName = task.name;
   let wsTaskName = taskName;
   const cands: string[] = [];
   if (typeof task.scope === 'object' && 'name' in task.scope) {
-    const wsFolder: vscode.WorkspaceFolder = task.scope;
+    const wsFolder: WorkspaceFolder = task.scope;
     wsTaskName = `${taskName} (${wsFolder.name})`;
   }
   for (const name of [taskName, wsTaskName])
     cands.push('Task - ' + name, 'Task - qcfg: ' + name);
-  for (const term of vscode.window.terminals) {
+  for (const term of window.terminals) {
     for (const cand of cands) if (term.name === cand) return term;
   }
   return undefined;
@@ -248,7 +261,7 @@ export class TaskCancelledError extends Error {
   name = 'TaskCancelledError';
 }
 
-function activate(context: vscode.ExtensionContext) {
+function activate(context: ExtensionContext) {
   TaskRun.activate(context);
 }
 

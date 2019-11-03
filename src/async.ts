@@ -20,6 +20,7 @@ export class PromiseQueue {
   }
 
   add(cb: Callback, name?: string): Promise<void> {
+    // tslint:disable-next-line: promise-must-complete
     return new Promise((resolve: Resolve, reject: Reject) => {
       /// #if DEBUG
       this.log.trace(`enqueing "${name}`);
@@ -90,6 +91,7 @@ export class PromiseContext<T> {
     this.resolve = _ => {};
     this.reject = _ => {};
 
+    // tslint:disable-next-line: promise-must-complete
     this.promise = new Promise<T>((resolve, reject) => {
       this.resolve = resolve;
       this.reject = reject;

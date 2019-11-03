@@ -1,11 +1,70 @@
 {
-  "extends": "gts/tslint.json",
+  "extends": [
+    "gts/tslint.json",
+    "tslint-config-standard",
+    "tslint-microsoft-contrib/recommended",
+    "tslint-config-airbnb",
+    "tslint-config-prettier"
+  ],
+  "rulesDirectory": [
+    "tslint-consistent-codestyle",
+    "node_modules/tslint-eslint-rules/dist/rules",
+    "node_modules/tslint-microsoft-contrib"
+  ],
   "rules": {
+    // tslint-consistent-codestyle
+    "early-exit": [true, { "max-length": 5, "ignore-constructor": true }],
+    "no-accessor-recursion": true,
+    "no-collapsible-if": true,
+    "no-else-after-return": {
+      "options": "allow-else-if"
+    },
+    "no-unnecessary-else": true,
+    "no-unused": [
+      true,
+      "ignore-imports",
+      "unused-function-expression-name",
+      "unused-class-expression-name",
+      "unused-catch-binding"
+    ],
+    "object-shorthand-properties-first": true,
+
+    // tslint-eslint-rules
+    "no-constant-condition": [true, { "checkLoops": false }],
+    "no-duplicate-case": true,
+    "no-ex-assign": true,
+    "no-extra-semi": true,
+    "ter-no-irregular-whitespace": true,
+    "no-unexpected-multiline": true,
+
+    // core/disables/tweaks
+    "no-floating-promises": [true, "Thenable"],
+    "prefer-array-literal": [true, { "allow-type-parameters": true }],
+    // "prefer-template": [true, "allow-single-concat"],
+    "prefer-template": false,
+    "await-promise": [true, "Thenable"],
+    "no-increment-decrement": false,
     "no-any": false,
     "curly": false,
     "no-namespace": false,
     "switch-default": false,
-    "no-unused-variable": true,
-    "no-unused-expression": true
+    "no-unused-expression": true,
+    "no-irregular-whitespace": true,
+    "no-unsafe-finally": true,
+    "no-conditional-assignment": true,
+    "no-empty": [true, "allow-empty-functions", "allow-empty-catch"],
+    "valid-typeof": true,
+    "triple-equals": true,
+    "no-multi-spaces": true,
+    "no-shadowed-variable": [true, {"function": false, "namespace": false, "class": false}],
+    "prefer-const": true,
+    "no-relative-imports": false,
+    "no-suspicious-comment": false,
+    "no-single-line-block-comment": false,
+    "no-parameter-reassignment": false,
+    "prefer-type-cast": false,
+    "no-backbone-get-set-outside-model": false,
+    "non-literal-fs-path": false,
+    "export-name": false
   }
 }
