@@ -112,6 +112,13 @@
       ],
       "type": "string"
     },
+    "KnownProblemMatcher": {
+      "enum": [
+        "gcc-relative",
+        "gcc-absolute"
+      ],
+      "type": "string"
+    },
     "LocationFormat": {
       "enum": [
         "vimgrep",
@@ -320,8 +327,18 @@
               "type": "string"
             },
             {
+              "$ref": "#/definitions/KnownProblemMatcher"
+            },
+            {
               "items": {
-                "type": "string"
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "$ref": "#/definitions/KnownProblemMatcher"
+                  }
+                ]
               },
               "type": "array"
             }

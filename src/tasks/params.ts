@@ -66,6 +66,8 @@ export interface BaseProcessTaskParams extends BaseTaskParams {
   exitCodes?: number[];
 }
 
+type KnownProblemMatcher = 'gcc-relative' | 'gcc-absolute';
+
 export interface TerminalTaskParams extends BaseProcessTaskParams {
   type: TaskType.TERMINAL;
 
@@ -90,7 +92,10 @@ export interface TerminalTaskParams extends BaseProcessTaskParams {
   /**
    * @default []
    */
-  problemMatchers?: string | string[];
+  problemMatchers?:
+    | string
+    | KnownProblemMatcher
+    | Array<string | KnownProblemMatcher>;
 
   flags?: Array<
     | BaseProcessTaskFlag
