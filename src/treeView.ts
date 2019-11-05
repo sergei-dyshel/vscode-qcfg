@@ -17,11 +17,7 @@ import {
 } from 'vscode';
 import { callIfNonNull } from './tsUtils';
 import { log } from './logging';
-import {
-  registerAsyncCommandWrapped,
-  listenWrapped,
-  registerSyncCommandWrapped
-} from './exception';
+import { listenWrapped, registerSyncCommandWrapped } from './exception';
 import { Modules } from './module';
 import { EventEmitter } from 'vscode';
 
