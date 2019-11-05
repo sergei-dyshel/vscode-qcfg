@@ -1,22 +1,31 @@
 'use strict';
 
 import { Dictionary } from 'typescript-collections';
-import * as vscode from 'vscode';
 import {
   Position,
   TextDocument,
   TextEditor,
   ViewColumn,
   window,
-  workspace
+  workspace,
+  ExtensionContext,
+  TextEditorViewColumnChangeEvent,
+  TextEditorSelectionChangeEvent,
+  TextEditorSelectionChangeKind,
+  TextDocumentChangeEvent,
+  Range
 } from 'vscode';
 import { Logger, log, str } from './logging';
 import { setTimeoutPromise } from './nodeUtils';
 import { getActiveTextEditor } from './utils';
 import { filterNonNull } from './tsUtils';
-import { registerCommandWrapped, listenWrapped } from './exception';
+import {
+  registerCommandWrapped,
+  listenWrapped,
+  handleAsyncStd
+} from './exception';
 
-let extContext: vscode.ExtensionContext;
+let extContext: ExtensionContext;
 
 enum TemporaryMode {
   NORMAL,
@@ -26,7 +35,7 @@ enum TemporaryMode {
 
 let temporaryMode = TemporaryMode.NORMAL;
 
-export function activate(context: vscode.ExtensionContext) {
+export function activate(context: ExtensionContext) {
   extContext = context;
   setupDicts();
   loadHistory();
@@ -55,7 +64,7 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {
-  saveHistory();
+  handleAsyncStd(saveHistory());
 }
 
 export function forceTemporary() {
@@ -93,9 +102,7 @@ function onDidChangeActiveTextEditor(editor?: TextEditor) {
   getHistory(editor.viewColumn).updateCurrent(true);
 }
 
-function onDidChangeTextEditorViewColumn(
-  _: vscode.TextEditorViewColumnChangeEvent
-) {
+function onDidChangeTextEditorViewColumn(_: TextEditorViewColumnChangeEvent) {
   // log.info(`TEMP: onDidChangeTextEditorViewColumn ${str(event.textEditor)}`);
 }
 
@@ -118,9 +125,7 @@ async function onDidChangeVisibleTextEditors(_: TextEditor[]) {
   numViewColumns = newNumViewColumns;
 }
 
-function onDidChangeTextEditorSelection(
-  event: vscode.TextEditorSelectionChangeEvent
-) {
+function onDidChangeTextEditorSelection(event: TextEditorSelectionChangeEvent) {
   if (event.selections.length > 1) return;
 
   const editor = event.textEditor;
@@ -128,13 +133,13 @@ function onDidChangeTextEditorSelection(
   if (!viewCol) return;
   // log.debug(`TEMP: onDidChangeTextEditorSelection ${str(editor)} ${event.kind} ${
   //     str(event.selections)}`);
-  const temporary = event.kind !== vscode.TextEditorSelectionChangeKind.Command;
+  const temporary = event.kind !== TextEditorSelectionChangeKind.Command;
   // TODO: also check quickpick open
   getHistory(viewCol).updateCurrent(temporary);
 }
 
 // TODO: use functions from documentUtils
-function onDidChangeTextDocument(event: vscode.TextDocumentChangeEvent) {
+function onDidChangeTextDocument(event: TextDocumentChangeEvent) {
   if (event.document.uri.scheme !== 'file') return;
   const eventCopy = {
     ...event,
@@ -159,20 +164,20 @@ function getHistory(viewColumn: ViewColumn): History {
   return histories[col - 1];
 }
 
-function goBackward() {
+async function goBackward() {
   const viewCol = getActiveTextEditor().viewColumn;
   const history = getHistory(
     log.assertNonNull(viewCol, 'Current text editor has no view column')
   );
-  history.goBackward();
+  await history.goBackward();
 }
 
-function goForward() {
+async function goForward() {
   const viewCol = getActiveTextEditor().viewColumn;
   const history = getHistory(
     log.assertNonNull(viewCol, 'Current text editor has no view column')
   );
-  history.goForward();
+  await history.goForward();
 }
 
 function saveHistory() {
@@ -250,7 +255,7 @@ class Point {
     if (this.position)
       return `<${this.document.fileName}:${this.position.line + 1}:${this
         .position.character + 1}>`;
-    else return `<${this.document.fileName}(${this.offset})>`;
+    return `<${this.document.fileName}(${this.offset})>`;
   }
 
   async goto() {
@@ -258,11 +263,11 @@ class Point {
       this.document = await workspace.openTextDocument(this.document.fileName);
     this.position = this.document.positionAt(this.offset);
     await window.showTextDocument(this.document, {
-      selection: new vscode.Range(this.position, this.position)
+      selection: new Range(this.position, this.position)
     });
   }
 
-  fixAfterChange(event: vscode.TextDocumentChangeEvent) {
+  fixAfterChange(event: TextDocumentChangeEvent) {
     if (event.document.fileName !== this.document.fileName) return;
     let delta = 0;
     for (const change of event.contentChanges) {
@@ -311,7 +316,7 @@ class History {
     });
   }
 
-  goBackward() {
+  async goBackward() {
     log.assert(temporaryMode === TemporaryMode.NORMAL);
     this.forward.push(this.current);
     let back: Point | undefined;
@@ -320,16 +325,16 @@ class History {
     } while (back && !this.current.farEnough(back));
     this.log.assert(back, `No backward history`);
     this.current = back!;
-    this.current.goto();
+    await this.current.goto();
     this.log.info(`Went backward to ${this.current}`);
   }
 
-  goForward() {
+  async goForward() {
     log.assert(temporaryMode === TemporaryMode.NORMAL);
     this.log.assert(this.forward.length > 0, `No forward history`);
     this.backward.push(this.current);
     this.current = this.forward.pop()!;
-    this.current.goto();
+    await this.current.goto();
     this.log.info(`Moved forward to ${this.current}`);
   }
 
@@ -371,7 +376,7 @@ class History {
     this.log.info(`Pushed ${this.current}`);
   }
 
-  fixAfterChange(event: vscode.TextDocumentChangeEvent) {
+  fixAfterChange(event: TextDocumentChangeEvent) {
     this.backward.map(point => point.fixAfterChange(event));
     this.forward.map(point => point.fixAfterChange(event));
     this.current.fixAfterChange(event);
