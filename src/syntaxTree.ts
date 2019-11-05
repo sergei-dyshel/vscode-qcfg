@@ -72,6 +72,7 @@ declare module 'tree-sitter' {
       | 'template_type'
       | 'scoped_type_identifier'
       | 'type_descriptor'
+      | 'object' // typescript
       | 'storage_class_specifier';
   }
 }

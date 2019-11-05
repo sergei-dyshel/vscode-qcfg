@@ -1,12 +1,11 @@
 'use strict';
 
-import * as vscode from 'vscode';
 import * as path from 'path';
 import { selectStringFromListMru } from './dialog';
 
 import * as fileUtils from './fileUtils';
 import { getActiveTextEditor } from './utils';
-import { window, workspace } from 'vscode';
+import { window, workspace, commands, ExtensionContext } from 'vscode';
 import {
   registerAsyncCommandWrapped,
   registerSyncCommandWrapped
@@ -14,9 +13,9 @@ import {
 import { Modules } from './module';
 
 function openOrCreateTerminal(name: string, cwd: string) {
-  for (const terminal of window.terminals) {
-    if (terminal.name === name) {
-      terminal.show();
+  for (const term of window.terminals) {
+    if (term.name === name) {
+      term.show();
       return;
     }
   }
@@ -40,12 +39,12 @@ function terminalInFileFolder() {
 }
 
 async function runCommand() {
-  const commands = await vscode.commands.getCommands();
-  const cmd = await selectStringFromListMru(commands, 'qcfg.runCommand');
-  if (cmd) vscode.commands.executeCommand(cmd);
+  const allCommands = await commands.getCommands();
+  const cmd = await selectStringFromListMru(allCommands, 'qcfg.runCommand');
+  if (cmd) await commands.executeCommand(cmd);
 }
 
-function activate(context: vscode.ExtensionContext) {
+function activate(context: ExtensionContext) {
   context.subscriptions.push(
     registerSyncCommandWrapped(
       'qcfg.terminal.inWorkspaceFolder',

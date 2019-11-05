@@ -1,7 +1,27 @@
 'use strict';
 
-import * as vscode from 'vscode';
-import { CompletionItem, Location, Range, TextSearchQuery } from 'vscode';
+import {
+  CompletionItem,
+  Location,
+  Range,
+  TextSearchQuery,
+  FindTextInFilesOptions,
+  workspace,
+  TextSearchResult,
+  TextSearchMatch,
+  window,
+  TextEditor,
+  commands,
+  CompletionItemKind,
+  SnippetString,
+  CompletionItemProvider,
+  TextDocument,
+  Position,
+  CancellationToken,
+  CompletionContext,
+  ExtensionContext,
+  languages
+} from 'vscode';
 import { selectMultiple } from './dialog';
 import { getCompletionPrefix } from './documentUtils';
 import { availableLanguageConfigs, getLanguageConfig } from './language';
@@ -31,19 +51,17 @@ const TODO_CATEGORIES = [
 
 export async function searchInFiles(
   query: TextSearchQuery,
-  options: vscode.FindTextInFilesOptions = {}
+  options: FindTextInFilesOptions = {}
 ) {
   const locations: ParsedLocation[] = [];
   log.debug(`Searching for "${query.pattern}"`);
-  await vscode.workspace.findTextInFiles(
+  await workspace.findTextInFiles(
     query,
     options,
-    (result: vscode.TextSearchResult) => {
-      const match = result as vscode.TextSearchMatch;
+    (result: TextSearchResult) => {
+      const match = result as TextSearchMatch;
       const ranges: Range[] =
-        match.ranges instanceof Range
-          ? [match.ranges]
-          : (match.ranges as Range[]);
+        match.ranges instanceof Range ? [match.ranges] : match.ranges;
       for (const range of ranges)
         locations.push(
           new ParsedLocation(match.uri, range, match.preview.text)
@@ -69,7 +87,7 @@ async function searchTodos() {
   });
   const res = await subproc.wait();
   if (res.code === 1) {
-    vscode.window.showWarningMessage(`No ${patterns} items were found`);
+    await window.showWarningMessage(`No ${patterns} items were found`);
   } else {
     setLocations(
       patterns,
@@ -79,13 +97,13 @@ async function searchTodos() {
 }
 
 // TODO: move to utils
-function editorCurrentLocation(editor: vscode.TextEditor) {
+function editorCurrentLocation(editor: TextEditor) {
   return new Location(editor.document.uri, editor.selection);
 }
 
 // TODO: move to utils
 function peekLocations(current: Location, locations: Location[]) {
-  return vscode.commands.executeCommand(
+  return commands.executeCommand(
     'editor.action.showReferences',
     current.uri,
     current.range.start,
@@ -109,7 +127,7 @@ async function searchStructField() {
     isRegExp: true
   };
   const locations = await searchInFiles(query);
-  vscode.commands.executeCommand(
+  await commands.executeCommand(
     'editor.action.showReferences',
     editor.document.uri,
     editor.selection.active,
@@ -119,11 +137,8 @@ async function searchStructField() {
 
 namespace TodoCompletion {
   function createItem(label: string, snippet: string) {
-    const item = new vscode.CompletionItem(
-      label,
-      vscode.CompletionItemKind.Snippet
-    );
-    item.insertText = new vscode.SnippetString(snippet);
+    const item = new CompletionItem(label, CompletionItemKind.Snippet);
+    item.insertText = new SnippetString(snippet);
     item.sortText = String.fromCharCode(0);
     return item;
   }
@@ -144,23 +159,24 @@ namespace TodoCompletion {
           `${comment.lineComment} ${category}: $0`
         )
       );
-    if (comment.blockComment) {
-      const [start, end] = comment.blockComment;
-      items.push(
-        createItem(
-          `${start} ${category}: ${end}`,
-          `${start} ${category}: $0 ${end}`
-        )
-      );
+    if (!comment.blockComment) {
+      return;
     }
+    const [start, end] = comment.blockComment;
+    items.push(
+      createItem(
+        `${start} ${category}: ${end}`,
+        `${start} ${category}: $0 ${end}`
+      )
+    );
   }
 
-  export const provider: vscode.CompletionItemProvider = {
+  export const provider: CompletionItemProvider = {
     provideCompletionItems(
-      document: vscode.TextDocument,
-      position: vscode.Position,
-      _: vscode.CancellationToken,
-      __: vscode.CompletionContext
+      document: TextDocument,
+      position: Position,
+      _: CancellationToken,
+      __: CompletionContext
     ): CompletionItem[] {
       const prefix = getCompletionPrefix(document, position);
       if (prefix === '') return [];
@@ -173,9 +189,9 @@ namespace TodoCompletion {
   };
 }
 
-function activate(context: vscode.ExtensionContext) {
+function activate(context: ExtensionContext) {
   context.subscriptions.push(
-    vscode.languages.registerCompletionItemProvider(
+    languages.registerCompletionItemProvider(
       availableLanguageConfigs(),
       TodoCompletion.provider
     ),

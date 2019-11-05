@@ -13,8 +13,13 @@ import { replaceAll } from './stringUtils';
 import { showStatusBarMessage } from './windowUtils';
 import { PromiseType } from './tsUtils';
 
+// type NotVoid = object | string | boolean | symbol | number | null | undefined;
 type AsyncFunction = (...args: any[]) => Promise<any>;
-type VoidFunction = (...args: any[]) => void;
+/**
+ * NOTE: Must used `undefined` because just using `void` wouldn't work,
+ * see https://stackoverflow.com/questions/57951850/is-there-not-promise-type-in-typescipt
+ */
+type VoidFunction = (...args: any[]) => void | undefined;
 type Function = (...args: any[]) => any;
 
 export class CheckError extends Error {

@@ -16,7 +16,6 @@ import {
 } from 'vscode';
 import {
   listenWrapped,
-  registerAsyncCommandWrapped,
   CheckError,
   registerSyncCommandWrapped
 } from './exception';

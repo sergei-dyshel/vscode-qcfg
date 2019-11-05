@@ -6,11 +6,7 @@ import * as vscode from 'vscode';
 import { log } from './logging';
 import { getActiveTextEditor } from './utils';
 import * as history from './history';
-import {
-  registerAsyncCommandWrapped,
-  handleErrors,
-  registerSyncCommandWrapped
-} from './exception';
+import { handleErrors, registerSyncCommandWrapped } from './exception';
 import { Modules } from './module';
 
 class Item implements vscode.QuickPickItem {

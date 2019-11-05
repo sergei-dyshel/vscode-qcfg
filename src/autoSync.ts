@@ -6,10 +6,7 @@ import * as saveAll from './saveAll';
 import { log } from './logging';
 import * as subprocess from './subprocess';
 import { setTimeoutPromise } from './nodeUtils';
-import {
-  registerAsyncCommandWrapped,
-  registerSyncCommandWrapped
-} from './exception';
+import { registerSyncCommandWrapped } from './exception';
 import { Modules } from './module';
 
 enum State {

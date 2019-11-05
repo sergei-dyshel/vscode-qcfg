@@ -41,6 +41,16 @@
     "no-floating-promises": [true, "Thenable"],
     "prefer-array-literal": [true, { "allow-type-parameters": true }],
     // "prefer-template": [true, "allow-single-concat"],
+    "variable-name": {
+      "options": [
+        "require-const-for-all-caps",
+        "ban-keywords",
+        "check-format",
+        "allow-leading-underscore",
+        "allow-trailing-underscore",
+        "allow-pascal-case"
+      ]
+    },
     "prefer-template": false,
     "await-promise": [true, "Thenable"],
     "no-increment-decrement": false,
@@ -56,7 +66,10 @@
     "valid-typeof": true,
     "triple-equals": true,
     "no-multi-spaces": true,
-    "no-shadowed-variable": [true, {"function": false, "namespace": false, "class": false}],
+    "no-shadowed-variable": [
+      true,
+      { "function": false, "namespace": false, "class": false }
+    ],
     "prefer-const": true,
     "no-relative-imports": false,
     "no-suspicious-comment": false,

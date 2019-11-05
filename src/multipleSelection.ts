@@ -7,11 +7,7 @@ import {
   TextEditorSelectionChangeEvent
 } from 'vscode';
 import { Modules } from './module';
-import {
-  listenWrapped,
-  registerAsyncCommandWrapped,
-  registerSyncCommandWrapped
-} from './exception';
+import { listenWrapped, registerSyncCommandWrapped } from './exception';
 import { getActiveTextEditor } from './utils';
 import { log } from './logging';
 
@@ -30,7 +26,7 @@ function updateMark(editor: TextEditor, index: number) {
   if (index < 0 || index >= selections.length)
     throw new Error('Invalid selection index');
   selectionIndex.set(editor, index);
-  const range = selections[index]!;
+  const range = selections[index];
   editor.setDecorations(decorationType, []);
   editor.setDecorations(decorationType, [range]);
   editor.revealRange(range);

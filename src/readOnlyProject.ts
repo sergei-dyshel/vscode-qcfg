@@ -1,29 +1,30 @@
 'use strict';
 
-import * as vscode from 'vscode';
-import { TextDocumentChangeEvent, window, workspace } from 'vscode';
 import {
-  listenWrapped,
-  registerAsyncCommandWrapped,
-  registerSyncCommandWrapped
-} from './exception';
+  TextDocumentChangeEvent,
+  window,
+  workspace,
+  StatusBarItem,
+  ExtensionContext
+} from 'vscode';
+import { listenWrapped, registerAsyncCommandWrapped } from './exception';
 import { Modules } from './module';
 
 const MEMENTO_KEY = 'qcfgIsReadOnly';
 
-let status: vscode.StatusBarItem;
-let context: vscode.ExtensionContext;
+let status: StatusBarItem;
+let context: ExtensionContext;
 
 function getState(): boolean {
   return context.workspaceState.get<boolean>(MEMENTO_KEY, false);
 }
 
-function setState(state: boolean) {
-  context.workspaceState.update(MEMENTO_KEY, state);
+async function setState(state: boolean) {
+  await context.workspaceState.update(MEMENTO_KEY, state);
 }
 
-function toggle() {
-  setState(!getState());
+async function toggle() {
+  await setState(!getState());
   updateStatus();
 }
 
@@ -35,12 +36,13 @@ function updateStatus() {
 function onDidChangeTextDocument(_: TextDocumentChangeEvent) {
   if (!getState()) return;
 
+  // tslint:disable-next-line: no-floating-promises
   window.showErrorMessage('Current workspace is marked as READ-ONLY', {
     modal: true
   });
 }
 
-function activate(extContext: vscode.ExtensionContext) {
+function activate(extContext: ExtensionContext) {
   context = extContext;
   status = window.createStatusBarItem();
   status.color = 'red';
@@ -48,7 +50,7 @@ function activate(extContext: vscode.ExtensionContext) {
   updateStatus();
 
   context.subscriptions.push(
-    registerSyncCommandWrapped('qcfg.toggleReadOnly', toggle),
+    registerAsyncCommandWrapped('qcfg.toggleReadOnly', toggle),
     listenWrapped(workspace.onDidChangeTextDocument, onDidChangeTextDocument)
   );
 }

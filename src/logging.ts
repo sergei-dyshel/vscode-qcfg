@@ -1,15 +1,29 @@
 'use strict';
 
-import * as vscode from 'vscode';
 import * as treeSitter from 'tree-sitter';
-import { workspace } from 'vscode';
+import {
+  workspace,
+  window,
+  TextEditor,
+  Uri,
+  TextDocument,
+  Location,
+  Position,
+  Selection,
+  Range,
+  TextDocumentContentChangeEvent,
+  OutputChannel,
+  languages,
+  ExtensionContext
+} from 'vscode';
 import * as nodejs from './nodejs';
 import { maxNumber } from './tsUtils';
 import { selectStringFromList } from './dialog';
 import {
   registerAsyncCommandWrapped,
   listenWrapped,
-  registerSyncCommandWrapped
+  registerSyncCommandWrapped,
+  handleAsyncStd
 } from './exception';
 import { Modules } from './module';
 import { getCallsite } from './sourceMap';
@@ -99,10 +113,10 @@ export class Logger {
 
   assertInstanceOf<T extends B, B>(
     value: B,
-    class_: { new (...args: any[]): T },
+    cls: { new (...args: any[]): T },
     ...args: any[]
   ): T {
-    this.assert(value instanceof class_, ...args);
+    this.assert(value instanceof cls, ...args);
     return value as T;
   }
 
@@ -129,18 +143,20 @@ export class Logger {
 
   private logImpl(logLevel: LogLevel, callDepth: number, message: string) {
     const record: LogRecord = {
+      message,
       level: logLevel,
       date: getDate(),
       name: this.fullName(),
       instance: this.instance,
-      message,
       ...getCallsite(callDepth)
     };
     for (const handler of handlers) handler.handleIfNeeded(record);
-    if (logLevel === LogLevel.Warning)
-      vscode.window.showWarningMessage(message);
-    else if (logLevel === LogLevel.Error) {
-      vscode.window.showErrorMessage(
+    if (logLevel === LogLevel.Warning) {
+      // tslint:disable-next-line: no-floating-promises
+      window.showWarningMessage(message);
+    } else if (logLevel === LogLevel.Error) {
+      // tslint:disable-next-line: no-floating-promises
+      window.showErrorMessage(
         message.split('\n')[0] + ' [Show log](command:qcfg.log.show)'
       );
     }
@@ -237,59 +253,70 @@ function getDate(): string {
   return dateStr + '.' + ms;
 }
 
-function stringifyTextEditor(editor: vscode.TextEditor) {
+function stringifyTextEditor(editor: TextEditor) {
   const doc = editor.document;
   const relpath = workspace.asRelativePath(doc.fileName);
-  if (editor.viewColumn) return `<${relpath}(${editor.viewColumn})}>`;
-  else return `<${relpath}>`;
+  if (editor.viewColumn) {
+    return `<${relpath}(${editor.viewColumn})}>`;
+  }
+  return `<${relpath}>`;
 }
 
 function stringifyObject(x: object): string {
-  if (x instanceof vscode.Uri) {
-    if (x.scheme === 'file') return x.fsPath;
-    else return x.toString();
-  } else if ('fileName' in x && 'uri' in x) {
+  if (x instanceof Uri) {
+    return x.scheme === 'file' ? x.fsPath : x.toString();
+  }
+  if ('fileName' in x && 'uri' in x) {
     // TextDocument
-    const doc = x as vscode.TextDocument;
+    const doc = x as TextDocument;
     const relpath = workspace.asRelativePath(doc.fileName);
     return `<${relpath}>`;
-  } else if ('document' in x && 'viewColumn' in x) {
+  }
+  if ('document' in x && 'viewColumn' in x) {
     // TextEditor
-    return stringifyTextEditor(x as vscode.TextEditor);
-  } else if (x instanceof vscode.Location) {
+    return stringifyTextEditor(x as TextEditor);
+  }
+  if (x instanceof Location) {
     return `<${str(x.uri)}${str(x.range)}>`;
-  } else if (x instanceof vscode.Position) {
-    const pos = x as vscode.Position;
-    return `(${pos.line},${pos.character})`;
-  } else if (x instanceof vscode.Selection) {
-    const sel = x as vscode.Selection;
+  }
+  if (x instanceof Position) {
+    return `(${x.line},${x.character})`;
+  }
+  if (x instanceof Selection) {
+    const sel = x;
     if (sel.anchor.isEqual(sel.active)) return stringifyObject(sel.anchor);
     if (sel.anchor.isBefore(sel.active))
       return `${str(sel.anchor)}->${str(sel.active)}`;
-    else return `${str(sel.active)}<-${str(sel.anchor)}`;
-  } else if (x instanceof Error) {
+    return `${str(sel.active)}<-${str(sel.anchor)}`;
+  }
+  if (x instanceof Error) {
     return `${x.message}: ${x.name}`;
-  } else if (x instanceof vscode.Range) {
+  }
+  if (x instanceof Range) {
     if (x.start.isEqual(x.end)) return stringifyObject(x.start);
     return `[${str(x.start)}..${str(x.end)}]`;
   }
   if ('range' in x && 'rangeOffset' in x && 'rangeLength' in x && 'text' in x) {
-    const event = x as vscode.TextDocumentContentChangeEvent;
+    const event = x as TextDocumentContentChangeEvent;
     return `${str(event.range)},${event.rangeOffset},${
       event.rangeLength
     }:${JSON.stringify(event.text)}`;
-  } else if ('row' in x && 'column' in x) {
+  }
+  if ('row' in x && 'column' in x) {
     // treeSitter.Point
     const point = x as treeSitter.Point;
     return `(${point.row},${point.column})`;
-  } else if ('type' in x && 'startPosition' in x && 'endPosition' in x) {
+  }
+  if ('type' in x && 'startPosition' in x && 'endPosition' in x) {
     // treeSitter.SyntaxNode
     const node = x as treeSitter.SyntaxNode;
     return `<${node.type} ${str(node.range)}>`;
-  } else if (x instanceof Array) {
-    const arr = x as any[];
+  }
+  if (x instanceof Array) {
+    const arr = x;
     return '[ ' + arr.map(str).join(', ') + ' ]';
-  } else if ('toString' in x) {
+  }
+  if ('toString' in x) {
     const s = x.toString();
     if (s !== '[object Object]') return s;
   }
@@ -344,8 +371,8 @@ class OutputChannelHandler extends Handler {
     level = LogLevel.Debug;
     /// #endif
     super('OutputPanel', level);
-    this.outputChannel = vscode.window.createOutputChannel('qcfg');
-    for (const editor of vscode.window.visibleTextEditors) {
+    this.outputChannel = window.createOutputChannel('qcfg');
+    for (const editor of window.visibleTextEditors) {
       if (editor.document.fileName.startsWith('extension-output')) this.show();
     }
   }
@@ -355,7 +382,7 @@ class OutputChannelHandler extends Handler {
   show() {
     this.outputChannel.show();
   }
-  private outputChannel: vscode.OutputChannel;
+  private outputChannel: OutputChannel;
 }
 
 class ConsoleHandler extends Handler {
@@ -381,12 +408,12 @@ class FileHandler extends Handler {
   private EXT = 'vscode-qcfg.log';
   constructor() {
     super('File', LogLevel.Debug);
-    const wsFile = vscode.workspace.workspaceFile;
+    const wsFile = workspace.workspaceFile;
     if (wsFile) {
       const data = nodejs.path.parse(wsFile.fsPath);
       this.fileName = `${data.dir}/.${data.name}.${this.EXT}`;
-    } else if (vscode.workspace.workspaceFolders) {
-      const wsFolder = vscode.workspace.workspaceFolders[0].uri.fsPath;
+    } else if (workspace.workspaceFolders) {
+      const wsFolder = workspace.workspaceFolders[0].uri.fsPath;
       this.fileName = `${wsFolder}/.${this.EXT}`;
     } else {
       this.fileName = '/tmp/' + this.EXT;
@@ -407,12 +434,15 @@ class FileHandler extends Handler {
 
 const handlers: Handler[] = [];
 
-function onDidChangeVisibleTextEditors(editors: vscode.TextEditor[]) {
+function onDidChangeVisibleTextEditors(editors: TextEditor[]) {
   for (const editor of editors) {
-    if (editor.document.fileName.startsWith('extension-output'))
-      if (editor.document.lineAt(0).text.includes(FIRST_LINE_ID))
-        vscode.languages.setTextDocumentLanguage(editor.document, 'qcfg-log');
-      else vscode.languages.setTextDocumentLanguage(editor.document, 'Log');
+    if (!editor.document.fileName.startsWith('extension-output')) continue;
+    if (editor.document.lineAt(0).text.includes(FIRST_LINE_ID))
+      handleAsyncStd(
+        languages.setTextDocumentLanguage(editor.document, 'qcfg-log')
+      );
+    else
+      handleAsyncStd(languages.setTextDocumentLanguage(editor.document, 'Log'));
   }
 }
 
@@ -422,7 +452,7 @@ async function selectLevel(): Promise<LogLevel | undefined> {
   return strToLevel(levelStr);
 }
 
-function activate(context: vscode.ExtensionContext) {
+function activate(context: ExtensionContext) {
   const outputHandler = new OutputChannelHandler();
   handlers.push(outputHandler);
   const consoleHandler = new ConsoleHandler();
@@ -432,11 +462,11 @@ function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     listenWrapped(
-      vscode.window.onDidChangeVisibleTextEditors,
+      window.onDidChangeVisibleTextEditors,
       onDidChangeVisibleTextEditors
     ),
     registerSyncCommandWrapped('qcfg.log.show', () => outputHandler.show()),
-    registerSyncCommandWrapped('qcfg.log.setHandlerLevel.output', () =>
+    registerAsyncCommandWrapped('qcfg.log.setHandlerLevel.output', () =>
       outputHandler.promptForLevel()
     ),
     registerAsyncCommandWrapped('qcfg.log.setHandlerLevel.file', () =>
@@ -458,7 +488,7 @@ function activate(context: vscode.ExtensionContext) {
     `Logging to output panel on ${levelToStr(outputHandler.level)} level`
   );
   log.info('Logging to file', fileHandler.fileName);
-  onDidChangeVisibleTextEditors(vscode.window.visibleTextEditors);
+  onDidChangeVisibleTextEditors(window.visibleTextEditors);
 }
 
 Modules.register(activate);
