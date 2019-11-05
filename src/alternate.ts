@@ -11,7 +11,7 @@ import * as fileUtils from './fileUtils';
 import * as path from 'path';
 import { log } from './logging';
 import { getActiveTextEditor } from './utils';
-import { registerCommandWrapped } from './exception';
+import { registerAsyncCommandWrapped } from './exception';
 import { Modules } from './module';
 import { baseName, stripExt } from './pathUtils';
 
@@ -70,7 +70,7 @@ async function switchToAlternate() {
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
-    registerCommandWrapped('qcfg.alternate.switch', switchToAlternate)
+    registerAsyncCommandWrapped('qcfg.alternate.switch', switchToAlternate)
   );
 }
 

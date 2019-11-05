@@ -6,7 +6,10 @@ import * as saveAll from './saveAll';
 import { log } from './logging';
 import * as subprocess from './subprocess';
 import { setTimeoutPromise } from './nodeUtils';
-import { registerCommandWrapped } from './exception';
+import {
+  registerAsyncCommandWrapped,
+  registerSyncCommandWrapped
+} from './exception';
 import { Modules } from './module';
 
 enum State {
@@ -96,7 +99,7 @@ function activate(context: vscode.ExtensionContext) {
     : State.Off;
   setStatusBar();
   context.subscriptions.push(
-    registerCommandWrapped('qcfg.autoSync.toggle', toggle)
+    registerSyncCommandWrapped('qcfg.autoSync.toggle', toggle)
   );
   context.subscriptions.push(saveAll.onEvent(onSaveAll));
 }

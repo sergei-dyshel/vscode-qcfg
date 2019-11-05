@@ -12,7 +12,7 @@ import { Modules } from './module';
 import { log } from './logging';
 import * as nodejs from './nodejs';
 import { selectFromList } from './dialog';
-import { registerCommandWrapped } from './exception';
+import { registerAsyncCommandWrapped } from './exception';
 import { expandTemplate } from './stringUtils';
 import { mapAsyncNoThrowAndZip } from './async';
 import { readJSON } from './fileUtils';
@@ -100,10 +100,10 @@ async function openFromHistory(newWindow: boolean) {
 
 async function activate(context: ExtensionContext) {
   context.subscriptions.push(
-    registerCommandWrapped('qcfg.openRecent.sameWindow', () =>
+    registerAsyncCommandWrapped('qcfg.openRecent.sameWindow', () =>
       openFromHistory(false)
     ),
-    registerCommandWrapped('qcfg.openRecent.newWindow', () =>
+    registerAsyncCommandWrapped('qcfg.openRecent.newWindow', () =>
       openFromHistory(true)
     )
   );

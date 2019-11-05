@@ -28,9 +28,10 @@ import { getActiveTextEditor, getCursorWordContext } from './utils';
 
 import { forceNonTemporary, resetTemporary } from './history';
 import {
-  registerCommandWrapped,
+  registerAsyncCommandWrapped,
   registerTextEditorCommandWrapped,
-  executeCommandHandled
+  executeCommandHandled,
+  registerSyncCommandWrapped
 } from './exception';
 import { Modules } from './module';
 import { lineIndentation } from './documentUtils';
@@ -257,29 +258,35 @@ async function toggleRelativeNumbers() {
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
-    registerCommandWrapped('qcfg.gotoLineRelative', gotoLineRelative),
-    registerCommandWrapped('qcfg.selectLines', selectLines),
-    registerCommandWrapped('qcfg.goToDefinition', goToDefinition),
-    registerCommandWrapped('qcfg.peekReferences', peekReferences),
+    registerSyncCommandWrapped('qcfg.gotoLineRelative', gotoLineRelative),
+    registerSyncCommandWrapped('qcfg.selectLines', selectLines),
+    registerAsyncCommandWrapped('qcfg.goToDefinition', goToDefinition),
+    registerAsyncCommandWrapped('qcfg.peekReferences', peekReferences),
     registerTextEditorCommandWrapped(
       'qcfg.swapCursorAndAnchor',
       swapCursorAndAnchor
     ),
     registerTextEditorCommandWrapped('qcfg.smartPaste', smartPaste),
-    registerCommandWrapped('qcfg.surroundWith', surroundWith),
-    registerCommandWrapped('qcfg.cloneEditorBeside', cloneEditorBeside),
-    registerCommandWrapped('qcfg.syncEditorToDirection', syncEditorToDirection),
-    registerCommandWrapped(
+    registerAsyncCommandWrapped('qcfg.surroundWith', surroundWith),
+    registerAsyncCommandWrapped('qcfg.cloneEditorBeside', cloneEditorBeside),
+    registerAsyncCommandWrapped(
+      'qcfg.syncEditorToDirection',
+      syncEditorToDirection
+    ),
+    registerAsyncCommandWrapped(
       'qcfg.wrapWithBracketsInline',
       wrapWithBracketsInline
     ),
-    registerCommandWrapped('qcfg.stripBrackets', stripBrackets),
-    registerCommandWrapped(
+    registerAsyncCommandWrapped('qcfg.stripBrackets', stripBrackets),
+    registerAsyncCommandWrapped(
       'qcfg.navigateBackToPreviousFile',
       navigateBackToPreviousFile
     ),
-    registerCommandWrapped('qcfg.selectWordUnderCursor', selectWordUnderCursor),
-    registerCommandWrapped(
+    registerSyncCommandWrapped(
+      'qcfg.selectWordUnderCursor',
+      selectWordUnderCursor
+    ),
+    registerAsyncCommandWrapped(
       'qcfg.toggleRelativeLineNumbers',
       toggleRelativeNumbers
     )

@@ -20,7 +20,7 @@ import {
 } from './stringUtils';
 const RE2 = require('re2');
 import {
-  registerCommandWrapped,
+  registerAsyncCommandWrapped,
   handleErrors,
   handleAsyncStd
 } from './exception';
@@ -441,8 +441,8 @@ function activate(context: vscode.ExtensionContext) {
     vscode.languages.registerWorkspaceSymbolProvider(
       new GtagsGlobalSymbolsProvider()
     ),
-    registerCommandWrapped('qcfg.gtags.definition', openDefinition),
-    registerCommandWrapped(
+    registerAsyncCommandWrapped('qcfg.gtags.definition', openDefinition),
+    registerAsyncCommandWrapped(
       'qcfg.gtags.definitionInWorkspace',
       openDefinitionInWorkspace
     ),
@@ -451,7 +451,7 @@ function activate(context: vscode.ExtensionContext) {
       new GtagsDefinitionProvider()
     ),
     vscode.languages.registerHoverProvider('*', new GtagsHoverProvider()),
-    registerCommandWrapped('qcfg.gtags.workspace', WorkspaceGtags.run)
+    registerAsyncCommandWrapped('qcfg.gtags.workspace', WorkspaceGtags.run)
   );
 }
 

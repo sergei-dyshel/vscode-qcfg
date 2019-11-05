@@ -14,6 +14,7 @@ import { showStatusBarMessage } from './windowUtils';
 import { PromiseType } from './tsUtils';
 
 type AsyncFunction = (...args: any[]) => Promise<any>;
+type VoidFunction = (...args: any[]) => void;
 type Function = (...args: any[]) => any;
 
 export class CheckError extends Error {
@@ -64,9 +65,23 @@ export function handleErrorsAsync<T extends AsyncFunction>(
   return wrapWithErrorHandlerAsync(func, createStdErrorHandler(prefix));
 }
 
-export function registerCommandWrapped(
+export function registerAsyncCommandWrapped(
   command: string,
-  callback: Function,
+  callback: AsyncFunction,
+  thisArg?: any
+): Disposable {
+  return commands.registerCommand(
+    command,
+    wrapWithErrorHandlerAsync(callback, error =>
+      handleErrorDuringCommand(command, error)
+    ),
+    thisArg
+  );
+}
+
+export function registerSyncCommandWrapped(
+  command: string,
+  callback: VoidFunction,
   thisArg?: any
 ): Disposable {
   return commands.registerCommand(

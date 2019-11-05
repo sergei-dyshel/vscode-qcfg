@@ -7,7 +7,10 @@ import { selectStringFromListMru } from './dialog';
 import * as fileUtils from './fileUtils';
 import { getActiveTextEditor } from './utils';
 import { window, workspace } from 'vscode';
-import { registerCommandWrapped } from './exception';
+import {
+  registerAsyncCommandWrapped,
+  registerSyncCommandWrapped
+} from './exception';
 import { Modules } from './module';
 
 function openOrCreateTerminal(name: string, cwd: string) {
@@ -44,12 +47,15 @@ async function runCommand() {
 
 function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
-    registerCommandWrapped(
+    registerSyncCommandWrapped(
       'qcfg.terminal.inWorkspaceFolder',
       terminalInWorkspaceFolder
     ),
-    registerCommandWrapped('qcfg.terminal.inFileFolder', terminalInFileFolder),
-    registerCommandWrapped('qcfg.runCommand', runCommand)
+    registerSyncCommandWrapped(
+      'qcfg.terminal.inFileFolder',
+      terminalInFileFolder
+    ),
+    registerAsyncCommandWrapped('qcfg.runCommand', runCommand)
   );
 }
 

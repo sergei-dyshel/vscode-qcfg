@@ -7,7 +7,11 @@ import {
   TextEditorSelectionChangeEvent
 } from 'vscode';
 import { Modules } from './module';
-import { listenWrapped, registerCommandWrapped } from './exception';
+import {
+  listenWrapped,
+  registerAsyncCommandWrapped,
+  registerSyncCommandWrapped
+} from './exception';
 import { getActiveTextEditor } from './utils';
 import { log } from './logging';
 
@@ -82,14 +86,14 @@ function moveMark(down: boolean) {
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
     listenWrapped(window.onDidChangeTextEditorSelection, onSelectionChanged),
-    registerCommandWrapped(
+    registerSyncCommandWrapped(
       'qcfg.multipleSelection.unselectMarked',
       unselectMarked
     ),
-    registerCommandWrapped('qcfg.multipleSelection.moveMarkDown', () =>
+    registerSyncCommandWrapped('qcfg.multipleSelection.moveMarkDown', () =>
       moveMark(true /* down */)
     ),
-    registerCommandWrapped('qcfg.multipleSelection.moveMarkUp', () =>
+    registerSyncCommandWrapped('qcfg.multipleSelection.moveMarkUp', () =>
       moveMark(false /* up */)
     )
   );

@@ -9,7 +9,7 @@ import {
   TreeItemLabel,
   window
 } from 'vscode';
-import { listenWrapped, registerCommandWrapped } from './exception';
+import { listenWrapped, registerAsyncCommandWrapped } from './exception';
 import { log, str } from './logging';
 import { Modules } from './module';
 import { ellipsize } from './stringUtils';
@@ -236,7 +236,7 @@ function findContainingNode(
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
-    registerCommandWrapped('qcfg.syntaxTree.show', showTree),
+    registerAsyncCommandWrapped('qcfg.syntaxTree.show', showTree),
     listenWrapped(window.onDidChangeActiveTextEditor, onTextEditorChanged),
     listenWrapped(window.onDidChangeTextEditorSelection, onSelectionChanged),
     listenWrapped(onSyntaxTreeUpdated, onTreeUpdated)

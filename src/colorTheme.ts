@@ -12,7 +12,7 @@ import {
 import { colorThemeFiles } from './language';
 import { selectStringFromList } from './dialog';
 import {
-  registerCommandWrapped,
+  registerAsyncCommandWrapped,
   listenWrapped,
   handleAsyncStd
 } from './exception';
@@ -110,10 +110,10 @@ function activate(context: ExtensionContext) {
   handleAsyncStd(onConfigurationChanged());
   context.subscriptions.push(
     listenWrapped(workspace.onDidChangeConfiguration, onConfigurationChanged),
-    registerCommandWrapped('qcfg.colors.select', selectWorkspaceTheme),
-    registerCommandWrapped('qcfg.colors.persist', persistWorkspaceTheme),
-    registerCommandWrapped('qcfg.colors.clear', clearWorkspaceTheme),
-    registerCommandWrapped('qcfg.colors.inspect', inspectTheme)
+    registerAsyncCommandWrapped('qcfg.colors.select', selectWorkspaceTheme),
+    registerAsyncCommandWrapped('qcfg.colors.persist', persistWorkspaceTheme),
+    registerAsyncCommandWrapped('qcfg.colors.clear', clearWorkspaceTheme),
+    registerAsyncCommandWrapped('qcfg.colors.inspect', inspectTheme)
   );
 }
 

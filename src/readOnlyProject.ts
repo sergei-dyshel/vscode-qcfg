@@ -2,7 +2,11 @@
 
 import * as vscode from 'vscode';
 import { TextDocumentChangeEvent, window, workspace } from 'vscode';
-import { listenWrapped, registerCommandWrapped } from './exception';
+import {
+  listenWrapped,
+  registerAsyncCommandWrapped,
+  registerSyncCommandWrapped
+} from './exception';
 import { Modules } from './module';
 
 const MEMENTO_KEY = 'qcfgIsReadOnly';
@@ -44,7 +48,7 @@ function activate(extContext: vscode.ExtensionContext) {
   updateStatus();
 
   context.subscriptions.push(
-    registerCommandWrapped('qcfg.toggleReadOnly', toggle),
+    registerSyncCommandWrapped('qcfg.toggleReadOnly', toggle),
     listenWrapped(workspace.onDidChangeTextDocument, onDidChangeTextDocument)
   );
 }

@@ -13,7 +13,10 @@ import {
 import { mapSomeAsync, MAP_UNDEFINED, filterAsync } from '../async';
 import { ConfigFilePair, watchConfigFile, getConfigFileNames } from '../config';
 import * as dialog from '../dialog';
-import { registerCommandWrapped } from '../exception';
+import {
+  registerAsyncCommandWrapped,
+  registerSyncCommandWrapped
+} from '../exception';
 import { globAsync } from '../fileUtils';
 import { parseJsonFileSync } from '../json';
 import { log } from '../logging';
@@ -412,15 +415,21 @@ function activate(context: ExtensionContext) {
   loadConfig(configFilePair);
   context.subscriptions.push(
     disposable,
-    registerCommandWrapped('qcfg.tasks.build.last', runLastBuildTask),
-    registerCommandWrapped('qcfg.tasks.build.default', runDefaultBuildTask),
-    registerCommandWrapped('qcfg.tasks.runConfigured', runConfiguredTaskCmd),
-    registerCommandWrapped('qcfg.tasks.editGlobalConfig', editGlobalConfig),
-    registerCommandWrapped(
+    registerAsyncCommandWrapped('qcfg.tasks.build.last', runLastBuildTask),
+    registerAsyncCommandWrapped(
+      'qcfg.tasks.build.default',
+      runDefaultBuildTask
+    ),
+    registerAsyncCommandWrapped(
+      'qcfg.tasks.runConfigured',
+      runConfiguredTaskCmd
+    ),
+    registerSyncCommandWrapped('qcfg.tasks.editGlobalConfig', editGlobalConfig),
+    registerSyncCommandWrapped(
       'qcfg.tasks.editWorkspaceConfig',
       editWorkspaceConfig
     ),
-    registerCommandWrapped('qcfg.tasks.show', showTasks)
+    registerAsyncCommandWrapped('qcfg.tasks.show', showTasks)
   );
 }
 

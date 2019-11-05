@@ -17,7 +17,7 @@ import {
 import {
   handleErrorsAsync,
   listenWrapped,
-  registerCommandWrapped
+  registerAsyncCommandWrapped
 } from './exception';
 import { Logger, str } from './logging';
 import { Modules } from './module';
@@ -368,31 +368,31 @@ function activate(context: ExtensionContext) {
     languages.registerSelectionRangeProvider(SyntaxTrees.supportedLanguages, {
       provideSelectionRanges: handleErrorsAsync(provideSelectionRanges)
     }),
-    registerCommandWrapped('qcfg.selection.expand', () =>
+    registerAsyncCommandWrapped('qcfg.selection.expand', () =>
       expandOrShrink({ shrink: false })
     ),
-    registerCommandWrapped('qcfg.selection.shrink', () =>
+    registerAsyncCommandWrapped('qcfg.selection.shrink', () =>
       expandOrShrink({ shrink: true })
     ),
-    registerCommandWrapped('qcfg.selection.selectSuperParent', () =>
+    registerAsyncCommandWrapped('qcfg.selection.selectSuperParent', () =>
       expandOrShrink({ shrink: false, listNode: true })
     ),
-    registerCommandWrapped('qcfg.selection.left', () =>
+    registerAsyncCommandWrapped('qcfg.selection.left', () =>
       selectSibling(Direction.Left)
     ),
-    registerCommandWrapped('qcfg.selection.right', () =>
+    registerAsyncCommandWrapped('qcfg.selection.right', () =>
       selectSibling(Direction.Right)
     ),
-    registerCommandWrapped('qcfg.selection.extendLeft', () =>
+    registerAsyncCommandWrapped('qcfg.selection.extendLeft', () =>
       extendSelection(Direction.Left)
     ),
-    registerCommandWrapped('qcfg.selection.extendRight', () =>
+    registerAsyncCommandWrapped('qcfg.selection.extendRight', () =>
       extendSelection(Direction.Right)
     ),
-    registerCommandWrapped('qcfg.selection.swapLeft', () =>
+    registerAsyncCommandWrapped('qcfg.selection.swapLeft', () =>
       selectSibling(Direction.Left, true /* swap */)
     ),
-    registerCommandWrapped('qcfg.selection.swapRight', () =>
+    registerAsyncCommandWrapped('qcfg.selection.swapRight', () =>
       selectSibling(Direction.Right, true /* swap */)
     )
   );

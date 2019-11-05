@@ -6,7 +6,11 @@ import { workspace } from 'vscode';
 import * as nodejs from './nodejs';
 import { maxNumber } from './tsUtils';
 import { selectStringFromList } from './dialog';
-import { registerCommandWrapped, listenWrapped } from './exception';
+import {
+  registerAsyncCommandWrapped,
+  listenWrapped,
+  registerSyncCommandWrapped
+} from './exception';
 import { Modules } from './module';
 import { getCallsite } from './sourceMap';
 import { formatString } from './stringUtils';
@@ -431,14 +435,14 @@ function activate(context: vscode.ExtensionContext) {
       vscode.window.onDidChangeVisibleTextEditors,
       onDidChangeVisibleTextEditors
     ),
-    registerCommandWrapped('qcfg.log.show', () => outputHandler.show()),
-    registerCommandWrapped('qcfg.log.setHandlerLevel.output', () =>
+    registerSyncCommandWrapped('qcfg.log.show', () => outputHandler.show()),
+    registerSyncCommandWrapped('qcfg.log.setHandlerLevel.output', () =>
       outputHandler.promptForLevel()
     ),
-    registerCommandWrapped('qcfg.log.setHandlerLevel.file', () =>
+    registerAsyncCommandWrapped('qcfg.log.setHandlerLevel.file', () =>
       outputHandler.promptForLevel()
     ),
-    registerCommandWrapped('qcfg.log.setHandlerLevel.console', () =>
+    registerAsyncCommandWrapped('qcfg.log.setHandlerLevel.console', () =>
       consoleHandler.promptForLevel()
     )
   );

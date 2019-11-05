@@ -2,7 +2,7 @@
 
 import * as vscode from 'vscode';
 import { commands, TextEditor, window } from 'vscode';
-import { registerCommandWrapped } from './exception';
+import { registerAsyncCommandWrapped } from './exception';
 import { getDocumentWorkspaceFolder } from './fileUtils';
 import { log } from './logging';
 
@@ -38,7 +38,7 @@ export function registerTemporaryCommand(
   thisArg?: any
 ) {
   const command = `qcfg.temp.${++tempCmdCounter}`;
-  const disposable = registerCommandWrapped(command, callback, thisArg);
+  const disposable = registerAsyncCommandWrapped(command, callback, thisArg);
   return { command, disposable };
 }
 

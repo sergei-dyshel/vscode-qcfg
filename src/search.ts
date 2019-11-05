@@ -10,7 +10,7 @@ import { log } from './logging';
 import { abbrevMatch } from './stringUtils';
 import { Subprocess } from './subprocess';
 import { currentWorkspaceFolder, getCursorWordContext } from './utils';
-import { registerCommandWrapped } from './exception';
+import { registerAsyncCommandWrapped } from './exception';
 import { Modules } from './module';
 import {
   ParsedLocation,
@@ -179,14 +179,14 @@ function activate(context: vscode.ExtensionContext) {
       availableLanguageConfigs(),
       TodoCompletion.provider
     ),
-    registerCommandWrapped('qcfg.search.word.peek', () =>
+    registerAsyncCommandWrapped('qcfg.search.word.peek', () =>
       searchWord(false /* peek */)
     ),
-    registerCommandWrapped('qcfg.search.word.panel', () =>
+    registerAsyncCommandWrapped('qcfg.search.word.panel', () =>
       searchWord(true /* panel */)
     ),
-    registerCommandWrapped('qcfg.search.todos', searchTodos),
-    registerCommandWrapped('qcfg.search.structField', searchStructField)
+    registerAsyncCommandWrapped('qcfg.search.todos', searchTodos),
+    registerAsyncCommandWrapped('qcfg.search.structField', searchStructField)
   );
 }
 

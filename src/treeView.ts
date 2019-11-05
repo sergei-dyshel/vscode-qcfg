@@ -17,7 +17,11 @@ import {
 } from 'vscode';
 import { callIfNonNull } from './tsUtils';
 import { log } from './logging';
-import { registerCommandWrapped, listenWrapped } from './exception';
+import {
+  registerAsyncCommandWrapped,
+  listenWrapped,
+  registerSyncCommandWrapped
+} from './exception';
 import { Modules } from './module';
 import { EventEmitter } from 'vscode';
 
@@ -31,8 +35,8 @@ export function activate(context: ExtensionContext) {
   treeView = window.createTreeView('qcfgTreeView', opts);
   context.subscriptions.push(
     treeView,
-    registerCommandWrapped('qcfg.treeView.removeNode', removeNode),
-    registerCommandWrapped('qcfg.treeView.expandNode', expandNode),
+    registerSyncCommandWrapped('qcfg.treeView.removeNode', removeNode),
+    registerSyncCommandWrapped('qcfg.treeView.expandNode', expandNode),
     listenWrapped(
       treeView.onDidExpandElement,
       (event: TreeViewExpansionEvent<TreeNode>) => {

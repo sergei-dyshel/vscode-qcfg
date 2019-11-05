@@ -2,7 +2,7 @@
 
 import { ExtensionContext, workspace } from 'vscode';
 import { Modules } from './module';
-import { registerCommandWrapped } from './exception';
+import { registerAsyncCommandWrapped } from './exception';
 
 async function createDb() {
   const files = await workspace.findFiles('**');
@@ -11,7 +11,7 @@ async function createDb() {
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
-    registerCommandWrapped('qcfg.tagdb.create', createDb)
+    registerAsyncCommandWrapped('qcfg.tagdb.create', createDb)
   );
 }
 

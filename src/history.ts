@@ -20,7 +20,7 @@ import { setTimeoutPromise } from './nodeUtils';
 import { getActiveTextEditor } from './utils';
 import { filterNonNull } from './tsUtils';
 import {
-  registerCommandWrapped,
+  registerAsyncCommandWrapped,
   listenWrapped,
   handleAsyncStd
 } from './exception';
@@ -58,8 +58,8 @@ export function activate(context: ExtensionContext) {
       onDidChangeActiveTextEditor
     ),
     listenWrapped(workspace.onDidChangeTextDocument, onDidChangeTextDocument),
-    registerCommandWrapped('qcfg.history.backward', goBackward),
-    registerCommandWrapped('qcfg.history.forward', goForward)
+    registerAsyncCommandWrapped('qcfg.history.backward', goBackward),
+    registerAsyncCommandWrapped('qcfg.history.forward', goForward)
   );
 }
 

@@ -14,7 +14,12 @@ import {
   TextEditor,
   StatusBarAlignment
 } from 'vscode';
-import { listenWrapped, registerCommandWrapped, CheckError } from './exception';
+import {
+  listenWrapped,
+  registerAsyncCommandWrapped,
+  CheckError,
+  registerSyncCommandWrapped
+} from './exception';
 import { Logger } from './logging';
 import { DefaultMap } from './tsUtils';
 import { getActiveTextEditor } from './utils';
@@ -195,8 +200,8 @@ function activate(context: ExtensionContext) {
       window.onDidChangeActiveTextEditor,
       onDidChangeActiveTextEditor
     ),
-    registerCommandWrapped('qcfg.edit.previous', goBackward),
-    registerCommandWrapped('qcfg.edit.next', goForward)
+    registerSyncCommandWrapped('qcfg.edit.previous', goBackward),
+    registerSyncCommandWrapped('qcfg.edit.next', goForward)
   );
 }
 
