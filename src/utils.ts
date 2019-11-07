@@ -1,7 +1,6 @@
 'use strict';
 
-import * as vscode from 'vscode';
-import { commands, TextEditor, window } from 'vscode';
+import { commands, TextEditor, window, WorkspaceFolder, Range } from 'vscode';
 import { registerAsyncCommandWrapped } from './exception';
 import { getDocumentWorkspaceFolder } from './fileUtils';
 import { log } from './logging';
@@ -18,16 +17,16 @@ export namespace Context {
     return contexts.has(name);
   }
 
-  export function set(name: string) {
-    setOrClear(name, true);
+  export async function set(name: string) {
+    await setOrClear(name, true);
   }
 
-  export function clear(name: string) {
-    setOrClear(name, false);
+  export async function clear(name: string) {
+    await setOrClear(name, false);
   }
 
-  function setOrClear(name: string, value: boolean) {
-    commands.executeCommand('setContext', name, value);
+  async function setOrClear(name: string, value: boolean) {
+    await commands.executeCommand('setContext', name, value);
     if (value) contexts.add(name);
     else contexts.delete(name);
   }
@@ -48,15 +47,15 @@ export function getActiveTextEditor(): TextEditor {
   return log.assertNonNull(window.activeTextEditor, 'No active text editor');
 }
 
-export function currentWorkspaceFolder(): vscode.WorkspaceFolder | undefined {
+export function currentWorkspaceFolder(): WorkspaceFolder | undefined {
   const editor = window.activeTextEditor;
   if (!editor) return;
   return getDocumentWorkspaceFolder(editor.document.fileName);
 }
 
 export interface CursorWordContext {
-  editor: vscode.TextEditor;
-  range: vscode.Range;
+  editor: TextEditor;
+  range: Range;
   word: string;
 }
 

@@ -176,20 +176,20 @@ async function extendSelection(direction: Direction) {
   const childRange = childrenRange(firstChild, lastChild);
   if (!childRange.isEqual(ctx.selection)) {
     selectChildren(ctx.editor, firstChild, lastChild);
-  } else {
-    if (direction === Direction.Left) {
-      if (ctx.selection.isReversed)
-        firstChild = firstChild.previousNamedSibling || firstChild;
-      else if (firstChild !== lastChild)
-        lastChild = lastChild.previousNamedSibling || lastChild;
-    } else if (direction === Direction.Right) {
-      if (!ctx.selection.isReversed)
-        lastChild = lastChild.nextNamedSibling || lastChild;
-      else if (firstChild !== lastChild)
-        firstChild = firstChild.nextNamedSibling || firstChild;
-    }
-    selectChildren(ctx.editor, firstChild, lastChild, ctx.selection.isReversed);
+    return;
   }
+  if (direction === Direction.Left) {
+    if (ctx.selection.isReversed)
+      firstChild = firstChild.previousNamedSibling || firstChild;
+    else if (firstChild !== lastChild)
+      lastChild = lastChild.previousNamedSibling || lastChild;
+  } else if (direction === Direction.Right) {
+    if (!ctx.selection.isReversed)
+      lastChild = lastChild.nextNamedSibling || lastChild;
+    else if (firstChild !== lastChild)
+      firstChild = firstChild.nextNamedSibling || firstChild;
+  }
+  selectChildren(ctx.editor, firstChild, lastChild, ctx.selection.isReversed);
 }
 
 const LIST_NODE_TYPES: string[] = [
@@ -259,7 +259,7 @@ class ExpandMode {
       this.setSelection();
       if (this.expandRanges.isEmpty) break;
       const prev = this.shrinkRanges.top!;
-      const next = this.expandRanges[0]!;
+      const next = this.expandRanges[0];
       const prevText = document.getText(prev);
       const currentText = document.getText(this.currentRange);
       if (this.currentRange.isEqual(trimInner(document, next))) {
@@ -300,7 +300,7 @@ class ExpandMode {
 let currentMode: ExpandMode | undefined;
 
 async function expandOrShrink(arg: { shrink: boolean; listNode?: boolean }) {
-  const ctx = await getContextNoTree();
+  const ctx = getContextNoTree();
   if (
     !currentMode ||
     currentMode.editor !== ctx.editor ||
@@ -351,10 +351,7 @@ async function provideSelectionRanges(
   _: CancellationToken
 ) {
   const tree = await SyntaxTrees.get(document);
-  const result = positions.map(pos =>
-    computeSelectionRange(document, tree, pos)
-  );
-  return result;
+  return positions.map(pos => computeSelectionRange(document, tree, pos));
 }
 
 function onDidChangeTextDocument(event: TextDocumentChangeEvent) {

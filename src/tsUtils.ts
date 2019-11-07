@@ -8,8 +8,7 @@ export function mapObjectValues<V, R>(
 ): { [key: string]: R } {
   const res: { [key: string]: R } = {};
   const entryObjs = mapObjectToArray(obj, (k, v) => ({ [k]: func(k, v) }));
-  const result = Object.assign(res, ...entryObjs);
-  return result;
+  return Object.assign(res, ...entryObjs);
 }
 
 export function mapObjectToArray<V, R>(
@@ -222,7 +221,7 @@ function numberCompare<T>(x: T, y: T): number {
   const xNum = (x as unknown) as number;
   const yNum = (y as unknown) as number;
   if (xNum < yNum) return -1;
-  else if (xNum === yNum) return 0;
+  if (xNum === yNum) return 0;
   return 1;
 }
 

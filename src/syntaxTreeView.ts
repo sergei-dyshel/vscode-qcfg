@@ -191,7 +191,7 @@ async function showTree() {
     currentRoot,
     window.activeTextEditor!.selection
   );
-  if (node) selectAndRememberNode(node, true /* focus */);
+  if (node) await selectAndRememberNode(node, true /* focus */);
 }
 
 function onTreeUpdated(event: SyntaxTreeUpdatedEvent) {
@@ -204,8 +204,8 @@ function onTextEditorChanged() {
   QcfgTreeView.refresh();
 }
 
-function selectAndRememberNode(node: SyntaxTreeViewNode, focus = false) {
-  QcfgTreeView.revealTree(node, { select: true, focus });
+async function selectAndRememberNode(node: SyntaxTreeViewNode, focus = false) {
+  await QcfgTreeView.revealTree(node, { focus, select: true });
 }
 
 async function onSelectionChanged(event: TextEditorSelectionChangeEvent) {
@@ -219,7 +219,7 @@ async function onSelectionChanged(event: TextEditorSelectionChangeEvent) {
   if (!roots || roots.isEmpty) return;
   const root = roots[0] as SyntaxTreeViewNode;
   const node = findContainingNode(root, event.textEditor.selection);
-  if (node) selectAndRememberNode(node);
+  if (node) await selectAndRememberNode(node);
 }
 
 function findContainingNode(

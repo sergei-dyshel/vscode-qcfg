@@ -59,12 +59,12 @@ async function getWorkspaceConfig(root: string): Promise<string> {
   const stat = await workspace.fs.stat(Uri.file(root));
   switch (stat.type) {
     case FileType.Directory:
+      const filePath = nodejs.path.join(root, '.vscode', 'settings.json');
       try {
-        const settings = await parseJsonFileAsync(
-          nodejs.path.join(root, '.vscode', 'settings.json')
-        );
+        const settings = await parseJsonFileAsync(filePath);
         return expandTitle(root, settings['window.title']);
-      } catch (_) {
+      } catch (err) {
+        log.debug(`Error parsing ${filePath}: ${err}`);
         return nodejs.path.basename(root);
       }
       break;
@@ -73,7 +73,8 @@ async function getWorkspaceConfig(root: string): Promise<string> {
       try {
         const settings = await parseJsonFileAsync(root);
         return expandTitle(root, settings['settings']['window.title']);
-      } catch (_) {
+      } catch (err) {
+        log.debug(`Error parsing ${root}: ${err}`);
         return nodejs.path.basename(nodejs.path.dirname(root));
       }
       break;

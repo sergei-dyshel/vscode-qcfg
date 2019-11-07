@@ -20,13 +20,14 @@
       "options": "allow-else-if"
     },
     "no-unnecessary-else": true,
-    "no-unused": [
-      true,
-      "ignore-imports",
-      "unused-function-expression-name",
-      "unused-class-expression-name",
-      "unused-catch-binding"
-    ],
+    // "no-unused-variable": [true, {"ignore-pattern": "^_$"}],
+    // "no-unused": [
+    //   true,
+    //   "ignore-imports",
+    //   "unused-function-expression-name",
+    //   "unused-class-expression-name",
+    //   "unused-catch-binding"
+    // ],
     "object-shorthand-properties-first": true,
 
     // tslint-eslint-rules
@@ -51,6 +52,7 @@
         "allow-pascal-case"
       ]
     },
+    "no-function-constructor-with-string-args": false,
     "prefer-template": false,
     "await-promise": [true, "Thenable"],
     "no-increment-decrement": false,

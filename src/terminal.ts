@@ -29,10 +29,10 @@ export class TerminalProcess {
     ];
     const opts: vscode.TerminalOptions = {
       name,
+      shellArgs,
       env: options ? options.env : undefined,
       cwd: options ? options.cwd : undefined,
-      shellPath: '/home/sergei/qyron-config/scripts/vscode-run-in-terminal.sh',
-      shellArgs
+      shellPath: '/home/sergei/qyron-config/scripts/vscode-run-in-terminal.sh'
     };
     this.terminal = vscode.window.createTerminal(opts);
     TerminalProcess.activeProcesses.push(this);
@@ -40,6 +40,7 @@ export class TerminalProcess {
 
   wait(): Promise<number> {
     if (this.waitingContext) return this.waitingContext.promise;
+    // tslint:disable-next-line: promise-must-complete
     const promise = new Promise<number>(
       (resolve: (exitCode: number) => void, reject: (err: any) => void) => {
         this.waitingContext = { promise, resolve, reject };
