@@ -37,11 +37,11 @@ export function buildAbbrevPattern(query: string): string {
         const anyCase = `(.*[^a-zA-Z])?[${lower}${upper}]`;
         const camelCase = `(.*[^A-Z])?${upper}`;
         return `(${anyCase}|${camelCase})`;
-      } else if (ch.match(/\d+/)) {
-        return `(.*[^0-9])?${ch}`;
-      } else {
-        return `.*${ch}`;
       }
+      if (ch.match(/\d+/)) {
+        return `(.*[^0-9])?${ch}`;
+      }
+      return `.*${ch}`;
     })
     .join('');
   return '^' + midPattern + '.*';
@@ -109,7 +109,7 @@ export function expandTemplate(
     if (!sub) {
       if (throwWhenNotExist)
         throw new TemplateError(`Could not substitute var "${varname}"`);
-      else return '';
+      return '';
     }
     return sub;
   });

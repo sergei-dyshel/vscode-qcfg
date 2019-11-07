@@ -1,20 +1,20 @@
 'use strict';
 
 import {
-  TextDocument,
-  Range,
-  Position,
   ExtensionContext,
-  workspace,
+  Position,
+  Range,
+  TextDocument,
   TextDocumentChangeEvent,
-  Uri
+  TextDocumentContentChangeEvent,
+  Uri,
+  workspace
 } from 'vscode';
-import { DisposableLike } from './utils';
-import { TextDocumentContentChangeEvent } from 'vscode';
-import { DefaultMap } from './tsUtils';
-import { offsetToRange, NumRange } from './documentUtils';
-import { Modules } from './module';
+import { NumRange, offsetToRange } from './documentUtils';
 import { listenWrapped } from './exception';
+import { Modules } from './module';
+import { DefaultMap } from './tsUtils';
+import { DisposableLike } from './utils';
 
 export interface ReadOnlyLocation {
   readonly uri: Uri;
@@ -108,10 +108,9 @@ export class LivePosition extends LiveLocation {
       this.offset = newOffset;
       this.range_ = document.positionAt(this.offset).asRange;
       return true;
-    } else {
-      this.invalidate();
-      return false;
     }
+    this.invalidate();
+    return false;
   }
 }
 
@@ -203,7 +202,7 @@ export function adjustOffsetAfterChange(
   if (!mergeOnReplace) return undefined;
   if (isEnd) return changeEnd + delta;
   // is Start
-  else return changeStart;
+  return changeStart;
 }
 
 const allLocations = new DefaultMap<string, LiveLocation[]>(() => []);

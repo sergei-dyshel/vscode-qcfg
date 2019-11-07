@@ -1,47 +1,51 @@
 'use strict';
 
-import { ListSelectable } from '../dialog';
 import {
-  QuickPickItem,
-  Task,
-  TaskScope,
-  workspace,
-  TaskGroup,
-  WorkspaceFolder,
-  window,
-  TaskPanelKind,
-  TaskDefinition,
-  ShellExecution,
-  TaskRevealKind,
   commands,
+  FindTextInFilesOptions,
   Location,
+  QuickPickItem,
+  ShellExecution,
+  Task,
+  TaskDefinition,
+  TaskGroup,
+  TaskPanelKind,
+  TaskRevealKind,
+  TaskScope,
   TextSearchQuery,
-  FindTextInFilesOptions
+  window,
+  workspace,
+  WorkspaceFolder
 } from 'vscode';
-import { TaskRun } from '../taskRunner';
-import {
-  TerminalTaskParams,
-  ProcessTaskParams,
-  Flag,
-  Reveal,
-  EndAction,
-  LocationFormat,
-  SearchTaskParams,
-  BaseTaskParams,
-  TaskType
-} from './params';
-import { currentWorkspaceFolder, getCursorWordContext } from '../utils';
-import * as nodejs from '../nodejs';
-import * as remoteControl from '../remoteControl';
+import { mapAsync, mapAsyncSequential } from '../async';
+import { ListSelectable } from '../dialog';
+import { getDocumentWorkspaceFolder, peekLocation } from '../fileUtils';
 import * as language from '../language';
-import { parseLocations, ParseLocationFormat } from '../parseLocations';
-import { Subprocess, ExecResult } from '../subprocess';
-import { TaskCancelledError, TaskConfilictPolicy } from '../taskRunner';
-import { mapAsyncSequential, mapAsync } from '../async';
-import { LogLevel, log } from '../logging';
-import { concatArrays } from '../tsUtils';
-import { peekLocation, getDocumentWorkspaceFolder } from '../fileUtils';
+import { log, LogLevel } from '../logging';
+import * as nodejs from '../nodejs';
+import { ParseLocationFormat, parseLocations } from '../parseLocations';
+import * as remoteControl from '../remoteControl';
 import { searchInFiles } from '../search';
+import { ExecResult, Subprocess } from '../subprocess';
+import {
+  TaskCancelledError,
+  TaskConfilictPolicy,
+  TaskRun
+} from '../taskRunner';
+import { concatArrays } from '../tsUtils';
+import { currentWorkspaceFolder, getCursorWordContext } from '../utils';
+import {
+  BaseTaskParams,
+  EndAction,
+  Flag,
+  LocationFormat,
+  ProcessTaskParams,
+  Reveal,
+  SearchTaskParams,
+  TaskType,
+  TerminalTaskParams
+} from './params';
+import { handleAsyncStd } from '../exception';
 
 export interface FetchInfo {
   label: string;
@@ -349,7 +353,7 @@ export class TerminalTask extends BaseQcfgTask {
     const success = exitCodes.includes(this.taskRun.exitCode!);
     const term = this.taskRun.terminal;
     if (success && params.flags && params.flags.includes(Flag.REINDEX))
-      language.reindex();
+      handleAsyncStd(language.reindex());
     let action = success ? params.onSuccess : params.onFailure;
     if (action === EndAction.AUTO || action === undefined) {
       if (success) {
@@ -367,7 +371,7 @@ export class TerminalTask extends BaseQcfgTask {
       case EndAction.DISPOSE:
         if (window.activeTerminal === term) {
           term.dispose();
-          commands.executeCommand('workbench.action.closePanel');
+          await commands.executeCommand('workbench.action.closePanel');
         } else {
           term.dispose();
         }
@@ -375,15 +379,17 @@ export class TerminalTask extends BaseQcfgTask {
       case EndAction.HIDE:
         term.hide();
         if (window.activeTerminal === term)
-          commands.executeCommand('workbench.action.closePanel');
+          await commands.executeCommand('workbench.action.closePanel');
         break;
       case EndAction.SHOW:
         term.show();
         break;
       case EndAction.NOTIFY:
         if (success)
-          window.showInformationMessage(`Task "${this.task.name}" finished`);
-        else window.showErrorMessage(`Task "${this.task.name}" failed`);
+          await window.showInformationMessage(
+            `Task "${this.task.name}" finished`
+          );
+        else await window.showErrorMessage(`Task "${this.task.name}" failed`);
         break;
     }
   }
@@ -579,8 +585,9 @@ export class SearchMultiTask extends BaseQcfgTask {
 
   async run() {
     const matches = await this.getLocations();
-    if (matches.isEmpty) window.showWarningMessage('No matches found');
-    else await peekLocation(matches);
+    if (matches.isEmpty) {
+      await window.showWarningMessage('No matches found');
+    } else await peekLocation(matches);
   }
 }
 

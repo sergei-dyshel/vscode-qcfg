@@ -5,8 +5,7 @@ import { Modules } from './module';
 import { registerAsyncCommandWrapped } from './exception';
 
 async function createDb() {
-  const files = await workspace.findFiles('**');
-  return files;
+  return workspace.findFiles('**');
 }
 
 function activate(context: ExtensionContext) {

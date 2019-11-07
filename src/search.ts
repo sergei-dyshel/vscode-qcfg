@@ -89,7 +89,7 @@ async function searchTodos() {
   if (res.code === 1) {
     await window.showWarningMessage(`No ${patterns} items were found`);
   } else {
-    setLocations(
+    await setLocations(
       patterns,
       parseLocations(res.stdout, folder.uri.fsPath, ParseLocationFormat.VIMGREP)
     );
@@ -115,7 +115,8 @@ async function searchWord(panel: boolean) {
   const { editor, word } = log.assertNonNull(getCursorWordContext());
   const query: TextSearchQuery = { pattern: word, isWordMatch: true };
   const parsedLocations = await searchInFiles(query);
-  if (panel) setLocations(`Word "${word}"`, parsedLocations, true /* reveal */);
+  if (panel)
+    await setLocations(`Word "${word}"`, parsedLocations, true /* reveal */);
   else await peekLocations(editorCurrentLocation(editor), parsedLocations);
 }
 

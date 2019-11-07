@@ -3,21 +3,27 @@
 import * as net from 'net';
 import * as path from 'path';
 import * as shlex from 'shlex';
-import * as vscode from 'vscode';
-import { window, workspace } from 'vscode';
+import {
+  window,
+  workspace,
+  WorkspaceFolder,
+  Position,
+  Selection,
+  ExtensionContext,
+  Uri
+} from 'vscode';
+import { handleErrors, handleAsyncStd } from './exception';
 import * as fileUtils from './fileUtils';
 import { log } from './logging';
+import { Modules } from './module';
 import { parseNumber } from './stringUtils';
 import * as terminal from './terminal';
-import { getActiveTextEditor } from './utils';
-import { handleErrors } from './exception';
-import { Modules } from './module';
 
 export let port = 48123;
 
 async function handleOpen(location: string, folder: string) {
   log.assert(path.isAbsolute(folder), `"${folder}" is not absolute path`);
-  let wsFolder: vscode.WorkspaceFolder | undefined;
+  let wsFolder: WorkspaceFolder | undefined;
   let found = false;
   for (wsFolder of workspace.workspaceFolders || [])
     if (wsFolder.uri.fsPath === folder) {
@@ -45,19 +51,11 @@ async function handleOpen(location: string, folder: string) {
   const lineNo = parseNumber(line);
   const colNo = column === '' ? 1 : parseNumber(column, 1);
   if (lineNo === undefined) return;
-  const pos = new vscode.Position(lineNo - 1, colNo - 1);
+  const pos = new Position(lineNo - 1, colNo - 1);
 
-  let editor = getActiveTextEditor();
-  let document = editor.document;
-  const selection = new vscode.Selection(pos, pos);
-  if (document.uri.fsPath !== fullPath) {
-    document = await workspace.openTextDocument(fullPath);
-    editor = await window.showTextDocument(document, { selection });
-    editor.show();
-    return;
-  }
-  editor.selection = selection;
-  editor.revealRange(editor.selection);
+  await window.showTextDocument(Uri.file(fullPath), {
+    selection: new Selection(pos, pos)
+  });
 }
 
 function handleCmd(cmd: string) {
@@ -72,16 +70,17 @@ function handleCmd(cmd: string) {
   switch (opcode) {
     case 'open':
       log.assert(args.length === 2);
-      handleOpen(args[0], args[1]);
+      handleAsyncStd(handleOpen(args[0], args[1]));
       break;
     case 'terminalProcessExit':
       terminal.processExit(args);
+      break;
     default:
       log.error('Invalid opcode: ' + opcode);
   }
 }
 
-function activate(_context: vscode.ExtensionContext) {
+function activate(_context: ExtensionContext) {
   const server = net.createServer(socket => {
     socket.on(
       'data',

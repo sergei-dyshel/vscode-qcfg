@@ -2,26 +2,27 @@
 
 import { TextBuffer } from 'superstring';
 import * as Parser from 'tree-sitter';
+// tslint:disable-next-line: no-duplicate-imports
 import { SyntaxNode, Tree as SyntaxTree } from 'tree-sitter';
 import {
+  Event,
+  EventEmitter,
   ExtensionContext,
   Position,
   Range,
   TextDocument,
   TextDocumentChangeEvent,
-  workspace,
   window,
-  EventEmitter,
-  Event
+  workspace
 } from 'vscode';
+import { PromiseContext } from './async';
 import { NumRange } from './documentUtils';
-import { listenWrapped } from './exception';
+import { listenWrapped, handleAsyncStd } from './exception';
+import { Logger } from './logging';
 import { Modules } from './module';
+import * as nodejs from './nodejs';
 import { Timer } from './nodeUtils';
 import { DefaultMap } from './tsUtils';
-import { PromiseContext } from './async';
-import { Logger } from './logging';
-import * as nodejs from './nodejs';
 
 type VsRange = Range;
 
@@ -234,6 +235,7 @@ class DocumentContext {
     }
     if (this.tree) return this.tree;
     this.promiseContext = new PromiseContext();
+    // tslint:disable-next-line: no-floating-promises
     this.update();
     return this.promiseContext.promise;
   }
@@ -258,7 +260,7 @@ function onDidChangeTextDocument(event: TextDocumentChangeEvent) {
       SyntaxTrees.supportedLanguages.includes(document.languageId)) ||
     trees.has(document)
   )
-    trees.get(document).update();
+    handleAsyncStd(trees.get(document).update());
 }
 
 // parseTextBuffer is missing in tree-sitter definitions

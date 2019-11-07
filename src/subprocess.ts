@@ -65,6 +65,7 @@ export class Subprocess {
       command,
       cwd
     );
+    // tslint:disable-next-line: promise-must-complete
     this.promise = new Promise<ExecResult>((resolve, reject) => {
       this.waitingContext = { resolve, reject };
     });

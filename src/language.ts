@@ -8,6 +8,8 @@ import * as vscode from 'vscode';
 import { Modules } from './module';
 import { parseJsonFileSync } from './json';
 
+export const colorThemeFiles: { [id: string]: string } = {};
+
 export function getLanguageConfig(
   id: string
 ): vscode.LanguageConfiguration | undefined {
@@ -39,9 +41,9 @@ export function sendDidSave(document: vscode.TextDocument) {
   for (const extName of extensions) {
     const extension = vscode.extensions.getExtension(extName);
     if (!extension || !extension.isActive) continue;
-    const exports: object = extension.exports;
+    const exports: any = extension.exports;
     if (typeof exports !== 'object' || !('languageClient' in exports)) continue;
-    const langClient: lc.LanguageClient = (exports as any).languageClient;
+    const langClient: lc.LanguageClient = exports.languageClient;
 
     langClient.sendNotification('textDocument/didSave', params);
     const path = vscode.workspace.asRelativePath(document.fileName);
@@ -49,13 +51,13 @@ export function sendDidSave(document: vscode.TextDocument) {
   }
 }
 
-export function reindex() {
+export async function reindex() {
   const cquery = vscode.extensions.getExtension('cquery-project.cquery');
   const ccls = vscode.extensions.getExtension('ccls-project.ccls');
   if (cquery && cquery.isActive) {
-    vscode.commands.executeCommand('cquery.freshenIndex');
+    await vscode.commands.executeCommand('cquery.freshenIndex');
   } else if (ccls && ccls.isActive) {
-    vscode.commands.executeCommand('ccls.reload');
+    await vscode.commands.executeCommand('ccls.reload');
   }
 }
 
@@ -97,7 +99,6 @@ function fetchLangConfigs() {
 
 /* TODO: move extension parsing to separate file */
 const langConfigs: { [id: string]: vscode.LanguageConfiguration } = {};
-export const colorThemeFiles: { [id: string]: string } = {};
 
 function activate(_: vscode.ExtensionContext) {
   fetchLangConfigs();

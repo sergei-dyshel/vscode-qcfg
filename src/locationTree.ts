@@ -2,22 +2,30 @@
 
 import * as path from 'path';
 import { MultiDictionary } from 'typescript-collections';
-import * as vscode from 'vscode';
-import { Location, Uri } from 'vscode';
+import {
+  Location,
+  Uri,
+  ThemeIcon,
+  TreeItemLabel,
+  workspace,
+  window,
+  TextDocumentChangeEvent,
+  ExtensionContext
+} from 'vscode';
 import {
   adjustOffsetRangeAfterChange,
   NumRange,
   offsetToRange,
   rangeToOffset
 } from './documentUtils';
-import { listenWrapped } from './exception';
+import { listenWrapped, handleAsyncStd } from './exception';
 import { log, str } from './logging';
 import { isSubPath } from './pathUtils';
 import { StaticTreeNode, TreeProvider, QcfgTreeView } from './treeView';
 import { Modules } from './module';
 import { ParsedLocation } from './parseLocations';
 
-export function setLocations(
+export async function setLocations(
   message: string,
   parsedLocations: ParsedLocation[],
   reveal = true
@@ -48,7 +56,7 @@ export function setLocations(
   currentMessage = message;
   QcfgTreeView.setProvider(provider);
   if (reveal)
-    QcfgTreeView.revealTree(undefined, { select: false, focus: false });
+    await QcfgTreeView.revealTree(undefined, { select: false, focus: false });
 }
 
 // private
@@ -73,12 +81,12 @@ namespace TreeBuilder {
       forest.set(comp, subforest);
       insert(subforest, components, file);
       return;
-    } else if (tree instanceof Map) {
+    }
+    if (tree instanceof Map) {
       insert(tree, components, file);
       return;
-    } else {
-      throw Error();
     }
+    throw Error();
   }
 
   export function buildDirHierarchy(files: FileNode[]): StaticTreeNode[] {
@@ -151,7 +159,7 @@ class DirNode extends UriNode {
   constructor(dir: string, label: string) {
     const uri = Uri.file(dir);
     super(uri, label);
-    this.treeItem.iconPath = vscode.ThemeIcon.Folder;
+    this.treeItem.iconPath = ThemeIcon.Folder;
     this.treeItem.label = label;
     this.setExpanded();
   }
@@ -160,7 +168,7 @@ class DirNode extends UriNode {
 class FileNode extends UriNode {
   constructor(uri: Uri) {
     super(uri, '');
-    this.treeItem.iconPath = vscode.ThemeIcon.File;
+    this.treeItem.iconPath = ThemeIcon.File;
     this.setExpanded();
   }
 }
@@ -173,7 +181,7 @@ class LocationNode extends StaticTreeNode {
     this.uri = parsedLoc.uri;
     this.allowRemoval();
     this.treeItem.id = str(parsedLoc);
-    const label = this.treeItem.label as vscode.TreeItemLabel;
+    const label = this.treeItem.label as TreeItemLabel;
     this.line = parsedLoc.range.start.line;
     label.highlights = [
       [
@@ -181,18 +189,18 @@ class LocationNode extends StaticTreeNode {
         parsedLoc.range.end.character - trimOffset
       ]
     ];
-    this.fetchDocument(parsedLoc);
+    handleAsyncStd(this.fetchDocument(parsedLoc));
   }
   async show() {
-    const document = await vscode.workspace.openTextDocument(this.uri);
+    const document = await workspace.openTextDocument(this.uri);
     const selection = offsetToRange(
       document,
       log.assertNonNull(this.offsetRange)
     );
-    vscode.window.showTextDocument(this.uri, { selection });
+    await window.showTextDocument(this.uri, { selection });
   }
   private async fetchDocument(location: Location) {
-    const document = await vscode.workspace.openTextDocument(this.uri);
+    const document = await workspace.openTextDocument(this.uri);
     this.offsetRange = rangeToOffset(document, location.range);
   }
   line: number;
@@ -200,7 +208,7 @@ class LocationNode extends StaticTreeNode {
   offsetRange?: NumRange;
 }
 
-function onDidChangeTextDocument(event: vscode.TextDocumentChangeEvent) {
+function onDidChangeTextDocument(event: TextDocumentChangeEvent) {
   const document = event.document;
   if (!currentTrees || !QcfgTreeView.isCurrentProvider(provider)) return;
   StaticTreeNode.applyRecursively(currentTrees, node => {
@@ -231,16 +239,15 @@ const provider: TreeProvider = {
   onDidChangeSelection(nodes: StaticTreeNode[]) {
     if (nodes.length !== 1) return;
     const node = nodes[0];
-    if (node instanceof LocationNode) node.show();
+    if (node instanceof LocationNode) {
+      handleAsyncStd(node.show());
+    }
   }
 };
 
-function activate(context: vscode.ExtensionContext) {
+function activate(context: ExtensionContext) {
   context.subscriptions.push(
-    listenWrapped(
-      vscode.workspace.onDidChangeTextDocument,
-      onDidChangeTextDocument
-    )
+    listenWrapped(workspace.onDidChangeTextDocument, onDidChangeTextDocument)
   );
 }
 

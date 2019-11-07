@@ -1,38 +1,42 @@
 'use strict';
 
 import {
+  EventEmitter,
+  ExtensionContext,
+  ProviderResult,
+  TreeDataProvider,
   TreeItem,
   TreeItem2,
-  ProviderResult,
   TreeItemCollapsibleState,
-  ExtensionContext,
-  TreeViewOptions,
-  window,
+  TreeItemLabel,
+  TreeView,
   TreeViewExpansionEvent,
+  TreeViewOptions,
   TreeViewSelectionChangeEvent,
   TreeViewVisibilityChangeEvent,
-  TreeItemLabel,
-  TreeDataProvider,
-  TreeView
+  window
 } from 'vscode';
-import { callIfNonNull } from './tsUtils';
+import {
+  listenWrapped,
+  registerSyncCommandWrapped,
+  registerAsyncCommandWrapped
+} from './exception';
 import { log } from './logging';
-import { listenWrapped, registerSyncCommandWrapped } from './exception';
 import { Modules } from './module';
-import { EventEmitter } from 'vscode';
+import { callIfNonNull } from './tsUtils';
 
 export const TREE_ITEM_REMOVABLE_CONTEXT = 'removable';
 
 export function activate(context: ExtensionContext) {
   const opts: TreeViewOptions<TreeNode> = {
-    showCollapseAll: true,
-    treeDataProvider
+    treeDataProvider,
+    showCollapseAll: true
   };
   treeView = window.createTreeView('qcfgTreeView', opts);
   context.subscriptions.push(
     treeView,
     registerSyncCommandWrapped('qcfg.treeView.removeNode', removeNode),
-    registerSyncCommandWrapped('qcfg.treeView.expandNode', expandNode),
+    registerAsyncCommandWrapped('qcfg.treeView.expandNode', expandNode),
     listenWrapped(
       treeView.onDidExpandElement,
       (event: TreeViewExpansionEvent<TreeNode>) => {
@@ -269,9 +273,9 @@ function removeNode(...args: any[]) {
   provider.removeNode(node);
 }
 
-function expandNode(...args: any[]) {
+async function expandNode(...args: any[]) {
   const node = log.assertNonNull(args[0]) as TreeNode;
-  treeView.reveal(node, { expand: 3 });
+  await treeView.reveal(node, { expand: 3 });
 }
 
 let treeView: TreeView<TreeNode>;

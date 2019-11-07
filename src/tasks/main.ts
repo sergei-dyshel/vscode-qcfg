@@ -4,7 +4,7 @@ import {
   commands,
   ExtensionContext,
   TaskGroup,
-  tasks,
+  tasks as vstasks,
   workspace,
   WorkspaceFolder,
   window,
@@ -14,10 +14,7 @@ import {
 import { mapSomeAsync, MAP_UNDEFINED, filterAsync } from '../async';
 import { ConfigFilePair, watchConfigFile, getConfigFileNames } from '../config';
 import * as dialog from '../dialog';
-import {
-  registerAsyncCommandWrapped,
-  registerSyncCommandWrapped
-} from '../exception';
+import { registerAsyncCommandWrapped } from '../exception';
 import { globAsync } from '../fileUtils';
 import { parseJsonFileSync } from '../json';
 import { log } from '../logging';
@@ -125,7 +122,7 @@ class TaskGenerator<P extends BaseTaskParams> {
 
   generateAll(currentContext: TaskContext, folderContexts: TaskContext[]) {
     if (isFolderTask(this.params)) return this.genFolderTasks(folderContexts);
-    else return this.genCurrentTask(currentContext);
+    return this.genCurrentTask(currentContext);
   }
 
   async createTask(context: TaskContext) {
@@ -257,7 +254,7 @@ let lastBuildTask: BaseTask | undefined;
 async function runDefaultBuildTask() {
   const qcfgTasks = await fetchQcfgTasks();
   for (const task of qcfgTasks) if (task.label === 'build') return task.run();
-  const allTasks = await tasks.fetchTasks();
+  const allTasks = await vstasks.fetchTasks();
   for (const task of allTasks)
     if (task.group === TaskGroup.Build)
       return commands.executeCommand('workbench.action.tasks.build');
@@ -279,8 +276,9 @@ function expandParamsOrCmd(paramsOrCmd: Params | string): Params {
 
 async function fetchVscodeTasksChecked(): Promise<Task[]> {
   try {
-    return await tasks.fetchTasks();
+    return await vstasks.fetchTasks();
   } catch (err) {
+    log.error('Error fetching vscode tasks: ', err);
     return [];
   }
 }
@@ -295,7 +293,7 @@ async function showTasks() {
   const anyTask = await dialog.selectObjectFromListMru(allTasks, 'tasks');
   if (!anyTask) return;
   if (anyTask.isBuild()) lastBuildTask = anyTask;
-  anyTask.run();
+  await anyTask.run();
 }
 
 interface TaskRunOptions {
@@ -317,24 +315,23 @@ async function createTask(
           throw new Error(`Task "${label}" can only run in workspace folder`);
         const folderContexts = folders.map(folder => new TaskContext(folder));
         return generator.genMultiTask(folderContexts);
-      } else throw new Error(`Task "${label}" is not folder task`);
-    } else {
-      try {
-        return generator.createTask(new TaskContext(options.folder));
-      } catch (err) {
-        throw new Error(
-          `Task "${label}" is not valid in folder "${options.folder.name}": ${err.message}`
-        );
       }
+      throw new Error(`Task "${label}" is not folder task`);
     }
-  } else {
     try {
-      return generator.createTask(new TaskContext());
+      return generator.createTask(new TaskContext(options.folder));
     } catch (err) {
       throw new Error(
-        `Task "${label}" is not valid current context : ${err.message}`
+        `Task "${label}" is not valid in folder "${options.folder.name}": ${err.message}`
       );
     }
+  }
+  try {
+    return generator.createTask(new TaskContext());
+  } catch (err) {
+    throw new Error(
+      `Task "${label}" is not valid current context : ${err.message}`
+    );
   }
 }
 
@@ -343,14 +340,14 @@ export async function runTask(
   params: Params,
   options?: TaskRunOptions
 ) {
-  const fetchedParams = { fetchInfo: { label, fromWorkspace: false }, params };
+  const fetchedParams = { params, fetchInfo: { label, fromWorkspace: false } };
   const task = await createTask(fetchedParams, options);
   await task.run();
 }
 
 async function runConfiguredTask(name: string, options?: TaskRunOptions) {
   const fetchedParams = configuredParams.firstOf(
-    fetchedParams => fetchedParams.fetchInfo.label === name
+    fp => fp.fetchInfo.label === name
   );
   if (!fetchedParams) throw new Error(`Task "${name}" is not available`);
   const task = await createTask(fetchedParams, options);
@@ -371,23 +368,23 @@ const configuredParams: FetchedParams[] = [];
 
 function loadConfig(filePair: ConfigFilePair) {
   const allTasks: ConfParamsSet = {};
-  const workspaceTasks: ConfParamsSet = {};
+  let workspaceTasks: ConfParamsSet = {};
   if (filePair.global) {
     try {
       const globalTasks: ConfParamsSet = parseJsonFileSync(filePair.global);
       log.debug('Loaded tasks from ' + filePair.global);
       Object.assign(allTasks, globalTasks);
     } catch (err) {
-      log.error('Could not load JSON file ' + filePair.global);
+      log.error(`Could not load JSON file ${filePair.global}: ${err}`);
     }
   }
   if (filePair.workspace) {
     try {
-      const workspaceTasks = parseJsonFileSync(filePair.workspace);
+      workspaceTasks = parseJsonFileSync(filePair.workspace);
       log.debug('Loaded tasks from ' + filePair.workspace);
       Object.assign(allTasks, workspaceTasks);
     } catch (err) {
-      log.error('Could not load JSON file ' + filePair.workspace);
+      log.error(`Could not load JSON file ${filePair.workspace}: ${err}`);
     }
   }
   if (!filePair.global && !filePair.workspace)
@@ -395,27 +392,28 @@ function loadConfig(filePair: ConfigFilePair) {
   configuredParams.length = 0;
   configuredParams.push(
     ...mapObjectToArray(allTasks, (label, paramsOrCmd) => {
-      const fetchInfo: FetchInfo = {
-        label,
-        fromWorkspace: workspaceTasks[label] !== undefined
-      };
+      // tslint:disable-next-line: strict-type-predicates
+      const fromWorkspace = workspaceTasks[label] !== undefined;
+      const fetchInfo: FetchInfo = { label, fromWorkspace };
       return { fetchInfo, params: expandParamsOrCmd(paramsOrCmd) };
     })
   );
 }
 
-function editGlobalConfig() {
+async function editGlobalConfig() {
   const confFilePair = getConfigFileNames(CONFIG_FILE);
-  window.showTextDocument(Uri.file(confFilePair.global!));
+  await window.showTextDocument(Uri.file(confFilePair.global!));
 }
 
-function editWorkspaceConfig() {
+async function editWorkspaceConfig() {
   const confFilePair = getConfigFileNames(CONFIG_FILE);
   if (!confFilePair.workspace)
     throw Error('Workspace configuration file not defined!');
   if (!nodejs.fs.existsSync(confFilePair.workspace))
-    window.showTextDocument(Uri.parse('untitled:' + confFilePair.workspace));
-  else window.showTextDocument(Uri.file(confFilePair.workspace));
+    await window.showTextDocument(
+      Uri.parse('untitled:' + confFilePair.workspace)
+    );
+  else await window.showTextDocument(Uri.file(confFilePair.workspace));
 }
 
 function activate(context: ExtensionContext) {
@@ -435,8 +433,11 @@ function activate(context: ExtensionContext) {
       'qcfg.tasks.runConfigured',
       runConfiguredTaskCmd
     ),
-    registerSyncCommandWrapped('qcfg.tasks.editGlobalConfig', editGlobalConfig),
-    registerSyncCommandWrapped(
+    registerAsyncCommandWrapped(
+      'qcfg.tasks.editGlobalConfig',
+      editGlobalConfig
+    ),
+    registerAsyncCommandWrapped(
       'qcfg.tasks.editWorkspaceConfig',
       editWorkspaceConfig
     ),
