@@ -23,6 +23,16 @@
 			"label": "tslint",
 			"type": "shell",
 			"command": "npx tslint --project tsconfig.json --config tslint.json --format stylish",
+		},
+		{
+			"label": "ts-prune",
+			"type": "shell",
+			"command": "npx ts-prune",
+		},
+		{
+			"label": "ts-unused-exports",
+			"type": "shell",
+			"command": "npx ts-unused-exports tsconfig.json --showLineNumber",
 		}
 	],
 }

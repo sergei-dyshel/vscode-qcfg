@@ -1861,6 +1861,8 @@
     "ts-json-schema-generator": "^0.54.0",
     "ts-loader": "^6.0.2",
     "ts-node": "^7.0.1",
+    "ts-prune": "^0.3.0",
+    "ts-unused-exports": "^4.0.0",
     "tslint": "^5.17.0",
     "tslint-config-airbnb": "^5.11.2",
     "tslint-config-prettier": "^1.18.0",
