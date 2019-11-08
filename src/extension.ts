@@ -33,6 +33,7 @@ import * as tasksMain from './tasks/main';
 import * as liveLocation from './liveLocation';
 import * as documentCache from './documentCache';
 import * as formatting from './formatting';
+import * as diagnostic from './diagnostic';
 
 export function activate(context: vscode.ExtensionContext) {
   console.log('Extension active');
@@ -70,7 +71,8 @@ export function activate(context: vscode.ExtensionContext) {
     tasksMain,
     liveLocation,
     documentCache,
-    formatting
+    formatting,
+    diagnostic
   };
 }
 
