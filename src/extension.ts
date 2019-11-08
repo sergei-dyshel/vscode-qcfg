@@ -42,6 +42,7 @@ export function activate(context: vscode.ExtensionContext) {
   logging.log.info(`Activated ${logging.str(Modules.fileNames())}`);
 
   // history.activate(context);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (console as any).qcfg = {
     nodejs,
     language,

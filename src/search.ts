@@ -81,7 +81,7 @@ async function searchTodos() {
   );
   if (!filterCategories) return;
   const patterns = filterCategories.join('|');
-  const subproc = new Subprocess(`patterns=\'${patterns}\' q-git-diff-todo`, {
+  const subproc = new Subprocess(`patterns='${patterns}' q-git-diff-todo`, {
     cwd: folder.uri.fsPath,
     allowedCodes: [0, 1]
   });

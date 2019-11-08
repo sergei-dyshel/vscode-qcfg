@@ -41,6 +41,8 @@ module.exports = {
     'max-classes-per-file': 'off',
     'operator-linebreak': 'off',
     'no-useless-constructor': 'off',
-    '@typescript-eslint/no-useless-constructor': 'error'
+    '@typescript-eslint/no-useless-constructor': 'error',
+    'no-continue': 'off',
+    'no-console': 'off'
   }
 };
