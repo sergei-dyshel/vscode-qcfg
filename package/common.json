@@ -242,22 +242,6 @@
     },
     "problemMatchers": [
       {
-        "name": "e8build",
-        "owner": "qcfg",
-        "fileLocation": [
-          "relative",
-          "${workspaceFolder}"
-        ],
-        "severity": "warning",
-        "pattern": {
-          "regexp": "^(.*?):(\\d+):((\\d+):)?\\s+(fatal error|warning|error|note):\\s+(.*)$",
-          "file": 1,
-          "line": 2,
-          "column": 4,
-          "message": 6
-        }
-      },
-      {
         "name": "gcc-relative",
         "owner": "qcfg",
         "fileLocation": [
