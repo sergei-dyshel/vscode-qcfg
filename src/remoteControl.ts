@@ -17,8 +17,8 @@ import * as fileUtils from './fileUtils';
 import { log } from './logging';
 import { Modules } from './module';
 import { parseNumber } from './stringUtils';
-import * as terminal from './terminal';
 
+// eslint-disable-next-line import/no-mutable-exports
 export let port = 48123;
 
 async function handleOpen(location: string, folder: string) {
@@ -72,9 +72,6 @@ function handleCmd(cmd: string) {
       log.assert(args.length === 2);
       handleAsyncStd(handleOpen(args[0], args[1]));
       break;
-    case 'terminalProcessExit':
-      terminal.processExit(args);
-      break;
     default:
       log.error('Invalid opcode: ' + opcode);
   }
@@ -97,7 +94,7 @@ function activate(_context: ExtensionContext) {
     const error = err as NodeJS.ErrnoException;
     if (error.code === 'EADDRINUSE') {
       log.debug(`Port ${port} already in use`);
-      port++;
+      port += 1;
       server.listen(port, '127.0.0.1');
     } else {
       log.info(`Error listening on port ${port}: ${error.message}`);
