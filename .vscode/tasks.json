@@ -33,6 +33,11 @@
 			"label": "ts-unused-exports",
 			"type": "shell",
 			"command": "npx ts-unused-exports tsconfig.json --showLineNumber",
+		},
+		{
+			"label": "eslint",
+			"type": "shell",
+			"command": "npx eslint --color --format unix --ext .ts src"
 		}
 	],
 }
