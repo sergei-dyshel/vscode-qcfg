@@ -9,39 +9,47 @@ import {
   CompletionItem,
   CompletionList,
   languages,
-  DiagnosticChangeEvent
+  DiagnosticChangeEvent,
+  Range
 } from 'vscode';
 import { Modules } from './module';
 import { listenWrapped } from './exception';
 import { getCompletionPrefix } from './documentUtils';
 import { abbrevMatch } from './stringUtils';
+import { offsetPosition } from './textUtils';
 
-let completions: string[] = [];
+const eslintRules = new Set<string>();
 
-class CompletionsFromDiagnosticsProvider implements CompletionItemProvider {
+const CompletionsFromDiagnosticsProvider: CompletionItemProvider = {
   provideCompletionItems(
     document: TextDocument,
     position: Position
   ): ProviderResult<CompletionItem[] | CompletionList> {
-    const prefix = getCompletionPrefix(document, position);
+    const prefix = getCompletionPrefix(document, position, /([\w@/-]*)$/);
     if (prefix === '') return [];
     const items: CompletionItem[] = [];
-    for (const code of completions) {
-      if (!abbrevMatch(code, prefix)) continue;
-      items.push(new CompletionItem(code));
+    for (const code of eslintRules) {
+      if (!abbrevMatch(code, prefix) && !code.startsWith(prefix)) continue;
+      const item = new CompletionItem(code);
+      item.range = new Range(
+        offsetPosition(document, position, -prefix.length),
+        position
+      );
+      items.push(item);
     }
     return items;
   }
-}
+};
 
 function recalcCompletions() {
-  const newCompletions: string[] = [];
+  eslintRules.clear();
   const uriDiags = languages.getDiagnostics();
   for (const [, diags] of uriDiags)
     for (const diag of diags) {
-      if (typeof diag.code === 'string') newCompletions.push(diag.code);
+      if (diag.source === 'eslint' && typeof diag.code === 'string')
+        eslintRules.add(diag.code);
     }
-  completions = newCompletions;
+  for (const word of ['off', 'error']) eslintRules.add(word);
 }
 
 function onDidChangeDiagnostics(_: DiagnosticChangeEvent) {
@@ -52,8 +60,9 @@ function activate(context: ExtensionContext) {
   recalcCompletions();
   context.subscriptions.push(
     languages.registerCompletionItemProvider(
-      '**',
-      new CompletionsFromDiagnosticsProvider()
+      { pattern: '**/.eslintrc.*' },
+      CompletionsFromDiagnosticsProvider,
+      ...'\'"-/@abcdefghijklmnopqrstuvwxyz'.split('')
     ),
     listenWrapped(languages.onDidChangeDiagnostics, onDidChangeDiagnostics)
   );

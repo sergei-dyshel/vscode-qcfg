@@ -126,11 +126,12 @@ export function adjustRangeAfterChange(
 
 export function getCompletionPrefix(
   document: TextDocument,
-  position: Position
+  position: Position,
+  pattern = /(\w*)$/
 ): string {
   const lineStart = position.with(undefined, 0);
   const text = document.getText(new Range(lineStart, position));
-  const match = text.match(/(\w*)$/)!;
+  const match = text.match(pattern)!;
   return match[1];
 }
 
