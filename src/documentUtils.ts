@@ -5,7 +5,7 @@ import {
   TextDocumentContentChangeEvent,
   Range,
   Position,
-  Selection
+  Selection,
 } from 'vscode';
 import { log } from './logging';
 import { maxNumber, minNumber } from './tsUtils';
@@ -64,7 +64,7 @@ export class NumRange {
     if (this.intersection(that))
       return new NumRange(
         minNumber(this.start, that.start),
-        maxNumber(this.end, that.end)
+        maxNumber(this.end, that.end),
       );
     return undefined;
   }
@@ -73,20 +73,20 @@ export class NumRange {
 export function rangeToOffset(document: TextDocument, range: Range): NumRange {
   return new NumRange(
     document.offsetAt(range.start),
-    document.offsetAt(range.end)
+    document.offsetAt(range.end),
   );
 }
 
 export function offsetToRange(document: TextDocument, range: NumRange): Range {
   return new Range(
     document.positionAt(range.start),
-    document.positionAt(range.end)
+    document.positionAt(range.end),
   );
 }
 
 export function adjustOffsetRangeAfterChange(
   range: NumRange,
-  changes: readonly TextDocumentContentChangeEvent[]
+  changes: readonly TextDocumentContentChangeEvent[],
 ): NumRange | undefined {
   for (const change of changes.reverseIter()) {
     const changeStart = change.rangeOffset;
@@ -100,7 +100,7 @@ export function adjustOffsetRangeAfterChange(
     } else if (changeStart <= range.start) {
       if (changeEnd < range.end)
         range = new NumRange(Math.max(range.start, changeEnd), range.end).shift(
-          delta
+          delta,
         );
       else return;
     } else if (changeEnd < range.end) {
@@ -115,11 +115,11 @@ export function adjustOffsetRangeAfterChange(
 export function adjustRangeAfterChange(
   document: TextDocument,
   range: Range,
-  changes: TextDocumentContentChangeEvent[]
+  changes: TextDocumentContentChangeEvent[],
 ): Range | undefined {
   const adjusted = adjustOffsetRangeAfterChange(
     rangeToOffset(document, range),
-    changes
+    changes,
   );
   return adjusted ? offsetToRange(document, adjusted) : undefined;
 }
@@ -127,7 +127,7 @@ export function adjustRangeAfterChange(
 export function getCompletionPrefix(
   document: TextDocument,
   position: Position,
-  pattern = /(\w*)$/
+  pattern = /(\w*)$/,
 ): string {
   const lineStart = position.with(undefined, 0);
   const text = document.getText(new Range(lineStart, position));
@@ -138,14 +138,14 @@ export function getCompletionPrefix(
 function lineFirstNonWhitespaceCharacter(document: TextDocument, line: number) {
   return new Position(
     line,
-    document.lineAt(line).firstNonWhitespaceCharacterIndex
+    document.lineAt(line).firstNonWhitespaceCharacterIndex,
   );
 }
 
 export function lineIndentationRange(document: TextDocument, line: number) {
   return new Range(
     document.lineAt(line).range.start,
-    lineFirstNonWhitespaceCharacter(document, line)
+    lineFirstNonWhitespaceCharacter(document, line),
   );
 }
 
@@ -183,16 +183,16 @@ Range.prototype.strictlyContains = function(this: Range, that: Range) {
 
 Position.prototype.offset = function(
   this: Position,
-  offset: { line?: number; character?: number }
+  offset: { line?: number; character?: number },
 ) {
   return this.with(
     this.line + (offset.line || 0),
-    this.character + (offset.character || 0)
+    this.character + (offset.character || 0),
   );
 };
 
 Object.defineProperty(Position.prototype, 'asRange', {
   get() {
     return new Range(this, this);
-  }
+  },
 });

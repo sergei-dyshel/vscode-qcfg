@@ -8,7 +8,8 @@ import {
   Location,
   Position,
   ExtensionContext,
-  languages
+  languages,
+  DocumentSymbolProvider,
 } from 'vscode';
 import { Logger } from './logging';
 import * as subprocess from './subprocess';
@@ -26,7 +27,7 @@ interface LanguageConfig {
 const languageConfigs: { [id: string]: LanguageConfig } = {
   c: {},
   cpp: { lang: 'c++' },
-  python: {}
+  python: {},
 };
 
 const ctagsToVscodeKind: { [name: string]: SymbolKind } = {
@@ -51,7 +52,7 @@ const ctagsToVscodeKind: { [name: string]: SymbolKind } = {
   namespace: SymbolKind.Namespace,
   // Python specific
   module: SymbolKind.Module,
-  unknown: SymbolKind.File // not good
+  unknown: SymbolKind.File, // not good
 };
 
 interface TagInfo {
@@ -65,7 +66,7 @@ interface TagInfo {
 
 async function getTags(
   document: TextDocument,
-  token: CancellationToken
+  token: CancellationToken,
 ): Promise<TagInfo[]> {
   const langConfig = languageConfigs[document.languageId];
   const log = new Logger({ instance: document.fileName, level: 'debug' });
@@ -80,9 +81,9 @@ async function getTags(
       `--language-force=${langConfig.lang || document.languageId}`,
       '--output-format=json',
       '--fields=*',
-      relativePath
+      relativePath,
     ],
-    { cwd: workspaceFolder.uri.fsPath, maxBuffer: 1 * 1024 * 1024 }
+    { cwd: workspaceFolder.uri.fsPath, maxBuffer: 1 * 1024 * 1024 },
   );
   log.trace('Started');
   token.onCancellationRequested(() => {
@@ -106,10 +107,10 @@ function parseLine(line: string): TagInfo {
   return JSON.parse(line) as TagInfo;
 }
 
-class DocumentSymbolProvider implements DocumentSymbolProvider {
+const documentSymbolProvider: DocumentSymbolProvider = {
   async provideDocumentSymbols(
     document: TextDocument,
-    token: CancellationToken
+    token: CancellationToken,
   ): Promise<SymbolInformation[] | undefined> {
     switch (document.languageId) {
       case 'cpp':
@@ -122,12 +123,12 @@ class DocumentSymbolProvider implements DocumentSymbolProvider {
     const editor = getActiveTextEditor();
     const tags = await getTags(editor.document, token);
     return tags.map(tag => tag2Symbol(tag, document));
-  }
-}
+  },
+};
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
-    languages.registerDocumentSymbolProvider('*', new DocumentSymbolProvider())
+    languages.registerDocumentSymbolProvider('*', documentSymbolProvider),
   );
 }
 

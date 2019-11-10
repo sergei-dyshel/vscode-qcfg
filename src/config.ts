@@ -4,7 +4,7 @@ import {
   ConfigurationChangeEvent,
   ExtensionContext,
   workspace,
-  Disposable
+  Disposable,
 } from 'vscode';
 import { listenWrapped } from './exception';
 import { watchFile } from './fileUtils';
@@ -19,13 +19,13 @@ import { DisposableLike } from './utils';
  */
 export function watchConfigVariable(
   section: string,
-  callback: () => any
+  callback: () => unknown,
 ): DisposableLike {
   return listenWrapped(
     workspace.onDidChangeConfiguration,
     (event: ConfigurationChangeEvent) => {
       if (event.affectsConfiguration(section)) callback();
-    }
+    },
   );
 }
 
@@ -42,7 +42,7 @@ export interface ConfigFilePair {
  */
 export function watchConfigFile(
   fileName: string,
-  callback: (_: ConfigFilePair) => any
+  callback: (_: ConfigFilePair) => unknown,
 ): { configFilePair: ConfigFilePair; disposable: DisposableLike } {
   const watcher = configDirWatcher.watch(fileName, callback);
   return { configFilePair: watcher.current(), disposable: watcher };
@@ -99,18 +99,18 @@ class ConfigDirWatcher implements Disposable {
 
   private configDisposable = Disposable.from(
     watchConfigVariable(GLOBAL_VAR, this.onConfigVarChanged.bind(this)),
-    watchConfigVariable(WORKSPACE_VAR, this.onConfigVarChanged.bind(this))
+    watchConfigVariable(WORKSPACE_VAR, this.onConfigVarChanged.bind(this)),
   );
 
   private pairWatchers = new Map<string, ConfigPairWatcher>();
 
   watch(
     fileName: string,
-    callback: (_: ConfigFilePair) => any
+    callback: (_: ConfigFilePair) => unknown,
   ): ConfigPairWatcher {
     if (this.pairWatchers.has(fileName))
       throw new Error(
-        `Configuration file "${fileName}" is already being watched`
+        `Configuration file "${fileName}" is already being watched`,
       );
     const watcher = new ConfigPairWatcher(
       fileName,
@@ -119,7 +119,7 @@ class ConfigDirWatcher implements Disposable {
       callback,
       () => {
         this.pairWatchers.delete(fileName);
-      }
+      },
     );
     this.pairWatchers.set(fileName, watcher);
     return watcher;
@@ -130,7 +130,7 @@ class ConfigDirWatcher implements Disposable {
       global: nodejs.path.resolve(this.globalDir, fileName),
       workspace: this.workspaceDir
         ? nodejs.path.resolve(this.workspaceDir, fileName)
-        : undefined
+        : undefined,
     };
   }
 
@@ -138,7 +138,7 @@ class ConfigDirWatcher implements Disposable {
     this.globalDir = parseGlobalDir();
     this.workspaceDir = parseWorkspaceDir();
     this.pairWatchers.forEach(watcher =>
-      watcher.reset(this.globalDir, this.workspaceDir)
+      watcher.reset(this.globalDir, this.workspaceDir),
     );
   }
 
@@ -156,18 +156,21 @@ class ConfigFileWatcher implements DisposableLike {
 
   constructor(
     public currentPath: string | undefined,
-    private callback: () => any
+    private callback: () => unknown,
   ) {
     this.watch();
   }
+
   reset(newPath: string | undefined) {
     this.dispose();
     this.currentPath = newPath;
     this.watch();
   }
+
   dispose() {
     if (this.watcher) this.watcher.dispose();
   }
+
   private watch() {
     if (this.currentPath)
       this.watcher = watchFile(this.currentPath, this.callback);
@@ -193,33 +196,37 @@ class ConfigPairWatcher implements DisposableLike {
     public fileName: string,
     globalDir: string,
     workspaceDir: string | undefined,
-    private callback: (_: ConfigFilePair) => any,
-    private onDispose: () => void
+    private callback: (_: ConfigFilePair) => unknown,
+    private onDispose: () => void,
   ) {
     this.global = new ConfigFileWatcher(
       nodejs.path.resolve(globalDir, fileName),
-      this.onAnyChanged.bind(this)
+      this.onAnyChanged.bind(this),
     );
     this.workspace = new ConfigFileWatcher(
       resolveIfNonNull(workspaceDir, fileName),
-      this.onAnyChanged.bind(this)
+      this.onAnyChanged.bind(this),
     );
   }
+
   reset(globalDir: string, workspaceDir: string | undefined) {
     this.global.reset(nodejs.path.resolve(globalDir, this.fileName));
     this.workspace.reset(resolveIfNonNull(workspaceDir, this.fileName));
   }
+
   current(): ConfigFilePair {
     return {
       global: checkExists(this.global.currentPath),
-      workspace: checkExists(this.workspace.currentPath)
+      workspace: checkExists(this.workspace.currentPath),
     };
   }
+
   dispose() {
     this.global.dispose();
     this.workspace.dispose();
     this.onDispose();
   }
+
   private onAnyChanged() {
     this.callback(this.current());
   }

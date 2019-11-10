@@ -11,7 +11,7 @@ import {
   ExtensionContext,
   workspace,
   ConfigurationTarget,
-  Position
+  Position,
 } from 'vscode';
 import * as clipboardy from 'clipboardy';
 
@@ -21,7 +21,7 @@ import {
   expandLinewise,
   trimWhitespace,
   selectRange,
-  trimBrackets
+  trimBrackets,
 } from './textUtils';
 import { log } from './logging';
 import { getActiveTextEditor, getCursorWordContext } from './utils';
@@ -31,7 +31,7 @@ import {
   registerAsyncCommandWrapped,
   registerTextEditorCommandWrapped,
   executeCommandHandled,
-  registerSyncCommandWrapped
+  registerSyncCommandWrapped,
 } from './exception';
 import { Modules } from './module';
 import { lineIndentation } from './documentUtils';
@@ -49,7 +49,7 @@ function selectLines() {
   else selectRange(editor, expandLinewise(selection));
 }
 
-async function surroundWith(args: any[]) {
+async function surroundWith(args: unknown[]) {
   const editor = getActiveTextEditor();
   const selection = editor.selection;
   if (selection.isEmpty) return;
@@ -71,9 +71,9 @@ async function surroundWith(args: any[]) {
 }
 
 function swapCursorAndAnchor(editor: TextEditor) {
-  editor.selections = editor.selections.map(sel => {
-    return new Selection(sel.active, sel.anchor);
-  });
+  editor.selections = editor.selections.map(
+    sel => new Selection(sel.active, sel.anchor),
+  );
 }
 
 async function cloneEditorBeside() {
@@ -109,8 +109,8 @@ async function cloneEditorBeside() {
 
 type DirectionArg = 'up' | 'down' | 'left' | 'right';
 
-async function syncEditorToDirection(args: any[]) {
-  const dir: DirectionArg = args[0];
+async function syncEditorToDirection(args: unknown[]) {
+  const dir = args[0] as DirectionArg;
   log.assert(window.activeTextEditor);
   const editor = window.activeTextEditor as TextEditor;
   const visible = editor.visibleRanges[0];
@@ -121,13 +121,13 @@ async function syncEditorToDirection(args: any[]) {
     up: 'workbench.action.focusAboveGroup',
     down: 'workbench.action.focusBelowGroup',
     left: 'workbench.action.focusLeftGroup',
-    right: 'workbench.action.focusRightGroup'
+    right: 'workbench.action.focusRightGroup',
   };
   const splitCmd = {
     down: 'workbench.action.splitEditorDown',
     left: 'workbench.action.splitEditorLeft',
     right: 'workbench.action.splitEditorRight',
-    up: 'workbench.action.splitEditorUp'
+    up: 'workbench.action.splitEditorUp',
   };
   await commands.executeCommand(focusCmd[dir]);
   const adjEditor = window.activeTextEditor!;
@@ -264,32 +264,32 @@ function activate(context: ExtensionContext) {
     registerAsyncCommandWrapped('qcfg.peekReferences', peekReferences),
     registerTextEditorCommandWrapped(
       'qcfg.swapCursorAndAnchor',
-      swapCursorAndAnchor
+      swapCursorAndAnchor,
     ),
     registerTextEditorCommandWrapped('qcfg.smartPaste', smartPaste),
     registerAsyncCommandWrapped('qcfg.surroundWith', surroundWith),
     registerAsyncCommandWrapped('qcfg.cloneEditorBeside', cloneEditorBeside),
     registerAsyncCommandWrapped(
       'qcfg.syncEditorToDirection',
-      syncEditorToDirection
+      syncEditorToDirection,
     ),
     registerAsyncCommandWrapped(
       'qcfg.wrapWithBracketsInline',
-      wrapWithBracketsInline
+      wrapWithBracketsInline,
     ),
     registerAsyncCommandWrapped('qcfg.stripBrackets', stripBrackets),
     registerAsyncCommandWrapped(
       'qcfg.navigateBackToPreviousFile',
-      navigateBackToPreviousFile
+      navigateBackToPreviousFile,
     ),
     registerSyncCommandWrapped(
       'qcfg.selectWordUnderCursor',
-      selectWordUnderCursor
+      selectWordUnderCursor,
     ),
     registerAsyncCommandWrapped(
       'qcfg.toggleRelativeLineNumbers',
-      toggleRelativeNumbers
-    )
+      toggleRelativeNumbers,
+    ),
   );
 }
 

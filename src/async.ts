@@ -7,15 +7,16 @@ import { Modules } from './module';
 
 type Callback = () => Promise<void>;
 type Resolve = () => void;
-type Reject = (err: any) => void;
+type Reject = (err: unknown) => void;
 
 export class PromiseQueue {
   private log: Logger;
+
   constructor(name: string) {
     this.log = new Logger({
       name: 'PromiseQueue',
       instance: name,
-      level: 'debug'
+      level: 'debug',
     });
   }
 
@@ -32,11 +33,9 @@ export class PromiseQueue {
 
   queued<T>(
     cb: (arg: T) => Promise<void>,
-    name?: string
+    name?: string,
   ): (arg: T) => Promise<void> {
-    return (arg: T) => {
-      return this.add(() => cb(arg), name);
-    };
+    return (arg: T) => this.add(() => cb(arg), name);
   }
 
   private runNext() {
@@ -56,14 +55,14 @@ export class PromiseQueue {
           entry.resolve();
           this.runNext();
         },
-        (err: any) => {
+        (err: unknown) => {
           this.busy = false;
           /// #if DEBUG
           this.log.trace(`failed "${entry.name}"`);
           /// #endif
           entry.reject(err);
           this.runNext();
-        }
+        },
       );
     } catch (err) {
       this.busy = false;
@@ -97,6 +96,7 @@ export class PromiseContext<T> {
       this.reject = reject;
     });
   }
+
   readonly promise: Promise<T>;
   resolve: (result: T) => void;
   reject: (err: Error) => void;
@@ -104,24 +104,24 @@ export class PromiseContext<T> {
 
 export function mapAsync<V, R>(
   arr: V[],
-  func: (v: V) => Promise<R>
+  func: (v: V) => Promise<R>,
 ): Promise<R[]> {
   return (sequentialAsyncByDefault ? mapAsyncSequential : mapAsyncParallel)(
     arr,
-    func
+    func,
   );
 }
 
 export function mapAsyncParallel<V, R>(
   arr: V[],
-  func: (v: V) => Promise<R>
+  func: (v: V) => Promise<R>,
 ): Promise<R[]> {
   return Promise.all(arr.map(func));
 }
 
 export async function mapAsyncSequential<V, R>(
   arr: V[],
-  func: (v: V) => Promise<R>
+  func: (v: V) => Promise<R>,
 ): Promise<R[]> {
   const result: R[] = [];
   for (const v of arr) {
@@ -144,12 +144,12 @@ export const MAP_UNDEFINED = new MapUndefined();
  */
 export async function mapSomeAsyncAndZip<V, R>(
   arr: V[],
-  func: (v: V) => Promise<R | MapUndefined>
+  func: (v: V) => Promise<R | MapUndefined>,
 ): Promise<Array<[V, R]>> {
   const results: Array<R | MapUndefined> = await mapAsync(arr, func);
-  return zipArrays(arr, results).filter(tuple => {
-    return tuple[1] !== MAP_UNDEFINED;
-  }) as Array<[V, R]>;
+  return zipArrays(arr, results).filter(
+    tuple => tuple[1] !== MAP_UNDEFINED,
+  ) as Array<[V, R]>;
 }
 
 /**
@@ -158,7 +158,7 @@ export async function mapSomeAsyncAndZip<V, R>(
  */
 export async function mapSomeAsync<V, R>(
   arr: V[],
-  func: (v: V) => Promise<R | MapUndefined>
+  func: (v: V) => Promise<R | MapUndefined>,
 ): Promise<R[]> {
   return (await mapSomeAsyncAndZip(arr, func)).map(pair => pair[1]);
 }
@@ -168,17 +168,17 @@ export async function mapSomeAsync<V, R>(
  */
 export async function filterAsync<T>(
   arr: T[],
-  predicate: (v: T) => Promise<boolean>
+  predicate: (v: T) => Promise<boolean>,
 ): Promise<T[]> {
-  return mapSomeAsync<T, T>(arr, async (v: T) => {
-    return (await predicate(v)) ? v : MAP_UNDEFINED;
-  });
+  return mapSomeAsync<T, T>(arr, async (v: T) =>
+    (await predicate(v)) ? v : MAP_UNDEFINED,
+  );
 }
 
 export async function mapAsyncNoThrowAndZip<V, R>(
   arr: V[],
   func: (v: V) => Promise<R>,
-  handler?: (err: any, v: V) => R | void | undefined
+  handler?: (err: unknown, v: V) => R | void | undefined,
 ): Promise<Array<[V, R]>> {
   const results: Array<R | undefined> = await mapAsync(arr, async (v: V) => {
     try {
@@ -192,15 +192,15 @@ export async function mapAsyncNoThrowAndZip<V, R>(
       return undefined;
     }
   });
-  return zipArrays(arr, results).filter(tuple => {
-    return tuple[1] !== undefined;
-  }) as Array<[V, R]>;
+  return zipArrays(arr, results).filter(
+    tuple => tuple[1] !== undefined,
+  ) as Array<[V, R]>;
 }
 
 export async function mapAsyncNoThrow<V, R>(
   arr: V[],
   func: (v: V) => Promise<R>,
-  handler?: (err: any, v: V) => R | void | undefined
+  handler?: (err: unknown, v: V) => R | void | undefined,
 ): Promise<R[]> {
   const result = await mapAsyncNoThrowAndZip(arr, func, handler);
   return result.map(pair => pair[1]);
@@ -224,7 +224,7 @@ function activate(_: ExtensionContext) {
   /// #endif
   log.infoStr(
     'Async mapping is {} by default',
-    sequentialAsyncByDefault ? 'SEQUENTIAL' : 'PARALLEL'
+    sequentialAsyncByDefault ? 'SEQUENTIAL' : 'PARALLEL',
   );
 }
 

@@ -6,7 +6,7 @@ import {
   QuickPickItem,
   ExtensionContext,
   QuickInputButton,
-  QuickPickOptions
+  QuickPickOptions,
 } from 'vscode';
 import { handleErrors, handleAsyncStd, handleErrorsAsync } from './exception';
 import { Modules } from './module';
@@ -18,7 +18,7 @@ import * as lodash from 'lodash';
 let extContext: ExtensionContext;
 
 export async function inputWithHistory(
-  persistentKey: string
+  persistentKey: string,
 ): Promise<string | undefined> {
   const items: string[] = extContext.globalState.get(persistentKey, []);
   const quickPick = window.createQuickPick();
@@ -34,7 +34,7 @@ export async function inputWithHistory(
       handleErrors(() => {
         resolve(undefined);
         qp.dispose();
-      })
+      }),
     );
     qp.onDidAccept(
       handleErrors(() => {
@@ -42,7 +42,7 @@ export async function inputWithHistory(
         onDidHideDisposer.dispose();
         qp.hide();
         qp.dispose();
-      })
+      }),
     );
     qp.onDidTriggerButton(
       handleErrorsAsync(async (quickInputButton: QuickInputButton) => {
@@ -56,18 +56,16 @@ export async function inputWithHistory(
         if (!qpItems.removeFirst(active)) return;
         await extContext.globalState.update(
           persistentKey,
-          qpItems.map(item => item.label)
+          qpItems.map(item => item.label),
         );
         const newItems = Object.assign([], qpItems);
         if (active.detail) newItems.push(active);
         qp.items = newItems;
-      })
+      }),
     );
     qp.onDidChangeValue(
       handleErrors(() => {
-        const exactLabel = qp.items.find(item => {
-          return item.label === qp.value;
-        });
+        const exactLabel = qp.items.find(item => item.label === qp.value);
         if (!exactLabel && qp.value) {
           const newItems = Object.assign([], qpItems);
           newItems.push({ label: qp.value, detail: '\n' });
@@ -75,7 +73,7 @@ export async function inputWithHistory(
         } else {
           qp.items = qpItems;
         }
-      })
+      }),
     );
     qp.show();
   });
@@ -90,6 +88,7 @@ class Button implements QuickInputButton {
   constructor(path: string, public tooltip?: string) {
     this.iconPath = Uri.file(extContext.asAbsolutePath(path));
   }
+
   iconPath: Uri;
 }
 
@@ -98,7 +97,7 @@ const buttons: { [name: string]: Button } = {};
 export async function selectFromList<T>(
   items: T[],
   toQuickPickItem: (x: T) => QuickPickItem,
-  options?: QuickPickOptions
+  options?: QuickPickOptions,
 ): Promise<T | undefined> {
   const qpItems = items.map(item => ({ item, ...toQuickPickItem(item) }));
   const selected = await window.showQuickPick(qpItems, options);
@@ -108,7 +107,7 @@ export async function selectFromList<T>(
 
 export async function selectStringFromList(
   items: string[],
-  options?: QuickPickOptions
+  options?: QuickPickOptions,
 ): Promise<string | undefined> {
   return selectFromList(items, label => ({ label }), options);
 }
@@ -118,7 +117,7 @@ export async function selectFromListMru<T>(
   toQuickPickItem: (x: T) => QuickPickItem,
   persistentKey: string,
   toPersistentLabel: (x: T) => string,
-  options?: QuickPickOptions
+  options?: QuickPickOptions,
 ): Promise<T | undefined> {
   const labels: string[] = extContext.globalState.get(persistentKey, []);
   let mruItems = items.map((item, origIndex) => {
@@ -131,7 +130,7 @@ export async function selectFromListMru<T>(
   const selectedMru = await selectFromList(
     mruItems,
     item => toQuickPickItem(item.item),
-    options
+    options,
   );
   if (!selectedMru) return;
   const selected = selectedMru.item;
@@ -151,25 +150,25 @@ export async function selectMultiple<T>(
   toQuickPickItem: (x: T) => QuickPickItem,
   persistentKey: string,
   toPersistentLabel: (x: T) => string,
-  options?: QuickPickOptions
+  options?: QuickPickOptions,
 ): Promise<T[] | undefined> {
   const previouslySelected: string[] = extContext.globalState.get(
     persistentKey,
-    []
+    [],
   );
   const qpItems = items.map(item => ({
     ...toQuickPickItem(item),
     item,
-    picked: previouslySelected.includes(toPersistentLabel(item))
+    picked: previouslySelected.includes(toPersistentLabel(item)),
   }));
   const selected = await window.showQuickPick(qpItems, {
     ...options,
-    canPickMany: true
+    canPickMany: true,
   });
   if (selected) {
     await extContext.globalState.update(
       persistentKey,
-      selected.map(qpItem => toPersistentLabel(qpItem.item))
+      selected.map(qpItem => toPersistentLabel(qpItem.item)),
     );
     return selected.map(qpitem => qpitem.item);
   }
@@ -179,28 +178,28 @@ export async function selectMultiple<T>(
 export async function selectObjectFromListMru<T extends ListSelectable>(
   items: T[],
   persistentKey: string,
-  options?: QuickPickOptions
+  options?: QuickPickOptions,
 ): Promise<T | undefined> {
   return selectFromListMru(
     items,
     (item: T) => item.toQuickPickItem(),
     persistentKey,
     (item: T) => item.toPersistentLabel(),
-    options
+    options,
   );
 }
 
 export async function selectStringFromListMru(
   items: string[],
   persistentKey: string,
-  options?: QuickPickOptions
+  options?: QuickPickOptions,
 ): Promise<string | undefined> {
   return selectFromListMru(
     items,
     label => ({ label }),
     persistentKey,
     label => label,
-    options
+    options,
   );
 }
 

@@ -37,7 +37,10 @@
 		{
 			"label": "eslint",
 			"type": "shell",
-			"command": "npx eslint --color --format unix --ext .ts src"
+			"command": "npx eslint --color --format unix --ext .ts src",
+			"presentation": {
+				"clear": true
+			}
 		}
 	],
 }

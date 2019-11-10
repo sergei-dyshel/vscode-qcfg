@@ -12,12 +12,12 @@ import {
   TextEditorSelectionChangeEvent,
   StatusBarItem,
   TextEditor,
-  StatusBarAlignment
+  StatusBarAlignment,
 } from 'vscode';
 import {
   listenWrapped,
   CheckError,
-  registerSyncCommandWrapped
+  registerSyncCommandWrapped,
 } from './exception';
 import { Logger } from './logging';
 import { DefaultMap } from './tsUtils';
@@ -51,6 +51,7 @@ class DocumentHistory {
   get length() {
     return this.ranges.length;
   }
+
   get current() {
     return this.index;
   }
@@ -62,14 +63,14 @@ class DocumentHistory {
     if (top && top.offsetRange.contains(changeToOffsetRange(change))) return;
     const range = new Range(
       change.range.start,
-      offsetPosition(this.document, change.range.start, change.text.length)
+      offsetPosition(this.document, change.range.start, change.text.length),
     );
     const lrange = new LiveRange(this.document, range, {
       mergeOnReplace: true,
       onInvalidated: () => {
         this.ranges.removeFirst(lrange);
         this.resetIndex();
-      }
+      },
     });
     lrange.register();
     this.ranges.push(lrange);
@@ -91,11 +92,11 @@ class DocumentHistory {
   goBackward(selection: Selection): Selection {
     if (this.index === 0) throw new CheckError('No backward  history');
     if (this.index === this.ranges.length) this.savedSelection = selection;
-    --this.index;
+    this.index -= 1;
     this.log.debugStr(
       'Going backward, ({} more backward items, {} forward items)',
       this.index,
-      this.ranges.length - this.index
+      this.ranges.length - this.index,
     );
     return this.currentSelection()!;
   }
@@ -103,7 +104,7 @@ class DocumentHistory {
   goForward(): Selection {
     if (this.index === this.ranges.length)
       throw new CheckError('No more forward history');
-    ++this.index;
+    this.index += 1;
     if (this.index === this.ranges.length) {
       const selection = this.savedSelection!;
       this.savedSelection = undefined;
@@ -112,7 +113,7 @@ class DocumentHistory {
     this.log.debugStr(
       'Going forward, ({} more backward items, {} forward items)',
       this.index,
-      this.ranges.length - this.index
+      this.ranges.length - this.index,
     );
     return this.currentSelection()!;
   }
@@ -121,7 +122,7 @@ class DocumentHistory {
 }
 
 const history = new DefaultMap<TextDocument, DocumentHistory>(
-  document => new DocumentHistory(document)
+  document => new DocumentHistory(document),
 );
 
 function onDidChangeTextDocument(event: TextDocumentChangeEvent) {
@@ -158,7 +159,7 @@ function endHistoryNavigation() {
 function startHistoryNavigation(docHistory: DocumentHistory) {
   lastDocHistory = docHistory;
   status.text = formatString(
-    `edit ${docHistory.current} / ${docHistory.length}`
+    `edit ${docHistory.current} / ${docHistory.length}`,
   );
   status.show();
 }
@@ -193,14 +194,14 @@ function activate(context: ExtensionContext) {
     listenWrapped(workspace.onDidChangeTextDocument, onDidChangeTextDocument),
     listenWrapped(
       window.onDidChangeTextEditorSelection,
-      onDidChangeTextEditorSelection
+      onDidChangeTextEditorSelection,
     ),
     listenWrapped(
       window.onDidChangeActiveTextEditor,
-      onDidChangeActiveTextEditor
+      onDidChangeActiveTextEditor,
     ),
     registerSyncCommandWrapped('qcfg.edit.previous', goBackward),
-    registerSyncCommandWrapped('qcfg.edit.next', goForward)
+    registerSyncCommandWrapped('qcfg.edit.next', goForward),
   );
 }
 

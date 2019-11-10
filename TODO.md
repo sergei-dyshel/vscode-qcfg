@@ -3,7 +3,8 @@
 - Tasks shows up and running so and can't be cancelled (to reproduce - run build
   of BX while current workspace folder is libebs, libdx etc., then try build
   again now from BX)
-- After showing TODOs in side panel, removing some text which contains todo will cause assertion errors becaus tree element wasn't delete.
+- After showing TODOs in side panel, removing some text which contains todo will
+  cause assertion errors becaus tree element wasn't delete.
 
 # Tasks
 
@@ -12,6 +13,11 @@
 - Remove specialized commands which are currently handled by tasks:
   - grep word (first needs handling of peek -> panel results transfer)
 - Rename Params -> TaskParams etc.
+
+# Editing
+
+- If selected text contains all text in lines (except for whitespace), than copy/delete
+  should act linewise.
 
 # Utils/helpers
 
