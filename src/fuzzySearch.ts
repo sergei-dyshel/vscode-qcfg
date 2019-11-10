@@ -16,7 +16,7 @@ class Item implements vscode.QuickPickItem {
 }
 
 let valueFromPreviousInvocation = '';
-let lastSelected: Item | undefined = undefined;
+let lastSelected: Item | undefined;
 
 // tslint:disable-next-line: max-func-body-length
 function showFuzzySearch() {
@@ -42,8 +42,8 @@ function showFuzzySearch() {
         `${(i + 1).toString()}: …${lines[i]
           .trim()
           .substring(line.length - 60 + 1)}`,
-        i + 1
-      )
+        i + 1,
+      ),
     );
   }
 
@@ -56,7 +56,7 @@ function showFuzzySearch() {
   if (lastSelected) {
     // Update `lastSelected` reference to point to the current entry in `items`.
     lastSelected = quickPickEntries.find(
-      t => t.line === lastSelected!.line || t.label === lastSelected!.label
+      t => t.line === lastSelected!.line || t.label === lastSelected!.label,
     );
     pick.activeItems = [lastSelected!];
   }
@@ -67,7 +67,7 @@ function showFuzzySearch() {
       lastSelected = pick.selectedItems[0];
       pick.hide();
       history.resetTemporary();
-    })
+    }),
   );
 
   // Show the currently selected item in the editor.
@@ -78,10 +78,10 @@ function showFuzzySearch() {
       const p = new vscode.Position(items[0].line - 1, 0);
       editor.revealRange(
         new vscode.Range(p, p),
-        vscode.TextEditorRevealType.InCenter
+        vscode.TextEditorRevealType.InCenter,
       );
       editor.selection = new vscode.Selection(p, p);
-    })
+    }),
   );
 
   // Show the previous search string. When the user types a character, the
@@ -104,11 +104,13 @@ function showFuzzySearch() {
           break;
         }
       }
-    })
+    }),
   );
   // Save the search string so we can show it next time fuzzy search is
   // invoked.
-  pick.onDidChangeValue(value => (valueFromPreviousInvocation = value));
+  pick.onDidChangeValue(value => {
+    valueFromPreviousInvocation = value;
+  });
 
   // If fuzzy-search was cancelled navigate to the previous location.
   const startingSelection = editor.selection;
@@ -117,12 +119,12 @@ function showFuzzySearch() {
       if (pick.selectedItems.length === 0) {
         editor.revealRange(
           new vscode.Range(startingSelection.start, startingSelection.end),
-          vscode.TextEditorRevealType.InCenter
+          vscode.TextEditorRevealType.InCenter,
         );
         editor.selection = startingSelection;
       }
       history.resetTemporary();
-    })
+    }),
   );
 
   history.forceTemporary();
@@ -131,7 +133,7 @@ function showFuzzySearch() {
 
 function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
-    registerSyncCommandWrapped('qcfg.fuzzySearch', () => showFuzzySearch())
+    registerSyncCommandWrapped('qcfg.fuzzySearch', () => showFuzzySearch()),
   );
 }
 

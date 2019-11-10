@@ -69,6 +69,11 @@ module.exports = {
     'no-useless-return': off,
     '@typescript-eslint/no-non-null-assertion': off,
     'func-names': [warn, never],
-    'space-before-function-paren': [warn, { anonymous: never, named: never }],
+    // 'space-before-function-paren': [warn, { anonymous: ignore, named: never }],
+    'space-before-function-paren': off,
+    '@typescript-eslint/no-var-requires': off,
+    'global-require': off,
+    'no-plusplus': [warn, { allowForLoopAfterthoughts: true }],
+    'no-constant-condition': [warn, { checkLoops: false }],
   },
 };

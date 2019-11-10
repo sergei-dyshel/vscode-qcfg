@@ -14,7 +14,7 @@ export const globSync = glob.sync;
 // tslint:disable-next-line: no-unnecessary-type-assertion
 export const globAsync = nodejs.util.promisify(require('glob')) as (
   pattern: string,
-  options?: glob.IOptions
+  options?: glob.IOptions,
 ) => Promise<string[]>;
 
 export function getDocumentRoot(fileName: string) {
@@ -31,7 +31,7 @@ export function getDocumentRoot(fileName: string) {
 export function getDocumentRootThrowing(fileName: string) {
   return log.assertNonNull(
     getDocumentRoot(fileName),
-    `Could not get workspace folder of ${fileName}`
+    `Could not get workspace folder of ${fileName}`,
   );
 }
 
@@ -46,7 +46,7 @@ export const realPath = nodejs.util.promisify(nodejs.fs.realpath);
 
 export function existsInRoot(
   wsFolder: vscode.WorkspaceFolder,
-  fileName: string
+  fileName: string,
 ) {
   return exists(nodejs.path.join(wsFolder.uri.fsPath, fileName));
 }
@@ -57,14 +57,14 @@ export function existsInRoot(
  */
 export async function peekLocation(
   locations: vscode.Location[],
-  tagForSingle?: string
+  tagForSingle?: string,
 ) {
   if (locations.length === 1) {
     const loc = locations[0];
     if (loc.range.isEmpty && tagForSingle)
       await openTagLocation(loc.uri.fsPath, {
         line: loc.range.start.line + 1,
-        tag: tagForSingle
+        tag: tagForSingle,
       });
     else
       await vscode.window.showTextDocument(loc.uri, { selection: loc.range });
@@ -75,13 +75,13 @@ export async function peekLocation(
     'editor.action.showReferences',
     editor.document.uri,
     editor.selection.active,
-    locations
+    locations,
   );
 }
 
 export async function openTagLocation(
   filePath: string,
-  options: { line?: number; column?: number; tag?: string }
+  options: { line?: number; column?: number; tag?: string },
 ) {
   const line0 = options && options.line ? options.line - 1 : 0;
   let col0 = options && options.column ? options.column - 1 : 0;
@@ -99,7 +99,7 @@ export async function openTagLocation(
     col0 = lineText.text.indexOf(options.tag);
     if (col0 === -1) {
       log.error(
-        `Tag '${options.tag}' not found in ${filePath}:${options.line}`
+        `Tag '${options.tag}' not found in ${filePath}:${options.line}`,
       );
       col0 = 0;
     }
@@ -112,7 +112,7 @@ export async function openTagLocation(
       : undefined;
     await vscode.window.showTextDocument(document, {
       viewColumn,
-      selection
+      selection,
     });
     return;
   }
@@ -123,7 +123,7 @@ export async function openTagLocation(
 export enum FileWatcherEvent {
   CREATED,
   CHANGED,
-  DELETED
+  DELETED,
 }
 
 /**
@@ -131,7 +131,7 @@ export enum FileWatcherEvent {
  */
 export function watchFile(
   path: string,
-  callback: (event: FileWatcherEvent) => any
+  callback: (event: FileWatcherEvent) => unknown,
 ): DisposableLike {
   return new FileWatcher(path, callback);
 }
@@ -140,16 +140,17 @@ class FileWatcher implements DisposableLike {
   private watcher: chokidar.FSWatcher;
   constructor(
     private path: string,
-    private callback: (event: FileWatcherEvent) => any
+    private callback: (event: FileWatcherEvent) => unknown,
   ) {
     this.watcher = chokidar.watch(path, {
       persistent: true,
       ignoreInitial: true,
       followSymlinks: true,
-      usePolling: false
+      usePolling: false,
     });
     this.watcher.on('all', this.onEvent.bind(this));
   }
+
   private onEvent(eventName: string) {
     switch (eventName) {
       case 'change':
@@ -163,10 +164,11 @@ class FileWatcher implements DisposableLike {
         return;
       default:
         throw new Error(
-          `Unsupported event name "${eventName}" for file "${this.path}"`
+          `Unsupported event name "${eventName}" for file "${this.path}"`,
         );
     }
   }
+
   dispose() {
     this.watcher.close();
   }

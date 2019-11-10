@@ -1,12 +1,14 @@
 'use strict';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import {
   Disposable,
   commands,
   TextEditor,
   TextEditorEdit,
   Event,
-  extensions
+  extensions,
 } from 'vscode';
 import { log } from './logging';
 import { replaceAll } from './stringUtils';
@@ -29,9 +31,10 @@ export class CheckError extends Error {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function wrapWithErrorHandler<T extends (...args: any[]) => any, R>(
   func: T,
-  handler: (error: any) => R
+  handler: (error: unknown) => R,
 ): (...funcArgs: Parameters<T>) => ReturnType<T> | R {
   return (...args: Parameters<T>): ReturnType<T> | R => {
     try {
@@ -44,7 +47,7 @@ export function wrapWithErrorHandler<T extends (...args: any[]) => any, R>(
 
 export function wrapWithErrorHandlerAsync<T extends AsyncFunction, R>(
   func: T,
-  handler: (error: any) => R
+  handler: (error: any) => R,
 ): (...funcArgs: Parameters<T>) => Promise<PromiseType<ReturnType<T>> | R> | R {
   return (
     ...args: Parameters<T>
@@ -58,14 +61,14 @@ export function wrapWithErrorHandlerAsync<T extends AsyncFunction, R>(
 }
 
 export function handleErrors<T extends Function>(
-  func: T
+  func: T,
 ): (...funcArgs: Parameters<T>) => ReturnType<T> | void {
   return wrapWithErrorHandler(func, stdErrorHandler);
 }
 
 export function handleErrorsAsync<T extends AsyncFunction>(
   func: T,
-  prefix?: string
+  prefix?: string,
 ): (...funcArgs: Parameters<T>) => Promise<PromiseType<ReturnType<T>>> {
   return wrapWithErrorHandlerAsync(func, createStdErrorHandler(prefix));
 }
@@ -73,28 +76,28 @@ export function handleErrorsAsync<T extends AsyncFunction>(
 export function registerAsyncCommandWrapped(
   command: string,
   callback: AsyncFunction,
-  thisArg?: any
+  thisArg?: any,
 ): Disposable {
   return commands.registerCommand(
     command,
     wrapWithErrorHandlerAsync(callback, error =>
-      handleErrorDuringCommand(command, error)
+      handleErrorDuringCommand(command, error),
     ),
-    thisArg
+    thisArg,
   );
 }
 
 export function registerSyncCommandWrapped(
   command: string,
   callback: VoidFunction,
-  thisArg?: any
+  thisArg?: any,
 ): Disposable {
   return commands.registerCommand(
     command,
     wrapWithErrorHandler(callback, error =>
-      handleErrorDuringCommand(command, error)
+      handleErrorDuringCommand(command, error),
     ),
-    thisArg
+    thisArg,
   );
 }
 
@@ -105,14 +108,14 @@ export function registerTextEditorCommandWrapped(
     edit: TextEditorEdit,
     ...args: any[]
   ) => void,
-  thisArg?: any
+  thisArg?: any,
 ): Disposable {
   return commands.registerTextEditorCommand(
     command,
     wrapWithErrorHandler(callback, error =>
-      handleErrorDuringCommand(command, error)
+      handleErrorDuringCommand(command, error),
     ),
-    thisArg
+    thisArg,
   );
 }
 
@@ -120,12 +123,12 @@ export function listenWrapped<T>(
   event: Event<T>,
   listener: (e: T) => any,
   thisArgs?: any,
-  disposables?: Disposable[]
+  disposables?: Disposable[],
 ): Disposable {
   return event(
     wrapWithErrorHandler(listener, handleErrorDuringEvent),
     thisArgs,
-    disposables
+    disposables,
   );
 }
 
@@ -159,9 +162,7 @@ function handleErrorDuringCommand(command: string, error: any) {
 }
 
 function createStdErrorHandler(prefix?: string) {
-  return (error: any) => {
-    return stdErrorHandler(error, prefix);
-  };
+  return (error: any) => stdErrorHandler(error, prefix);
 }
 
 function stdErrorHandler(error: any, prefix?: string): never {
@@ -177,5 +178,5 @@ function stdErrorHandler(error: any, prefix?: string): never {
 }
 
 function handleErrorDuringEvent(error: any) {
-  stdErrorHandler(error, `Event: `);
+  stdErrorHandler(error, 'Event: ');
 }

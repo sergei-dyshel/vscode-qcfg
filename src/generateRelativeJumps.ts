@@ -10,7 +10,7 @@ const keybindings: KeyBinding[] = [];
 function createKey(
   num: number,
   mod: 'ctrl' | 'alt',
-  macMod: 'cmd' | 'alt'
+  macMod: 'cmd' | 'alt',
 ): Key[] {
   if (num < 10) {
     return [{ key: `${mod}+${num}`, mac: `${macMod}+${num}` }];
@@ -20,12 +20,12 @@ function createKey(
   return [
     {
       key: `${mod}+${digit1} ${mod}+${digit2}`,
-      mac: `${macMod}+${digit1} ${macMod}+${digit2}`
+      mac: `${macMod}+${digit1} ${macMod}+${digit2}`,
     },
     {
       key: `${mod}+${digit1} ${digit2}`,
-      mac: `${macMod}+${digit1} ${digit2}`
-    }
+      mac: `${macMod}+${digit1} ${digit2}`,
+    },
   ];
 }
 
@@ -33,19 +33,19 @@ for (let i = START_LINE; i < END_LINE; ++i) {
   for (const key of createKey(i, 'ctrl', 'cmd'))
     keybindings.push({
       ...key,
-      command: `qcfg.gotoLineRelative`,
-      args: i
+      command: 'qcfg.gotoLineRelative',
+      args: i,
     });
   for (const key of createKey(i, 'alt', 'alt'))
     keybindings.push({
       ...key,
-      command: `qcfg.gotoLineRelative`,
-      args: -i
+      command: 'qcfg.gotoLineRelative',
+      args: -i,
     });
 }
 
 const json: PackageJson = {
-  contributes: { keybindings }
+  contributes: { keybindings },
 };
 
 process.stdout.write(JSON.stringify(json, undefined, 2));
