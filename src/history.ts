@@ -13,7 +13,7 @@ import {
   TextEditorSelectionChangeEvent,
   TextEditorSelectionChangeKind,
   TextDocumentChangeEvent,
-  Range
+  Range,
 } from 'vscode';
 import { Logger, log, str } from './logging';
 import { setTimeoutPromise } from './nodeUtils';
@@ -22,7 +22,7 @@ import { filterNonNull } from './tsUtils';
 import {
   registerAsyncCommandWrapped,
   listenWrapped,
-  handleAsyncStd
+  handleAsyncStd,
 } from './exception';
 
 let extContext: ExtensionContext;
@@ -30,7 +30,7 @@ let extContext: ExtensionContext;
 enum TemporaryMode {
   NORMAL,
   FORCE_TEMPORARY,
-  FORCE_NON_TEMPORARY
+  FORCE_NON_TEMPORARY,
 }
 
 let temporaryMode = TemporaryMode.NORMAL;
@@ -43,23 +43,23 @@ export function activate(context: ExtensionContext) {
   context.subscriptions.push(
     listenWrapped(
       window.onDidChangeVisibleTextEditors,
-      onDidChangeVisibleTextEditors
+      onDidChangeVisibleTextEditors,
     ),
     listenWrapped(
       window.onDidChangeTextEditorSelection,
-      onDidChangeTextEditorSelection
+      onDidChangeTextEditorSelection,
     ),
     listenWrapped(
       window.onDidChangeTextEditorViewColumn,
-      onDidChangeTextEditorViewColumn
+      onDidChangeTextEditorViewColumn,
     ),
     listenWrapped(
       window.onDidChangeActiveTextEditor,
-      onDidChangeActiveTextEditor
+      onDidChangeActiveTextEditor,
     ),
     listenWrapped(workspace.onDidChangeTextDocument, onDidChangeTextDocument),
     registerAsyncCommandWrapped('qcfg.history.backward', goBackward),
-    registerAsyncCommandWrapped('qcfg.history.forward', goForward)
+    registerAsyncCommandWrapped('qcfg.history.forward', goForward),
   );
 }
 
@@ -111,7 +111,7 @@ async function onDidChangeVisibleTextEditors(_: TextEditor[]) {
   // const visibleTextEditors = window.visibleTextEditors;
   // log.info(`TEMP: onDidChangeVisibleTextEditors ${str(visibleTextEditors)}`);
   const newNumViewColumns = window.visibleTextEditors.filter(
-    editor => editor.viewColumn
+    editor => editor.viewColumn,
   ).length;
   if (newNumViewColumns === numViewColumns) return;
   if (newNumViewColumns < numViewColumns) {
@@ -143,7 +143,7 @@ function onDidChangeTextDocument(event: TextDocumentChangeEvent) {
   if (event.document.uri.scheme !== 'file') return;
   const eventCopy = {
     ...event,
-    contentChanges: [...event.contentChanges]
+    contentChanges: [...event.contentChanges],
   };
   eventCopy.contentChanges.sort((a, b) => a.rangeOffset - b.rangeOffset);
   for (const history of histories) history.fixAfterChange(eventCopy);
@@ -153,7 +153,7 @@ function onDidChangeTextDocument(event: TextDocumentChangeEvent) {
   if (eventCopy.document !== editor.document) return;
   /// #if DEBUG
   log.trace(
-    `Edited ${str(editor.document)}${eventCopy.contentChanges[0].range}`
+    `Edited ${str(editor.document)}${eventCopy.contentChanges[0].range}`,
   );
   /// #endif
 }
@@ -167,7 +167,7 @@ function getHistory(viewColumn: ViewColumn): History {
 async function goBackward() {
   const viewCol = getActiveTextEditor().viewColumn;
   const history = getHistory(
-    log.assertNonNull(viewCol, 'Current text editor has no view column')
+    log.assertNonNull(viewCol, 'Current text editor has no view column'),
   );
   await history.goBackward();
 }
@@ -175,14 +175,14 @@ async function goBackward() {
 async function goForward() {
   const viewCol = getActiveTextEditor().viewColumn;
   const history = getHistory(
-    log.assertNonNull(viewCol, 'Current text editor has no view column')
+    log.assertNonNull(viewCol, 'Current text editor has no view column'),
   );
   await history.goForward();
 }
 
 function saveHistory() {
   const savedHistories: History.Saved[] = histories.map(history =>
-    history.getSaved()
+    history.getSaved(),
   );
   log.info('Saving histories: ', histories.map(hist => hist.size()));
   return extContext.workspaceState.update('history', savedHistories);
@@ -191,7 +191,7 @@ function saveHistory() {
 function loadHistory() {
   const savedHistories = extContext.workspaceState.get<History.Saved[]>(
     'history',
-    []
+    [],
   );
   histories.forEach((history, idx) => {
     if (savedHistories.length > idx) history.load(savedHistories[idx]);
@@ -211,7 +211,7 @@ class Point {
     private document: TextDocument,
     private offset: number,
     private position?: Position,
-    private timestamp?: number
+    private timestamp?: number,
   ) {}
 
   static fromEditor(editor: TextEditor): Point {
@@ -263,7 +263,7 @@ class Point {
       this.document = await workspace.openTextDocument(this.document.fileName);
     this.position = this.document.positionAt(this.offset);
     await window.showTextDocument(this.document, {
-      selection: new Range(this.position, this.position)
+      selection: new Range(this.position, this.position),
     });
   }
 
@@ -312,7 +312,7 @@ class History {
     this.log = new Logger({
       name: 'viewColumnHistory',
       parent: log,
-      instance: viewColumn.toString()
+      instance: viewColumn.toString(),
     });
   }
 
@@ -323,7 +323,7 @@ class History {
     do {
       back = this.backward.pop();
     } while (back && !this.current.farEnough(back));
-    this.log.assert(back, `No backward history`);
+    this.log.assert(back, 'No backward history');
     this.current = back!;
     await this.current.goto();
     this.log.info(`Went backward to ${this.current}`);
@@ -331,7 +331,7 @@ class History {
 
   async goForward() {
     log.assert(temporaryMode === TemporaryMode.NORMAL);
-    this.log.assert(this.forward.length > 0, `No forward history`);
+    this.log.assert(this.forward.length > 0, 'No forward history');
     this.backward.push(this.current);
     this.current = this.forward.pop()!;
     await this.current.goto();
@@ -370,7 +370,7 @@ class History {
 
   private pushCurrentIfNeeded() {
     this.backward = this.backward.filter(point =>
-      point.farEnough(this.current)
+      point.farEnough(this.current),
     );
     this.backward.push(this.current);
     this.log.info(`Pushed ${this.current}`);
@@ -392,7 +392,7 @@ class History {
 
   load(savedHistory: History.Saved) {
     this.backward = filterNonNull(
-      savedHistory.map(savedPoint => Point.fromSaved(savedPoint))
+      savedHistory.map(savedPoint => Point.fromSaved(savedPoint)),
     );
   }
 
@@ -406,7 +406,7 @@ class History {
 
 function getVisibleEditor(viewColumn: ViewColumn): TextEditor | undefined {
   return window.visibleTextEditors.firstOf(
-    editor => editor.viewColumn === viewColumn
+    editor => editor.viewColumn === viewColumn,
   );
 }
 

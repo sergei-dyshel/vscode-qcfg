@@ -24,17 +24,17 @@ export function parseJson(text: string, options?: JsonParseOptions) {
 
 export function parseJsonFileSync(
   path: string,
-  options?: JsonParseOptions
-): any {
+  options?: JsonParseOptions,
+): unknown {
   return parseJson(nodejs.fs.readFileSync(path).toString(), options);
 }
 
 export async function parseJsonFileAsync(
   path: string,
-  options?: JsonParseOptions
-): Promise<any> {
+  options?: JsonParseOptions,
+): Promise<unknown> {
   return parseJson(
     (await workspace.fs.readFile(Uri.file(path))).toString(),
-    options
+    options,
   );
 }

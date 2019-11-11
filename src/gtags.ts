@@ -26,7 +26,7 @@ import { Modules } from './module';
 import { runTask } from './tasks/main';
 import { Params, TaskType, Flag, LocationFormat } from './tasks/params';
 
-const RE2 = require('re2');
+import RE2 from 're2';
 
 async function findGtagsDir(dir: string) {
   while (true) {
@@ -97,7 +97,7 @@ namespace WorkspaceGtags {
   let currentItems: Item[];
   let limitReached = false;
   const logger = new Logger({ name: 'workspaceGtags', parent: rootLogger });
-  let re2pattern: any;
+  let re2pattern: RE2;
 
   export async function run() {
     const editor = getActiveTextEditor();
@@ -267,7 +267,7 @@ function tag2Symbol(tag: TagInfo, gtagsDir: string): vscode.SymbolInformation {
   );
 }
 
-class GtagsGlobalSymbolsProvider implements vscode.WorkspaceSymbolProvider {
+const gtagsGlobalSymbolsProvider: vscode.WorkspaceSymbolProvider = {
   async provideWorkspaceSymbols(
     query: string,
     token: vscode.CancellationToken,
@@ -275,7 +275,7 @@ class GtagsGlobalSymbolsProvider implements vscode.WorkspaceSymbolProvider {
     const editor = getActiveTextEditor();
     switch (editor.document.languageId) {
       case 'typescript':
-        return Promise.reject('Not used for typescript');
+        throw new Error('Not used for typescript');
     }
     const gtagsDir = log.assertNonNull(
       await findGtagsDir(editor.document.fileName),
@@ -288,8 +288,8 @@ class GtagsGlobalSymbolsProvider implements vscode.WorkspaceSymbolProvider {
       token,
     );
     return tags.map(tag => tag2Symbol(tag, gtagsDir));
-  }
-}
+  },
+};
 
 async function searchGtags(
   source: string,
@@ -365,8 +365,10 @@ async function openDefinition() {
 
 async function openDefinitionInWorkspace() {
   const params: Params = {
+    // eslint-disable-next-line no-template-curly-in-string
     command: 'global -d -x -n ${cursorWord}',
     type: TaskType.PROCESS,
+    // eslint-disable-next-line no-template-curly-in-string
     parseOutput: { format: LocationFormat.GTAGS, tag: '${cursorWord}' },
     flags: [Flag.FOLDER],
     when: { fileExists: 'GTAGS' },
@@ -374,7 +376,7 @@ async function openDefinitionInWorkspace() {
   await runTask('gtags_def', params, { folder: 'all' });
 }
 
-class GtagsDefinitionProvider implements vscode.DefinitionProvider {
+const gtagsDefinitionProvider: vscode.DefinitionProvider = {
   async provideDefinition(
     document: vscode.TextDocument,
     position: vscode.Position,
@@ -400,10 +402,10 @@ class GtagsDefinitionProvider implements vscode.DefinitionProvider {
     const word = document.getText(range);
     const tags = await searchGtags('definition', word, word, gtagsDir, token);
     return tags.map(tag => tagToLocation(tag, gtagsDir));
-  }
-}
+  },
+};
 
-class GtagsHoverProvider implements vscode.HoverProvider {
+const gtagsHoverProvider: vscode.HoverProvider = {
   async provideHover(
     document: vscode.TextDocument,
     position: vscode.Position,
@@ -432,8 +434,9 @@ class GtagsHoverProvider implements vscode.HoverProvider {
       language: document.languageId,
       value: tags[0].text,
     });
-  }
-}
+  },
+};
+
 function activate(context: vscode.ExtensionContext) {
   const queue = new PromiseQueue('gtags');
   handleAsyncStd(queue.add(updateDB, 'gtags check'));
@@ -441,18 +444,15 @@ function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     saveAll.onEvent(queue.queued(onSaveAll)),
     vscode.languages.registerWorkspaceSymbolProvider(
-      new GtagsGlobalSymbolsProvider(),
+      gtagsGlobalSymbolsProvider,
     ),
     registerAsyncCommandWrapped('qcfg.gtags.definition', openDefinition),
     registerAsyncCommandWrapped(
       'qcfg.gtags.definitionInWorkspace',
       openDefinitionInWorkspace,
     ),
-    vscode.languages.registerDefinitionProvider(
-      '*',
-      new GtagsDefinitionProvider(),
-    ),
-    vscode.languages.registerHoverProvider('*', new GtagsHoverProvider()),
+    vscode.languages.registerDefinitionProvider('*', gtagsDefinitionProvider),
+    vscode.languages.registerHoverProvider('*', gtagsHoverProvider),
     registerAsyncCommandWrapped('qcfg.gtags.workspace', WorkspaceGtags.run),
   );
 }

@@ -75,5 +75,8 @@ module.exports = {
     'global-require': off,
     'no-plusplus': [warn, { allowForLoopAfterthoughts: true }],
     'no-constant-condition': [warn, { checkLoops: false }],
+    '@typescript-eslint/no-namespace': off,
+    '@typescript-eslint/camelcase': [warn, { allow: ['child_process'] }],
+    'no-inner-declarations': off,
   },
 };

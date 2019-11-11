@@ -6,7 +6,7 @@ import {
   QuickPickItem,
   commands,
   Uri,
-  FileType
+  FileType,
 } from 'vscode';
 import { Modules } from './module';
 import { log } from './logging';
@@ -32,7 +32,7 @@ function getWorkspaceFile(): string | undefined {
   if (workspace.workspaceFolders) {
     log.debug(
       'Opened workspace folder',
-      workspace.workspaceFolders[0].uri.fsPath
+      workspace.workspaceFolders[0].uri.fsPath,
     );
     return workspace.workspaceFolders[0].uri.fsPath;
   }
@@ -43,15 +43,15 @@ function expandTitle(root: string, title: string): string {
   const rootBase = nodejs.path.basename(root, '.code-workspace');
   const rootDir1 = nodejs.path.basename(nodejs.path.dirname(root));
   const rootDir2 = nodejs.path.basename(
-    nodejs.path.dirname(nodejs.path.dirname(root))
+    nodejs.path.dirname(nodejs.path.dirname(root)),
   );
   const rootDir3 = nodejs.path.basename(
-    nodejs.path.dirname(nodejs.path.dirname(nodejs.path.dirname(root)))
+    nodejs.path.dirname(nodejs.path.dirname(nodejs.path.dirname(root))),
   );
   return expandTemplate(
     title,
     { rootBase, rootDir1, rootDir2, rootDir3 },
-    true
+    true,
   );
 }
 
@@ -59,20 +59,24 @@ async function getWorkspaceConfig(root: string): Promise<string> {
   const stat = await workspace.fs.stat(Uri.file(root));
   switch (stat.type) {
     case FileType.Directory:
-      const filePath = nodejs.path.join(root, '.vscode', 'settings.json');
-      try {
-        const settings = await parseJsonFileAsync(filePath);
-        return expandTitle(root, settings['window.title']);
-      } catch (err) {
-        log.debug(`Error parsing ${filePath}: ${err}`);
-        return nodejs.path.basename(root);
+      {
+        const filePath = nodejs.path.join(root, '.vscode', 'settings.json');
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const settings = (await parseJsonFileAsync(filePath)) as any;
+          return expandTitle(root, settings['window.title']);
+        } catch (err) {
+          log.debug(`Error parsing ${filePath}: ${err}`);
+          return nodejs.path.basename(root);
+        }
       }
       break;
     case FileType.File:
     case FileType.SymbolicLink:
       try {
-        const settings = await parseJsonFileAsync(root);
-        return expandTitle(root, settings['settings']['window.title']);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const settings = (await parseJsonFileAsync(root)) as any;
+        return expandTitle(root, settings.settings['window.title']);
       } catch (err) {
         log.debug(`Error parsing ${root}: ${err}`);
         return nodejs.path.basename(nodejs.path.dirname(root));
@@ -93,11 +97,11 @@ async function openFromHistory(newWindow: boolean) {
   const current = getWorkspaceFile();
   const histWithTitles = await mapAsyncNoThrowAndZip(
     history.filter(file => file !== current),
-    getWorkspaceConfig
+    getWorkspaceConfig,
   );
   const rootAndTitle = await selectFromList(histWithTitles, toQuickPickItem, {
     matchOnDescription: true,
-    placeHolder: newWindow ? 'Open in NEW window' : 'Open in SAME window'
+    placeHolder: newWindow ? 'Open in NEW window' : 'Open in SAME window',
   });
   if (!rootAndTitle) return;
   const [root] = rootAndTitle;
@@ -107,11 +111,11 @@ async function openFromHistory(newWindow: boolean) {
 async function activate(context: ExtensionContext) {
   context.subscriptions.push(
     registerAsyncCommandWrapped('qcfg.openRecent.sameWindow', () =>
-      openFromHistory(false)
+      openFromHistory(false),
     ),
     registerAsyncCommandWrapped('qcfg.openRecent.newWindow', () =>
-      openFromHistory(true)
-    )
+      openFromHistory(true),
+    ),
   );
 
   extContext = context;

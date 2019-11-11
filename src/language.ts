@@ -11,7 +11,7 @@ import { parseJsonFileSync } from './json';
 export const colorThemeFiles: { [id: string]: string } = {};
 
 export function getLanguageConfig(
-  id: string
+  id: string,
 ): vscode.LanguageConfiguration | undefined {
   return langConfigs[id];
 }
@@ -33,15 +33,15 @@ export function sendDidSave(document: vscode.TextDocument) {
   const params: lc.DidSaveTextDocumentParams = {
     textDocument: {
       uri: document.uri.toString(),
-      version: null
-    }
+      version: null,
+    },
   };
 
   const extensions = ['cquery-project.cquery', 'ccls-project.ccls'];
   for (const extName of extensions) {
     const extension = vscode.extensions.getExtension(extName);
     if (!extension || !extension.isActive) continue;
-    const exports: any = extension.exports;
+    const exports = extension.exports;
     if (typeof exports !== 'object' || !('languageClient' in exports)) continue;
     const langClient: lc.LanguageClient = exports.languageClient;
 
@@ -79,11 +79,11 @@ function fetchLangConfigs() {
       }
       const langFilePath = nodejs.path.join(
         ext.extensionPath,
-        langData.configuration
+        langData.configuration,
       );
-      const langConfig: vscode.LanguageConfiguration = parseJsonFileSync(
-        langFilePath
-      );
+      const langConfig = parseJsonFileSync(
+        langFilePath,
+      ) as vscode.LanguageConfiguration;
       langConfigs[langId] = langConfig;
     }
   }

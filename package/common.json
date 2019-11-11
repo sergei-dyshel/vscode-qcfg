@@ -314,7 +314,7 @@
     "lodash": "^4.17.15",
     "minimatch": "^3.0.4",
     "node-loader": "^0.6.0",
-    "re2": "^1.10.0",
+    "re2": "^1.10.4",
     "shlex": "^1.0.3",
     "source-map-support": "^0.5.12",
     "sprintf-js": "^1.1.2",
@@ -329,7 +329,8 @@
     "tree-sitter-python": "^0.13.6",
     "tree-sitter-typescript": "^0.13.6",
     "tree-sitter-yaml": "^0.1.0",
-    "typescript-collections": "^1.1.4"
+    "typescript-collections": "^1.1.4",
+    "vscode-languageclient": "^5.2.1"
   },
   "devDependencies": {
     "@types/clipboardy": "^1.1.0",
@@ -370,7 +371,6 @@
     "tslint-eslint-rules": "^5.4.0",
     "tslint-microsoft-contrib": "^6.2.0",
     "typescript": "^3.5.2",
-    "vscode-languageclient": "^5.2.1",
     "vscode-languageserver": "^5.2.1",
     "vscode-test": "^1.2.0",
     "webpack": "^4.34.0",

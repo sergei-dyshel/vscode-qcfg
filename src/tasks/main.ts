@@ -9,7 +9,7 @@ import {
   WorkspaceFolder,
   window,
   Uri,
-  Task
+  Task,
 } from 'vscode';
 import { mapSomeAsync, MAP_UNDEFINED, filterAsync } from '../async';
 import { ConfigFilePair, watchConfigFile, getConfigFileNames } from '../config';
@@ -29,7 +29,7 @@ import {
   ProcessTaskParams,
   Flag,
   SearchTaskParams,
-  BaseTaskParams
+  BaseTaskParams,
 } from './params';
 import {
   TaskContext,
@@ -46,7 +46,7 @@ import {
   ProcessMultiTask,
   SearchTask,
   SearchMultiTask,
-  isFolderTask
+  isFolderTask,
 } from './types';
 import * as nodejs from '../nodejs';
 
@@ -56,14 +56,14 @@ export async function runOneTime(name: string, params: TerminalTaskParams) {
   const run = new TerminalTask(
     params,
     { label: name, fromWorkspace: false },
-    new TaskContext()
+    new TaskContext(),
   );
   await run.run();
 }
 
 async function checkCondition(
   params: BaseTaskParams,
-  context: TaskContext
+  context: TaskContext,
 ): Promise<void> {
   const when = params.when || {};
   if (Object.keys(when).length > 1)
@@ -71,14 +71,14 @@ async function checkCondition(
   if (when.fileExists) {
     if (!context.workspaceFolder)
       throw new ConditionError(
-        '"fileExists" can only be checked in context of workspace folder'
+        '"fileExists" can only be checked in context of workspace folder',
       );
     const matches = await globAsync(when.fileExists, {
-      cwd: context.workspaceFolder.uri.path
+      cwd: context.workspaceFolder.uri.path,
     });
     if (matches.isEmpty)
       throw new ConditionError(
-        `Globbing for ${when.fileExists} returned no matches`
+        `Globbing for ${when.fileExists} returned no matches`,
       );
   } else if (when.fileMatches) {
     throw new ParamsError('TODO: when.fileMatches not implemented yet');
@@ -88,8 +88,9 @@ async function checkCondition(
 function handleValidationError(
   label: string,
   context: TaskContext | undefined,
-  err: any
+  err: unknown,
 ) {
+  // eslint-disable-next-line no-nested-ternary
   const contextStr = context
     ? context.workspaceFolder
       ? 'folder ' + context.workspaceFolder.name
@@ -97,7 +98,7 @@ function handleValidationError(
     : 'multiple folders';
   if (err instanceof ValidationError)
     log.debug(
-      `Error validating task "${label}" for ${contextStr}: ${err.message}`
+      `Error validating task "${label}" for ${contextStr}: ${err.message}`,
     );
   else {
     throw err;
@@ -117,7 +118,7 @@ class TaskGenerator<P extends BaseTaskParams> {
     private single: FolderTask<P>,
     private multi: MultiFolderTask<P>,
     private params: P,
-    private info: FetchInfo
+    private info: FetchInfo,
   ) {}
 
   generateAll(currentContext: TaskContext, folderContexts: TaskContext[]) {
@@ -127,6 +128,7 @@ class TaskGenerator<P extends BaseTaskParams> {
 
   async createTask(context: TaskContext) {
     await checkCondition(this.params, context);
+    // eslint-disable-next-line new-cap
     return new this.single(this.params, this.info, context);
   }
 
@@ -146,6 +148,7 @@ class TaskGenerator<P extends BaseTaskParams> {
     const validContexts = await this.filterValidContexts(folderContexts);
     if (validContexts.isEmpty)
       throw new Error(`Task "${this.info.label}" is not valid for any folder`);
+    // eslint-disable-next-line new-cap
     return new this.multi(this.params, this.info, validContexts);
   }
 
@@ -161,6 +164,7 @@ class TaskGenerator<P extends BaseTaskParams> {
         if (context.workspaceFolder === currentFolder)
           tasks.push(await this.createTask(context));
       }
+      // eslint-disable-next-line new-cap
       tasks.push(new this.multi(this.params, this.info, validContexts));
     }
     return tasks;
@@ -184,21 +188,21 @@ function createTaskGenerator(fetchedParams: FetchedParams) {
         ProcessTask,
         ProcessMultiTask,
         params,
-        fetchInfo
+        fetchInfo,
       );
     case TaskType.TERMINAL:
       return new TaskGenerator<TerminalTaskParams>(
         TerminalTask,
         TerminalMultiTask,
         params,
-        fetchInfo
+        fetchInfo,
       );
     case TaskType.SEARCH:
       return new TaskGenerator<SearchTaskParams>(
         SearchTask,
         SearchMultiTask,
         params,
-        fetchInfo
+        fetchInfo,
       );
   }
 }
@@ -237,13 +241,13 @@ async function fetchQcfgTasks(options?: FetchOptions): Promise<BaseQcfgTask[]> {
       } catch (err) {
         if (err instanceof ParamsError) {
           log.warn(
-            `Error in parameters for task "${fetchedParams.fetchInfo.label}": ${err.message}`
+            `Error in parameters for task "${fetchedParams.fetchInfo.label}": ${err.message}`,
           );
           return MAP_UNDEFINED;
         }
         throw err;
       }
-    }
+    },
   );
 
   return concatArrays(...tasks);
@@ -286,7 +290,7 @@ async function fetchVscodeTasksChecked(): Promise<Task[]> {
 async function showTasks() {
   const [qcfgTasks, rawVscodeTasks] = await Promise.all([
     fetchQcfgTasks(),
-    fetchVscodeTasksChecked()
+    fetchVscodeTasksChecked(),
   ]);
   const vscodeTasks = rawVscodeTasks.map(task => new VscodeTask(task));
   const allTasks = [...qcfgTasks, ...vscodeTasks];
@@ -302,7 +306,7 @@ interface TaskRunOptions {
 
 async function createTask(
   fetchedParams: FetchedParams,
-  options?: TaskRunOptions
+  options?: TaskRunOptions,
 ): Promise<BaseQcfgTask> {
   const generator = createTaskGenerator(fetchedParams);
   const { fetchInfo, params } = fetchedParams;
@@ -322,7 +326,7 @@ async function createTask(
       return generator.createTask(new TaskContext(options.folder));
     } catch (err) {
       throw new Error(
-        `Task "${label}" is not valid in folder "${options.folder.name}": ${err.message}`
+        `Task "${label}" is not valid in folder "${options.folder.name}": ${err.message}`,
       );
     }
   }
@@ -330,7 +334,7 @@ async function createTask(
     return generator.createTask(new TaskContext());
   } catch (err) {
     throw new Error(
-      `Task "${label}" is not valid current context : ${err.message}`
+      `Task "${label}" is not valid current context : ${err.message}`,
     );
   }
 }
@@ -338,7 +342,7 @@ async function createTask(
 export async function runTask(
   label: string,
   params: Params,
-  options?: TaskRunOptions
+  options?: TaskRunOptions,
 ) {
   const fetchedParams = { params, fetchInfo: { label, fromWorkspace: false } };
   const task = await createTask(fetchedParams, options);
@@ -347,7 +351,7 @@ export async function runTask(
 
 async function runConfiguredTask(name: string, options?: TaskRunOptions) {
   const fetchedParams = configuredParams.firstOf(
-    fp => fp.fetchInfo.label === name
+    fp => fp.fetchInfo.label === name,
   );
   if (!fetchedParams) throw new Error(`Task "${name}" is not available`);
   const task = await createTask(fetchedParams, options);
@@ -371,7 +375,7 @@ function loadConfig(filePair: ConfigFilePair) {
   let workspaceTasks: ConfParamsSet = {};
   if (filePair.global) {
     try {
-      const globalTasks: ConfParamsSet = parseJsonFileSync(filePair.global);
+      const globalTasks = parseJsonFileSync(filePair.global) as ConfParamsSet;
       log.debug('Loaded tasks from ' + filePair.global);
       Object.assign(allTasks, globalTasks);
     } catch (err) {
@@ -380,7 +384,7 @@ function loadConfig(filePair: ConfigFilePair) {
   }
   if (filePair.workspace) {
     try {
-      workspaceTasks = parseJsonFileSync(filePair.workspace);
+      workspaceTasks = parseJsonFileSync(filePair.workspace) as ConfParamsSet;
       log.debug('Loaded tasks from ' + filePair.workspace);
       Object.assign(allTasks, workspaceTasks);
     } catch (err) {
@@ -396,7 +400,7 @@ function loadConfig(filePair: ConfigFilePair) {
       const fromWorkspace = workspaceTasks[label] !== undefined;
       const fetchInfo: FetchInfo = { label, fromWorkspace };
       return { fetchInfo, params: expandParamsOrCmd(paramsOrCmd) };
-    })
+    }),
   );
 }
 
@@ -411,7 +415,7 @@ async function editWorkspaceConfig() {
     throw Error('Workspace configuration file not defined!');
   if (!nodejs.fs.existsSync(confFilePair.workspace))
     await window.showTextDocument(
-      Uri.parse('untitled:' + confFilePair.workspace)
+      Uri.parse('untitled:' + confFilePair.workspace),
     );
   else await window.showTextDocument(Uri.file(confFilePair.workspace));
 }
@@ -419,7 +423,7 @@ async function editWorkspaceConfig() {
 function activate(context: ExtensionContext) {
   const { configFilePair, disposable } = watchConfigFile(
     CONFIG_FILE,
-    loadConfig
+    loadConfig,
   );
   loadConfig(configFilePair);
   context.subscriptions.push(
@@ -427,21 +431,21 @@ function activate(context: ExtensionContext) {
     registerAsyncCommandWrapped('qcfg.tasks.build.last', runLastBuildTask),
     registerAsyncCommandWrapped(
       'qcfg.tasks.build.default',
-      runDefaultBuildTask
+      runDefaultBuildTask,
     ),
     registerAsyncCommandWrapped(
       'qcfg.tasks.runConfigured',
-      runConfiguredTaskCmd
+      runConfiguredTaskCmd,
     ),
     registerAsyncCommandWrapped(
       'qcfg.tasks.editGlobalConfig',
-      editGlobalConfig
+      editGlobalConfig,
     ),
     registerAsyncCommandWrapped(
       'qcfg.tasks.editWorkspaceConfig',
-      editWorkspaceConfig
+      editWorkspaceConfig,
     ),
-    registerAsyncCommandWrapped('qcfg.tasks.show', showTasks)
+    registerAsyncCommandWrapped('qcfg.tasks.show', showTasks),
   );
 }
 
