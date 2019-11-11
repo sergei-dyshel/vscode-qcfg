@@ -387,6 +387,8 @@ class GtagsDefinitionProvider implements vscode.DefinitionProvider {
         break;
       case 'typescript':
       case 'lua':
+      case 'go':
+      case 'python':
         return;
     }
     const gtagsDir = log.assertNonNull(
