@@ -13,16 +13,12 @@ import {
   TaskProcessStartEvent,
   TaskScope,
   TaskEndEvent,
-  WorkspaceFolder
+  WorkspaceFolder,
 } from 'vscode';
-import { Disposable } from 'vscode-jsonrpc';
-import {
-  listenWrapped,
-  executeCommandHandled
-} from './exception';
+import { listenWrapped, executeCommandHandled } from './exception';
 import { log, Logger } from './logging';
 import { Modules } from './module';
-import { registerTemporaryCommand } from './utils';
+import { registerTemporaryCommand, DisposableLike } from './utils';
 
 export enum State {
   INITIALIZED,
@@ -32,7 +28,7 @@ export enum State {
   PROCESS_STARTED,
   PROCESS_ENDED,
   DONE,
-  ABORTED
+  ABORTED,
 }
 
 /**
@@ -49,9 +45,11 @@ class TaskDescriptor {
   constructor(task: Task) {
     this.name = task.name;
   }
+
   isEqual(other: TaskDescriptor) {
     return this.name === other.name;
   }
+
   toString() {
     return this.name;
   }
@@ -67,7 +65,7 @@ export enum TaskConfilictPolicy {
   /** Queue current task after the one currently running */
   WAIT = 'Wait',
   /** Cancel currently runninig task and run this task instead */
-  CANCEL_PREVIOUS = 'Cancel previous'
+  CANCEL_PREVIOUS = 'Cancel previous',
 }
 
 export class TaskRun {
@@ -78,7 +76,7 @@ export class TaskRun {
   terminal?: Terminal;
   cancelled = false;
   status?: StatusBarItem;
-  statusCmdDisposable?: Disposable;
+  statusCmdDisposable?: DisposableLike;
   desc: TaskDescriptor;
 
   constructor(public task: Task) {
@@ -86,7 +84,7 @@ export class TaskRun {
     this.log = new Logger({
       name: 'taskRun',
       parent: log,
-      instance: task.name
+      instance: task.name,
     });
     this.desc = new TaskDescriptor(task);
   }
@@ -100,7 +98,7 @@ export class TaskRun {
           { modal: true },
           TaskConfilictPolicy.WAIT,
           TaskConfilictPolicy.CANCEL_PREVIOUS,
-          TaskConfilictPolicy.ABORT_CURRENT
+          TaskConfilictPolicy.ABORT_CURRENT,
         )) as TaskConfilictPolicy | undefined;
       }
       switch (conflictPolicy) {
@@ -138,7 +136,7 @@ export class TaskRun {
     this.waitingPromise = new Promise(
       (resolve: () => void, reject: (err: Error) => void) => {
         this.waitingContext = { resolve, reject };
-      }
+      },
     );
     return this.waitingPromise;
   }
@@ -146,7 +144,7 @@ export class TaskRun {
   async cancel() {
     this.log.assert(
       this.state === State.RUNNING || this.state === State.PROCESS_STARTED,
-      `Can not cancel task in state ${State[this.state]}`
+      `Can not cancel task in state ${State[this.state]}`,
     );
     this.log.info('Cancelled');
     this.cancelled = true;
@@ -163,7 +161,7 @@ export class TaskRun {
     context.subscriptions.push(
       listenWrapped(tasks.onDidEndTaskProcess, TaskRun.onDidEndTaskProcess),
       listenWrapped(tasks.onDidStartTaskProcess, TaskRun.onDidStartTaskProcess),
-      listenWrapped(tasks.onDidEndTask, TaskRun.onDidEndTask)
+      listenWrapped(tasks.onDidEndTask, TaskRun.onDidEndTask),
     );
   }
 
@@ -199,11 +197,10 @@ export class TaskRun {
       });
       if (
         self.task.scope &&
-        (self.task.scope !== TaskScope.Global &&
-          self.task.scope !== TaskScope.Workspace)
+        self.task.scope !== TaskScope.Global &&
+        self.task.scope !== TaskScope.Workspace
       )
-        self.status.text =
-          '$(tools)' + `${self.task.name} (${self.task.scope.name})`;
+        self.status.text = `$(tools)${self.task.name} (${self.task.scope.name})`;
       else self.status.text = '$(tools)' + self.task.name;
       self.status.command = command;
       self.statusCmdDisposable = disposable;
@@ -258,6 +255,7 @@ export class TaskCancelledError extends Error {
   constructor(taskName: string) {
     super(`Task ${taskName} was cancelled`);
   }
+
   name = 'TaskCancelledError';
 }
 

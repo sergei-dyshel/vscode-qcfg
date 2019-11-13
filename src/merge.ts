@@ -1,5 +1,6 @@
 'use strict';
 
+// eslint-disable-next-line import/no-extraneous-dependencies
 import * as deepmerge from 'deepmerge';
 import * as fs from 'fs';
 

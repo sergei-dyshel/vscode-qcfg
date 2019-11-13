@@ -15,7 +15,7 @@ import {
   TextSearchQuery,
   window,
   workspace,
-  WorkspaceFolder
+  WorkspaceFolder,
 } from 'vscode';
 import { mapAsync, mapAsyncSequential } from '../async';
 import { ListSelectable } from '../dialog';
@@ -30,7 +30,7 @@ import { ExecResult, Subprocess } from '../subprocess';
 import {
   TaskCancelledError,
   TaskConfilictPolicy,
-  TaskRun
+  TaskRun,
 } from '../taskRunner';
 import { concatArrays } from '../tsUtils';
 import { currentWorkspaceFolder, getCursorWordContext } from '../utils';
@@ -43,7 +43,7 @@ import {
   Reveal,
   SearchTaskParams,
   TaskType,
-  TerminalTaskParams
+  TerminalTaskParams,
 } from './params';
 import { handleAsyncStd } from '../exception';
 
@@ -72,7 +72,7 @@ export class TaskContext {
     'workspaceFolder',
     'lineNumber',
     'selectedText',
-    'allWorkspaceFolders'
+    'allWorkspaceFolders',
   ];
 
   constructor(folder?: WorkspaceFolder) {
@@ -97,11 +97,11 @@ export class TaskContext {
         this.vars.workspaceFolder = this.workspaceFolder.uri.fsPath;
         this.vars.relativeFile = nodejs.path.relative(
           this.vars.workspaceFolder,
-          document.fileName
+          document.fileName,
         );
         this.vars.relativeFileNoExt = this.vars.relativeFile.replace(
           /\.[^/.]+$/,
-          ''
+          '',
         );
       }
     }
@@ -133,20 +133,12 @@ type Substitute = {
 /**
  * Task definition (params) has mistakes.
  */
-export class ParamsError extends Error {
-  constructor(message: string) {
-    super(message);
-  }
-}
+export class ParamsError extends Error {}
 
 /**
  * Task is invalid for given context and won't be presented in list
  */
-export class ValidationError extends Error {
-  constructor(message: string) {
-    super(message);
-  }
-}
+export class ValidationError extends Error {}
 
 /**
  * Could not substitue some variables.
@@ -258,7 +250,7 @@ export abstract class BaseQcfgTask extends BaseTask {
       | TerminalTaskParams
       | ProcessTaskParams
       | SearchTaskParams,
-    protected readonly info: FetchInfo
+    protected readonly info: FetchInfo,
   ) {
     super();
   }
@@ -271,6 +263,7 @@ export abstract class BaseQcfgTask extends BaseTask {
     return this.info.fromWorkspace;
   }
 
+  // eslint-disable-next-line class-methods-use-this
   protected isBackground() {
     return false;
   }
@@ -296,7 +289,7 @@ export class TerminalTask extends BaseQcfgTask {
   constructor(
     protected params: TerminalTaskParams,
     info: FetchInfo,
-    context: TaskContext
+    context: TaskContext,
   ) {
     super(params, info);
     if (isFolderTask(params)) {
@@ -310,7 +303,7 @@ export class TerminalTask extends BaseQcfgTask {
     const environ = { QCFG_VSCODE_PORT: String(remoteControl.port) };
     const shellExec = new ShellExecution(context.substitute(params.command), {
       cwd: params.cwd,
-      env: environ
+      env: environ,
     });
     this.task = new Task(
       def,
@@ -318,7 +311,7 @@ export class TerminalTask extends BaseQcfgTask {
       info.label,
       'qcfg',
       shellExec,
-      params.problemMatchers || []
+      params.problemMatchers || [],
     );
     this.task.presentationOptions = {
       focus: params.reveal === Reveal.FOCUS,
@@ -329,7 +322,7 @@ export class TerminalTask extends BaseQcfgTask {
       panel: flags.includes(Flag.DEDICATED_PANEL)
         ? TaskPanelKind.Dedicated
         : TaskPanelKind.Shared,
-      clear: flags.includes(Flag.CLEAR) || flags.includes(Flag.BUILD)
+      clear: flags.includes(Flag.CLEAR) || flags.includes(Flag.BUILD),
     };
     if (flags.includes(Flag.BUILD)) this.task.group = TaskGroup.Build;
   }
@@ -387,7 +380,7 @@ export class TerminalTask extends BaseQcfgTask {
       case EndAction.NOTIFY:
         if (success)
           await window.showInformationMessage(
-            `Task "${this.task.name}" finished`
+            `Task "${this.task.name}" finished`,
           );
         else await window.showErrorMessage(`Task "${this.task.name}" failed`);
         break;
@@ -400,11 +393,11 @@ export class TerminalMultiTask extends BaseQcfgTask {
   constructor(
     params: TerminalTaskParams,
     info: FetchInfo,
-    folderContexts: TaskContext[]
+    folderContexts: TaskContext[],
   ) {
     super(params, info);
     this.folderTasks = folderContexts.map(
-      context => new TerminalTask(params, info, context)
+      context => new TerminalTask(params, info, context),
     );
     this.folderText = folderContexts
       .map(context => context.workspaceFolder!.name)
@@ -427,7 +420,7 @@ export class ProcessTask extends BaseQcfgTask {
   constructor(
     protected params: ProcessTaskParams,
     info: FetchInfo,
-    context: TaskContext
+    context: TaskContext,
   ) {
     super(params, info);
     if (params.flags && params.flags.includes(Flag.FOLDER)) {
@@ -466,7 +459,7 @@ export class ProcessTask extends BaseQcfgTask {
       cwd: this.cwd,
       logLevel: LogLevel.Debug,
       statusBarMessage: this.info.label,
-      allowedCodes: this.params.exitCodes
+      allowedCodes: this.params.exitCodes,
     });
     try {
       const result = await subproc.wait();
@@ -474,7 +467,7 @@ export class ProcessTask extends BaseQcfgTask {
     } catch (err) {
       if (err instanceof ExecResult) {
         log.warn(
-          `Task "${this.info.label}" failed with code ${err.code} signal ${err.signal}`
+          `Task "${this.info.label}" failed with code ${err.code} signal ${err.signal}`,
         );
         return '';
       }
@@ -502,11 +495,11 @@ export class ProcessMultiTask extends BaseQcfgTask {
   constructor(
     params: ProcessTaskParams,
     info: FetchInfo,
-    folderContexts: TaskContext[]
+    folderContexts: TaskContext[],
   ) {
     super(params, info);
     this.folderTasks = folderContexts.map(
-      context => new ProcessTask(params, info, context)
+      context => new ProcessTask(params, info, context),
     );
     this.folderText = folderContexts
       .map(context => context.workspaceFolder!.name)
@@ -522,7 +515,7 @@ export class ProcessMultiTask extends BaseQcfgTask {
 
   async getLocations() {
     const locsPerFolder = await mapAsync(this.folderTasks, task =>
-      task.getLocations()
+      task.getLocations(),
     );
     return concatArrays(...locsPerFolder);
   }
@@ -547,7 +540,7 @@ export class SearchMultiTask extends BaseQcfgTask {
   constructor(
     params: SearchTaskParams,
     info: FetchInfo,
-    folderContexts: TaskContext[]
+    folderContexts: TaskContext[],
   ) {
     super(params, info);
     this.folderText = folderContexts
@@ -564,7 +557,7 @@ export class SearchMultiTask extends BaseQcfgTask {
       pattern: folderContexts[0].substitute(params.query),
       isRegExp: flags.includes(Flag.REGEX),
       isCaseSensitive: flags.includes(Flag.CASE),
-      isWordMatch: flags.includes(Flag.WORD)
+      isWordMatch: flags.includes(Flag.WORD),
     };
     this.options = {
       // XXX: there is a bug that happens when RelativePattern is used, it
@@ -574,6 +567,7 @@ export class SearchMultiTask extends BaseQcfgTask {
       // '**')
     };
   }
+
   async getLocations() {
     const locations = await searchInFiles(this.query, this.options);
     return locations.filter(location => {

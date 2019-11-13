@@ -6,7 +6,7 @@ import { getDocumentWorkspaceFolder } from './fileUtils';
 import { log } from './logging';
 
 export interface DisposableLike {
-  dispose(): any;
+  dispose(): unknown;
 }
 
 // XXX: currently unused
@@ -33,10 +33,12 @@ export namespace Context {
 }
 
 export function registerTemporaryCommand(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   callback: (...args: any[]) => any,
-  thisArg?: any
+  thisArg?: unknown,
 ) {
-  const command = `qcfg.temp.${++tempCmdCounter}`;
+  tempCmdCounter += 1;
+  const command = `qcfg.temp.${tempCmdCounter}`;
   const disposable = registerAsyncCommandWrapped(command, callback, thisArg);
   return { command, disposable };
 }

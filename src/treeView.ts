@@ -14,12 +14,12 @@ import {
   TreeViewOptions,
   TreeViewSelectionChangeEvent,
   TreeViewVisibilityChangeEvent,
-  window
+  window,
 } from 'vscode';
 import {
   listenWrapped,
   registerSyncCommandWrapped,
-  registerAsyncCommandWrapped
+  registerAsyncCommandWrapped,
 } from './exception';
 import { log } from './logging';
 import { Modules } from './module';
@@ -30,7 +30,7 @@ export const TREE_ITEM_REMOVABLE_CONTEXT = 'removable';
 export function activate(context: ExtensionContext) {
   const opts: TreeViewOptions<TreeNode> = {
     treeDataProvider,
-    showCollapseAll: true
+    showCollapseAll: true,
   };
   treeView = window.createTreeView('qcfgTreeView', opts);
   context.subscriptions.push(
@@ -41,28 +41,28 @@ export function activate(context: ExtensionContext) {
       treeView.onDidExpandElement,
       (event: TreeViewExpansionEvent<TreeNode>) => {
         callIfNonNull(event.element.onDidExpand, event.element);
-      }
+      },
     ),
     listenWrapped(
       treeView.onDidCollapseElement,
       (event: TreeViewExpansionEvent<TreeNode>) => {
         callIfNonNull(event.element.onDidCollapse, event.element);
-      }
+      },
     ),
     listenWrapped(
       treeView.onDidChangeSelection,
       (event: TreeViewSelectionChangeEvent<TreeNode>) => {
         if (currentProvider)
           callIfNonNull(currentProvider.onDidChangeSelection, event.selection);
-      }
+      },
     ),
     listenWrapped(
       treeView.onDidChangeVisibility,
       (event: TreeViewVisibilityChangeEvent) => {
         if (currentProvider)
           callIfNonNull(currentProvider.onDidChangeVisibility, event.visible);
-      }
-    )
+      },
+    ),
   );
 }
 
@@ -120,6 +120,7 @@ export namespace QcfgTreeView {
   }
 }
 
+// eslint-disable-next-line import/export
 export class StaticTreeNode implements TreeNode {
   constructor(label?: TreeItemLabel | string) {
     if (label) {
@@ -137,6 +138,7 @@ export class StaticTreeNode implements TreeNode {
   get isRoot() {
     return this.parent === undefined;
   }
+
   get isLeaf() {
     return this.children.length === 0;
   }
@@ -186,15 +188,19 @@ export class StaticTreeNode implements TreeNode {
   get children(): StaticTreeNode[] {
     return this.children_;
   }
+
   get parent(): StaticTreeNode | undefined {
     return this.parent_;
   }
+
   allowRemoval() {
     this.treeItem.contextValue = TREE_ITEM_REMOVABLE_CONTEXT;
   }
+
   setExpanded() {
     this.treeItem.collapsibleState = TreeItemCollapsibleState.Expanded;
   }
+
   setCollapsed() {
     this.treeItem.collapsibleState = TreeItemCollapsibleState.Collapsed;
   }
@@ -203,9 +209,11 @@ export class StaticTreeNode implements TreeNode {
   getTreeItem() {
     return this.treeItem;
   }
+
   getChildren() {
     return this.children;
   }
+
   getParent() {
     return this.parent;
   }
@@ -214,12 +222,13 @@ export class StaticTreeNode implements TreeNode {
   private parent_?: StaticTreeNode;
 }
 
+// eslint-disable-next-line import/export
 export namespace StaticTreeNode {
   export type Compare = (a: StaticTreeNode, b: StaticTreeNode) => number;
 
   export function applyRecursively(
     nodes: StaticTreeNode[],
-    func: (_: StaticTreeNode) => boolean
+    func: (_: StaticTreeNode) => boolean,
   ) {
     for (const node of nodes) node.applyRecursively(func);
   }
@@ -228,13 +237,13 @@ export namespace StaticTreeNode {
     nodes.sort(
       cmpFunc ||
         ((a, b) =>
-          (a.treeItem.label || '').localeCompare(b.treeItem.label || ''))
+          (a.treeItem.label || '').localeCompare(b.treeItem.label || '')),
     );
   }
 
   export function sortNodesRecursively(
     nodes: StaticTreeNode[],
-    cmpFunc?: Compare
+    cmpFunc?: Compare,
   ) {
     for (const node of nodes) node.sortChildrenRecursively(cmpFunc);
     sortNodes(nodes, cmpFunc);
@@ -260,7 +269,7 @@ const treeDataProvider: TreeDataProvider<TreeNode> = {
   },
   getParent(node: TreeNode) {
     return node.getParent();
-  }
+  },
 };
 
 function removeNode(...args: any[]) {
@@ -268,7 +277,7 @@ function removeNode(...args: any[]) {
   const provider = log.assertNonNull(currentProvider);
   if (!provider.removeNode)
     throw new Error(
-      'TreeProvider with removable nodes must provide removeNode method'
+      'TreeProvider with removable nodes must provide removeNode method',
     );
   provider.removeNode(node);
 }

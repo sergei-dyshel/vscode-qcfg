@@ -10,7 +10,7 @@ export class ExecResult extends Error {
   constructor(
     public pid: number,
     public stdout: string,
-    public stderr: string
+    public stderr: string,
   ) {
     super('');
     this.name = 'ExecResult';
@@ -18,6 +18,7 @@ export class ExecResult extends Error {
     this.signal = '';
     this.updateMessage();
   }
+
   code: number;
   signal: string;
 
@@ -44,26 +45,26 @@ export class Subprocess {
       this.process = child_process.exec(
         command,
         options || {},
-        this.callback.bind(this)
+        this.callback.bind(this),
       );
     else
       this.process = child_process.execFile(
         command[0],
         command.slice(1),
         options || {},
-        this.callback.bind(this)
+        this.callback.bind(this),
       );
     this.log = new Logger({
       parent: log,
       instance: `pid=${this.process.pid}`,
-      level: 'debug'
+      level: 'debug',
     });
     const cwd = options && options.cwd ? options.cwd : process.cwd;
     this.log.logStr(
       this.logLevel,
       'started command "{}" in cwd "{}"',
       command,
-      cwd
+      cwd,
     );
     // tslint:disable-next-line: promise-must-complete
     this.promise = new Promise<ExecResult>((resolve, reject) => {
@@ -94,7 +95,7 @@ export class Subprocess {
       this.result.signal = err.signal || '';
       this.log.log(
         this.logLevel,
-        `finished with code ${this.result.code} signal ${this.result.signal}`
+        `finished with code ${this.result.code} signal ${this.result.signal}`,
       );
       if (
         !this.options ||
@@ -106,7 +107,7 @@ export class Subprocess {
         this.waitingContext.resolve(this.result);
       }
     } else {
-      this.log.log(this.logLevel, `finished sucessfully`);
+      this.log.log(this.logLevel, 'finished sucessfully');
       this.waitingContext.resolve(this.result);
     }
   }
@@ -119,13 +120,14 @@ export class Subprocess {
     resolve: (result: ExecResult) => void;
     reject: (result: ExecResult | Error) => void;
   };
+
   private process: child_process.ChildProcess;
   status?: vscode.StatusBarItem;
 }
 
 export function executeSubprocess(
   command: string | string[],
-  options?: SubprocessOptions
+  options?: SubprocessOptions,
 ): Promise<ExecResult> {
   return new Subprocess(command, options).wait();
 }

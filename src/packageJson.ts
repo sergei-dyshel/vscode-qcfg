@@ -8,7 +8,7 @@ export interface Key {
 export interface KeyBinding extends Key {
   command: string;
   when?: string;
-  args?: any;
+  args?: unknown;
 }
 
 export interface PackageJson {

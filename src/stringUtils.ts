@@ -9,7 +9,7 @@ export function parseNumber(s: string | undefined): number | undefined;
 export function parseNumber(s: string | undefined, default_: number): number;
 export function parseNumber(
   s: string | undefined,
-  default_?: number
+  default_?: number,
 ): number | undefined {
   if (s === undefined) return default_;
   const num = Number(s);
@@ -54,7 +54,7 @@ export function abbrevMatch(text: string, query: string): boolean {
 export function splitWithRemainder(
   str: string,
   regex: RegExp,
-  limit: number
+  limit: number,
 ): string[] {
   const result: string[] = [];
   while (str && limit) {
@@ -66,7 +66,7 @@ export function splitWithRemainder(
     if (match[0].length === 0) throw new Error('Empty match inside split');
     result.push(str.substring(0, match.index));
     str = str.substring(match.index + match[0].length);
-    --limit;
+    limit -= 1;
   }
   if (str || !result) result.push(str);
   return result;
@@ -74,7 +74,7 @@ export function splitWithRemainder(
 
 export function escapeRegExp(str: string) {
   // from https://stackoverflow.com/a/1144788/5531098
-  return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1');
+  return str.replace(/([.*+?^=!:${}()|[\]/\\])/g, '\\$1');
 }
 
 export function replaceAll(str: string, find: string, replace: string) {
@@ -84,7 +84,7 @@ export function replaceAll(str: string, find: string, replace: string) {
 export function ellipsize(
   str: string,
   maxLen: number,
-  options?: { delimiter?: string }
+  options?: { delimiter?: string },
 ): string {
   if (str.length <= maxLen) return str;
   const delimiter = options && options.delimiter ? options.delimiter : '...';
@@ -93,16 +93,12 @@ export function ellipsize(
   return str.substr(0, left) + delimiter + str.substr(str.length - right);
 }
 
-export class TemplateError extends Error {
-  constructor(message: string) {
-    super(message);
-  }
-}
+export class TemplateError extends Error {}
 
 export function expandTemplate(
   text: string,
   substitute: { [name: string]: string },
-  throwWhenNotExist = false
+  throwWhenNotExist = false,
 ): string {
   return text.replace(/\$\{([a-zA-Z0-9]+)\}/g, (_, varname) => {
     const sub = substitute[varname] as string | undefined;

@@ -1,8 +1,10 @@
 'use strict';
 
 import { TextBuffer } from 'superstring';
+// eslint-disable-next-line import/no-duplicates
 import * as Parser from 'tree-sitter';
 // tslint:disable-next-line: no-duplicate-imports
+// eslint-disable-next-line import/no-duplicates
 import { SyntaxNode, Tree as SyntaxTree } from 'tree-sitter';
 import {
   Event,
@@ -13,7 +15,7 @@ import {
   TextDocument,
   TextDocumentChangeEvent,
   window,
-  workspace
+  workspace,
 } from 'vscode';
 import { PromiseContext } from './async';
 import { NumRange } from './documentUtils';
@@ -31,7 +33,7 @@ const UPDATE_DELAY_MS = 100;
 export { SyntaxNode, SyntaxTree };
 
 interface LanguageConfig {
-  parser: any;
+  parser: unknown;
 }
 
 const languageConfig: { [language: string]: LanguageConfig } = {
@@ -41,10 +43,11 @@ const languageConfig: { [language: string]: LanguageConfig } = {
   typescript: { parser: require('tree-sitter-typescript/typescript') },
   shellscript: { parser: require('tree-sitter-bash') },
   go: { parser: require('tree-sitter-go') },
-  lua: { parser: require('tree-sitter-lua') }
+  lua: { parser: require('tree-sitter-lua') },
 };
 
 declare module 'tree-sitter' {
+  // eslint-disable-next-line no-shadow
   class SyntaxNode {}
   interface SyntaxNode {
     readonly nodeType: SyntaxNode.Type;
@@ -103,15 +106,15 @@ export interface SyntaxTreeUpdatedEvent {
 const emmiter = new EventEmitter<SyntaxTreeUpdatedEvent>();
 export const onSyntaxTreeUpdated: Event<SyntaxTreeUpdatedEvent> = emmiter.event;
 
-//////////////////////////////////////////////////////////////////////////////
+//
 // Private
-//////////////////////////////////////////////////////////////////////////////
+//
 
 Object.defineProperty(SyntaxNode.prototype, 'nodeType', {
   get(): SyntaxNode.Type {
     const this_ = this as SyntaxNode;
     return this_.type as SyntaxNode.Type;
-  }
+  },
 });
 
 Object.defineProperty(SyntaxNode.prototype, 'offsetRange', {
@@ -121,7 +124,7 @@ Object.defineProperty(SyntaxNode.prototype, 'offsetRange', {
     if (!this.offsetRange_)
       this.offsetRange_ = new NumRange(this_.startIndex, this_.endIndex);
     return this.offsetRange_;
-  }
+  },
 });
 
 Object.defineProperty(SyntaxNode.prototype, 'range', {
@@ -129,7 +132,7 @@ Object.defineProperty(SyntaxNode.prototype, 'range', {
     const this_ = this as SyntaxNode;
     if (!this.range_) this.range_ = new Range(this_.start, this_.end);
     return this.range_;
-  }
+  },
 });
 
 Object.defineProperty(SyntaxNode.prototype, 'start', {
@@ -138,10 +141,10 @@ Object.defineProperty(SyntaxNode.prototype, 'start', {
     if (!this.start_)
       this.start_ = new Position(
         this_.startPosition.row,
-        this_.startPosition.column
+        this_.startPosition.column,
       );
     return this.start_;
-  }
+  },
 });
 
 Object.defineProperty(SyntaxNode.prototype, 'end', {
@@ -150,7 +153,7 @@ Object.defineProperty(SyntaxNode.prototype, 'end', {
     if (!this.end_)
       this.end_ = new Position(this_.endPosition.row, this_.endPosition.column);
     return this.end_;
-  }
+  },
 });
 
 namespace Parsers {
@@ -161,6 +164,7 @@ namespace Parsers {
       throw new Error(`Syntax tree not available for language "${language}"`);
     const parsers = parserPool.get(language);
     if (!parsers.isEmpty) return parsers.pop()!;
+    // eslint-disable-next-line new-cap
     const parser = new Parser.default();
     parser.setLanguage(languageConfig[language].parser);
     return parser;
@@ -174,9 +178,10 @@ namespace Parsers {
 class DocumentContext {
   constructor(private document: TextDocument) {
     this.log = new Logger({
-      instance: nodejs.path.parse(document.fileName).name
+      instance: nodejs.path.parse(document.fileName).name,
     });
   }
+
   private tree?: SyntaxTree;
   private promiseContext?: PromiseContext<SyntaxTree>;
   private timer: Timer = new Timer();
@@ -187,7 +192,7 @@ class DocumentContext {
   async update() {
     if (this.isUpdating) return;
     const parser = Parsers.get(this.document.languageId);
-    const parserAsync = (parser as any) as ParserWithAsync;
+    const parserAsync = (parser as unknown) as ParserWithAsync;
     const buf = new TextBuffer(this.document.getText());
     this.isUpdating = true;
     while (true) {
@@ -196,7 +201,7 @@ class DocumentContext {
         // TODO: make using previous tree configurable (may crash)
         const start = Date.now();
         this.tree = await parserAsync.parseTextBuffer(buf, this.tree, {
-          syncOperationCount: 1000
+          syncOperationCount: 1000,
         });
         const end = Date.now();
         this.log.debug(`Parsing took ${(end - start) / 1000} seconds`);
@@ -242,13 +247,13 @@ class DocumentContext {
 }
 
 const trees = new DefaultMap<TextDocument, DocumentContext>(
-  document => new DocumentContext(document)
+  document => new DocumentContext(document),
 );
 
 function checkDocumentSupported(document: TextDocument) {
   if (!SyntaxTrees.isDocumentSupported(document))
     throw new Error(
-      `Syntax tree not available for language "${document.languageId}"`
+      `Syntax tree not available for language "${document.languageId}"`,
     );
 }
 
@@ -270,16 +275,16 @@ interface ParserWithAsync {
     oldTree?: SyntaxTree,
     config?: {
       syncOperationCount: number;
-    }
+    },
   ): Promise<SyntaxTree>;
 }
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
     listenWrapped(workspace.onDidCloseTextDocument, document =>
-      trees.delete(document)
+      trees.delete(document),
     ),
-    listenWrapped(workspace.onDidChangeTextDocument, onDidChangeTextDocument)
+    listenWrapped(workspace.onDidChangeTextDocument, onDidChangeTextDocument),
   );
 }
 

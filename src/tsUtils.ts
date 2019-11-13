@@ -4,7 +4,7 @@ import { MultiDictionary } from 'typescript-collections';
 
 export function mapObjectValues<V, R>(
   obj: { [key: string]: V },
-  func: (k: string, v: V) => R
+  func: (k: string, v: V) => R,
 ): { [key: string]: R } {
   const res: { [key: string]: R } = {};
   const entryObjs = mapObjectToArray(obj, (k, v) => ({ [k]: func(k, v) }));
@@ -13,14 +13,14 @@ export function mapObjectValues<V, R>(
 
 export function mapObjectToArray<V, R>(
   obj: { [key: string]: V },
-  func: (k: string, v: V) => R
+  func: (k: string, v: V) => R,
 ): R[] {
   return Object.entries(obj).map(([k, v]) => func(k, v));
 }
 
 export function mapNonNull<T, V>(
   array: T[],
-  func: (elem: T) => V | null | undefined
+  func: (elem: T) => V | null | undefined,
 ): V[] {
   return array
     .map(func)
@@ -43,7 +43,7 @@ export function filterNonNull<T>(array: Array<T | null | undefined>): T[] {
 export function mapWithThrow<T, V>(
   array: T[],
   func: (elem: T) => V,
-  handler?: (elem: T, err: Error) => V | void | undefined
+  handler?: (elem: T, err: Error) => V | void | undefined,
 ): Array<[T, V]> {
   const res: Array<V | undefined> = [];
   for (const elem of array) {
@@ -52,7 +52,7 @@ export function mapWithThrow<T, V>(
     } catch (err) {
       if (handler) {
         const val = handler(elem, err);
-        res.push(val ? val : undefined);
+        res.push(val || undefined);
       } else {
         res.push(undefined);
       }
@@ -69,7 +69,7 @@ export function concatArrays<T>(...arrays: T[][]): T[] {
 }
 
 export function upcastReadonlyArray<B, T extends B>(
-  arr: ReadonlyArray<B>
+  arr: ReadonlyArray<B>,
 ): ReadonlyArray<T> {
   return arr as ReadonlyArray<T>;
 }
@@ -81,13 +81,14 @@ export function upcastArray<B, T extends B>(arr: B[]): T[] {
 export function callIfNonNull<R>(func: (() => R) | undefined): R | undefined;
 export function callIfNonNull<T, R>(
   func: ((_: T) => R) | undefined,
-  _: T
+  _: T,
 ): R | undefined;
 export function callIfNonNull<T1, T2, R>(
   func: ((_: T1, __: T2) => R) | undefined,
   _: T1,
-  __: T2
+  __: T2,
 ): R | undefined;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function callIfNonNull(func: any, ...args: any[]) {
   if (func) return func(...args);
   return;
@@ -95,7 +96,7 @@ export function callIfNonNull(func: any, ...args: any[]) {
 
 export function groupBy<K, T>(
   array: T[],
-  keyFunc: (_: T) => K
+  keyFunc: (_: T) => K,
 ): MultiDictionary<K, T> {
   const dict = new MultiDictionary<K, T>();
   for (const elem of array) dict.setValue(keyFunc(elem), elem);
@@ -116,20 +117,23 @@ export class ArrayIterator<T> implements IterableIterator<T> {
     private array: T[],
     start: number,
     private end: number,
-    private step: number
+    private step: number,
   ) {
     if (this.step === 0) throw new Error('Can not iterate with step -1');
     this.cur = start;
   }
+
   next(): IteratorResult<T> {
     const result = { done: this.reachedEnd(), value: this.array[this.cur] };
     this.cur += this.step;
     return result;
   }
+
   private reachedEnd(): boolean {
     if (this.step > 0) return this.cur >= this.end;
     return this.cur < this.end;
   }
+
   [Symbol.iterator]() {
     return this;
   }
@@ -143,6 +147,7 @@ export class ZipIterator<T, U> implements IterableIterator<[T, U]> {
     if (result1.done || result2.done) return { done: true, value: undefined };
     return { done: false, value: [result1.value, result2.value] };
   }
+
   [Symbol.iterator]() {
     return this;
   }
@@ -150,7 +155,7 @@ export class ZipIterator<T, U> implements IterableIterator<[T, U]> {
 
 export function izip<T, U>(
   iter1: Iterable<T>,
-  iter2: Iterable<U>
+  iter2: Iterable<U>,
 ): Iterable<[T, U]> {
   return new ZipIterator(iter1[Symbol.iterator](), iter2[Symbol.iterator]());
 }
@@ -171,7 +176,7 @@ declare global {
     removeFirst(val: T): boolean;
     firstOf(cond: (val: T) => boolean): T | undefined;
     forEachRight(
-      callbackfn: (value: T, index: number, array: T[]) => void
+      callbackfn: (value: T, index: number, array: T[]) => void,
     ): void;
   }
 
@@ -185,7 +190,7 @@ declare global {
 
 Array.prototype.forEachRight = function<T>(
   this: T[],
-  callbackfn: (value: T, index: number, array: T[]) => void
+  callbackfn: (value: T, index: number, array: T[]) => void,
 ): void {
   return this.reduceRight((_, cur, index, array) => {
     callbackfn(cur, index, array);
@@ -197,7 +202,7 @@ Array.prototype.iter = function<T>(
   this: T[],
   start: number,
   end: number,
-  step?: number
+  step?: number,
 ) {
   return new ArrayIterator<T>(this, start, end, step || 1);
 };
@@ -231,7 +236,7 @@ function defaultEquals<T>(a: T, b: T) {
 
 Array.prototype.firstOf = function<T>(
   this: T[],
-  cond: (val: T) => boolean
+  cond: (val: T) => boolean,
 ): T | undefined {
   const idx = this.findIndex(cond);
   if (idx === -1) return undefined;
@@ -241,7 +246,7 @@ Array.prototype.firstOf = function<T>(
 Array.prototype.equals = function<T>(
   this: T[],
   that: T[],
-  eq: (x: T, y: T) => boolean = defaultEquals
+  eq: (x: T, y: T) => boolean = defaultEquals,
 ) {
   if (this.length !== that.length) return false;
   for (let i = 0; i < this.length; ++i) if (!eq(this[i], that[i])) return false;
@@ -250,7 +255,7 @@ Array.prototype.equals = function<T>(
 
 Array.prototype.min = function<T>(
   this: T[],
-  cmp: (x: T, y: T) => number = numberCompare
+  cmp: (x: T, y: T) => number = numberCompare,
 ) {
   if (!this.length) return;
   return this.reduce((x, y) => (cmp(x, y) === -1 ? x : y));
@@ -258,7 +263,7 @@ Array.prototype.min = function<T>(
 
 Array.prototype.max = function<T>(
   this: T[],
-  cmp: (x: T, y: T) => number = numberCompare
+  cmp: (x: T, y: T) => number = numberCompare,
 ) {
   if (!this.length) return;
   return this.reduce((x, y) => (cmp(x, y) === -1 ? y : x));
@@ -268,19 +273,20 @@ Object.defineProperty(Array.prototype, 'top', {
   get<T>(): T | undefined {
     if (this.length > 0) return this[this.length - 1];
     return undefined;
-  }
+  },
 });
 
 Object.defineProperty(Array.prototype, 'isEmpty', {
   get(): boolean {
     return this.length === 0;
-  }
+  },
 });
 
 export class DefaultMap<K, V> extends Map<K, V> {
   constructor(private factory: (key: K) => V) {
     super();
   }
+
   get(key: K): V {
     let val = super.get(key);
     if (val) return val;
@@ -290,9 +296,9 @@ export class DefaultMap<K, V> extends Map<K, V> {
   }
 }
 
-export type PromiseType<T extends Promise<any>> = T extends Promise<infer R>
+export type PromiseType<T extends Promise<unknown>> = T extends Promise<infer R>
   ? R
-  : any;
+  : unknown;
 
 export function zipArrays<T1, T2>(a: T1[], b: T2[]): Array<[T1, T2]> {
   return a.map((k, i) => [k, b[i]]);
