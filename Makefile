@@ -9,7 +9,7 @@ npm_install: | package.json
 	./npm-wrapper.sh install
 
 npm_update: | package.json
-	./npm-wrapper update
+	./npm-wrapper.sh update
 
 npm_full_reinstall:
 	rm -rf package.json node_modules
