@@ -78,5 +78,8 @@ module.exports = {
     '@typescript-eslint/no-namespace': off,
     '@typescript-eslint/camelcase': [warn, { allow: ['child_process'] }],
     'no-inner-declarations': off,
+    'no-underscore-dangle': off,
+    '@typescript-eslint/no-explicit-any': [warn, { ignoreRestArgs: true }],
+    'no-extend-native': [warn, { exceptions: ['Array'] }],
   },
 };

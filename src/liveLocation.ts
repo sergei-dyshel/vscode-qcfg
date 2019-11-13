@@ -8,7 +8,7 @@ import {
   TextDocumentChangeEvent,
   TextDocumentContentChangeEvent,
   Uri,
-  workspace
+  workspace,
 } from 'vscode';
 import { NumRange, offsetToRange } from './documentUtils';
 import { listenWrapped } from './exception';
@@ -30,7 +30,7 @@ abstract class LiveLocation implements ReadOnlyLocation, DisposableLike {
   constructor(
     document: TextDocument,
     range: Range,
-    private onInvalidated?: () => void
+    private onInvalidated?: () => void,
   ) {
     this.uri_ = document.uri;
     this.range_ = range;
@@ -39,6 +39,7 @@ abstract class LiveLocation implements ReadOnlyLocation, DisposableLike {
   get uri() {
     return this.uri_;
   }
+
   get range() {
     return this.range_;
   }
@@ -83,7 +84,7 @@ abstract class LiveLocation implements ReadOnlyLocation, DisposableLike {
    */
   abstract adjust(
     document: TextDocument,
-    change: TextDocumentContentChangeEvent
+    change: TextDocumentContentChangeEvent,
   ): boolean;
 }
 
@@ -93,7 +94,7 @@ export class LivePosition extends LiveLocation {
   constructor(
     document: TextDocument,
     position: Position,
-    onInvalidated?: () => void
+    onInvalidated?: () => void,
   ) {
     super(document, position.asRange, onInvalidated);
     this.offset = document.offsetAt(position);
@@ -101,7 +102,7 @@ export class LivePosition extends LiveLocation {
 
   adjust(
     document: TextDocument,
-    change: TextDocumentContentChangeEvent
+    change: TextDocumentContentChangeEvent,
   ): boolean {
     const newOffset = adjustOffsetAfterChange(this.offset, change);
     if (newOffset) {
@@ -125,12 +126,12 @@ export class LiveRange extends LiveLocation {
     opts: {
       mergeOnReplace: boolean;
       onInvalidated?: () => void;
-    }
+    },
   ) {
     super(
       document,
       range,
-      opts && opts.onInvalidated ? opts.onInvalidated : undefined
+      opts && opts.onInvalidated ? opts.onInvalidated : undefined,
     );
     if (range.isEmpty) throw new Error('LiveRange range must be non-empty');
     this.start = document.offsetAt(range.start);
@@ -152,19 +153,19 @@ export class LiveRange extends LiveLocation {
 
   adjust(
     document: TextDocument,
-    change: TextDocumentContentChangeEvent
+    change: TextDocumentContentChangeEvent,
   ): boolean {
     this.start = adjustOffsetAfterChange(
       this.start,
       change,
       false /* not end */,
-      this.mergeOnReplace
+      this.mergeOnReplace,
     )!;
     this.end = adjustOffsetAfterChange(
       this.end,
       change,
       true /* is end */,
-      this.mergeOnReplace
+      this.mergeOnReplace,
     )!;
     if (this.start < this.end) {
       this.range_ = offsetToRange(document, new NumRange(this.start, this.end));
@@ -179,7 +180,7 @@ export function adjustOffsetAfterChange(
   offset: number,
   change: TextDocumentContentChangeEvent,
   isEnd = false,
-  mergeOnReplace = false
+  mergeOnReplace = false,
 ): number | undefined {
   const changeStart = change.rangeOffset;
   const changeEnd = change.rangeOffset + change.rangeLength;
@@ -232,7 +233,7 @@ function onDidChangeTextDocument(event: TextDocumentChangeEvent) {
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
-    listenWrapped(workspace.onDidChangeTextDocument, onDidChangeTextDocument)
+    listenWrapped(workspace.onDidChangeTextDocument, onDidChangeTextDocument),
   );
 }
 

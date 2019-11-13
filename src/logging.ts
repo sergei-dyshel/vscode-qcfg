@@ -14,7 +14,7 @@ import {
   TextDocumentContentChangeEvent,
   OutputChannel,
   languages,
-  ExtensionContext
+  ExtensionContext,
 } from 'vscode';
 import * as nodejs from './nodejs';
 import { maxNumber } from './tsUtils';
@@ -23,7 +23,7 @@ import {
   registerAsyncCommandWrapped,
   listenWrapped,
   registerSyncCommandWrapped,
-  handleAsyncStd
+  handleAsyncStd,
 } from './exception';
 import { Modules } from './module';
 import { getCallsite } from './sourceMap';
@@ -52,67 +52,86 @@ export class Logger {
     }
   }
 
-  log(level: LogLevel, ...args: any[]) {
+  log(level: LogLevel, ...args: unknown[]) {
     if (level < this.resolveLevel()) return;
     return this.logImpl(level, 3, formatMessage(args));
   }
-  logStr(level: LogLevel, fmt: string, ...args: any[]) {
+
+  logStr(level: LogLevel, fmt: string, ...args: unknown[]) {
     if (level < this.resolveLevel()) return;
     return this.logImpl(level, 3, formatMessageStr(fmt, args));
   }
-  private logInternal(level: LogLevel, args: any[]) {
+
+  private logInternal(level: LogLevel, args: unknown[]) {
     if (level < this.resolveLevel()) return;
     return this.logImpl(level, 4, formatMessage(args));
   }
-  private logStrInternal(level: LogLevel, fmt: string, args: any[]) {
+
+  private logStrInternal(level: LogLevel, fmt: string, args: unknown[]) {
     if (level < this.resolveLevel()) return;
     return this.logImpl(level, 4, formatMessageStr(fmt, args));
   }
-  trace(...args: any[]) {
+
+  trace(...args: unknown[]) {
     this.logInternal(LogLevel.Trace, args);
   }
-  traceStr(fmt: string, ...args: any[]) {
+
+  traceStr(fmt: string, ...args: unknown[]) {
     this.logStrInternal(LogLevel.Trace, fmt, args);
   }
-  debug(...args: any[]) {
+
+  debug(...args: unknown[]) {
     this.logInternal(LogLevel.Debug, args);
   }
-  debugStr(fmt: string, ...args: any[]) {
+
+  debugStr(fmt: string, ...args: unknown[]) {
     this.logStrInternal(LogLevel.Debug, fmt, args);
   }
-  info(...args: any[]) {
+
+  info(...args: unknown[]) {
     this.logInternal(LogLevel.Info, args);
   }
-  infoStr(fmt: string, ...args: any[]) {
+
+  infoStr(fmt: string, ...args: unknown[]) {
     this.logStrInternal(LogLevel.Info, fmt, args);
   }
-  notice(...args: any[]) {
+
+  notice(...args: unknown[]) {
     this.logInternal(LogLevel.Notice, args);
   }
-  warn(...args: any[]) {
+
+  warn(...args: unknown[]) {
     this.logInternal(LogLevel.Warning, args);
   }
-  error(...args: any[]) {
+
+  error(...args: unknown[]) {
     this.logInternal(LogLevel.Error, args);
   }
-  fatal(...args: any[]): never {
+
+  fatal(...args: unknown[]): never {
     return this.logInternal(LogLevel.Fatal, args) as never;
   }
-  assert(condition: boolean | undefined | null | object, ...args: any[]) {
+
+  /* TODO: move assert outside */
+  // eslint-disable-next-line class-methods-use-this
+  assert(condition: boolean | undefined | null | object, ...args: unknown[]) {
     if (!condition) {
       throw new Error(formatMessage(args, 'Assertion failed'));
     }
   }
-  assertNonNull<T>(val: T | undefined | null, ...args: any[]): T {
+
+  assertNonNull<T>(val: T | undefined | null, ...args: unknown[]): T {
     this.assert(val !== undefined && val !== null, ...args);
     return val as T;
   }
-  assertNull<T>(val: T | undefined | null, ...args: any[]) {
+
+  assertNull<T>(val: T | undefined | null, ...args: unknown[]) {
     this.assert(val === undefined || val === null, ...args);
   }
 
   assertInstanceOf<T extends B, B>(
     value: B,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     cls: { new (...args: any[]): T },
     ...args: any[]
   ): T {
@@ -137,7 +156,7 @@ export class Logger {
   private resolveLevel(): LogLevel {
     return maxNumber(
       this.level || globalLevel,
-      this.parent ? this.parent.resolveLevel() : globalLevel
+      this.parent ? this.parent.resolveLevel() : globalLevel,
     );
   }
 
@@ -148,7 +167,7 @@ export class Logger {
       date: getDate(),
       name: this.fullName(),
       instance: this.instance,
-      ...getCallsite(callDepth)
+      ...getCallsite(callDepth),
     };
     for (const handler of handlers) handler.handleIfNeeded(record);
     if (logLevel === LogLevel.Warning) {
@@ -157,7 +176,7 @@ export class Logger {
     } else if (logLevel === LogLevel.Error) {
       // tslint:disable-next-line: no-floating-promises
       window.showErrorMessage(
-        message.split('\n')[0] + ' [Show log](command:qcfg.log.show)'
+        message.split('\n')[0] + ' [Show log](command:qcfg.log.show)',
       );
     }
     if (logLevel === LogLevel.Fatal) {
@@ -178,10 +197,10 @@ export enum LogLevel {
   Notice = 4,
   Warning = 5,
   Error = 6,
-  Fatal = 7
+  Fatal = 7,
 }
 
-export function str(x: any): string {
+export function str(x: unknown): string {
   switch (typeof x) {
     case 'object':
       return stringifyObject(x);
@@ -192,9 +211,9 @@ export function str(x: any): string {
 
 export class LoggedError extends Error {}
 
-///////////////////////////////////////////////////////////////////////////////
+//
 // private
-///////////////////////////////////////////////////////////////////////////////
+//
 
 const FIRST_LINE_ID = '{vscode-qcfg.log}';
 let globalLevel: LogLevel = LogLevel.Debug;
@@ -207,7 +226,7 @@ const LOG_LEVEL_STRINGS = [
   'NOTICE',
   'WARN',
   'ERROR',
-  'FATAL'
+  'FATAL',
 ];
 
 function levelToStr(level: LogLevel) {
@@ -220,7 +239,7 @@ function updateGlobalLevel() {
   globalLevel = handlers.map(handler => handler.level).min()!;
   if (globalLevel !== prev)
     log.info(
-      `Changed global level ${levelToStr(prev)} => ${levelToStr(globalLevel)}`
+      `Changed global level ${levelToStr(prev)} => ${levelToStr(globalLevel)}`,
     );
 }
 
@@ -230,14 +249,15 @@ function strToLevel(s: string): LogLevel | undefined {
   return undefined;
 }
 
-function formatMessage(args: any[], default_ = ''): string {
+function formatMessage(args: unknown[], default_ = ''): string {
   return args.length === 0 ? default_ : args.map(str).join(' ');
 }
 
-function formatMessageStr(fmt: string, args: any[]) {
-  const normalizedArgs = args.map(arg => {
-    return typeof arg === 'object' ? stringifyObject(arg) : arg;
-  });
+function formatMessageStr(fmt: string, args: unknown[]) {
+  const normalizedArgs = args.map(arg =>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    typeof arg === 'object' ? stringifyObject(arg) : (arg as any),
+  );
   return formatString(fmt, ...normalizedArgs);
 }
 
@@ -247,7 +267,7 @@ function getDate(): string {
     hour12: false,
     hour: '2-digit',
     minute: '2-digit',
-    second: '2-digit'
+    second: '2-digit',
   });
   const ms = String(date.getMilliseconds()).padStart(3, '0');
   return dateStr + '.' + ms;
@@ -262,7 +282,8 @@ function stringifyTextEditor(editor: TextEditor) {
   return `<${relpath}>`;
 }
 
-function stringifyObject(x: object): string {
+function stringifyObject(x: object | null): string {
+  if (x === null) return '<null>';
   if (x instanceof Uri) {
     return x.scheme === 'file' ? x.fsPath : x.toString();
   }
@@ -334,7 +355,7 @@ interface LogRecord {
   formatted?: string;
 }
 
-class Handler {
+abstract class Handler {
   constructor(private name: string, public level: LogLevel) {}
 
   handleIfNeeded(record: LogRecord) {
@@ -351,7 +372,7 @@ class Handler {
     }
   }
 
-  protected handle(_: LogRecord) {}
+  protected abstract handle(_: LogRecord): void;
 }
 
 function formatRecord(record: LogRecord): string {
@@ -376,17 +397,21 @@ class OutputChannelHandler extends Handler {
       if (editor.document.fileName.startsWith('extension-output')) this.show();
     }
   }
+
   handle(record: LogRecord) {
     this.outputChannel.appendLine(formatRecord(record));
   }
+
   show() {
     this.outputChannel.show();
   }
+
   private outputChannel: OutputChannel;
 }
+type ConsoleLogFunc = (message?: string, ...optionalParams: any[]) => void;
 
 class ConsoleHandler extends Handler {
-  private logFuncs = new Map<LogLevel, any>();
+  private logFuncs = new Map<LogLevel, ConsoleLogFunc>();
   constructor() {
     super('Console', LogLevel.Warning);
     this.logFuncs.set(LogLevel.Trace, console.debug);
@@ -397,8 +422,11 @@ class ConsoleHandler extends Handler {
     this.logFuncs.set(LogLevel.Error, console.error);
     this.logFuncs.set(LogLevel.Fatal, console.error);
   }
+
   handle(record: LogRecord) {
-    this.logFuncs.get(record.level)('<qcfg> ' + record.message);
+    (this.logFuncs.get(record.level) || console.info)(
+      '<qcfg> ' + record.message,
+    );
   }
 }
 
@@ -420,6 +448,7 @@ class FileHandler extends Handler {
     }
     this.fd = nodejs.fs.openSync(this.fileName, 'w');
   }
+
   handle(record: LogRecord) {
     if (!this.fd) return;
     nodejs.fs.write(this.fd, formatRecord(record) + '\n', error => {
@@ -439,7 +468,7 @@ function onDidChangeVisibleTextEditors(editors: TextEditor[]) {
     if (!editor.document.fileName.startsWith('extension-output')) continue;
     if (editor.document.lineAt(0).text.includes(FIRST_LINE_ID))
       handleAsyncStd(
-        languages.setTextDocumentLanguage(editor.document, 'qcfg-log')
+        languages.setTextDocumentLanguage(editor.document, 'qcfg-log'),
       );
     else
       handleAsyncStd(languages.setTextDocumentLanguage(editor.document, 'Log'));
@@ -463,18 +492,18 @@ function activate(context: ExtensionContext) {
   context.subscriptions.push(
     listenWrapped(
       window.onDidChangeVisibleTextEditors,
-      onDidChangeVisibleTextEditors
+      onDidChangeVisibleTextEditors,
     ),
     registerSyncCommandWrapped('qcfg.log.show', () => outputHandler.show()),
     registerAsyncCommandWrapped('qcfg.log.setHandlerLevel.output', () =>
-      outputHandler.promptForLevel()
+      outputHandler.promptForLevel(),
     ),
     registerAsyncCommandWrapped('qcfg.log.setHandlerLevel.file', () =>
-      outputHandler.promptForLevel()
+      outputHandler.promptForLevel(),
     ),
     registerAsyncCommandWrapped('qcfg.log.setHandlerLevel.console', () =>
-      consoleHandler.promptForLevel()
-    )
+      consoleHandler.promptForLevel(),
+    ),
   );
 
   log.info(FIRST_LINE_ID);
@@ -485,7 +514,7 @@ function activate(context: ExtensionContext) {
   log.info('PRODUCTION mode');
   /// #endif
   log.info(
-    `Logging to output panel on ${levelToStr(outputHandler.level)} level`
+    `Logging to output panel on ${levelToStr(outputHandler.level)} level`,
   );
   log.info('Logging to file', fileHandler.fileName);
   onDidChangeVisibleTextEditors(window.visibleTextEditors);

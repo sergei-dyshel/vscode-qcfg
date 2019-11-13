@@ -10,13 +10,13 @@ import {
   workspace,
   window,
   TextDocumentChangeEvent,
-  ExtensionContext
+  ExtensionContext,
 } from 'vscode';
 import {
   adjustOffsetRangeAfterChange,
   NumRange,
   offsetToRange,
-  rangeToOffset
+  rangeToOffset,
 } from './documentUtils';
 import { listenWrapped, handleAsyncStd } from './exception';
 import { log, str } from './logging';
@@ -28,7 +28,7 @@ import { ParsedLocation } from './parseLocations';
 export async function setLocations(
   message: string,
   parsedLocations: ParsedLocation[],
-  reveal = true
+  reveal = true,
 ) {
   const dict = new MultiDictionary<Uri, ParsedLocation>();
   const fileNodes: FileNode[] = [];
@@ -63,6 +63,8 @@ export async function setLocations(
 
 namespace TreeBuilder {
   type Tree = FileNode | Forest;
+  // use interface to prevent circular reference
+  // eslint-disable-next-line @typescript-eslint/no-empty-interface
   interface Forest extends Map<string, Tree> {}
 
   function createForest() {
@@ -120,15 +122,15 @@ namespace TreeBuilder {
 
   function convertToHierarchy(
     forest: Forest,
-    prefix: string
+    prefix: string,
   ): StaticTreeNode[] {
     const nodes: StaticTreeNode[] = [];
-    for (let [subpath, tree] of forest) {
+    for (const [subpath, tree] of forest) {
       if (tree instanceof FileNode) nodes.push(tree);
       else if (tree instanceof Map) {
-        if (prefix === '') subpath = path.sep + subpath;
-        const newPrefix = path.join(prefix, subpath);
-        const dirNode = new DirNode(newPrefix, subpath);
+        const absSubpath = prefix === '' ? path.sep + subpath : subpath;
+        const newPrefix = path.join(prefix, absSubpath);
+        const dirNode = new DirNode(newPrefix, absSubpath);
         dirNode.addChildren(convertToHierarchy(tree, newPrefix));
         nodes.push(dirNode);
       } else {
@@ -150,6 +152,7 @@ class UriNode extends StaticTreeNode {
   get uri() {
     return this.treeItem.resourceUri!;
   }
+
   get fsPath() {
     return this.uri.fsPath;
   }
@@ -186,23 +189,26 @@ class LocationNode extends StaticTreeNode {
     label.highlights = [
       [
         parsedLoc.range.start.character - trimOffset,
-        parsedLoc.range.end.character - trimOffset
-      ]
+        parsedLoc.range.end.character - trimOffset,
+      ],
     ];
     handleAsyncStd(this.fetchDocument(parsedLoc));
   }
+
   async show() {
     const document = await workspace.openTextDocument(this.uri);
     const selection = offsetToRange(
       document,
-      log.assertNonNull(this.offsetRange)
+      log.assertNonNull(this.offsetRange),
     );
     await window.showTextDocument(this.uri, { selection });
   }
+
   private async fetchDocument(location: Location) {
     const document = await workspace.openTextDocument(this.uri);
     this.offsetRange = rangeToOffset(document, location.range);
   }
+
   line: number;
   uri: Uri;
   offsetRange?: NumRange;
@@ -219,7 +225,7 @@ function onDidChangeTextDocument(event: TextDocumentChangeEvent) {
     if (node instanceof LocationNode)
       node.offsetRange = adjustOffsetRangeAfterChange(
         log.assertNonNull(node.offsetRange),
-        event.contentChanges
+        event.contentChanges,
       );
     return false;
   });
@@ -242,12 +248,12 @@ const provider: TreeProvider = {
     if (node instanceof LocationNode) {
       handleAsyncStd(node.show());
     }
-  }
+  },
 };
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
-    listenWrapped(workspace.onDidChangeTextDocument, onDidChangeTextDocument)
+    listenWrapped(workspace.onDidChangeTextDocument, onDidChangeTextDocument),
   );
 }
 
