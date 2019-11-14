@@ -9,11 +9,14 @@ import {
   TextEditorEdit,
   Event,
   extensions,
+  ExtensionContext,
 } from 'vscode';
 import { log } from './logging';
+import * as nodejs from './nodejs';
 import { replaceAll } from './stringUtils';
 import { showStatusBarMessage } from './windowUtils';
 import { PromiseType } from './tsUtils';
+import { Modules } from './module';
 
 // type NotVoid = object | string | boolean | symbol | number | null | undefined;
 type AsyncFunction = (...args: any[]) => Promise<any>;
@@ -150,11 +153,14 @@ export function executeCommandHandled(command: string, ...rest: any[]) {
 
 // private
 
+const extensionPath = nodejs.fs.realpathSync(
+  extensions.getExtension('QyRoN.vscode-qcfg')!.extensionPath,
+);
+
 function simplifyErrorStack(stack: string) {
   const idx = stack.search(/\n\s+at.*extensionHostProcess.js/);
   if (idx !== -1) stack = stack.substr(0, idx);
-  const extPath = extensions.getExtension('QyRoN.vscode-qcfg')!.extensionPath;
-  return replaceAll(stack, extPath + '/', '');
+  return replaceAll(stack, extensionPath + '/', '');
 }
 
 function handleErrorDuringCommand(command: string, error: any) {
@@ -180,3 +186,8 @@ function stdErrorHandler(error: any, prefix?: string): never {
 function handleErrorDuringEvent(error: any) {
   stdErrorHandler(error, 'Event: ');
 }
+function activate(_: ExtensionContext) {
+  console.info('Extension path: ' + extensionPath);
+}
+
+Modules.register(activate);
