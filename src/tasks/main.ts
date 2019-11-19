@@ -134,6 +134,11 @@ class TaskGenerator<P extends BaseTaskParams> {
 
   private async filterValidContexts(folderContexts: TaskContext[]) {
     return filterAsync(folderContexts, async context => {
+      if (
+        this.params.folders &&
+        !this.params.folders.includes(context.workspaceFolder!.name)
+      )
+        return false;
       try {
         await this.createTask(context);
         return true;

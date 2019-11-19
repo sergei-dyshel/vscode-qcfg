@@ -178,6 +178,15 @@
           },
           "type": "array"
         },
+        "folders": {
+          "default": [
+          ],
+          "description": "Workspace folders in which this task is valid",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
         "parseOutput": {
           "$ref": "#/definitions/ParseOutput",
           "description": "Extract locations from output using predefined format or custom regular expression"
@@ -225,6 +234,15 @@
                 "$ref": "#/definitions/Flag.CASE"
               }
             ]
+          },
+          "type": "array"
+        },
+        "folders": {
+          "default": [
+          ],
+          "description": "Workspace folders in which this task is valid",
+          "items": {
+            "type": "string"
           },
           "type": "array"
         },
@@ -313,6 +331,15 @@
           },
           "type": "array"
         },
+        "folders": {
+          "default": [
+          ],
+          "description": "Workspace folders in which this task is valid",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
         "onFailure": {
           "$ref": "#/definitions/EndAction",
           "default": "auto"
@@ -345,9 +372,6 @@
           ],
           "default": [
           ]
-        },
-        "reindex": {
-          "type": "boolean"
         },
         "reveal": {
           "$ref": "#/definitions/Reveal",

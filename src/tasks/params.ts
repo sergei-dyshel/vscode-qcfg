@@ -54,6 +54,12 @@ export interface BaseTaskParams {
   type: TaskType;
   when?: When;
   flags?: Flag[];
+
+  /**
+   * Workspace folders in which this task is valid
+   * @default []
+   */
+  folders?: string[];
 }
 
 export interface BaseProcessTaskParams extends BaseTaskParams {
@@ -86,8 +92,6 @@ export interface TerminalTaskParams extends BaseProcessTaskParams {
    * @default "auto"
    */
   onFailure?: EndAction;
-
-  reindex?: boolean;
 
   /**
    * @default []
