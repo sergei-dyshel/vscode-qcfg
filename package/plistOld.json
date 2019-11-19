@@ -1,0 +1,18 @@
+{
+    "contributes": {
+        "languages": [
+            {
+                "id": "plist-old",
+                "filenames": ["DefaultKeyBinding.Dict"],
+                "configuration": "./plistOld.language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "plist-old",
+                "scopeName": "source.plist",
+                "path": "./syntaxes/Property List (Old-Style).tmLanguage.txt"
+            }
+        ]
+    }
+}

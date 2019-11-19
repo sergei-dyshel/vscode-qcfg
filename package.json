@@ -1750,6 +1750,13 @@
         "extensions": [
           ".vscode-qcfg.log"
         ]
+      },
+      {
+        "id": "plist-old",
+        "filenames": [
+          "DefaultKeyBinding.Dict"
+        ],
+        "configuration": "./plistOld.language-configuration.json"
       }
     ],
     "grammars": [
@@ -1757,6 +1764,11 @@
         "language": "qcfg-log",
         "scopeName": "text.log.qcfg-log",
         "path": "./syntaxes/qcfg-log.tmLanguage.json"
+      },
+      {
+        "language": "plist-old",
+        "scopeName": "source.plist",
+        "path": "./syntaxes/Property List (Old-Style).tmLanguage.txt"
       }
     ],
     "viewsContainers": {
