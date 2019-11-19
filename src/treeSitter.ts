@@ -27,7 +27,6 @@ import {
   swapRanges,
   trimInner,
   trimWhitespace,
-  trimBrackets
 } from './textUtils';
 import { getActiveTextEditor } from './utils';
 
@@ -212,107 +211,6 @@ function isListNode(node: SyntaxNode) {
   return LIST_NODE_TYPES.includes(node.type);
 }
 
-class ExpandMode {
-  async init() {
-    const document = this.editor.document;
-    const position = this.currentRange.end;
-    let wordRange = document.getWordRangeAtPosition(position);
-    // In json for some reason word includes quotes
-    if (wordRange) wordRange = trimBrackets(document, wordRange);
-    const result = await commands.executeCommand(
-      'vscode.executeSelectionRangeProvider',
-      document.uri,
-      [position]
-    );
-    const allSelRanges = result as SelectionRange[];
-    let selRange: SelectionRange | undefined = allSelRanges[0];
-    while (selRange) {
-      const range = selRange.range;
-      const inner = trimInner(document, range);
-      if (
-        !inner.isEqual(range) &&
-        inner.strictlyContains(this.currentRange) &&
-        (!wordRange || inner.contains(wordRange)) &&
-        (this.expandRanges.isEmpty || this.expandRanges.top!.isEqual(inner))
-      )
-        this.expandRanges.push(inner);
-      if (
-        range.strictlyContains(this.currentRange) &&
-        (!wordRange || range.contains(wordRange))
-      )
-        this.expandRanges.push(range);
-      selRange = selRange.parent;
-    }
-    log.trace('Selection range provider returned ranges', this.expandRanges);
-    this.expandRanges = this.expandRanges.filter(range =>
-      trimWhitespace(document, range).isEqual(range)
-    );
-    log.trace('expandRanges after filtering', this.expandRanges);
-  }
-
-  expand() {
-    const document = this.editor.document;
-    if (this.expandRanges.isEmpty) return;
-    while (!this.expandRanges.isEmpty) {
-      this.shrinkRanges.push(this.currentRange);
-      this.currentRange = this.expandRanges.shift()!;
-      this.setSelection();
-      if (this.expandRanges.isEmpty) break;
-      const prev = this.shrinkRanges.top!;
-      const next = this.expandRanges[0];
-      const prevText = document.getText(prev);
-      const currentText = document.getText(this.currentRange);
-      if (this.currentRange.isEqual(trimInner(document, next))) {
-        log.trace('Skipping range with stripped brackets/quotes');
-        continue;
-      }
-      if (currentText === prevText + ',' || currentText === prevText + ';') {
-        log.trace('Skipping range ending with comma');
-        continue;
-      }
-      break;
-    }
-  }
-
-  shrink() {
-    if (this.shrinkRanges.isEmpty) return;
-    this.expandRanges.unshift(this.currentRange);
-    this.currentRange = this.shrinkRanges.pop()!;
-    this.setSelection();
-  }
-
-  private setSelection() {
-    if (this.editor.selection.isEqual(this.currentRange)) return;
-    this.editor.selection = this.currentRange.asSelection(
-      this.editor.selection.isReversed
-    );
-  }
-
-  private expandRanges: Range[] = [];
-  private shrinkRanges: Range[] = [];
-  currentRange: Range;
-
-  constructor(public editor: TextEditor, selection: Selection) {
-    this.currentRange = selection;
-  }
-}
-
-let currentMode: ExpandMode | undefined;
-
-async function expandOrShrink(arg: { shrink: boolean; listNode?: boolean }) {
-  const ctx = getContextNoTree();
-  if (
-    !currentMode ||
-    currentMode.editor !== ctx.editor ||
-    !currentMode.currentRange.isEqual(ctx.selection)
-  ) {
-    currentMode = new ExpandMode(ctx.editor, ctx.selection);
-    await currentMode.init();
-  }
-  if (arg.shrink) currentMode.shrink();
-  else currentMode.expand();
-}
-
 function computeSelectionRange(
   document: TextDocument,
   tree: SyntaxTree,
@@ -348,15 +246,33 @@ function computeSelectionRange(
 async function provideSelectionRanges(
   document: TextDocument,
   positions: Position[],
-  _: CancellationToken
 ) {
   const tree = await SyntaxTrees.get(document);
   return positions.map(pos => computeSelectionRange(document, tree, pos));
 }
 
-function onDidChangeTextDocument(event: TextDocumentChangeEvent) {
-  if (currentMode && currentMode.editor.document === event.document)
-    currentMode = undefined;
+async function smartExpand() {
+  const editor = getActiveTextEditor();
+  const document = editor.document;
+  const selection = editor.selection;
+  await commands.executeCommand('editor.action.smartSelect.expand');
+  const selection1 = editor.selection;
+  if (selection1.isEqual(selection)) return;
+  await commands.executeCommand('editor.action.smartSelect.expand');
+  const selection2 = editor.selection;
+  if (selection2.isEqual(selection1)) return;
+  if (
+    (trimInner(document, selection2).isEqual(selection1) &&
+      !trimWhitespace(document, selection2).isEqual(selection1)) ||
+    trimWhitespace(document, selection1).isEqual(selection)
+  ) {
+    return;
+  }
+  await commands.executeCommand('editor.action.smartSelect.shrink');
+}
+
+async function smartShrink() {
+  await commands.executeCommand('editor.action.smartSelect.shrink');
 }
 
 function activate(context: ExtensionContext) {
@@ -365,15 +281,8 @@ function activate(context: ExtensionContext) {
     languages.registerSelectionRangeProvider(SyntaxTrees.supportedLanguages, {
       provideSelectionRanges: handleErrorsAsync(provideSelectionRanges)
     }),
-    registerAsyncCommandWrapped('qcfg.selection.expand', () =>
-      expandOrShrink({ shrink: false })
-    ),
-    registerAsyncCommandWrapped('qcfg.selection.shrink', () =>
-      expandOrShrink({ shrink: true })
-    ),
-    registerAsyncCommandWrapped('qcfg.selection.selectSuperParent', () =>
-      expandOrShrink({ shrink: false, listNode: true })
-    ),
+    registerAsyncCommandWrapped('qcfg.selection.expand', smartExpand),
+    registerAsyncCommandWrapped('qcfg.selection.shrink', smartShrink),
     registerAsyncCommandWrapped('qcfg.selection.left', () =>
       selectSibling(Direction.Left)
     ),
