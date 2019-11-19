@@ -1,63 +1,63 @@
 {
-    "contributes": {
-        "commands": [
-            {
-                "command": "qcfg.tasks.show",
-                "title": "qcfg: Show list of tasks"
-            },
-            {
-                "command": "qcfg.tasks.build.last",
-                "title": "qcfg: Run last build task"
-            },
-            {
-                "command": "qcfg.tasks.build.default",
-                "title": "qcfg: Run default build task"
-			},
-			{
-				"command": "qcfg.tasks.editGlobalConfig",
-				"title": "qcfg: Edit global tasks configuration"
-			},
-			{
-				"command": "qcfg.tasks.editWorkspaceConfig",
-				"title": "qcfg: Edit workspace tasks configuration"
-			}
-        ],
-        "keybindings": [
-            {
-                "key": "alt+t",
-                "command": "qcfg.tasks.show"
-            },
-            {
-                "key": "ctrl+k ctrl+b",
-                "mac": "cmd+k cmd+b",
-                "command": "qcfg.tasks.build.last"
-            },
-            {
-                "key": "ctrl+k ctrl+shift+b",
-                "mac": "cmd+k cmd+shift+b",
-                "command": "qcfg.tasks.build.default"
-            },
-            {
-                "key": "alt+s",
-                "command": "qcfg.tasks.runConfigured",
-				"args": [
-					"syg",
-					{
-						"folder": "all"
-					}
-				]
-            },
-            {
-                "key": "ctrl+k ctrl+l",
-                "mac": "cmd+k cmd+l",
-                "command": "qcfg.tasks.runConfigured",
-				"args": [
-					"jump2line",
-					{
-						"folder": "all"
-					}
-				]
-            }
+  "contributes": {
+    "commands": [
+      {
+        "command": "qcfg.tasks.show",
+        "title": "qcfg: Show list of tasks"
+      },
+      {
+        "command": "qcfg.tasks.build.last",
+        "title": "qcfg: Run last build task"
+      },
+      {
+        "command": "qcfg.tasks.build.default",
+        "title": "qcfg: Run default build task"
+      },
+      {
+        "command": "qcfg.tasks.editGlobalConfig",
+        "title": "qcfg: Edit global tasks configuration"
+      },
+      {
+        "command": "qcfg.tasks.editWorkspaceConfig",
+        "title": "qcfg: Edit workspace tasks configuration"
+      }
+    ],
+    "keybindings": [
+      {
+        "key": "alt+t",
+        "command": "qcfg.tasks.show"
+      },
+      {
+        "key": "ctrl+k ctrl+b",
+        "mac": "cmd+k cmd+b",
+        "command": "qcfg.tasks.build.last"
+      },
+      {
+        "key": "ctrl+k ctrl+shift+b",
+        "mac": "cmd+k cmd+shift+b",
+        "command": "qcfg.tasks.build.default"
+      },
+      {
+        "key": "alt+s",
+        "command": "qcfg.tasks.runConfigured",
+        "args": [
+          "syg",
+          {
+            "folder": "all"
+          }
         ]
-    }
+      },
+      {
+        "key": "ctrl+k ctrl+l",
+        "mac": "cmd+k cmd+l",
+        "command": "qcfg.tasks.runConfigured",
+        "args": [
+          "jump2line",
+          {
+            "folder": "all"
+          }
+        ]
+      }
+    ]
+  }
 }

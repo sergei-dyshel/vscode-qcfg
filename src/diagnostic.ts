@@ -10,7 +10,7 @@ import {
   CompletionList,
   languages,
   DiagnosticChangeEvent,
-  Range
+  Range,
 } from 'vscode';
 import { Modules } from './module';
 import { listenWrapped } from './exception';
@@ -23,7 +23,7 @@ const eslintRules = new Set<string>();
 const CompletionsFromDiagnosticsProvider: CompletionItemProvider = {
   provideCompletionItems(
     document: TextDocument,
-    position: Position
+    position: Position,
   ): ProviderResult<CompletionItem[] | CompletionList> {
     const prefix = getCompletionPrefix(document, position, /([\w@/-]*)$/);
     if (prefix === '') return [];
@@ -33,12 +33,12 @@ const CompletionsFromDiagnosticsProvider: CompletionItemProvider = {
       const item = new CompletionItem(code);
       item.range = new Range(
         offsetPosition(document, position, -prefix.length),
-        position
+        position,
       );
       items.push(item);
     }
     return items;
-  }
+  },
 };
 
 function recalcCompletions() {
@@ -62,9 +62,9 @@ function activate(context: ExtensionContext) {
     languages.registerCompletionItemProvider(
       { pattern: '**/.eslintrc.*' },
       CompletionsFromDiagnosticsProvider,
-      ...'\'"-/@abcdefghijklmnopqrstuvwxyz'.split('')
+      ...'\'"-/@abcdefghijklmnopqrstuvwxyz'.split(''),
     ),
-    listenWrapped(languages.onDidChangeDiagnostics, onDidChangeDiagnostics)
+    listenWrapped(languages.onDidChangeDiagnostics, onDidChangeDiagnostics),
   );
 }
 

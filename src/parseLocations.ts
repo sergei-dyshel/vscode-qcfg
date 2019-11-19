@@ -6,7 +6,7 @@ import {
   Location,
   WorkspaceFolder,
   workspace,
-  Range
+  Range,
 } from 'vscode';
 import { filterNonNull, concatArrays } from './tsUtils';
 import * as nodejs from './nodejs';
@@ -19,18 +19,18 @@ const GTAGS_PARSE_REGEX = /(?<tag>\S+)\s+(?<line>[0-9]+)\s+(?<file>\S+) (?<text>
 
 export enum ParseLocationFormat {
   VIMGREP,
-  GTAGS
+  GTAGS,
 }
 
 export class ParsedLocation extends Location {
   constructor(
     fileOrUri: string | Uri,
     rangeOrPosition: Range | Position,
-    public text?: string
+    public text?: string,
   ) {
     super(
       fileOrUri instanceof Uri ? fileOrUri : Uri.file(fileOrUri),
-      rangeOrPosition
+      rangeOrPosition,
     );
   }
 }
@@ -38,7 +38,7 @@ export class ParsedLocation extends Location {
 export function parseLocations(
   text: string,
   base: string,
-  format: ParseLocationFormat
+  format: ParseLocationFormat,
 ): ParsedLocation[] {
   const lines = text.match(/[^\r\n]+/g);
   if (!lines) return [];
@@ -57,7 +57,7 @@ function formatToRegex(format: ParseLocationFormat): RegExp {
 export function parseLocation(
   line: string,
   base: string,
-  format: ParseLocationFormat
+  format: ParseLocationFormat,
 ): ParsedLocation | undefined {
   const regex = formatToRegex(format);
   const match = line.match(regex);
@@ -73,18 +73,18 @@ export function parseLocation(
   return new ParsedLocation(
     nodejs.path.resolve(base || '', groups.file),
     new Position(Number(groups.line) - 1, column - 1),
-    groups.text ? groups.text : ''
+    groups.text ? groups.text : '',
   );
 }
 
 export async function gatherLocationsFromFolder(
   cmd: string,
   folder: WorkspaceFolder,
-  format: ParseLocationFormat
+  format: ParseLocationFormat,
 ): Promise<ParsedLocation[]> {
   const subproc = new Subprocess(cmd, {
     cwd: folder.uri.fsPath,
-    allowedCodes: [0, 1]
+    allowedCodes: [0, 1],
   });
   const res = await subproc.wait();
   if (res.code === 0)
@@ -94,12 +94,12 @@ export async function gatherLocationsFromFolder(
 
 export async function gatherLocationsFromWorkspace(
   cmd: string,
-  format: ParseLocationFormat
+  format: ParseLocationFormat,
 ): Promise<ParsedLocation[]> {
   const locations = await Promise.all(
     workspace.workspaceFolders!.map(folder =>
-      gatherLocationsFromFolder(cmd, folder, format)
-    )
+      gatherLocationsFromFolder(cmd, folder, format),
+    ),
   );
   return concatArrays<ParsedLocation>(...locations);
 }

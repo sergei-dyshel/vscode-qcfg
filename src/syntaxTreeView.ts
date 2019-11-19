@@ -3,11 +3,11 @@
 import { SyntaxNode } from 'tree-sitter';
 import {
   ExtensionContext,
-  Range,
   TextDocument,
   TextEditorSelectionChangeEvent,
   TreeItemLabel,
-  window
+  window,
+  Range,
 } from 'vscode';
 import { listenWrapped, registerAsyncCommandWrapped } from './exception';
 import { log, str } from './logging';
@@ -16,7 +16,7 @@ import { ellipsize } from './stringUtils';
 import {
   onSyntaxTreeUpdated,
   SyntaxTrees,
-  SyntaxTreeUpdatedEvent
+  SyntaxTreeUpdatedEvent,
 } from './syntaxTree';
 import { QcfgTreeView, StaticTreeNode, TreeProvider } from './treeView';
 
@@ -60,7 +60,7 @@ const treeProvider: TreeProvider = {
   },
   onDidChangeVisibility(visible: boolean) {
     if (!visible || !currentRoot) return;
-  }
+  },
 };
 
 let currentRoot: SyntaxTreeViewNode | undefined;
@@ -68,7 +68,7 @@ const rootCache = new Map<TextDocument, SyntaxTreeViewNode>();
 
 function buildNodeLabel(
   node: SyntaxNode,
-  document: TextDocument
+  document: TextDocument,
 ): TreeItemLabel | string {
   const name = buildNodeName(node, document);
   if (!name) return node.type;
@@ -77,7 +77,7 @@ function buildNodeLabel(
 
 function buildNodeName(
   node: SyntaxNode,
-  document: TextDocument
+  document: TextDocument,
 ): string | undefined {
   const lang = document.languageId;
   if (lang === 'python') {
@@ -167,7 +167,7 @@ class SyntaxTreeViewNode extends StaticTreeNode {
     const obj = {
       document: str(document),
       type: this.syntaxNode.type,
-      range: str(range)
+      range: str(range),
     };
     return str(obj);
   }
@@ -176,7 +176,7 @@ class SyntaxTreeViewNode extends StaticTreeNode {
     if (this.syntaxNode.namedChildCount > 0 && super.children.length === 0) {
       for (let i = 0; i < this.syntaxNode.namedChildCount; ++i)
         this.addChild(
-          new SyntaxTreeViewNode(this.syntaxNode.namedChild(i)!, this.document)
+          new SyntaxTreeViewNode(this.syntaxNode.namedChild(i)!, this.document),
         );
     }
     return super.children as SyntaxTreeViewNode[];
@@ -189,7 +189,7 @@ async function showTree() {
   if (!currentRoot) return;
   const node = findContainingNode(
     currentRoot,
-    window.activeTextEditor!.selection
+    window.activeTextEditor!.selection,
   );
   if (node) await selectAndRememberNode(node, true /* focus */);
 }
@@ -224,7 +224,7 @@ async function onSelectionChanged(event: TextEditorSelectionChangeEvent) {
 
 function findContainingNode(
   node: SyntaxTreeViewNode,
-  selection: Range
+  selection: Range,
 ): SyntaxTreeViewNode | undefined {
   if (!node.syntaxNode.range.contains(selection)) return;
   for (const child of node.children) {
@@ -239,7 +239,7 @@ function activate(context: ExtensionContext) {
     registerAsyncCommandWrapped('qcfg.syntaxTree.show', showTree),
     listenWrapped(window.onDidChangeActiveTextEditor, onTextEditorChanged),
     listenWrapped(window.onDidChangeTextEditorSelection, onSelectionChanged),
-    listenWrapped(onSyntaxTreeUpdated, onTreeUpdated)
+    listenWrapped(onSyntaxTreeUpdated, onTreeUpdated),
   );
 }
 

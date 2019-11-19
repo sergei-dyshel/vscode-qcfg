@@ -1,23 +1,23 @@
 {
-    "contributes": {
-        "commands": [
-            {
-                "command": "qcfg.autoSync.toggle",
-                "title": "qcfg: AutoSync toggle"
-            }
-        ],
-        "configuration": {
-            "properties": {
-                "qcfg.autoSync.enabled": {
-                    "type": "boolean",
-                    "description": "AutoSync enabled on start",
-                    "default": false
-                },
-                "qcfg.autoSync.command": {
-                    "type": "string",
-                    "description": "AutoSync command"
-                }
-            }
+  "contributes": {
+    "commands": [
+      {
+        "command": "qcfg.autoSync.toggle",
+        "title": "qcfg: AutoSync toggle"
+      }
+    ],
+    "configuration": {
+      "properties": {
+        "qcfg.autoSync.enabled": {
+          "type": "boolean",
+          "description": "AutoSync enabled on start",
+          "default": false
+        },
+        "qcfg.autoSync.command": {
+          "type": "string",
+          "description": "AutoSync command"
         }
+      }
     }
+  }
 }

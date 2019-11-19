@@ -20,7 +20,7 @@ import {
   CancellationToken,
   CompletionContext,
   ExtensionContext,
-  languages
+  languages,
 } from 'vscode';
 import { selectMultiple } from './dialog';
 import { getCompletionPrefix } from './documentUtils';
@@ -35,7 +35,7 @@ import { Modules } from './module';
 import {
   ParsedLocation,
   parseLocations,
-  ParseLocationFormat
+  ParseLocationFormat,
 } from './parseLocations';
 
 const TODO_CATEGORIES = [
@@ -46,12 +46,12 @@ const TODO_CATEGORIES = [
   'REFACTOR',
   'OPTIMIZE',
   'DOCS',
-  'STUB'
+  'STUB',
 ];
 
 export async function searchInFiles(
   query: TextSearchQuery,
-  options: FindTextInFilesOptions = {}
+  options: FindTextInFilesOptions = {},
 ) {
   const locations: ParsedLocation[] = [];
   log.debug(`Searching for "${query.pattern}"`);
@@ -64,9 +64,9 @@ export async function searchInFiles(
         match.ranges instanceof Range ? [match.ranges] : match.ranges;
       for (const range of ranges)
         locations.push(
-          new ParsedLocation(match.uri, range, match.preview.text)
+          new ParsedLocation(match.uri, range, match.preview.text),
         );
-    }
+    },
   );
   return locations;
 }
@@ -77,13 +77,13 @@ async function searchTodos() {
     TODO_CATEGORIES,
     label => ({ label }),
     'todos',
-    label => label
+    label => label,
   );
   if (!filterCategories) return;
   const patterns = filterCategories.join('|');
   const subproc = new Subprocess(`patterns='${patterns}' q-git-diff-todo`, {
     cwd: folder.uri.fsPath,
-    allowedCodes: [0, 1]
+    allowedCodes: [0, 1],
   });
   const res = await subproc.wait();
   if (res.code === 1) {
@@ -91,7 +91,11 @@ async function searchTodos() {
   } else {
     await setLocations(
       patterns,
-      parseLocations(res.stdout, folder.uri.fsPath, ParseLocationFormat.VIMGREP)
+      parseLocations(
+        res.stdout,
+        folder.uri.fsPath,
+        ParseLocationFormat.VIMGREP,
+      ),
     );
   }
 }
@@ -107,7 +111,7 @@ function peekLocations(current: Location, locations: Location[]) {
     'editor.action.showReferences',
     current.uri,
     current.range.start,
-    locations
+    locations,
   );
 }
 
@@ -125,14 +129,14 @@ async function searchStructField() {
   const query: TextSearchQuery = {
     pattern: '(->|\\.)' + word,
     isWordMatch: true,
-    isRegExp: true
+    isRegExp: true,
   };
   const locations = await searchInFiles(query);
   await commands.executeCommand(
     'editor.action.showReferences',
     editor.document.uri,
     editor.selection.active,
-    locations
+    locations,
   );
 }
 
@@ -147,7 +151,7 @@ namespace TodoCompletion {
   function generateItems(
     languageId: string,
     category: string,
-    items: CompletionItem[]
+    items: CompletionItem[],
   ) {
     const langCfg = getLanguageConfig(languageId);
     if (!langCfg) return;
@@ -157,8 +161,8 @@ namespace TodoCompletion {
       items.push(
         createItem(
           `${comment.lineComment} ${category}:`,
-          `${comment.lineComment} ${category}: $0`
-        )
+          `${comment.lineComment} ${category}: $0`,
+        ),
       );
     if (!comment.blockComment) {
       return;
@@ -167,8 +171,8 @@ namespace TodoCompletion {
     items.push(
       createItem(
         `${start} ${category}: ${end}`,
-        `${start} ${category}: $0 ${end}`
-      )
+        `${start} ${category}: $0 ${end}`,
+      ),
     );
   }
 
@@ -177,7 +181,7 @@ namespace TodoCompletion {
       document: TextDocument,
       position: Position,
       _: CancellationToken,
-      __: CompletionContext
+      __: CompletionContext,
     ): CompletionItem[] {
       const prefix = getCompletionPrefix(document, position);
       if (prefix === '') return [];
@@ -186,7 +190,7 @@ namespace TodoCompletion {
       for (const category of filtered)
         generateItems(document.languageId, category, items);
       return items;
-    }
+    },
   };
 }
 
@@ -194,16 +198,16 @@ function activate(context: ExtensionContext) {
   context.subscriptions.push(
     languages.registerCompletionItemProvider(
       availableLanguageConfigs(),
-      TodoCompletion.provider
+      TodoCompletion.provider,
     ),
     registerAsyncCommandWrapped('qcfg.search.word.peek', () =>
-      searchWord(false /* peek */)
+      searchWord(false /* peek */),
     ),
     registerAsyncCommandWrapped('qcfg.search.word.panel', () =>
-      searchWord(true /* panel */)
+      searchWord(true /* panel */),
     ),
     registerAsyncCommandWrapped('qcfg.search.todos', searchTodos),
-    registerAsyncCommandWrapped('qcfg.search.structField', searchStructField)
+    registerAsyncCommandWrapped('qcfg.search.structField', searchStructField),
   );
 }
 

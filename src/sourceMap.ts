@@ -9,7 +9,7 @@ export function getCallsite(frame: number) {
   const jsPos: sourceMapSupport.Position = {
     source: site.getFileName()!,
     line: site.getLineNumber()!,
-    column: site.getColumnNumber()!
+    column: site.getColumnNumber()!,
   };
   // strip everything before last '.' (happens for callbacks)
   let funcName = site.getFunctionName() || '';
@@ -26,6 +26,6 @@ export function getCallsite(frame: number) {
   return {
     location: `${filename}:${tsPos.line}:${tsPos.column}`,
     fileName: filename,
-    function: funcName
+    function: funcName,
   };
 }

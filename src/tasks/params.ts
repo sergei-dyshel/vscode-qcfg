@@ -3,7 +3,7 @@
 export enum Reveal {
   FOCUS = 'focus',
   YES = 'yes',
-  NO = 'no'
+  NO = 'no',
 }
 
 export enum EndAction {
@@ -12,7 +12,7 @@ export enum EndAction {
   HIDE = 'hide',
   DISPOSE = 'dispose',
   SHOW = 'show',
-  NOTIFY = 'notify'
+  NOTIFY = 'notify',
 }
 
 export enum Flag {
@@ -30,13 +30,13 @@ export enum Flag {
   // Search specific flags
   REGEX = 'regex',
   WORD = 'word',
-  CASE = 'case'
+  CASE = 'case',
 }
 
 export enum TaskType {
   PROCESS = 'process',
   TERMINAL = 'terminal',
-  SEARCH = 'search'
+  SEARCH = 'search',
 }
 
 export type BaseProcessTaskFlag = Flag.BUILD | Flag.FOLDER | Flag.HIDDEN;
@@ -108,7 +108,7 @@ export interface TerminalTaskParams extends BaseProcessTaskParams {
 
 export enum LocationFormat {
   VIMGREP = 'vimgrep',
-  GTAGS = 'gtags'
+  GTAGS = 'gtags',
 }
 
 export interface ParseOutput {

@@ -1,24 +1,24 @@
 {
-    "contributes": {
-        "commands": [
-            {
-                "command": "qcfg.alternate.switch",
-                "title": "qcfg: Switch to alternate file"
+  "contributes": {
+    "commands": [
+      {
+        "command": "qcfg.alternate.switch",
+        "title": "qcfg: Switch to alternate file"
+      }
+    ],
+    "configuration": {
+      "properties": {
+        "qcfg.alternate.mapping": {
+          "type": "object",
+          "description": "Mapping for alternate (header/source)",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
             }
-        ],
-        "configuration": {
-            "properties": {
-                "qcfg.alternate.mapping": {
-                    "type": "object",
-                    "description": "Mapping for alternate (header/source)",
-                    "additionalProperties": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
+          }
         }
+      }
     }
+  }
 }

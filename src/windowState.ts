@@ -12,7 +12,7 @@ function windowStateChanged(state: vscode.WindowState) {
 
 function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
-    listenWrapped(vscode.window.onDidChangeWindowState, windowStateChanged)
+    listenWrapped(vscode.window.onDidChangeWindowState, windowStateChanged),
   );
 }
 

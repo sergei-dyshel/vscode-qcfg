@@ -10,7 +10,7 @@ import {
   Position,
   Selection,
   ExtensionContext,
-  Uri
+  Uri,
 } from 'vscode';
 import { handleErrors, handleAsyncStd } from './exception';
 import * as fileUtils from './fileUtils';
@@ -54,7 +54,7 @@ async function handleOpen(location: string, folder: string) {
   const pos = new Position(lineNo - 1, colNo - 1);
 
   await window.showTextDocument(Uri.file(fullPath), {
-    selection: new Selection(pos, pos)
+    selection: new Selection(pos, pos),
   });
 }
 
@@ -83,7 +83,7 @@ function activate(_context: ExtensionContext) {
       'data',
       handleErrors(data => {
         handleCmd(data.toString());
-      })
+      }),
     );
   });
   server.listen(port, '127.0.0.1');

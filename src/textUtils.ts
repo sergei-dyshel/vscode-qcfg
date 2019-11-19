@@ -6,7 +6,7 @@ import { TextDocument, Position, Range, TextEditor } from 'vscode';
 export function offsetPosition(
   document: TextDocument,
   pos: Position,
-  offset: number
+  offset: number,
 ) {
   return document.positionAt(document.offsetAt(pos) + offset);
 }
@@ -21,7 +21,7 @@ export function trimBrackets(document: TextDocument, range: Range) {
     if (text.startsWith(prefix) && text.endsWith(suffix)) {
       return new Range(
         offsetPosition(document, range.start, prefix.length),
-        offsetPosition(document, range.end, -suffix.length)
+        offsetPosition(document, range.end, -suffix.length),
       );
     }
   }
@@ -41,7 +41,7 @@ export function expandLinewise(range: Range) {
 export function selectRange(
   editor: TextEditor,
   range: Range,
-  reversed?: boolean
+  reversed?: boolean,
 ) {
   editor.selection = range.asSelection(reversed);
   editor.revealRange(range);
@@ -54,8 +54,8 @@ export function trimWhitespace(document: TextDocument, range: Range) {
     offsetPosition(
       document,
       range.end,
-      -(text.length - text.trimRight().length)
-    )
+      -(text.length - text.trimRight().length),
+    ),
   );
 }
 

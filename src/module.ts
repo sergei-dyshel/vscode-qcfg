@@ -7,7 +7,7 @@ import * as nodejs from './nodejs';
 export namespace Modules {
   export function register(
     activate: ActivationFunc,
-    deactivate?: ActivationFunc
+    deactivate?: ActivationFunc,
   ) {
     const name = nodejs.path.parse(getCallsite(2).fileName).name;
     modules.push({ name, activate, deactivate });

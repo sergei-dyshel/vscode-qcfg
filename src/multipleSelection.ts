@@ -4,7 +4,7 @@ import {
   TextEditor,
   ExtensionContext,
   window,
-  TextEditorSelectionChangeEvent
+  TextEditorSelectionChangeEvent,
 } from 'vscode';
 import { Modules } from './module';
 import { listenWrapped, registerSyncCommandWrapped } from './exception';
@@ -13,7 +13,7 @@ import { log } from './logging';
 
 const selectionIndex = new Map<TextEditor, number>();
 const decorationType = window.createTextEditorDecorationType({
-  outline: '2px solid white'
+  outline: '2px solid white',
 });
 
 function clearMark(editor: TextEditor) {
@@ -35,7 +35,7 @@ function updateMark(editor: TextEditor, index: number) {
     editor,
     index,
     selections.length,
-    range
+    range,
   );
 }
 
@@ -84,14 +84,14 @@ function activate(context: ExtensionContext) {
     listenWrapped(window.onDidChangeTextEditorSelection, onSelectionChanged),
     registerSyncCommandWrapped(
       'qcfg.multipleSelection.unselectMarked',
-      unselectMarked
+      unselectMarked,
     ),
     registerSyncCommandWrapped('qcfg.multipleSelection.moveMarkDown', () =>
-      moveMark(true /* down */)
+      moveMark(true /* down */),
     ),
     registerSyncCommandWrapped('qcfg.multipleSelection.moveMarkUp', () =>
-      moveMark(false /* up */)
-    )
+      moveMark(false /* up */),
+    ),
   );
 }
 

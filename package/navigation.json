@@ -1,6 +1,5 @@
 {
-    "contributes": {
-        "keybindings": [
-        ]
-    }
+  "contributes": {
+    "keybindings": []
+  }
 }

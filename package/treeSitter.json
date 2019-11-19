@@ -1,90 +1,90 @@
 {
-    "contributes": {
-        "commands": [
-            {
-                "command": "qcfg.selection.expand",
-                "title": "qcfg: Expand selection"
-            },
-            {
-                "command": "qcfg.selection.selectSuperParent",
-                "title": "qcfg: Select super parent"
-            },
-            {
-                "command": "qcfg.selection.shrink",
-                "title": "qcfg: Shrink selection"
-            },
-            {
-                "command": "qcfg.selection.right",
-                "title": "qcfg: Move selection right"
-            },
-            {
-                "command": "qcfg.selection.left",
-                "title": "qcfg: Move selection left"
-            },
-            {
-                "command": "qcfg.selection.swapRight",
-                "title": "qcfg: Swap selected node with right sibling"
-            },
-            {
-                "command": "qcfg.selection.swapLeft",
-                "title": "qcfg: Swap selected node with left sibling"
-            },
-            {
-                "command": "qcfg.selection.extendRight",
-                "title": "qcfg: Extend selection right"
-            },
-            {
-                "command": "qcfg.selection.extendLeft",
-                "title": "qcfg: extend selection left"
-            },
-            {
-                "command": "qcfg.syntaxTree.show",
-                "title": "qcfg: Show syntax tree in side panel"
-            }
-        ],
-        "keybindings": [
-            {
-                "key": "alt+up",
-                "command": "qcfg.selection.expand",
-                "when": "editorTextFocus"
-            },
-            {
-                "key": "alt+down",
-                "command": "qcfg.selection.shrink",
-                "when": "editorTextFocus"
-            },
-            {
-                "key": "alt+pageup",
-                "command": "qcfg.selection.left",
-                "when": "editorTextFocus"
-            },
-            {
-                "key": "alt+pagedown",
-                "command": "qcfg.selection.right",
-                "when": "editorTextFocus"
-            },
-            {
-                "key": "ctrl+alt+pageup",
-                "mac": "cmd+alt+pageup",
-                "command": "qcfg.selection.swapLeft",
-                "when": "editorTextFocus"
-            },
-            {
-                "key": "ctrl+alt+pagedown",
-                "mac": "cmd+alt+pagedown",
-                "command": "qcfg.selection.swapRight",
-                "when": "editorTextFocus"
-            },
-            {
-                "key": "shift+alt+pageup",
-                "command": "qcfg.selection.extendLeft",
-                "when": "editorTextFocus"
-            },
-            {
-                "key": "shift+alt+pagedown",
-                "command": "qcfg.selection.extendRight",
-                "when": "editorTextFocus"
-            }
-        ]
-    }
+  "contributes": {
+    "commands": [
+      {
+        "command": "qcfg.selection.expand",
+        "title": "qcfg: Expand selection"
+      },
+      {
+        "command": "qcfg.selection.selectSuperParent",
+        "title": "qcfg: Select super parent"
+      },
+      {
+        "command": "qcfg.selection.shrink",
+        "title": "qcfg: Shrink selection"
+      },
+      {
+        "command": "qcfg.selection.right",
+        "title": "qcfg: Move selection right"
+      },
+      {
+        "command": "qcfg.selection.left",
+        "title": "qcfg: Move selection left"
+      },
+      {
+        "command": "qcfg.selection.swapRight",
+        "title": "qcfg: Swap selected node with right sibling"
+      },
+      {
+        "command": "qcfg.selection.swapLeft",
+        "title": "qcfg: Swap selected node with left sibling"
+      },
+      {
+        "command": "qcfg.selection.extendRight",
+        "title": "qcfg: Extend selection right"
+      },
+      {
+        "command": "qcfg.selection.extendLeft",
+        "title": "qcfg: extend selection left"
+      },
+      {
+        "command": "qcfg.syntaxTree.show",
+        "title": "qcfg: Show syntax tree in side panel"
+      }
+    ],
+    "keybindings": [
+      {
+        "key": "alt+up",
+        "command": "qcfg.selection.expand",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "alt+down",
+        "command": "qcfg.selection.shrink",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "alt+pageup",
+        "command": "qcfg.selection.left",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "alt+pagedown",
+        "command": "qcfg.selection.right",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "ctrl+alt+pageup",
+        "mac": "cmd+alt+pageup",
+        "command": "qcfg.selection.swapLeft",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "ctrl+alt+pagedown",
+        "mac": "cmd+alt+pagedown",
+        "command": "qcfg.selection.swapRight",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "shift+alt+pageup",
+        "command": "qcfg.selection.extendLeft",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "shift+alt+pagedown",
+        "command": "qcfg.selection.extendRight",
+        "when": "editorTextFocus"
+      }
+    ]
+  }
 }

@@ -25,7 +25,7 @@ function emit() {
 
 function onDidSaveTextDocument(document: vscode.TextDocument) {
   const { workspaceFolder: wsFolder } = fileUtils.getDocumentRootThrowing(
-    document.fileName
+    document.fileName,
   );
   const docPath = vscode.workspace.asRelativePath(document.fileName);
   log.debug('onDidSaveTextDocument:', docPath);
@@ -38,7 +38,7 @@ function onDidSaveTextDocument(document: vscode.TextDocument) {
 
 function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
-    vscode.workspace.onDidSaveTextDocument(onDidSaveTextDocument)
+    vscode.workspace.onDidSaveTextDocument(onDidSaveTextDocument),
   );
 }
 

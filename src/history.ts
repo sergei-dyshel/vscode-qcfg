@@ -184,7 +184,10 @@ function saveHistory() {
   const savedHistories: History.Saved[] = histories.map(history =>
     history.getSaved(),
   );
-  log.info('Saving histories: ', histories.map(hist => hist.size()));
+  log.info(
+    'Saving histories: ',
+    histories.map(hist => hist.size()),
+  );
   return extContext.workspaceState.update('history', savedHistories);
 }
 
@@ -196,7 +199,10 @@ function loadHistory() {
   histories.forEach((history, idx) => {
     if (savedHistories.length > idx) history.load(savedHistories[idx]);
   });
-  log.info('Loaded histories: ', histories.map(hist => hist.size()));
+  log.info(
+    'Loaded histories: ',
+    histories.map(hist => hist.size()),
+  );
 }
 
 namespace Point {

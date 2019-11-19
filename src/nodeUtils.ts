@@ -42,5 +42,5 @@ export class Timer {
 
 enum TimerType {
   TIMEOUT,
-  INTERVAL
+  INTERVAL,
 }

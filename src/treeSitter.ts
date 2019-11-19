@@ -1,24 +1,16 @@
 'use strict';
 
 import {
-  CancellationToken,
   commands,
   ExtensionContext,
   languages,
   Position,
   Range,
-  Selection,
   SelectionRange,
   TextDocument,
-  TextDocumentChangeEvent,
   TextEditor,
-  workspace
 } from 'vscode';
-import {
-  handleErrorsAsync,
-  listenWrapped,
-  registerAsyncCommandWrapped
-} from './exception';
+import { handleErrorsAsync, registerAsyncCommandWrapped } from './exception';
 import { Logger, str } from './logging';
 import { Modules } from './module';
 import { SyntaxNode, SyntaxTree, SyntaxTrees } from './syntaxTree';
@@ -34,20 +26,20 @@ const log = new Logger({ level: 'trace' });
 
 enum Direction {
   Left,
-  Right
+  Right,
 }
 
 function selectAndRememberRange(
   editor: TextEditor,
   range: Range,
-  reversed?: boolean
+  reversed?: boolean,
 ) {
   selectRange(editor, range, reversed);
 }
 
 function findContainingNodeImpl(
   node: SyntaxNode,
-  range: Range
+  range: Range,
 ): SyntaxNode | undefined {
   if (node.range.isEqual(range)) return node;
   for (let i = 0; i < node.childCount; ++i) {
@@ -63,7 +55,7 @@ function findContainingNode(node: SyntaxNode, range: Range): SyntaxNode {
   const contNode = findContainingNodeImpl(node, range);
   return log.assertNonNull<SyntaxNode>(
     contNode,
-    `${str(node)} does not contain ${str(range)}`
+    `${str(node)} does not contain ${str(range)}`,
   );
 }
 
@@ -97,12 +89,12 @@ function selectChildren(
   editor: TextEditor,
   firstChild: SyntaxNode,
   lastChild: SyntaxNode,
-  reversed?: boolean
+  reversed?: boolean,
 ) {
   selectAndRememberRange(
     editor,
     childrenRange(firstChild, lastChild),
-    reversed
+    reversed,
   );
 }
 
@@ -125,13 +117,13 @@ async function selectSibling(direction: Direction, swap?: boolean) {
   let ctx = await getContext();
   const { parent, firstChild, lastChild } = findContainingChildren(
     ctx.tree.rootNode,
-    ctx.selection
+    ctx.selection,
   );
   log.traceStr(
     'Found for list syntax nodes containing {}: from {} - to {}',
     ctx.selection,
     firstChild,
-    lastChild
+    lastChild,
   );
   let node =
     firstChild !== lastChild
@@ -164,13 +156,13 @@ async function extendSelection(direction: Direction) {
   const ctx = await getContext();
   let { firstChild, lastChild } = findContainingChildren(
     ctx.tree.rootNode,
-    ctx.selection
+    ctx.selection,
   );
   log.traceStr(
     'Found for list syntax nodes containing {}: from {} - to {}',
     ctx.selection,
     firstChild,
-    lastChild
+    lastChild,
   );
   const childRange = childrenRange(firstChild, lastChild);
   if (!childRange.isEqual(ctx.selection)) {
@@ -204,7 +196,7 @@ const LIST_NODE_TYPES: string[] = [
   'field_declaration_list',
   'declaration_list',
   'translation_unit',
-  'parameter_list'
+  'parameter_list',
 ];
 
 function isListNode(node: SyntaxNode) {
@@ -214,11 +206,11 @@ function isListNode(node: SyntaxNode) {
 function computeSelectionRange(
   document: TextDocument,
   tree: SyntaxTree,
-  position: Position
+  position: Position,
 ): SelectionRange {
   let node: SyntaxNode | null = findContainingNode(
     tree.rootNode,
-    position.asRange
+    position.asRange,
   );
   const ranges: Range[] = [];
   while (node) {
@@ -277,30 +269,29 @@ async function smartShrink() {
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
-    listenWrapped(workspace.onDidChangeTextDocument, onDidChangeTextDocument),
     languages.registerSelectionRangeProvider(SyntaxTrees.supportedLanguages, {
-      provideSelectionRanges: handleErrorsAsync(provideSelectionRanges)
+      provideSelectionRanges: handleErrorsAsync(provideSelectionRanges),
     }),
     registerAsyncCommandWrapped('qcfg.selection.expand', smartExpand),
     registerAsyncCommandWrapped('qcfg.selection.shrink', smartShrink),
     registerAsyncCommandWrapped('qcfg.selection.left', () =>
-      selectSibling(Direction.Left)
+      selectSibling(Direction.Left),
     ),
     registerAsyncCommandWrapped('qcfg.selection.right', () =>
-      selectSibling(Direction.Right)
+      selectSibling(Direction.Right),
     ),
     registerAsyncCommandWrapped('qcfg.selection.extendLeft', () =>
-      extendSelection(Direction.Left)
+      extendSelection(Direction.Left),
     ),
     registerAsyncCommandWrapped('qcfg.selection.extendRight', () =>
-      extendSelection(Direction.Right)
+      extendSelection(Direction.Right),
     ),
     registerAsyncCommandWrapped('qcfg.selection.swapLeft', () =>
-      selectSibling(Direction.Left, true /* swap */)
+      selectSibling(Direction.Left, true /* swap */),
     ),
     registerAsyncCommandWrapped('qcfg.selection.swapRight', () =>
-      selectSibling(Direction.Right, true /* swap */)
-    )
+      selectSibling(Direction.Right, true /* swap */),
+    ),
   );
 }
 

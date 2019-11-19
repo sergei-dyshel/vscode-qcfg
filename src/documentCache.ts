@@ -34,7 +34,7 @@ function onDidCloseTextDocument(document: TextDocument) {
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
     listenWrapped(workspace.onDidOpenTextDocument, onDidOpenTextDocument),
-    listenWrapped(workspace.onDidCloseTextDocument, onDidCloseTextDocument)
+    listenWrapped(workspace.onDidCloseTextDocument, onDidCloseTextDocument),
   );
 }
 

@@ -8,7 +8,7 @@ import { getActiveTextEditor } from './utils';
 import { window, workspace, commands, ExtensionContext } from 'vscode';
 import {
   registerAsyncCommandWrapped,
-  registerSyncCommandWrapped
+  registerSyncCommandWrapped,
 } from './exception';
 import { Modules } from './module';
 
@@ -26,7 +26,7 @@ function openOrCreateTerminal(name: string, cwd: string) {
 function terminalInWorkspaceFolder() {
   const document = getActiveTextEditor().document;
   const { workspaceFolder: wsFolder } = fileUtils.getDocumentRootThrowing(
-    document.fileName
+    document.fileName,
   );
   openOrCreateTerminal(wsFolder.name, wsFolder.uri.fsPath);
 }
@@ -48,13 +48,13 @@ function activate(context: ExtensionContext) {
   context.subscriptions.push(
     registerSyncCommandWrapped(
       'qcfg.terminal.inWorkspaceFolder',
-      terminalInWorkspaceFolder
+      terminalInWorkspaceFolder,
     ),
     registerSyncCommandWrapped(
       'qcfg.terminal.inFileFolder',
-      terminalInFileFolder
+      terminalInFileFolder,
     ),
-    registerAsyncCommandWrapped('qcfg.runCommand', runCommand)
+    registerAsyncCommandWrapped('qcfg.runCommand', runCommand),
   );
 }
 

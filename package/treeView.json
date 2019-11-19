@@ -1,53 +1,53 @@
 {
-    "contributes": {
-        "commands": [
-            {
-                "command": "qcfg.treeView.removeNode",
-                "title": "qcfg: Remove tree view entry",
-                "icon": {
-                    "dark": "icons/remove-dark.svg",
-                    "light": "icons/remove-light.svg"
-                }
-            },
-            {
-                "command": "qcfg.treeView.expandNode",
-                "title": "qcfg: Expand tree view",
-                "icon": {
-                    "dark": "icons/expandAll-dark.svg",
-                    "light": "icons/expandAll-light.svg"
-                }
-            }
-        ],
-        "viewsContainers": {
-            "activitybar": [
-            {
-                "id": "qcfg-views-container",
-                "title": "Qcfg Views Container",
-                "icon": "icons/view-container.png"
-            }
-            ]
-        },
-        "views": {
-            "qcfg-views-container": [
-            {
-                "id": "qcfgTreeView",
-                "name": "Qcfg tree view"
-            }
-            ]
-        },
-        "menus": {
-            "view/item/context": [
-                {
-                    "command": "qcfg.treeView.removeNode",
-                    "when": "view == qcfgTreeView && viewItem == removable",
-                    "group": "inline"
-                },
-                {
-                    "command": "qcfg.treeView.expandNode",
-                    "when": "view == qcfgTreeView",
-                    "group": "inline"
-                }
-            ]
+  "contributes": {
+    "commands": [
+      {
+        "command": "qcfg.treeView.removeNode",
+        "title": "qcfg: Remove tree view entry",
+        "icon": {
+          "dark": "icons/remove-dark.svg",
+          "light": "icons/remove-light.svg"
         }
+      },
+      {
+        "command": "qcfg.treeView.expandNode",
+        "title": "qcfg: Expand tree view",
+        "icon": {
+          "dark": "icons/expandAll-dark.svg",
+          "light": "icons/expandAll-light.svg"
+        }
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "qcfg-views-container",
+          "title": "Qcfg Views Container",
+          "icon": "icons/view-container.png"
+        }
+      ]
+    },
+    "views": {
+      "qcfg-views-container": [
+        {
+          "id": "qcfgTreeView",
+          "name": "Qcfg tree view"
+        }
+      ]
+    },
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "qcfg.treeView.removeNode",
+          "when": "view == qcfgTreeView && viewItem == removable",
+          "group": "inline"
+        },
+        {
+          "command": "qcfg.treeView.expandNode",
+          "when": "view == qcfgTreeView",
+          "group": "inline"
+        }
+      ]
     }
+  }
 }

@@ -10,7 +10,7 @@ async function createDb() {
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
-    registerAsyncCommandWrapped('qcfg.tagdb.create', createDb)
+    registerAsyncCommandWrapped('qcfg.tagdb.create', createDb),
   );
 }
 

@@ -5,7 +5,7 @@ import {
   workspace,
   Uri,
   RelativePattern,
-  ExtensionContext
+  ExtensionContext,
 } from 'vscode';
 import * as fileUtils from './fileUtils';
 import * as path from 'path';
@@ -30,21 +30,21 @@ async function switchToAlternate() {
     .get('mapping', {});
   const altExts = log.assertNonNull(
     mapping[ext],
-    `No alternate mapping configured for ${ext}`
+    `No alternate mapping configured for ${ext}`,
   );
   const altFiles = altExts.map(altExt => stripExt(filePath) + altExt);
   for (const alt of altFiles) {
     const exists = await fileUtils.exists(alt);
     if (!exists) continue;
     await window.showTextDocument(Uri.file(alt), {
-      viewColumn: editor.viewColumn
+      viewColumn: editor.viewColumn,
     });
     return;
   }
   for (const altExt of altExts) {
     const shortName = baseName(filePath) + altExt;
     const folder = log.assertNonNull(
-      fileUtils.getDocumentWorkspaceFolder(filePath)
+      fileUtils.getDocumentWorkspaceFolder(filePath),
     );
     const pattern = new RelativePattern(folder, '**/' + shortName);
     const files = await workspace.findFiles(pattern);
@@ -53,24 +53,24 @@ async function switchToAlternate() {
     }
     if (files.length === 1) {
       await window.showTextDocument(files[0], {
-        viewColumn: editor.viewColumn
+        viewColumn: editor.viewColumn,
       });
       return;
     }
     await window.showWarningMessage(
       `Multiple options for alternate file of "${relPath}"`,
-      ...files.map(uri => uri.fsPath)
+      ...files.map(uri => uri.fsPath),
     );
     return;
   }
   await window.showWarningMessage(
-    `Alternate file for "${relPath}" does not exist`
+    `Alternate file for "${relPath}" does not exist`,
   );
 }
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
-    registerAsyncCommandWrapped('qcfg.alternate.switch', switchToAlternate)
+    registerAsyncCommandWrapped('qcfg.alternate.switch', switchToAlternate),
   );
 }
 

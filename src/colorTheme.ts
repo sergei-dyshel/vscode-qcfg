@@ -7,14 +7,14 @@ import {
   ExtensionContext,
   ConfigurationTarget,
   window,
-  Uri
+  Uri,
 } from 'vscode';
 import { colorThemeFiles } from './language';
 import { selectStringFromList } from './dialog';
 import {
   registerAsyncCommandWrapped,
   listenWrapped,
-  handleAsyncStd
+  handleAsyncStd,
 } from './exception';
 import { Modules } from './module';
 
@@ -57,12 +57,12 @@ async function setSettingsTheme(theme: string | undefined) {
 async function selectWorkspaceTheme() {
   await setPersisted(false);
   await window.showWarningMessage(
-    'Clearing workspace theme, persist explicitly again after you choose'
+    'Clearing workspace theme, persist explicitly again after you choose',
   );
   await setSettingsTheme(INVALID);
   log.assert(
     getSettingsTheme() === INVALID,
-    'Changed config file was not refreshed - symlinked workspace file?'
+    'Changed config file was not refreshed - symlinked workspace file?',
   );
   await commands.executeCommand('workbench.action.selectTheme');
 }
@@ -74,7 +74,7 @@ async function persistWorkspaceTheme() {
   const settingsTheme = getSettingsTheme();
   log.assert(
     settingsTheme !== INVALID && settingsTheme !== undefined,
-    'Workspace theme is not set'
+    'Workspace theme is not set',
   );
   await setPersisted(true);
   await setPersistedTheme(settingsTheme);
@@ -92,7 +92,7 @@ async function onConfigurationChanged() {
   const persistedTheme = getPersistedTheme();
   if (persistedTheme === settingsTheme) return;
   log.warn(
-    `Workspace theme changed to "${settingsTheme}", reverting to persisted "${persistedTheme}"`
+    `Workspace theme changed to "${settingsTheme}", reverting to persisted "${persistedTheme}"`,
   );
   await setSettingsTheme(persistedTheme);
 }
@@ -113,7 +113,7 @@ function activate(context: ExtensionContext) {
     registerAsyncCommandWrapped('qcfg.colors.select', selectWorkspaceTheme),
     registerAsyncCommandWrapped('qcfg.colors.persist', persistWorkspaceTheme),
     registerAsyncCommandWrapped('qcfg.colors.clear', clearWorkspaceTheme),
-    registerAsyncCommandWrapped('qcfg.colors.inspect', inspectTheme)
+    registerAsyncCommandWrapped('qcfg.colors.inspect', inspectTheme),
   );
 }
 

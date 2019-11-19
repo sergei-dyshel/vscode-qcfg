@@ -1,147 +1,131 @@
 {
-    "contributes": {
-        "commands": [
-            {
-                "command": "qcfg.selectLines",
-                "title": "qcfg: Select lines"
-            },
-            {
-                "command": "qcfg.swapCursorAndAnchor",
-                "title": "qcfg: Swap cursor and anchor"
-            },
-            {
-                "command": "qcfg.cloneEditorBeside",
-                "title": "qcfg: Clone editor to side"
-            },
-            {
-                "command": "qcfg.smartPaste",
-                "title": "qcfg: Smart paste"
-            },
-            {
-                "command": "qcfg.surroundWith",
-                "title": "qcfg: Surround text with..."
-            },
-            {
-                "command": "qcfg.navigateBackToPreviousFile",
-                "title": "qcfg: Navigate back to previous file"
-            },
-            {
-                "command": "qcfg.stripBrackets",
-                "title": "qcfg: Stripe brackets/quotes etc."
-            },
-            {
-                "command": "qcfg.goToDefinition",
-                "title": "qcfg: Go to definition"
-            },
-            {
-                "command": "qcfg.wrapWithBracketsInline",
-                "title": "qcfg: Wrap with brackets (if/for...)"
-            },
-            {
-                "command": "qcfg.peekReferences",
-                "title": "qcfg: Peek references"
-            },
-            {
-                "command": "qcfg.selectWordUnderCursor",
-                "title": "qcfg: Select word under cursor"
-            },
-            {
-                "command": "qcfg.toggleRelativeLineNumbers",
-                "title": "qcfg: Toggle relative line numbers"
-            }
-        ],
-        "keybindings": [
-            {
-                "key": "ctrl+\\",
-                "mac": "cmd+\\",
-                "command": "qcfg.cloneEditorBeside"
-            },
-            {
-                "key": "alt+a",
-                "command": "qcfg.alternate.switch"
-            },
-            {
-                "key": "alt+enter",
-                "command": "qcfg.swapCursorAndAnchor",
-                "when": "editorHasSelection && editorTextFocus"
-            },
-            {
-                "key": "ctrl+b",
-                "mac": "cmd+b",
-                "command": "qcfg.selectLines",
-                "when": "editorTextFocus"
-            },
-            {
-                "key": "ctrl+backspace",
-                "mac": "cmd+backspace",
-                "command": "qcfg.stripBrackets",
-                "when": "editorTextFocus && editorHasSelection"
-            },
-            {
-                "key": "ctrl+v",
-                "mac": "cmd+v",
-                "command": "qcfg.smartPaste"
-            },
-            {
-                "key": "shift+9",
-                "command": "qcfg.surroundWith",
-                "when": "editorTextFocus && editorHasSelection",
-                "args": [
-                    "(",
-                    ")",
-                    "left"
-                ]
-            },
-            {
-                "key": "shift+0",
-                "command": "qcfg.surroundWith",
-                "when": "editorTextFocus && editorHasSelection",
-                "args": [
-                    "(",
-                    ")",
-                    "right"
-                ]
-            },
-            {
-                "key": "[",
-                "command": "qcfg.surroundWith",
-                "when": "editorTextFocus && editorHasSelection",
-                "args": [
-                    "[",
-                    "]",
-                    "left"
-                ]
-            },
-            {
-                "key": "]",
-                "command": "qcfg.surroundWith",
-                "when": "editorTextFocus && editorHasSelection",
-                "args": [
-                    "[",
-                    "]",
-                    "right"
-                ]
-            },
-            {
-                "key": "alt+shift+h",
-                "command": "qcfg.syncEditorToDirection",
-                "args": ["left"]
-            },
-            {
-                "key": "alt+shift+l",
-                "command": "qcfg.syncEditorToDirection",
-                "args": ["right"]
-            },
-            {
-                "key": "alt+shift+j",
-                "command": "qcfg.syncEditorToDirection",
-                "args": ["down"]
-            },
-            {
-                "key": "alt+shift+k",
-                "command": "qcfg.syncEditorToDirection",
-                "args": ["up"]
-            }
-        ]
-    }
+  "contributes": {
+    "commands": [
+      {
+        "command": "qcfg.selectLines",
+        "title": "qcfg: Select lines"
+      },
+      {
+        "command": "qcfg.swapCursorAndAnchor",
+        "title": "qcfg: Swap cursor and anchor"
+      },
+      {
+        "command": "qcfg.cloneEditorBeside",
+        "title": "qcfg: Clone editor to side"
+      },
+      {
+        "command": "qcfg.smartPaste",
+        "title": "qcfg: Smart paste"
+      },
+      {
+        "command": "qcfg.surroundWith",
+        "title": "qcfg: Surround text with..."
+      },
+      {
+        "command": "qcfg.navigateBackToPreviousFile",
+        "title": "qcfg: Navigate back to previous file"
+      },
+      {
+        "command": "qcfg.stripBrackets",
+        "title": "qcfg: Stripe brackets/quotes etc."
+      },
+      {
+        "command": "qcfg.goToDefinition",
+        "title": "qcfg: Go to definition"
+      },
+      {
+        "command": "qcfg.wrapWithBracketsInline",
+        "title": "qcfg: Wrap with brackets (if/for...)"
+      },
+      {
+        "command": "qcfg.peekReferences",
+        "title": "qcfg: Peek references"
+      },
+      {
+        "command": "qcfg.selectWordUnderCursor",
+        "title": "qcfg: Select word under cursor"
+      },
+      {
+        "command": "qcfg.toggleRelativeLineNumbers",
+        "title": "qcfg: Toggle relative line numbers"
+      }
+    ],
+    "keybindings": [
+      {
+        "key": "ctrl+\\",
+        "mac": "cmd+\\",
+        "command": "qcfg.cloneEditorBeside"
+      },
+      {
+        "key": "alt+a",
+        "command": "qcfg.alternate.switch"
+      },
+      {
+        "key": "alt+enter",
+        "command": "qcfg.swapCursorAndAnchor",
+        "when": "editorHasSelection && editorTextFocus"
+      },
+      {
+        "key": "ctrl+b",
+        "mac": "cmd+b",
+        "command": "qcfg.selectLines",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "ctrl+backspace",
+        "mac": "cmd+backspace",
+        "command": "qcfg.stripBrackets",
+        "when": "editorTextFocus && editorHasSelection"
+      },
+      {
+        "key": "ctrl+v",
+        "mac": "cmd+v",
+        "command": "qcfg.smartPaste"
+      },
+      {
+        "key": "shift+9",
+        "command": "qcfg.surroundWith",
+        "when": "editorTextFocus && editorHasSelection",
+        "args": ["(", ")", "left"]
+      },
+      {
+        "key": "shift+0",
+        "command": "qcfg.surroundWith",
+        "when": "editorTextFocus && editorHasSelection",
+        "args": ["(", ")", "right"]
+      },
+      {
+        "key": "[",
+        "command": "qcfg.surroundWith",
+        "when": "editorTextFocus && editorHasSelection",
+        "args": ["[", "]", "left"]
+      },
+      {
+        "key": "]",
+        "command": "qcfg.surroundWith",
+        "when": "editorTextFocus && editorHasSelection",
+        "args": ["[", "]", "right"]
+      },
+      {
+        "key": "alt+shift+h",
+        "command": "qcfg.syncEditorToDirection",
+        "args": ["left"]
+      },
+      {
+        "key": "alt+shift+l",
+        "command": "qcfg.syncEditorToDirection",
+        "args": ["right"]
+      },
+      {
+        "key": "alt+shift+j",
+        "command": "qcfg.syncEditorToDirection",
+        "args": ["down"]
+      },
+      {
+        "key": "alt+shift+k",
+        "command": "qcfg.syncEditorToDirection",
+        "args": ["up"]
+      }
+    ]
+  }
 }

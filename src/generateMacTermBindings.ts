@@ -13,7 +13,7 @@ const mapping = {
   'cmd+u': '\x15',
   'cmd+shift+k': '\x0b',
   'alt+b': '\x1bb',
-  'alt+f': '\x1bf'
+  'alt+f': '\x1bf',
 };
 
 const keybindings: KeyBinding[] = [];
@@ -23,12 +23,12 @@ for (const [key, code] of Object.entries(mapping)) {
     key,
     command: 'workbench.action.terminal.sendSequence',
     when: 'terminalFocus && isMac',
-    args: { text: code }
+    args: { text: code },
   });
 }
 
 const json: PackageJson = {
-  contributes: { keybindings }
+  contributes: { keybindings },
 };
 
 process.stdout.write(JSON.stringify(json, undefined, 2));

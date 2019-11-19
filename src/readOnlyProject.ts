@@ -5,7 +5,7 @@ import {
   window,
   workspace,
   StatusBarItem,
-  ExtensionContext
+  ExtensionContext,
 } from 'vscode';
 import { listenWrapped, registerAsyncCommandWrapped } from './exception';
 import { Modules } from './module';
@@ -38,7 +38,7 @@ function onDidChangeTextDocument(_: TextDocumentChangeEvent) {
 
   // tslint:disable-next-line: no-floating-promises
   window.showErrorMessage('Current workspace is marked as READ-ONLY', {
-    modal: true
+    modal: true,
   });
 }
 
@@ -51,7 +51,7 @@ function activate(extContext: ExtensionContext) {
 
   context.subscriptions.push(
     registerAsyncCommandWrapped('qcfg.toggleReadOnly', toggle),
-    listenWrapped(workspace.onDidChangeTextDocument, onDidChangeTextDocument)
+    listenWrapped(workspace.onDidChangeTextDocument, onDidChangeTextDocument),
   );
 }
 

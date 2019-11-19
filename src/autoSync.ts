@@ -12,7 +12,7 @@ import { Modules } from './module';
 enum State {
   Off,
   On,
-  Error
+  Error,
 }
 
 let state = State.Off;
@@ -54,7 +54,7 @@ async function onSaveAll(docs: saveAll.DocumentsInFolder) {
   if (!command) return;
 
   const docPaths = docs.documents.map(doc =>
-    vscode.workspace.asRelativePath(doc.fileName, false)
+    vscode.workspace.asRelativePath(doc.fileName, false),
   );
   log.info('Auto syncing ', docPaths, 'in', docs.folder.name);
 
@@ -73,7 +73,7 @@ async function onSaveAll(docs: saveAll.DocumentsInFolder) {
     const error = err as subprocess.ExecResult;
     if (state !== State.Error) {
       await vscode.window.showErrorMessage(
-        `autoSync failed with ${error.code}, ${error.signal} stdout: ${error.stdout} stderr: ${error.stderr}`
+        `autoSync failed with ${error.code}, ${error.signal} stdout: ${error.stdout} stderr: ${error.stderr}`,
       );
       state = State.Error;
       setStatusBar();
@@ -96,7 +96,7 @@ function activate(context: vscode.ExtensionContext) {
     : State.Off;
   setStatusBar();
   context.subscriptions.push(
-    registerSyncCommandWrapped('qcfg.autoSync.toggle', toggle)
+    registerSyncCommandWrapped('qcfg.autoSync.toggle', toggle),
   );
   context.subscriptions.push(saveAll.onEvent(onSaveAll));
 }

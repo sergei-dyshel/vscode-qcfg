@@ -7,7 +7,7 @@ const DEFAULT_TIMEOUT_MS = 3000;
 
 export function showStatusBarMessage(
   text: string,
-  options?: { color?: ThemeColor | string; timeoutMs?: number }
+  options?: { color?: ThemeColor | string; timeoutMs?: number },
 ) {
   if (statusBarMsgItem) statusBarMsgItem.dispose();
   statusBarMsgItem = window.createStatusBarItem();

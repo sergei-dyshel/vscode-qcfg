@@ -12,12 +12,8 @@
     "vscode": "^1.38.0"
   },
   "enableProposedApi": true,
-  "categories": [
-    "Other"
-  ],
-  "activationEvents": [
-    "*"
-  ],
+  "categories": ["Other"],
+  "activationEvents": ["*"],
   "main": "./dist/extension",
   "contributes": {
     "jsonValidation": [
@@ -240,10 +236,7 @@
       {
         "name": "gcc-relative",
         "owner": "qcfg",
-        "fileLocation": [
-          "relative",
-          "${workspaceFolder}"
-        ],
+        "fileLocation": ["relative", "${workspaceFolder}"],
         "severity": "warning",
         "pattern": {
           "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
@@ -270,12 +263,8 @@
     "languages": [
       {
         "id": "qcfg-log",
-        "aliases": [
-          "vscode-qcfg log"
-        ],
-        "extensions": [
-          ".vscode-qcfg.log"
-        ]
+        "aliases": ["vscode-qcfg log"],
+        "extensions": [".vscode-qcfg.log"]
       }
     ],
     "grammars": [

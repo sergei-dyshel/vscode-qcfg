@@ -5,7 +5,7 @@ import {
   ExtensionContext,
   SourceControlResourceState,
   Uri,
-  window
+  window,
 } from 'vscode';
 import { log } from './logging';
 import { Modules } from './module';
@@ -40,9 +40,9 @@ function activate(context: ExtensionContext) {
   context.subscriptions.push(
     commands.registerCommand(
       'qcfg.formatSelectedFilesInExplorer',
-      formatFilesInExplorer
+      formatFilesInExplorer,
     ),
-    commands.registerCommand('qcfg.formatSelectedFilesInSCM', formatFilesInScm)
+    commands.registerCommand('qcfg.formatSelectedFilesInSCM', formatFilesInScm),
   );
 }
 
