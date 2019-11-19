@@ -82,5 +82,6 @@ const BRACKETS: Array<[string, string]> = [
   ['"', '"'],
   ["'", "'"],
   ['<', '>'],
-  ['/*', '*/']
+  ['/*', '*/'],
+  ['', ';'], // statements
 ];
