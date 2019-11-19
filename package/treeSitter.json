@@ -6,10 +6,6 @@
         "title": "qcfg: Expand selection"
       },
       {
-        "command": "qcfg.selection.selectSuperParent",
-        "title": "qcfg: Select super parent"
-      },
-      {
         "command": "qcfg.selection.shrink",
         "title": "qcfg: Shrink selection"
       },
@@ -44,12 +40,12 @@
     ],
     "keybindings": [
       {
-        "key": "alt+up",
+        "key": "cmd+j",
         "command": "qcfg.selection.expand",
         "when": "editorTextFocus"
       },
       {
-        "key": "alt+down",
+        "key": "cmd+shift+j",
         "command": "qcfg.selection.shrink",
         "when": "editorTextFocus"
       },
