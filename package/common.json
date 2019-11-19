@@ -133,88 +133,88 @@
       }
     ],
     "keybindings": [
-        {
-          "key": "alt+o",
-          "command": "qcfg.edit.previous",
-          "when": "editorFocus"
-        },
-        {
-          "key": "alt+i",
-          "command": "qcfg.edit.next",
-          "when": "editorFocus"
-        },
-        {
-          "key": "alt+q",
-          "command": "workbench.action.closeEditorInAllGroups"
-        },
-        {
-                "key": "ctrl+q",
-                "mac": "cmd+q",
-                "command": "workbench.action.toggleSidebarVisibility"
-        },
-        {
-                "key": "ctrl+w",
-                "mac": "cmd+w",
-                "command": "workbench.action.togglePanel"
-        },
-        {
-                "key": "ctrl+shift+;",
-                "cmd": "cmd+shift+;",
-                "command": "qcfg.runCommand"
-        },
-        {
-                "key": "ctrl+u",
-                "mac": "cmd+u",
-                "command": "qcfg.gtags.workspace"
-        },
-        {
-                "key": "alt+d",
-                "command": "qcfg.gtags.definitionInWorkspace"
-        },
-        {
-                "key": "alt+r",
-                "command": "qcfg.search.word.peek",
-                "when": "editorFocus && !findWidgetVisible"
-        },
-        {
-                "key": "alt+shift+r",
-                "command": "qcfg.search.structField"
-        },
-        {
-                "key": "ctrl+o",
-                "mac": "cmd+o",
-                "command": "workbench.action.navigateBack"
-        },
-        {
-                "key": "ctrl+shift+o",
-                "mac": "cmd+shift+o",
-                "command": "qcfg.history.backward"
-        },
-        {
-                "key": "ctrl+i",
-                "mac": "cmd+i",
-                "command": "workbench.action.navigateForward"
-        },
-        {
-                "key": "ctrl+shift+i",
-                "mac": "cmd+shift+i",
-                "command": "qcfg.history.forward"
-        },
-        {
-                "key": "ctrl+l",
-                "mac": "cmd+l",
-                "command": "qcfg.fuzzySearch"
-        },
-        {
-                "key": "ctrl+k ctrl+o",
-                "mac": "cmd+k cmd+o",
-                "command": "qcfg.openRecent.sameWindow"
-        },
-        {
-                "key": "ctrl+k shift+ctrl+o",
-                "mac": "cmd+k shift+cmd+o",
-                "command": "qcfg.openRecent.newWindow"
-        }
+      {
+        "key": "alt+o",
+        "command": "qcfg.edit.previous",
+        "when": "editorFocus"
+      },
+      {
+        "key": "alt+i",
+        "command": "qcfg.edit.next",
+        "when": "editorFocus"
+      },
+      {
+        "key": "alt+q",
+        "command": "workbench.action.closeEditorInAllGroups"
+      },
+      {
+        "key": "ctrl+q",
+        "mac": "cmd+q",
+        "command": "workbench.action.toggleSidebarVisibility"
+      },
+      {
+        "key": "ctrl+w",
+        "mac": "cmd+w",
+        "command": "workbench.action.togglePanel"
+      },
+      {
+        "key": "ctrl+shift+;",
+        "cmd": "cmd+shift+;",
+        "command": "qcfg.runCommand"
+      },
+      {
+        "key": "ctrl+u",
+        "mac": "cmd+u",
+        "command": "qcfg.gtags.workspace"
+      },
+      {
+        "key": "alt+d",
+        "command": "qcfg.gtags.definitionInWorkspace"
+      },
+      {
+        "key": "alt+r",
+        "command": "qcfg.search.word.peek",
+        "when": "editorFocus && !findWidgetVisible"
+      },
+      {
+        "key": "alt+shift+r",
+        "command": "qcfg.search.structField"
+      },
+      {
+        "key": "ctrl+o",
+        "mac": "cmd+o",
+        "command": "workbench.action.navigateBack"
+      },
+      {
+        "key": "ctrl+shift+o",
+        "mac": "cmd+shift+o",
+        "command": "qcfg.history.backward"
+      },
+      {
+        "key": "ctrl+i",
+        "mac": "cmd+i",
+        "command": "workbench.action.navigateForward"
+      },
+      {
+        "key": "ctrl+shift+i",
+        "mac": "cmd+shift+i",
+        "command": "qcfg.history.forward"
+      },
+      {
+        "key": "ctrl+l",
+        "mac": "cmd+l",
+        "command": "qcfg.fuzzySearch"
+      },
+      {
+        "key": "ctrl+k ctrl+o",
+        "mac": "cmd+k cmd+o",
+        "command": "qcfg.openRecent.sameWindow"
+      },
+      {
+        "key": "ctrl+k shift+ctrl+o",
+        "mac": "cmd+k shift+cmd+o",
+        "command": "qcfg.openRecent.newWindow"
+      }
     ],
     "configuration": {
       "title": "Qcfg configuration",
@@ -222,11 +222,7 @@
         "qcfg.log.level": {
           "type": "string",
           "description": "Log level",
-          "enum": [
-            "debug",
-            "info",
-            "warning"
-          ]
+          "enum": ["debug", "info", "warning"]
         },
         "qcfg.configDir.global": {
           "type": "string",
@@ -271,24 +267,24 @@
         }
       }
     ],
-		"languages": [
-			{
-				"id": "qcfg-log",
-				"aliases": [
-					"vscode-qcfg log"
-				],
-				"extensions": [
-					".vscode-qcfg.log"
-				]
-			}
-		],
-		"grammars": [
-			{
-				"language": "qcfg-log",
-				"scopeName": "text.log.qcfg-log",
+    "languages": [
+      {
+        "id": "qcfg-log",
+        "aliases": [
+          "vscode-qcfg log"
+        ],
+        "extensions": [
+          ".vscode-qcfg.log"
+        ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "qcfg-log",
+        "scopeName": "text.log.qcfg-log",
         "path": "./syntaxes/qcfg-log.tmLanguage.json"
-			}
-		]
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "make package.json && webpack --mode none",

@@ -14,3 +14,4 @@ $(d)/macTermBindings.json: src/generateMacTermBindings.ts
 
 package.json: $(deps_files)
 	$(my_merger) $@ $^
+	npx prettier --write $@
