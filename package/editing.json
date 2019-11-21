@@ -2,6 +2,22 @@
   "contributes": {
     "commands": [
       {
+        "command": "qcfg.block.goUp",
+        "title": "qcfg: Jump up to the start of nearest block"
+      },
+      {
+        "command": "qcfg.block.goDown",
+        "title": "qcfg: Jump down to the start of nearest block"
+      },
+      {
+        "command": "qcfg.block.selectUp",
+        "title": "qcfg: Select up to the start of nearest block"
+      },
+      {
+        "command": "qcfg.block.selectDown",
+        "title": "qcfg: Select down to the start of nearest block"
+      },
+      {
         "command": "qcfg.selectLines",
         "title": "qcfg: Select lines"
       },
@@ -51,6 +67,26 @@
       }
     ],
     "keybindings": [
+      {
+        "key": "alt+up",
+        "command": "qcfg.block.goUp",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "alt+down",
+        "command": "qcfg.block.goDown",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "alt+shift+up",
+        "command": "qcfg.block.selectUp",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "alt+shift+down",
+        "command": "qcfg.block.selectDown",
+        "when": "editorTextFocus"
+      },
       {
         "key": "ctrl+\\",
         "mac": "cmd+\\",

@@ -16,8 +16,8 @@
 
 # Editing
 
-- If selected text contains all text in lines (except for whitespace), than copy/delete
-  should act linewise.
+- If selected text contains all text in lines (except for whitespace), than
+  copy/delete should act linewise.
 
 # Utils/helpers
 

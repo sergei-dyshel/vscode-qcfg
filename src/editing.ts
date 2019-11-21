@@ -12,6 +12,8 @@ import {
   workspace,
   ConfigurationTarget,
   Position,
+  TextDocument,
+  Range,
 } from 'vscode';
 import * as clipboardy from 'clipboardy';
 
@@ -35,6 +37,7 @@ import {
 } from './exception';
 import { Modules } from './module';
 import { lineIndentation } from './documentUtils';
+import { NumberIterator } from './tsUtils';
 
 function selectLines() {
   const editor = getActiveTextEditor();
@@ -256,9 +259,59 @@ async function toggleRelativeNumbers() {
   }
 }
 
+function getBlockStart(
+  document: TextDocument,
+  line: number,
+  up: boolean,
+): number {
+  const iter = up
+    ? new NumberIterator(line - 1, 0, -1)
+    : new NumberIterator(line + 1, document.lineCount, 1);
+  const isBlank = (i: number) => document.lineAt(i).isEmptyOrWhitespace;
+  for (const i of iter) {
+    if (up && i + 1 < line && isBlank(i) && !isBlank(i + 1)) return i + 1;
+    if (!up && isBlank(i - 1) && !isBlank(i)) return i;
+  }
+  // no block start found
+  return up ? 0 : document.lineCount - 1;
+}
+
+function goToBlockStart(up: boolean, select: boolean) {
+  const editor = getActiveTextEditor();
+  const document = editor.document;
+  const active = editor.selection.active;
+  const blockStart = getBlockStart(document, active.line, up);
+  if (select) {
+    const newAnchor = editor.selection.anchor.with(undefined, 0);
+    const newActive = new Position(blockStart, 0);
+    editor.selection = new Selection(newAnchor, newActive);
+  } else {
+    const newActive = new Position(
+      blockStart,
+      document.lineAt(blockStart).firstNonWhitespaceCharacterIndex,
+    );
+    editor.selection = new Selection(newActive, newActive);
+  }
+  editor.revealRange(
+    new Range(editor.selection.active, editor.selection.active),
+  );
+}
+
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
     registerSyncCommandWrapped('qcfg.gotoLineRelative', gotoLineRelative),
+    registerSyncCommandWrapped('qcfg.block.goUp', () =>
+      goToBlockStart(true /* up */, false /* jump */),
+    ),
+    registerSyncCommandWrapped('qcfg.block.goDown', () =>
+      goToBlockStart(false /* down */, false /* jump */),
+    ),
+    registerSyncCommandWrapped('qcfg.block.selectUp', () =>
+      goToBlockStart(true /* up */, true /* select */),
+    ),
+    registerSyncCommandWrapped('qcfg.block.selectDown', () =>
+      goToBlockStart(false /* up */, true /* select */),
+    ),
     registerSyncCommandWrapped('qcfg.selectLines', selectLines),
     registerAsyncCommandWrapped('qcfg.goToDefinition', goToDefinition),
     registerAsyncCommandWrapped('qcfg.peekReferences', peekReferences),
