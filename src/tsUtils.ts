@@ -111,20 +111,16 @@ export function minNumber<T>(...args: T[]): T {
   return (args.map(x => (x as unknown) as number).min() as unknown) as T;
 }
 
-export class ArrayIterator<T> implements IterableIterator<T> {
+export class NumberIterator implements IterableIterator<number> {
   private cur: number;
-  constructor(
-    private array: T[],
-    start: number,
-    private end: number,
-    private step: number,
-  ) {
-    if (this.step === 0) throw new Error('Can not iterate with step -1');
+
+  constructor(start: number, private end: number, private step: number) {
+    if (this.step === 0) throw new Error('Can not iterate with step 0');
     this.cur = start;
   }
 
-  next(): IteratorResult<T> {
-    const result = { done: this.reachedEnd(), value: this.array[this.cur] };
+  next(): IteratorResult<number> {
+    const result = { done: this.reachedEnd(), value: this.cur };
     this.cur += this.step;
     return result;
   }
@@ -132,6 +128,20 @@ export class ArrayIterator<T> implements IterableIterator<T> {
   private reachedEnd(): boolean {
     if (this.step > 0) return this.cur >= this.end;
     return this.cur < this.end;
+  }
+
+  [Symbol.iterator]() {
+    return this;
+  }
+}
+
+export class ArrayIterator<T> implements IterableIterator<T> {
+  constructor(private array: T[], private numIter: NumberIterator) {}
+
+  next(): IteratorResult<T> {
+    const numRes = this.numIter.next();
+    if (numRes.done) return { done: true, value: undefined };
+    return { done: false, value: this.array[numRes.value] };
   }
 
   [Symbol.iterator]() {
@@ -204,7 +214,7 @@ Array.prototype.iter = function<T>(
   end: number,
   step?: number,
 ) {
-  return new ArrayIterator<T>(this, start, end, step || 1);
+  return new ArrayIterator<T>(this, new NumberIterator(start, end, step || 1));
 };
 
 Array.prototype.reverseIter = function<T>(this: T[]) {
