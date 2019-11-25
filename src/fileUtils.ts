@@ -17,6 +17,13 @@ export const globAsync = nodejs.util.promisify(require('glob')) as (
   options?: glob.IOptions,
 ) => Promise<string[]>;
 
+export function expandHome(path: string): string {
+  if (path.startsWith('~/')) {
+    return nodejs.path.join(process.env.HOME!, path.slice(2));
+  }
+  return path;
+}
+
 export function getDocumentRoot(fileName: string) {
   const wsPath = vscode.workspace.asRelativePath(fileName, true);
   const relativePath = vscode.workspace.asRelativePath(fileName, false);

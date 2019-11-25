@@ -14,6 +14,7 @@ import {
   Position,
   TextDocument,
   Range,
+  Uri,
 } from 'vscode';
 import * as clipboardy from 'clipboardy';
 
@@ -38,6 +39,7 @@ import {
 import { Modules } from './module';
 import { lineIndentation } from './documentUtils';
 import { NumberIterator } from './tsUtils';
+import { expandHome, exists } from './fileUtils';
 
 function selectLines() {
   const editor = getActiveTextEditor();
@@ -58,16 +60,16 @@ async function surroundWith(args: unknown[]) {
   if (selection.isEmpty) return;
   const [prefix, suffix, direction] = args;
   const text = editor.document.getText(selection);
-  const replaceText = prefix + text + suffix;
+  const newText = prefix + text + suffix;
   const selectionStart = selection.start;
   const editsDone = await editor.edit((edit: TextEditorEdit) => {
-    edit.replace(selection, replaceText);
+    edit.replace(selection, newText);
   });
   if (!editsDone) throw new Error('[surroundWith] Could not apply edit');
   let pos: Position;
   if (direction === 'left') pos = selectionStart;
   else if (direction === 'right')
-    pos = offsetPosition(editor.document, selectionStart, replaceText.length);
+    pos = offsetPosition(editor.document, selectionStart, newText.length);
   else throw new Error(`surroundWith: Invalid direction "${direction}"`);
   editor.selection = new Selection(pos, pos);
   console.log('Selection:', editor.selection);
@@ -215,6 +217,29 @@ async function wrapWithBracketsInline(args: string[]) {
   });
 }
 
+/**
+ * Replace range with text and return replaced range
+ */
+async function replaceText(
+  editor: TextEditor,
+  range: Range,
+  text: string,
+  options?: { select?: boolean; reveal?: boolean },
+): Promise<Range> {
+  await editor.edit(builder => {
+    builder.replace(range, text);
+  });
+  const newRange = new Range(
+    range.start,
+    offsetPosition(editor.document, range.start, text.length),
+  );
+  if (options) {
+    if (options.select) editor.selection = newRange.asSelection();
+    if (options.reveal) editor.revealRange(range);
+  }
+  return newRange;
+}
+
 async function stripBrackets() {
   const editor = getActiveTextEditor();
   const selection = editor.selection;
@@ -297,9 +322,29 @@ function goToBlockStart(up: boolean, select: boolean) {
   );
 }
 
+async function insertPathFromDialog() {
+  const editor = getActiveTextEditor();
+  let preSelected: Uri | undefined;
+  if (!editor.selection.isEmpty) {
+    const path = expandHome(editor.document.getText(editor.selection));
+    if (await exists(path)) preSelected = Uri.file(path);
+  }
+  const uris = await window.showOpenDialog({
+    canSelectFolders: true,
+    canSelectMany: true,
+    defaultUri: preSelected,
+  });
+  if (!uris || uris.isEmpty) return;
+  let result: string;
+  if (uris.length === 1) result = uris[0].fsPath;
+  else result = uris.map(uri => uri.fsPath).join(' ');
+  await replaceText(editor, editor.selection, result);
+}
+
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
     registerSyncCommandWrapped('qcfg.gotoLineRelative', gotoLineRelative),
+    registerAsyncCommandWrapped('qcfg.insertPath', insertPathFromDialog),
     registerSyncCommandWrapped('qcfg.block.goUp', () =>
       goToBlockStart(true /* up */, false /* jump */),
     ),

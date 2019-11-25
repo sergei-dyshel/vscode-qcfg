@@ -2,6 +2,10 @@
   "contributes": {
     "commands": [
       {
+        "command": "qcfg.insertPath",
+        "title": "qcfg: Show open file dialog and insert resulting path"
+      },
+      {
         "command": "qcfg.block.goUp",
         "title": "qcfg: Jump up to the start of nearest block"
       },
