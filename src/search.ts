@@ -33,9 +33,9 @@ import { currentWorkspaceFolder, getCursorWordContext } from './utils';
 import { registerAsyncCommandWrapped } from './exception';
 import { Modules } from './module';
 import {
-  ParsedLocation,
   parseLocations,
   ParseLocationFormat,
+  findPatternInLocations,
 } from './parseLocations';
 
 const TODO_CATEGORIES = [
@@ -53,7 +53,7 @@ export async function searchInFiles(
   query: TextSearchQuery,
   options: FindTextInFilesOptions = {},
 ) {
-  const locations: ParsedLocation[] = [];
+  const locations: Location[] = [];
   log.debug(`Searching for "${query.pattern}"`);
   await workspace.findTextInFiles(
     query,
@@ -63,9 +63,7 @@ export async function searchInFiles(
       const ranges: Range[] =
         match.ranges instanceof Range ? [match.ranges] : match.ranges;
       for (const range of ranges)
-        locations.push(
-          new ParsedLocation(match.uri, range, match.preview.text),
-        );
+        locations.push(new Location(match.uri, range));
     },
   );
   return locations;
@@ -88,16 +86,18 @@ async function searchTodos() {
   const res = await subproc.wait();
   if (res.code === 1) {
     await window.showWarningMessage(`No ${patterns} items were found`);
-  } else {
-    await setLocations(
-      patterns,
-      parseLocations(
-        res.stdout,
-        folder.uri.fsPath,
-        ParseLocationFormat.VIMGREP,
-      ),
-    );
+    return;
   }
+  const parsedLocations = parseLocations(
+    res.stdout,
+    folder.uri.fsPath,
+    ParseLocationFormat.VIMGREP,
+  );
+  const locsWithRanges = await findPatternInLocations(
+    parsedLocations,
+    new RegExp(patterns),
+  );
+  await setLocations(patterns, locsWithRanges);
 }
 
 // TODO: move to utils

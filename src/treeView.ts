@@ -80,12 +80,16 @@ export interface TreeProvider {
   removeNode?(node: TreeNode): void;
   onDidChangeSelection?(nodes: TreeNode[]): void;
   onDidChangeVisibility?(visible: boolean): void;
+  /** Called when provider becomes inactive, e.g. other provider is used */
+  onUnset?(): void;
 }
 
 export namespace QcfgTreeView {
   export function setProvider(provider: TreeProvider) {
-    // TODO: run onUnset method of current provider, check if this is the same provider
-    if (currentProvider !== provider) currentProvider = provider;
+    if (currentProvider !== provider) {
+      if (currentProvider && currentProvider.onUnset) currentProvider.onUnset();
+      currentProvider = provider;
+    }
     refresh();
   }
 

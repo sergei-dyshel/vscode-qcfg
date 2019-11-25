@@ -3,42 +3,41 @@
 import * as path from 'path';
 import { MultiDictionary } from 'typescript-collections';
 import {
-  Location,
   Uri,
   ThemeIcon,
   TreeItemLabel,
   workspace,
   window,
-  TextDocumentChangeEvent,
   ExtensionContext,
+  TextDocument,
+  Range,
+  Location,
 } from 'vscode';
-import {
-  adjustOffsetRangeAfterChange,
-  NumRange,
-  offsetToRange,
-  rangeToOffset,
-} from './documentUtils';
-import { listenWrapped, handleAsyncStd } from './exception';
+import { handleAsyncStd } from './exception';
 import { log, str } from './logging';
-import { isSubPath } from './pathUtils';
 import { StaticTreeNode, TreeProvider, QcfgTreeView } from './treeView';
 import { Modules } from './module';
-import { ParsedLocation } from './parseLocations';
+import { mapSomeAsyncAndZip } from './async';
+import { maxNumber } from './tsUtils';
 
 export async function setLocations(
   message: string,
-  parsedLocations: ParsedLocation[],
+  locations: Location[],
   reveal = true,
 ) {
-  const dict = new MultiDictionary<Uri, ParsedLocation>();
+  const dict = new MultiDictionary<Uri, Location>();
   const fileNodes: FileNode[] = [];
-  for (const parsedLoc of parsedLocations)
-    dict.setValue(parsedLoc.uri, parsedLoc);
+  for (const loc of locations) dict.setValue(loc.uri, loc);
+  const documents = new Map<Uri, TextDocument>(
+    await mapSomeAsyncAndZip(dict.keys(), uri =>
+      workspace.openTextDocument(uri),
+    ),
+  );
   for (const uri of dict.keys()) {
     const fileNode = new FileNode(uri);
     fileNodes.push(fileNode);
-    for (const parsedLoc of dict.getValue(uri)) {
-      const locNode = new LocationNode(parsedLoc);
+    for (const loc of dict.getValue(uri)) {
+      const locNode = new LocationNode(loc, documents.get(uri)!);
       fileNode.addChild(locNode);
     }
   }
@@ -177,58 +176,35 @@ class FileNode extends UriNode {
 }
 
 class LocationNode extends StaticTreeNode {
-  constructor(parsedLoc: ParsedLocation) {
-    const text = log.assertNonNull(parsedLoc.text);
-    const trimOffset = text.length - text.trimLeft().length;
-    super(log.assertNonNull(text.trim()));
-    this.uri = parsedLoc.uri;
+  constructor(loc: Location, document: TextDocument) {
+    const start = loc.range.start;
+    const docLine = document.lineAt(start.line);
+    const text = docLine.text;
+    const trimOffset = docLine.firstNonWhitespaceCharacterIndex;
+    super(text.substr(trimOffset));
+    this.uri = loc.uri;
     this.allowRemoval();
-    this.treeItem.id = str(parsedLoc);
+    this.treeItem.id = str(loc);
+    this.range = loc.range;
     const label = this.treeItem.label as TreeItemLabel;
-    this.line = parsedLoc.range.start.line;
-    label.highlights = [
-      [
-        parsedLoc.range.start.character - trimOffset,
-        parsedLoc.range.end.character - trimOffset,
-      ],
-    ];
-    handleAsyncStd(this.fetchDocument(parsedLoc));
+    this.line = start.line;
+    if (!start.isEqual(loc.range.end))
+      label.highlights = [
+        [
+          maxNumber(0, loc.range.start.character - trimOffset),
+          maxNumber(0, loc.range.end.character - trimOffset),
+        ],
+      ];
   }
 
   async show() {
-    const document = await workspace.openTextDocument(this.uri);
-    const selection = offsetToRange(
-      document,
-      log.assertNonNull(this.offsetRange),
-    );
+    const selection = this.range;
     await window.showTextDocument(this.uri, { selection });
-  }
-
-  private async fetchDocument(location: Location) {
-    const document = await workspace.openTextDocument(this.uri);
-    this.offsetRange = rangeToOffset(document, location.range);
   }
 
   line: number;
   uri: Uri;
-  offsetRange?: NumRange;
-}
-
-function onDidChangeTextDocument(event: TextDocumentChangeEvent) {
-  const document = event.document;
-  if (!currentTrees || !QcfgTreeView.isCurrentProvider(provider)) return;
-  StaticTreeNode.applyRecursively(currentTrees, node => {
-    if (node instanceof DirNode && isSubPath(node.fsPath, document.fileName))
-      return true;
-    if (node instanceof FileNode && node.fsPath === document.uri.fsPath)
-      return true;
-    if (node instanceof LocationNode)
-      node.offsetRange = adjustOffsetRangeAfterChange(
-        log.assertNonNull(node.offsetRange),
-        event.contentChanges,
-      );
-    return false;
-  });
+  range: Range;
 }
 
 const provider: TreeProvider = {
@@ -251,10 +227,8 @@ const provider: TreeProvider = {
   },
 };
 
-function activate(context: ExtensionContext) {
-  context.subscriptions.push(
-    listenWrapped(workspace.onDidChangeTextDocument, onDidChangeTextDocument),
-  );
+function activate(_: ExtensionContext) {
+  // TODO: remove if unused
 }
 
 Modules.register(activate);

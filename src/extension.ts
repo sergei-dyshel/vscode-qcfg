@@ -1,5 +1,9 @@
 'use strict';
 
+// these modify prototypes of objects, must be imported first
+import * as tsUtils from './tsUtils';
+import * as documentUtils from './documentUtils';
+
 import * as vscode from 'vscode';
 import { Modules } from './module';
 import * as alternate from './alternate';
@@ -76,6 +80,8 @@ export function activate(context: vscode.ExtensionContext) {
     formatting,
     diagnostic,
     exception,
+    tsUtils,
+    documentUtils,
   };
 }
 

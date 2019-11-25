@@ -285,12 +285,12 @@ function stringifyTextEditor(editor: TextEditor) {
 function stringifyObject(x: object | null): string {
   if (x === null) return '<null>';
   if (x instanceof Uri) {
-    return x.scheme === 'file' ? x.fsPath : x.toString();
+    return workspace.asRelativePath(x);
   }
   if ('fileName' in x && 'uri' in x) {
     // TextDocument
     const doc = x as TextDocument;
-    const relpath = workspace.asRelativePath(doc.fileName);
+    const relpath = stringifyObject(doc.uri);
     return `<${relpath}>`;
   }
   if ('document' in x && 'viewColumn' in x) {

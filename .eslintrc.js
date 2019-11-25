@@ -80,7 +80,7 @@ module.exports = {
     'no-inner-declarations': off,
     'no-underscore-dangle': off,
     '@typescript-eslint/no-explicit-any': [warn, { ignoreRestArgs: true }],
-    'no-extend-native': [warn, { exceptions: ['Array'] }],
+    'no-extend-native': [warn, { exceptions: ['Array', 'Set', 'Map'] }],
     'no-restricted-globals': off,
     'no-nested-ternary': off,
   },

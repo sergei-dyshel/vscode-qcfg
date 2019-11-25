@@ -7,8 +7,8 @@ import {
   TextDocument,
   TextDocumentChangeEvent,
   TextDocumentContentChangeEvent,
-  Uri,
   workspace,
+  Location,
 } from 'vscode';
 import { NumRange, offsetToRange } from './documentUtils';
 import { listenWrapped } from './exception';
@@ -16,32 +16,16 @@ import { Modules } from './module';
 import { DefaultMap } from './tsUtils';
 import { DisposableLike } from './utils';
 
-export interface ReadOnlyLocation {
-  readonly uri: Uri;
-  readonly range: Range;
-}
-
-abstract class LiveLocation implements ReadOnlyLocation, DisposableLike {
+abstract class LiveLocation extends Location implements DisposableLike {
   private registered_ = false;
   private valid_ = true;
-  private uri_: Uri;
-  protected range_: Range;
 
   constructor(
     document: TextDocument,
     range: Range,
     private onInvalidated?: () => void,
   ) {
-    this.uri_ = document.uri;
-    this.range_ = range;
-  }
-
-  get uri() {
-    return this.uri_;
-  }
-
-  get range() {
-    return this.range_;
+    super(document.uri, range);
   }
 
   register() {
@@ -107,7 +91,7 @@ export class LivePosition extends LiveLocation {
     const newOffset = adjustOffsetAfterChange(this.offset, change);
     if (newOffset) {
       this.offset = newOffset;
-      this.range_ = document.positionAt(this.offset).asRange;
+      this.range = document.positionAt(this.offset).asRange;
       return true;
     }
     this.invalidate();
@@ -168,7 +152,7 @@ export class LiveRange extends LiveLocation {
       this.mergeOnReplace,
     )!;
     if (this.start < this.end) {
-      this.range_ = offsetToRange(document, new NumRange(this.start, this.end));
+      this.range = offsetToRange(document, new NumRange(this.start, this.end));
       return true;
     }
     this.invalidate();

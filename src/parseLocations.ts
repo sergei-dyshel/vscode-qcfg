@@ -11,6 +11,8 @@ import {
 import { filterNonNull, concatArrays } from './tsUtils';
 import * as nodejs from './nodejs';
 import { Subprocess } from './subprocess';
+import { mapAsync } from './async';
+import * as lodash from 'lodash';
 
 const VIMGREP_PARSE_REGEX = /^(?<file>.+?):(?<line>\d+)(:(?<column>\d+))?(: (?<text>.*))?$/;
 
@@ -22,24 +24,11 @@ export enum ParseLocationFormat {
   GTAGS,
 }
 
-export class ParsedLocation extends Location {
-  constructor(
-    fileOrUri: string | Uri,
-    rangeOrPosition: Range | Position,
-    public text?: string,
-  ) {
-    super(
-      fileOrUri instanceof Uri ? fileOrUri : Uri.file(fileOrUri),
-      rangeOrPosition,
-    );
-  }
-}
-
 export function parseLocations(
   text: string,
   base: string,
   format: ParseLocationFormat,
-): ParsedLocation[] {
+): Location[] {
   const lines = text.match(/[^\r\n]+/g);
   if (!lines) return [];
   return filterNonNull(lines.map(line => parseLocation(line, base, format)));
@@ -58,7 +47,7 @@ export function parseLocation(
   line: string,
   base: string,
   format: ParseLocationFormat,
-): ParsedLocation | undefined {
+): Location | undefined {
   const regex = formatToRegex(format);
   const match = line.match(regex);
   if (!match) return;
@@ -70,18 +59,42 @@ export function parseLocation(
   } else {
     column = Number(groups.column);
   }
-  return new ParsedLocation(
-    nodejs.path.resolve(base || '', groups.file),
+  return new Location(
+    Uri.file(nodejs.path.resolve(base || '', groups.file)),
     new Position(Number(groups.line) - 1, column - 1),
-    groups.text ? groups.text : '',
   );
+}
+
+export async function findPatternInLocations(
+  locations: Location[],
+  pattern: string | RegExp,
+): Promise<Location[]> {
+  const escapedPattern =
+    pattern instanceof RegExp
+      ? pattern
+      : new RegExp(lodash.escapeRegExp(pattern));
+  return mapAsync(locations, async loc => {
+    if (!loc.range.isEmpty) return loc;
+    const doc = await workspace.openTextDocument(loc.uri);
+    const start = loc.range.start;
+    const text = doc.lineAt(start.line).text;
+    const match = escapedPattern.exec(text);
+    if (!match) return loc;
+    return new Location(
+      loc.uri,
+      new Range(
+        start.withCharacter(match.index),
+        start.withCharacter(match.index + match[0].length),
+      ),
+    );
+  });
 }
 
 export async function gatherLocationsFromFolder(
   cmd: string,
   folder: WorkspaceFolder,
   format: ParseLocationFormat,
-): Promise<ParsedLocation[]> {
+): Promise<Location[]> {
   const subproc = new Subprocess(cmd, {
     cwd: folder.uri.fsPath,
     allowedCodes: [0, 1],
@@ -95,11 +108,11 @@ export async function gatherLocationsFromFolder(
 export async function gatherLocationsFromWorkspace(
   cmd: string,
   format: ParseLocationFormat,
-): Promise<ParsedLocation[]> {
+): Promise<Location[]> {
   const locations = await Promise.all(
     workspace.workspaceFolders!.map(folder =>
       gatherLocationsFromFolder(cmd, folder, format),
     ),
   );
-  return concatArrays<ParsedLocation>(...locations);
+  return concatArrays<Location>(...locations);
 }

@@ -1,7 +1,7 @@
 'use strict';
 
 import { Logger, log } from './logging';
-import { zipArrays, concatArrays } from './tsUtils';
+import { zipArrays, concatArrays, izip } from './tsUtils';
 import { ExtensionContext } from 'vscode';
 import { Modules } from './module';
 
@@ -129,6 +129,24 @@ export async function mapAsyncSequential<V, R>(
   }
   return result;
 }
+
+declare global {
+  /**
+   * Map set keys to values asyncronously and return key -> value map
+   */
+  interface Set<T> {
+    mapAsync<V>(func: (k: T) => Promise<V>): Promise<Map<T, V>>;
+  }
+}
+
+Set.prototype.mapAsync = async function<K, V>(
+  this: Set<K>,
+  func: (k: K) => Promise<V>,
+): Promise<Map<K, V>> {
+  const keys = Array.from(this.values());
+  const values = await mapAsync(keys, func);
+  return new Map<K, V>(Array.from(izip(keys, values)));
+};
 
 export class MapUndefined {}
 
