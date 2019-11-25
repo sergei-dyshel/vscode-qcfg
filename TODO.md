@@ -26,5 +26,4 @@
 
 # Big/Long-term
 
-- Adopt style guide, move to ESLint.
 - Fix or remove history and selection history.
