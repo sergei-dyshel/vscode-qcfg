@@ -10,7 +10,6 @@ import {
   window,
   ExtensionContext,
   TextDocument,
-  Range,
   Location,
 } from 'vscode';
 import { handleAsyncStd } from './exception';
@@ -19,6 +18,7 @@ import { StaticTreeNode, TreeProvider, QcfgTreeView } from './treeView';
 import { Modules } from './module';
 import { mapSomeAsyncAndZip } from './async';
 import { maxNumber } from './tsUtils';
+import { LiveLocation, createLiveLocation } from './liveLocation';
 
 export async function setLocations(
   message: string,
@@ -53,7 +53,7 @@ export async function setLocations(
   });
   currentTrees = nodes;
   currentMessage = message;
-  QcfgTreeView.setProvider(provider);
+  QcfgTreeView.setProvider(locationTreeProvider);
   if (reveal)
     await QcfgTreeView.revealTree(undefined, { select: false, focus: false });
 }
@@ -93,7 +93,10 @@ namespace TreeBuilder {
   export function buildDirHierarchy(files: FileNode[]): StaticTreeNode[] {
     const forest = build(files);
     compress(forest);
-    return convertToHierarchy(forest, '');
+    return convertToHierarchy(forest, '').map(root => {
+      root.provider = locationTreeProvider;
+      return root;
+    });
   }
 
   function build(files: FileNode[]): Forest {
@@ -182,12 +185,16 @@ class LocationNode extends StaticTreeNode {
     const text = docLine.text;
     const trimOffset = docLine.firstNonWhitespaceCharacterIndex;
     super(text.substr(trimOffset));
-    this.uri = loc.uri;
+    this.location = createLiveLocation(document, loc.range, {
+      mergeOnReplace: true,
+      onInvalidated: () => {
+        this.remove();
+      },
+    });
+    this.location.register();
     this.allowRemoval();
     this.treeItem.id = str(loc);
-    this.range = loc.range;
     const label = this.treeItem.label as TreeItemLabel;
-    this.line = start.line;
     if (!start.isEqual(loc.range.end))
       label.highlights = [
         [
@@ -198,16 +205,19 @@ class LocationNode extends StaticTreeNode {
   }
 
   async show() {
-    const selection = this.range;
-    await window.showTextDocument(this.uri, { selection });
+    await window.showTextDocument(this.location.uri, {
+      selection: this.location.range,
+    });
   }
 
-  line: number;
-  uri: Uri;
-  range: Range;
+  get line() {
+    return this.location.range.start.line;
+  }
+
+  location: LiveLocation;
 }
 
-const provider: TreeProvider = {
+const locationTreeProvider: TreeProvider = {
   getTrees() {
     return currentTrees;
   },
@@ -215,7 +225,11 @@ const provider: TreeProvider = {
     return currentMessage;
   },
   removeNode(node: StaticTreeNode) {
-    if (node.isRoot) log.assert(currentTrees!.removeFirst(node));
+    if (node.isRoot) {
+      log.assert(currentTrees!.removeFirst(node));
+      QcfgTreeView.treeChanged();
+      return;
+    }
     node.remove();
   },
   onDidChangeSelection(nodes: StaticTreeNode[]) {
@@ -224,6 +238,16 @@ const provider: TreeProvider = {
     if (node instanceof LocationNode) {
       handleAsyncStd(node.show());
     }
+  },
+  onUnset() {
+    if (!currentTrees) return;
+    currentTrees.map(root =>
+      root.applyRecursively(node => {
+        if (!(node instanceof LocationNode)) return true;
+        node.location.unregister();
+        return true;
+      }),
+    );
   },
 };
 

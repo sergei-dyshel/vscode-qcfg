@@ -16,7 +16,7 @@ import { Modules } from './module';
 import { DefaultMap } from './tsUtils';
 import { DisposableLike } from './utils';
 
-abstract class LiveLocation extends Location implements DisposableLike {
+export abstract class LiveLocation extends Location implements DisposableLike {
   private registered_ = false;
   private valid_ = true;
 
@@ -158,6 +158,19 @@ export class LiveRange extends LiveLocation {
     this.invalidate();
     return false;
   }
+}
+
+export function createLiveLocation(
+  document: TextDocument,
+  range: Range,
+  opts: {
+    mergeOnReplace: boolean;
+    onInvalidated?: () => void;
+  },
+): LiveLocation {
+  if (range.isEmpty)
+    return new LivePosition(document, range.start, opts.onInvalidated);
+  return new LiveRange(document, range, opts);
 }
 
 export function adjustOffsetAfterChange(

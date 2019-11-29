@@ -72,6 +72,7 @@ export interface TreeNode {
   getParent(): ProviderResult<TreeNode>;
   onDidExpand?: () => void;
   onDidCollapse?: () => void;
+  provider?: TreeProvider;
 }
 
 export interface TreeProvider {
@@ -80,7 +81,7 @@ export interface TreeProvider {
   removeNode?(node: TreeNode): void;
   onDidChangeSelection?(nodes: TreeNode[]): void;
   onDidChangeVisibility?(visible: boolean): void;
-  /** Called when provider becomes inactive, e.g. other provider is used */
+  /** Called when provider becomes inactive, e.g. other provider is set */
   onUnset?(): void;
 }
 
@@ -121,6 +122,10 @@ export namespace QcfgTreeView {
 
   export function isVisible() {
     return treeView.visible;
+  }
+
+  export function treeChanged(node?: TreeNode) {
+    onChangeEmitter.fire(node);
   }
 }
 
@@ -181,11 +186,15 @@ export class StaticTreeNode implements TreeNode {
   }
 
   remove() {
-    if (!this.parent) throw new Error('Can not remove root node');
+    if (!this.parent) {
+      this.provider!.removeNode!(this);
+      return;
+    }
     const parent = this.parent;
     this.parent_ = undefined;
     log.assert(parent.children_.removeFirst(this));
-    onChangeEmitter.fire(parent);
+    if (parent.isLeaf) parent.remove();
+    else onChangeEmitter.fire(parent);
   }
 
   readonly treeItem: TreeItem2;
@@ -224,6 +233,7 @@ export class StaticTreeNode implements TreeNode {
 
   protected children_: StaticTreeNode[] = [];
   private parent_?: StaticTreeNode;
+  provider?: TreeProvider;
 }
 
 // eslint-disable-next-line import/export
