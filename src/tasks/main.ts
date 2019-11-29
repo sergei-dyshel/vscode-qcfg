@@ -52,14 +52,23 @@ import * as nodejs from '../nodejs';
 
 const CONFIG_FILE = 'vscode-qcfg.tasks.json';
 
-export async function runOneTime(name: string, params: TerminalTaskParams) {
-  const run = new TerminalTask(
-    params,
-    { label: name, fromWorkspace: false },
-    new TaskContext(),
-  );
-  await run.run();
+export async function runTask(
+  label: string,
+  params: Params,
+  options?: TaskRunOptions,
+) {
+  const fetchedParams = { params, fetchInfo: { label, fromWorkspace: false } };
+  const task = await createTask(fetchedParams, options);
+  await task.run();
 }
+
+interface TaskRunOptions {
+  folder?: 'all' | WorkspaceFolder;
+}
+
+//
+// Private
+//
 
 async function checkCondition(
   params: BaseTaskParams,
@@ -305,10 +314,6 @@ async function showTasks() {
   await anyTask.run();
 }
 
-interface TaskRunOptions {
-  folder?: 'all' | WorkspaceFolder;
-}
-
 async function createTask(
   fetchedParams: FetchedParams,
   options?: TaskRunOptions,
@@ -342,16 +347,6 @@ async function createTask(
       `Task "${label}" is not valid current context : ${err.message}`,
     );
   }
-}
-
-export async function runTask(
-  label: string,
-  params: Params,
-  options?: TaskRunOptions,
-) {
-  const fetchedParams = { params, fetchInfo: { label, fromWorkspace: false } };
-  const task = await createTask(fetchedParams, options);
-  await task.run();
 }
 
 async function runConfiguredTask(name: string, options?: TaskRunOptions) {

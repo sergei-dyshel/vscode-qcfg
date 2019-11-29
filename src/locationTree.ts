@@ -20,7 +20,7 @@ import { mapSomeAsyncAndZip } from './async';
 import { maxNumber } from './tsUtils';
 import { LiveLocation, createLiveLocation } from './liveLocation';
 
-export async function setLocations(
+export async function setPanelLocations(
   message: string,
   locations: Location[],
   reveal = true,

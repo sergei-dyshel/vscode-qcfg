@@ -62,7 +62,7 @@ export function existsInRoot(
  * Show peek dialog in case of multiple location or jump to the only
  * location (optionally search for tag in the line)
  */
-export async function peekLocation(
+export async function peekLocations(
   locations: vscode.Location[],
   tagForSingle?: string,
 ) {

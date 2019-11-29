@@ -196,7 +196,7 @@ declare global {
      * Iterate over array in reverse order.
      */
     reverseIter(): Iterable<T>;
-    iter(start: number, end: number, step?: number): Iterable<T>;
+    iter(start?: number, end?: number, step?: number): Iterable<T>;
     pairIter(): Iterable<[T, T]>;
     readonly top: T | undefined;
     readonly isEmpty: boolean;
@@ -234,11 +234,19 @@ Array.prototype.forEachRight = function<T>(
 
 Array.prototype.iter = function<T>(
   this: T[],
-  start: number,
-  end: number,
+  start?: number,
+  end?: number,
   step?: number,
 ) {
-  return new ArrayIterator<T>(this, new NumberIterator(start, end, step || 1));
+  if (step === 0) throw new Error('Can not have zero step');
+  return new ArrayIterator<T>(
+    this,
+    new NumberIterator(
+      start === undefined ? 0 : start,
+      end === undefined ? this.length : end,
+      step === undefined ? 1 : step,
+    ),
+  );
 };
 
 Array.prototype.reverseIter = function<T>(this: T[]) {

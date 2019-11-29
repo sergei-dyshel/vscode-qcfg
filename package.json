@@ -56,20 +56,8 @@
         "title": "qcfg: Open gtags definition (in workspace)"
       },
       {
-        "command": "qcfg.search.word.peek",
-        "title": "qcfg: Search current word in workspace (peek)"
-      },
-      {
-        "command": "qcfg.search.word.panel",
-        "title": "qcfg: Search current word in workspace (panel)"
-      },
-      {
         "command": "qcfg.search.todos",
         "title": "qcfg: search ToDos"
-      },
-      {
-        "command": "qcfg.search.structField",
-        "title": "qcfg: Search current struct field in workspace"
       },
       {
         "command": "qcfg.colors.select",
@@ -298,6 +286,30 @@
       {
         "command": "qcfg.formatSelectedFilesInSCM",
         "title": "Format selected files"
+      },
+      {
+        "title": "qcfg: Show last locations in panel",
+        "command": "qcfg.showLastLocationsInPanel"
+      },
+      {
+        "title": "qcfg: Rerun previous search",
+        "command": "qcfg.rerunPreviousSearch"
+      },
+      {
+        "command": "qcfg.search.word",
+        "title": "qcfg: Search word under cursor"
+      },
+      {
+        "title": "qcfg: Search selected text",
+        "command": "qcfg.search.selectedText"
+      },
+      {
+        "title": "qcfg: Search definitions",
+        "command": "qcfg.search.definitions"
+      },
+      {
+        "title": "qcfg: Search references",
+        "command": "qcfg.search.references"
       }
     ],
     "keybindings": [
@@ -338,15 +350,6 @@
       {
         "key": "alt+d",
         "command": "qcfg.gtags.definitionInWorkspace"
-      },
-      {
-        "key": "alt+r",
-        "command": "qcfg.search.word.peek",
-        "when": "editorFocus && !findWidgetVisible"
-      },
-      {
-        "key": "alt+shift+r",
-        "command": "qcfg.search.structField"
       },
       {
         "key": "ctrl+o",
@@ -1701,6 +1704,26 @@
         "args": {
           "text": "\u001bf"
         }
+      },
+      {
+        "mac": "cmd+d",
+        "command": "qcfg.search.definitions",
+        "when": "editorHasDefinitionProvider && editorTextFocus"
+      },
+      {
+        "mac": "cmd+r",
+        "command": "qcfg.search.references",
+        "when": "editorHasReferenceProvider && editorTextFocus"
+      },
+      {
+        "key": "alt+r",
+        "command": "qcfg.search.word",
+        "when": "editorTextFocus && !editorHasSelection"
+      },
+      {
+        "key": "alt+r",
+        "command": "qcfg.search.selectedText",
+        "when": "editorTextFocus && editorHasSelection"
       }
     ],
     "configuration": {

@@ -9,9 +9,6 @@ import {
   workspace,
   TextSearchResult,
   TextSearchMatch,
-  window,
-  TextEditor,
-  commands,
   CompletionItemKind,
   SnippetString,
   CompletionItemProvider,
@@ -21,22 +18,33 @@ import {
   CompletionContext,
   ExtensionContext,
   languages,
+  commands,
 } from 'vscode';
 import { selectMultiple } from './dialog';
 import { getCompletionPrefix } from './documentUtils';
 import { availableLanguageConfigs, getLanguageConfig } from './language';
-import { setLocations } from './locationTree';
 import { log } from './logging';
 import { abbrevMatch } from './stringUtils';
 import { Subprocess } from './subprocess';
-import { currentWorkspaceFolder, getCursorWordContext } from './utils';
-import { registerAsyncCommandWrapped } from './exception';
+import {
+  currentWorkspaceFolder,
+  getCursorWordContext,
+  getActiveTextEditor,
+} from './utils';
+import {
+  registerAsyncCommandWrapped,
+  CheckError,
+  checkNonNull,
+} from './exception';
 import { Modules } from './module';
 import {
   parseLocations,
   ParseLocationFormat,
   findPatternInLocations,
 } from './parseLocations';
+import { runTask } from './tasks/main';
+import { TaskType, Flag } from './tasks/params';
+import { saveAndPeekSearch } from './savedSearch';
 
 const TODO_CATEGORIES = [
   'TODO',
@@ -79,64 +87,66 @@ async function searchTodos() {
   );
   if (!filterCategories) return;
   const patterns = filterCategories.join('|');
-  const subproc = new Subprocess(`patterns='${patterns}' q-git-diff-todo`, {
-    cwd: folder.uri.fsPath,
-    allowedCodes: [0, 1],
+  return saveAndPeekSearch(`To-do items ${patterns}`, async () => {
+    const subproc = new Subprocess(`patterns='${patterns}' q-git-diff-todo`, {
+      cwd: folder.uri.fsPath,
+      allowedCodes: [0, 1],
+    });
+    const res = await subproc.wait();
+    if (res.code === 1) {
+      return [];
+    }
+    const parsedLocations = parseLocations(
+      res.stdout,
+      folder.uri.fsPath,
+      ParseLocationFormat.VIMGREP,
+    );
+    const locsWithRanges = await findPatternInLocations(
+      parsedLocations,
+      new RegExp(patterns),
+    );
+    return locsWithRanges;
   });
-  const res = await subproc.wait();
-  if (res.code === 1) {
-    await window.showWarningMessage(`No ${patterns} items were found`);
-    return;
+}
+
+async function searchWordUnderCursor() {
+  if (!getCursorWordContext()) {
+    throw new CheckError('The cursor is not on word');
   }
-  const parsedLocations = parseLocations(
-    res.stdout,
-    folder.uri.fsPath,
-    ParseLocationFormat.VIMGREP,
-  );
-  const locsWithRanges = await findPatternInLocations(
-    parsedLocations,
-    new RegExp(patterns),
-  );
-  await setLocations(patterns, locsWithRanges);
+  return runTask('search_word', {
+    type: TaskType.SEARCH,
+    // eslint-disable-next-line no-template-curly-in-string
+    searchTitle: 'Word "${cursorWord}"',
+    // eslint-disable-next-line no-template-curly-in-string
+    query: '${cursorWord}',
+    flags: [Flag.CASE, Flag.WORD],
+  });
 }
 
-// TODO: move to utils
-function editorCurrentLocation(editor: TextEditor) {
-  return new Location(editor.document.uri, editor.selection);
+async function searchSelectedText() {
+  if (getActiveTextEditor().selection.isEmpty) {
+    throw new CheckError('No text selected');
+  }
+  return runTask('search_selection', {
+    type: TaskType.SEARCH,
+    // eslint-disable-next-line no-template-curly-in-string
+    searchTitle: 'Selected text "${selectedText}"',
+    // eslint-disable-next-line no-template-curly-in-string
+    query: '${selectedText}',
+    flags: [Flag.CASE],
+  });
 }
 
-// TODO: move to utils
-function peekLocations(current: Location, locations: Location[]) {
-  return commands.executeCommand(
-    'editor.action.showReferences',
-    current.uri,
-    current.range.start,
-    locations,
-  );
-}
-
-async function searchWord(panel: boolean) {
-  const { editor, word } = log.assertNonNull(getCursorWordContext());
-  const query: TextSearchQuery = { pattern: word, isWordMatch: true };
-  const parsedLocations = await searchInFiles(query);
-  if (panel)
-    await setLocations(`Word "${word}"`, parsedLocations, true /* reveal */);
-  else await peekLocations(editorCurrentLocation(editor), parsedLocations);
-}
-
-async function searchStructField() {
-  const { editor, word } = log.assertNonNull(getCursorWordContext());
-  const query: TextSearchQuery = {
-    pattern: '(->|\\.)' + word,
-    isWordMatch: true,
-    isRegExp: true,
-  };
-  const locations = await searchInFiles(query);
-  await commands.executeCommand(
-    'editor.action.showReferences',
-    editor.document.uri,
-    editor.selection.active,
-    locations,
+async function searchWithCommand(type: string, command: string) {
+  const ctx = checkNonNull(getCursorWordContext(), 'The cursor is not on word');
+  return saveAndPeekSearch(
+    `${type} of "${ctx.word}"`,
+    async () =>
+      (await commands.executeCommand(
+        command,
+        ctx.editor.document.uri,
+        ctx.range.start,
+      )) as Location[],
   );
 }
 
@@ -200,14 +210,19 @@ function activate(context: ExtensionContext) {
       availableLanguageConfigs(),
       TodoCompletion.provider,
     ),
-    registerAsyncCommandWrapped('qcfg.search.word.peek', () =>
-      searchWord(false /* peek */),
+    registerAsyncCommandWrapped('qcfg.search.word', () =>
+      searchWordUnderCursor(),
     ),
-    registerAsyncCommandWrapped('qcfg.search.word.panel', () =>
-      searchWord(true /* panel */),
+    registerAsyncCommandWrapped('qcfg.search.selectedText', () =>
+      searchSelectedText(),
+    ),
+    registerAsyncCommandWrapped('qcfg.search.definitions', () =>
+      searchWithCommand('Definitions', 'vscode.executeDefinitionProvider'),
+    ),
+    registerAsyncCommandWrapped('qcfg.search.references', () =>
+      searchWithCommand('References', 'vscode.executeReferenceProvider'),
     ),
     registerAsyncCommandWrapped('qcfg.search.todos', searchTodos),
-    registerAsyncCommandWrapped('qcfg.search.structField', searchStructField),
   );
 }
 

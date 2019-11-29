@@ -27,11 +27,22 @@ type AsyncFunction = (...args: any[]) => Promise<any>;
 type VoidFunction = (...args: any[]) => void | undefined;
 type Function = (...args: any[]) => any;
 
+/**
+ * Non-critical exception meant to show message to user
+ */
 export class CheckError extends Error {
   constructor(message: string) {
     super(message);
     this.name = 'CheckError';
   }
+}
+
+/**
+ * Throw non-critical exception if value is null/undefined
+ */
+export function checkNonNull<T>(val: T | undefined | null, message: string): T {
+  if (val === undefined || val === null) throw new CheckError(message);
+  return val as T;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -19,7 +19,7 @@ import {
 } from 'vscode';
 import { mapAsync, mapAsyncSequential } from '../async';
 import { ListSelectable } from '../dialog';
-import { getDocumentWorkspaceFolder, peekLocation } from '../fileUtils';
+import { getDocumentWorkspaceFolder, peekLocations } from '../fileUtils';
 import * as language from '../language';
 import { log, LogLevel } from '../logging';
 import * as nodejs from '../nodejs';
@@ -46,6 +46,7 @@ import {
   TerminalTaskParams,
 } from './params';
 import { handleAsyncStd } from '../exception';
+import { saveAndPeekSearch } from '../savedSearch';
 
 export interface FetchInfo {
   label: string;
@@ -117,8 +118,7 @@ export class TaskContext {
       if (!this.SUBSTITUTE_VARS.includes(varname))
         throw new ParamsError(`Unexpected variable "${varname}"`);
       const sub = this.vars[varname] as string | undefined;
-      if (!sub)
-        throw new SubstituteError(`Could not substitute var "${varname}"`);
+      if (!sub) throw new TaskVarSubstituteError(varname);
       return sub;
     });
   }
@@ -142,11 +142,11 @@ export class ParamsError extends Error {}
 export class ValidationError extends Error {}
 
 /**
- * Could not substitue some variables.
+ * Could not substitue variable
  */
-export class SubstituteError extends ValidationError {
-  constructor(message: string) {
-    super('Some variables could not be substituted: ' + message);
+export class TaskVarSubstituteError extends ValidationError {
+  constructor(public varname: string) {
+    super(`Could not substitute variable "${varname}"`);
   }
 }
 
@@ -481,7 +481,7 @@ export class ProcessTask extends BaseQcfgTask {
       const locations = await this.getLocations();
       if (locations.isEmpty)
         log.warn(`Task "${this.info.label}" returned no locations`);
-      else await peekLocation(locations, this.parseTag);
+      else await peekLocations(locations, this.parseTag);
     } else {
       await this.runAndGetOutput();
     }
@@ -526,7 +526,7 @@ export class ProcessMultiTask extends BaseQcfgTask {
       const locations = await this.getLocations();
       if (locations.isEmpty)
         log.warn(`Task "${this.info.label}" returned no locations`);
-      else await peekLocation(locations, this.parseTag);
+      else await peekLocations(locations, this.parseTag);
     } else {
       await Promise.all(this.folderTasks.map(task => task.run()));
     }
@@ -537,6 +537,7 @@ export class SearchMultiTask extends BaseQcfgTask {
   private query: TextSearchQuery;
   private options: FindTextInFilesOptions;
   private folders: WorkspaceFolder[];
+  private searchTitle: string;
 
   constructor(
     params: SearchTaskParams,
@@ -560,6 +561,9 @@ export class SearchMultiTask extends BaseQcfgTask {
       isCaseSensitive: flags.includes(Flag.CASE),
       isWordMatch: flags.includes(Flag.WORD),
     };
+    this.searchTitle = params.searchTitle
+      ? folderContexts[0].substitute(params.searchTitle)
+      : `Query "${this.query.pattern}"`;
     this.options = {
       // XXX: there is a bug that happens when RelativePattern is used, it
       // causes search to return partial results, so we must use filtering
@@ -579,10 +583,7 @@ export class SearchMultiTask extends BaseQcfgTask {
   }
 
   async run() {
-    const matches = await this.getLocations();
-    if (matches.isEmpty) {
-      await window.showWarningMessage('No matches found');
-    } else await peekLocation(matches);
+    return saveAndPeekSearch(this.searchTitle, () => this.getLocations());
   }
 }
 

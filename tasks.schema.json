@@ -249,6 +249,9 @@
         "query": {
           "type": "string"
         },
+        "searchTitle": {
+          "type": "string"
+        },
         "title": {
           "type": "string"
         },

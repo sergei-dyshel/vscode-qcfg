@@ -52,20 +52,8 @@
         "title": "qcfg: Open gtags definition (in workspace)"
       },
       {
-        "command": "qcfg.search.word.peek",
-        "title": "qcfg: Search current word in workspace (peek)"
-      },
-      {
-        "command": "qcfg.search.word.panel",
-        "title": "qcfg: Search current word in workspace (panel)"
-      },
-      {
         "command": "qcfg.search.todos",
         "title": "qcfg: search ToDos"
-      },
-      {
-        "command": "qcfg.search.structField",
-        "title": "qcfg: Search current struct field in workspace"
       },
       {
         "command": "qcfg.colors.select",
@@ -166,15 +154,6 @@
       {
         "key": "alt+d",
         "command": "qcfg.gtags.definitionInWorkspace"
-      },
-      {
-        "key": "alt+r",
-        "command": "qcfg.search.word.peek",
-        "when": "editorFocus && !findWidgetVisible"
-      },
-      {
-        "key": "alt+shift+r",
-        "command": "qcfg.search.structField"
       },
       {
         "key": "ctrl+o",

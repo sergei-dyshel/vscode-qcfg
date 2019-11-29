@@ -39,6 +39,7 @@ import * as documentCache from './documentCache';
 import * as formatting from './formatting';
 import * as diagnostic from './diagnostic';
 import * as exception from './exception';
+import * as savedSearch from './savedSearch';
 
 export function activate(context: vscode.ExtensionContext) {
   console.log('Extension active');
@@ -82,6 +83,7 @@ export function activate(context: vscode.ExtensionContext) {
     exception,
     tsUtils,
     documentUtils,
+    savedSearch,
   };
 }
 

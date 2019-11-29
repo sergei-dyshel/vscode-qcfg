@@ -132,6 +132,7 @@ export interface ProcessTaskParams extends BaseProcessTaskParams {
 export interface SearchTaskParams extends BaseTaskParams {
   type: TaskType.SEARCH;
   query: string;
+  searchTitle?: string;
   flags?: Array<Flag.HIDDEN | Flag.REGEX | Flag.WORD | Flag.CASE>;
 }
 
