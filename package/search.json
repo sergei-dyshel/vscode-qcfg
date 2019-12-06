@@ -11,11 +11,19 @@
       },
       {
         "command": "qcfg.search.word",
-        "title": "qcfg: Search word under cursor"
+        "title": "qcfg: Search word under cursor (CURRENT workspace folder only)"
       },
       {
-        "title": "qcfg: Search selected text",
+        "command": "qcfg.search.word.allFolders",
+        "title": "qcfg: Search word under cursor (ALL workspace folders)"
+      },
+      {
+        "title": "qcfg: Search selected text (CURRENT workspace folder only)",
         "command": "qcfg.search.selectedText"
+      },
+      {
+        "title": "qcfg: Search selected text (ALL workspace folders)",
+        "command": "qcfg.search.selectedText.allFolders"
       },
       {
           "title": "qcfg: Search definitions",
@@ -43,8 +51,18 @@
         "when": "editorTextFocus && !editorHasSelection"
       },
       {
+        "key": "alt+shift+r",
+        "command": "qcfg.search.word.allFolders",
+        "when": "editorTextFocus && !editorHasSelection"
+      },
+      {
         "key": "alt+r",
         "command": "qcfg.search.selectedText",
+        "when": "editorTextFocus && editorHasSelection"
+      },
+      {
+        "key": "alt+shift+r",
+        "command": "qcfg.search.selectedText.allFolders",
         "when": "editorTextFocus && editorHasSelection"
       }
     ]
