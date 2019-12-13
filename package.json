@@ -9,7 +9,7 @@
     "url": "https://github.com/sergei-dyshel/qyron-config.git"
   },
   "engines": {
-    "vscode": "^1.38.0"
+    "vscode": "^1.41.0"
   },
   "enableProposedApi": true,
   "categories": [
@@ -1942,7 +1942,7 @@
     "@types/source-map-support": "^0.5.0",
     "@types/sprintf-js": "^1.1.2",
     "@types/string-format": "^2.0.0",
-    "@types/vscode": "^1.38.0",
+    "@types/vscode": "^1.41.0",
     "@types/webpack": "^4.39.3",
     "@typescript-eslint/eslint-plugin": "^2.6.1",
     "@typescript-eslint/parser": "^2.6.1",
