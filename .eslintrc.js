@@ -83,5 +83,11 @@ module.exports = {
     'no-extend-native': [warn, { exceptions: ['Array', 'Set', 'Map'] }],
     'no-restricted-globals': off,
     'no-nested-ternary': off,
+    'arrow-function': off,
+    '@typescript-eslint/no-empty-function': [
+      warn,
+      { allow: ['arrowFunctions'] },
+    ],
+    'new-cap': [warn, { newIsCapExceptions: ['default'] }],
   },
 };
