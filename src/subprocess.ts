@@ -36,6 +36,14 @@ interface SubprocessOptions {
   logLevel?: LogLevel;
 }
 
+export async function runSubprocessAndWait(
+  command: string | string[],
+  options?: SubprocessOptions,
+) {
+  const subproc = new Subprocess(command, options);
+  return subproc.wait();
+}
+
 export class Subprocess {
   constructor(command: string | string[], private options?: SubprocessOptions) {
     this.waitingContext = { resolve: _ => {}, reject: _ => {} };

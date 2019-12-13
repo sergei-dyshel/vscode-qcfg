@@ -1,18 +1,42 @@
 'use strict';
 
-import * as vscode from 'vscode';
 import { log } from './logging';
 import { listenWrapped } from './exception';
 import { Modules } from './module';
+import { windowManager, Window } from 'node-window-manager';
+import { WindowState, ExtensionContext, window } from 'vscode';
 
-function windowStateChanged(state: vscode.WindowState) {
-  const msg = state.focused ? 'Focused' : 'Unfocused';
-  log.debug(msg);
+export async function focusWindow() {
+  if (!windowId) {
+    return;
+  }
+  log.info('Focusing current OS window');
+  new Window(windowId).bringToTop();
 }
 
-function activate(context: vscode.ExtensionContext) {
+let windowId: number | undefined;
+
+function tryGetActiveWindowId(): number {
+  return windowManager.getActiveWindow().id;
+}
+
+function windowStateChanged(state: WindowState) {
+  const msg = state.focused ? 'Focused' : 'Unfocused';
+  log.debug(msg);
+  if (state.focused && !windowId) {
+    windowId = tryGetActiveWindowId();
+    log.info(`Current window id: ${windowId}`);
+  }
+}
+
+function activate(context: ExtensionContext) {
+  if (window.state.focused) {
+    windowId = tryGetActiveWindowId();
+    log.info(`Current window id: ${windowId}`);
+  }
+
   context.subscriptions.push(
-    listenWrapped(vscode.window.onDidChangeWindowState, windowStateChanged),
+    listenWrapped(window.onDidChangeWindowState, windowStateChanged),
   );
 }
 

@@ -17,6 +17,7 @@ import * as fileUtils from './fileUtils';
 import { log } from './logging';
 import { Modules } from './module';
 import { parseNumber } from './stringUtils';
+import { focusWindow } from './windowState';
 
 // eslint-disable-next-line import/no-mutable-exports
 export let port = 48123;
@@ -56,6 +57,7 @@ async function handleOpen(location: string, folder: string) {
   await window.showTextDocument(Uri.file(fullPath), {
     selection: new Selection(pos, pos),
   });
+  await focusWindow();
 }
 
 function handleCmd(cmd: string) {
