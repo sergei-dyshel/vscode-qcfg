@@ -1,8 +1,4 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
-
+/* eslint-disable import/no-extraneous-dependencies */
 // @ts-check
 
 'use strict';
@@ -10,10 +6,11 @@
 import path from 'path';
 import webpack from 'webpack';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const generateConfig = (env: any): webpack.Configuration => ({
   target: 'node', // vscode extensions run in a Node.js-context 📖 ->
   // https://webpack.js.org/configuration/node/
-
+  context: __dirname,
   entry: './src/extension.ts', // the entry point of this extension, 📖 ->
   // https://webpack.js.org/configuration/entry-context/
   output: {
@@ -22,22 +19,30 @@ const generateConfig = (env: any): webpack.Configuration => ({
     path: path.resolve(__dirname, 'dist'),
     filename: 'extension.js',
     libraryTarget: 'commonjs2',
-    devtoolModuleFilenameTemplate: '../[resource-path]'
+    devtoolModuleFilenameTemplate: '../[resource-path]',
   },
   devtool: 'source-map',
   optimization: {
-    minimize: false
+    minimize: false,
   },
-  externals: {
-    vscode: 'commonjs vscode' // the vscode-module is created on-the-fly and must
-    // be excluded. Add other modules that cannot be
-    // webpack'ed, 📖 ->
-    // https://webpack.js.org/configuration/externals/
-  },
+  externals: [
+    {
+      vscode: 'commonjs vscode', // the vscode-module is created on-the-fly and must
+
+      // be excluded. Add other modules that cannot be
+      // webpack'ed, 📖 ->
+      // https://webpack.js.org/configuration/externals/
+    },
+    /Debug\/iconv\.node/,
+  ],
   resolve: {
     // support reading TypeScript and JavaScript files, 📖 ->
     // https://github.com/TypeStrong/ts-loader
-    extensions: ['.ts', '.js', '.node']
+    extensions: ['.ts', '.js', '.node'],
+  },
+  node: {
+    // needed so that `active-win` could work
+    __dirname: true,
   },
   module: {
     rules: [
@@ -51,29 +56,24 @@ const generateConfig = (env: any): webpack.Configuration => ({
               compilerOptions: {
                 module: 'es6', // override `tsconfig.json` so that TypeScript
                 // emits native JavaScript modules.
-                noUnusedLocals: false
-              }
-            }
+                noUnusedLocals: false,
+              },
+            },
           },
-          { loader: 'ifdef-loader', options: { DEBUG: env && env.DEBUG } }
-        ]
+          { loader: 'ifdef-loader', options: { DEBUG: env && env.DEBUG } },
+        ],
       },
-      { test: /\.node$/, use: 'node-loader' }
-    ]
+      { test: /\.node$/, use: 'node-loader', exclude: '/Debug/iconv.node' },
+    ],
   },
   stats: {
     all: false,
     errors: true,
     warnings: true,
-    warningsFilter: warning => {
-      return (
-        warning.includes("Can't resolve 'spawn-sync'") ||
-        warning.includes('build/Debug')
-      );
-    }
-  }
+    warningsFilter: warning =>
+      warning.includes("Can't resolve 'spawn-sync'") ||
+      warning.includes('build/Debug'),
+  },
 });
 
-module.exports = (env: any) => {
-  return generateConfig(env);
-};
+module.exports = (env: unknown) => generateConfig(env);
