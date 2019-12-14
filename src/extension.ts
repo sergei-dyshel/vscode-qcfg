@@ -41,6 +41,7 @@ import * as diagnostic from './diagnostic';
 import * as exception from './exception';
 import * as savedSearch from './savedSearch';
 import * as peekOutline from './peekOutline';
+import * as editorGroups from './editorGroups';
 
 export function activate(context: vscode.ExtensionContext) {
   console.log('Extension active');
@@ -86,6 +87,7 @@ export function activate(context: vscode.ExtensionContext) {
     documentUtils,
     savedSearch,
     peekOutline,
+    editorGroups,
   };
 }
 

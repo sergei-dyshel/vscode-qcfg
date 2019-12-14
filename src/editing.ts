@@ -6,8 +6,6 @@ import {
   commands,
   TextEditorEdit,
   Selection,
-  ViewColumn,
-  TextEditorRevealType,
   ExtensionContext,
   workspace,
   ConfigurationTarget,
@@ -26,14 +24,12 @@ import {
   selectRange,
   trimBrackets,
 } from './textUtils';
-import { log } from './logging';
 import { getActiveTextEditor, getCursorWordContext } from './utils';
 
 import { forceNonTemporary, resetTemporary } from './history';
 import {
   registerAsyncCommandWrapped,
   registerTextEditorCommandWrapped,
-  executeCommandHandled,
   registerSyncCommandWrapped,
 } from './exception';
 import { Modules } from './module';
@@ -79,71 +75,6 @@ function swapCursorAndAnchor(editor: TextEditor) {
   editor.selections = editor.selections.map(
     sel => new Selection(sel.active, sel.anchor),
   );
-}
-
-async function cloneEditorBeside() {
-  log.assert(window.activeTextEditor);
-  const editor = window.activeTextEditor as TextEditor;
-  const columns = new Set<ViewColumn>();
-  for (const visEditor of window.visibleTextEditors)
-    if (visEditor.viewColumn) columns.add(visEditor.viewColumn);
-
-  if (columns.size === 1) {
-    executeCommandHandled('workbench.action.splitEditor');
-    return;
-  }
-  let newColumn: ViewColumn;
-  switch (editor.viewColumn) {
-    case ViewColumn.One:
-      newColumn = ViewColumn.Two;
-      break;
-    case ViewColumn.Two:
-      newColumn = ViewColumn.One;
-      break;
-    default:
-      return;
-  }
-  // console.log(`Active editor ${editor.viewColumn}, new column ${newColumn}`);
-  const visible = editor.visibleRanges[0];
-  const pos = editor.selection.active;
-  const doc = editor.document;
-  const newEditor = await window.showTextDocument(doc, newColumn);
-  newEditor.selection = new Selection(pos, pos);
-  newEditor.revealRange(visible, TextEditorRevealType.InCenter);
-}
-
-type DirectionArg = 'up' | 'down' | 'left' | 'right';
-
-async function syncEditorToDirection(args: unknown[]) {
-  const dir = args[0] as DirectionArg;
-  log.assert(window.activeTextEditor);
-  const editor = window.activeTextEditor as TextEditor;
-  const visible = editor.visibleRanges[0];
-  const pos = editor.selection.active;
-  const doc = editor.document;
-  const column = editor.viewColumn;
-  const focusCmd = {
-    up: 'workbench.action.focusAboveGroup',
-    down: 'workbench.action.focusBelowGroup',
-    left: 'workbench.action.focusLeftGroup',
-    right: 'workbench.action.focusRightGroup',
-  };
-  const splitCmd = {
-    down: 'workbench.action.splitEditorDown',
-    left: 'workbench.action.splitEditorLeft',
-    right: 'workbench.action.splitEditorRight',
-    up: 'workbench.action.splitEditorUp',
-  };
-  await commands.executeCommand(focusCmd[dir]);
-  const adjEditor = window.activeTextEditor!;
-  if (adjEditor.viewColumn === column) {
-    await commands.executeCommand(splitCmd[dir]);
-    return;
-  }
-  // console.log(`Active editor ${editor.viewColumn}, new column ${newColumn}`);
-  const newEditor = await window.showTextDocument(doc, adjEditor);
-  newEditor.selection = new Selection(pos, pos);
-  newEditor.revealRange(visible, TextEditorRevealType.InCenter);
 }
 
 async function smartPaste(editor: TextEditor, edit: TextEditorEdit) {
@@ -366,11 +297,6 @@ function activate(context: ExtensionContext) {
     ),
     registerTextEditorCommandWrapped('qcfg.smartPaste', smartPaste),
     registerAsyncCommandWrapped('qcfg.surroundWith', surroundWith),
-    registerAsyncCommandWrapped('qcfg.cloneEditorBeside', cloneEditorBeside),
-    registerAsyncCommandWrapped(
-      'qcfg.syncEditorToDirection',
-      syncEditorToDirection,
-    ),
     registerAsyncCommandWrapped(
       'qcfg.wrapWithBracketsInline',
       wrapWithBracketsInline,

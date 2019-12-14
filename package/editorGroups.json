@@ -1,0 +1,46 @@
+{
+  "contributes": {
+    "commands": [
+      {
+        "command": "qcfg.focusEditorBeside",
+        "title": "qcfg: Focus editor beside"
+      },
+      {
+        "command": "qcfg.syncToEditorBeside",
+        "title": "qcfg: Sync position to editor beside"
+      }
+    ],
+    "keybindings": [
+      {
+        "key": "ctrl+space",
+        "mac": "cmd+space",
+        "command": "qcfg.focusEditorBeside"
+      },
+      {
+        "key": "shift+ctrl+space",
+        "mac": "shift+cmd+space",
+        "command": "qcfg.syncToEditorBeside"
+      },
+      {
+        "key": "cmd+k cmd+shift+left",
+        "command": "qcfg.syncEditorToDirection",
+        "args": ["left"]
+      },
+      {
+        "key": "cmd+k cmd+shift+right",
+        "command": "qcfg.syncEditorToDirection",
+        "args": ["right"]
+      },
+      {
+        "key": "cmd+k cmd+shift+down",
+        "command": "qcfg.syncEditorToDirection",
+        "args": ["down"]
+      },
+      {
+        "key": "cmd+k cmd+shift+up",
+        "command": "qcfg.syncEditorToDirection",
+        "args": ["up"]
+      }
+    ]
+  }
+}

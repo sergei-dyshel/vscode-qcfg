@@ -14,6 +14,12 @@ export async function focusWindow() {
   new Window(windowId).bringToTop();
 }
 
+export function windowIsVertical(): boolean {
+  if (!window.state.focused) return false;
+  const bounds = windowManager.getActiveWindow().getBounds();
+  return (bounds.height ?? 0) > (bounds.width ?? 0);
+}
+
 let windowId: number | undefined;
 
 function tryGetActiveWindowId(): number {

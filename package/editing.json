@@ -30,10 +30,6 @@
         "title": "qcfg: Swap cursor and anchor"
       },
       {
-        "command": "qcfg.cloneEditorBeside",
-        "title": "qcfg: Clone editor to side"
-      },
-      {
         "command": "qcfg.smartPaste",
         "title": "qcfg: Smart paste"
       },
@@ -92,11 +88,6 @@
         "when": "editorTextFocus"
       },
       {
-        "key": "ctrl+\\",
-        "mac": "cmd+\\",
-        "command": "qcfg.cloneEditorBeside"
-      },
-      {
         "key": "alt+a",
         "command": "qcfg.alternate.switch"
       },
@@ -145,26 +136,6 @@
         "command": "qcfg.surroundWith",
         "when": "editorTextFocus && editorHasSelection",
         "args": ["[", "]", "right"]
-      },
-      {
-        "key": "alt+shift+h",
-        "command": "qcfg.syncEditorToDirection",
-        "args": ["left"]
-      },
-      {
-        "key": "alt+shift+l",
-        "command": "qcfg.syncEditorToDirection",
-        "args": ["right"]
-      },
-      {
-        "key": "alt+shift+j",
-        "command": "qcfg.syncEditorToDirection",
-        "args": ["down"]
-      },
-      {
-        "key": "alt+shift+k",
-        "command": "qcfg.syncEditorToDirection",
-        "args": ["up"]
       }
     ]
   }
