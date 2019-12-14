@@ -1,0 +1,14 @@
+{
+  "contributes": {
+    "commands": [
+      {
+        "command": "qcfg.peekFlatOutline",
+        "title": "qcfg: Peek document outline (flat)"
+      },
+      {
+        "command": "qcfg.peekDocumentOutline",
+        "title": "qcfg: Peek document outline (hierarchical)"
+      }
+    ]
+  }
+}

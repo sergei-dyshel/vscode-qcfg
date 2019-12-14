@@ -318,6 +318,14 @@
       {
         "title": "qcfg: Search references",
         "command": "qcfg.search.references"
+      },
+      {
+        "command": "qcfg.peekFlatOutline",
+        "title": "qcfg: Peek document outline (flat)"
+      },
+      {
+        "command": "qcfg.peekDocumentOutline",
+        "title": "qcfg: Peek document outline (hierarchical)"
       }
     ],
     "keybindings": [

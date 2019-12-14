@@ -40,6 +40,7 @@ import * as formatting from './formatting';
 import * as diagnostic from './diagnostic';
 import * as exception from './exception';
 import * as savedSearch from './savedSearch';
+import * as peekOutline from './peekOutline';
 
 export function activate(context: vscode.ExtensionContext) {
   console.log('Extension active');
@@ -84,6 +85,7 @@ export function activate(context: vscode.ExtensionContext) {
     tsUtils,
     documentUtils,
     savedSearch,
+    peekOutline,
   };
 }
 
