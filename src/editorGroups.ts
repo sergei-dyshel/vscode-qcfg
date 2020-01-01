@@ -16,6 +16,9 @@ import { log } from './logging';
 
 async function focusEditorBeside(syncPosition: boolean) {
   log.assert(window.activeTextEditor);
+  if (!syncPosition) {
+    return commands.executeCommand('workbench.action.focusNextGroup');
+  }
   const editor = window.activeTextEditor as TextEditor;
   const columns = new Set<ViewColumn>();
   for (const visEditor of window.visibleTextEditors)
@@ -45,9 +48,6 @@ async function focusEditorBeside(syncPosition: boolean) {
   const pos = editor.selection.active;
   const doc = editor.document;
   const newEditor = await window.showTextDocument(doc, newColumn);
-  if (!syncPosition) {
-    return;
-  }
   newEditor.selection = new Selection(pos, pos);
   newEditor.revealRange(visible, TextEditorRevealType.InCenter);
 }
