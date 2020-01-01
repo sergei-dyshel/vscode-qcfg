@@ -285,7 +285,8 @@ function stringifyTextEditor(editor: TextEditor) {
 function stringifyObject(x: object | null): string {
   if (x === null) return '<null>';
   if (x instanceof Uri) {
-    return workspace.asRelativePath(x);
+    if (x.scheme === 'file') return workspace.asRelativePath(x);
+    return x.toString(true /* skip encoding */);
   }
   if ('fileName' in x && 'uri' in x) {
     // TextDocument

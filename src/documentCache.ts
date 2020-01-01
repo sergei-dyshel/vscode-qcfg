@@ -11,7 +11,7 @@ import { log } from './logging';
 const openDocuments = new Dictionary<Uri, TextDocument>();
 
 function filterUri(uri: Uri) {
-  const SCHEMES = ['git', 'output'];
+  const SCHEMES = ['git', 'gitfs', 'output'];
   if (SCHEMES.includes(uri.scheme)) return true;
   return false;
 }
