@@ -42,6 +42,7 @@ import * as exception from './exception';
 import * as savedSearch from './savedSearch';
 import * as peekOutline from './peekOutline';
 import * as editorGroups from './editorGroups';
+import * as tagDb from './tagDb';
 
 export function activate(context: vscode.ExtensionContext) {
   console.log('Extension active');
@@ -88,6 +89,7 @@ export function activate(context: vscode.ExtensionContext) {
     savedSearch,
     peekOutline,
     editorGroups,
+    tagDb,
   };
 }
 

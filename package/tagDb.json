@@ -1,0 +1,10 @@
+{
+    "contributes": {
+        "commands": [
+            {
+                "title": "qcfg: Create tag database",
+                "command": "qcfg.tagdb.create"
+            }
+        ]
+    }
+}

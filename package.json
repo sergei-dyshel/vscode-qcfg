@@ -330,6 +330,10 @@
       {
         "command": "qcfg.syncToEditorBeside",
         "title": "qcfg: Sync position to editor beside"
+      },
+      {
+        "title": "qcfg: Create tag database",
+        "command": "qcfg.tagdb.create"
       }
     ],
     "keybindings": [

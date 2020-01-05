@@ -11,13 +11,13 @@ import { log } from './logging';
 const openDocuments = new Dictionary<Uri, TextDocument>();
 
 function filterUri(uri: Uri) {
-  const SCHEMES = ['git', 'gitfs', 'output'];
+  const SCHEMES = ['file'];
   if (SCHEMES.includes(uri.scheme)) return true;
   return false;
 }
 
 function onDidOpenTextDocument(document: TextDocument) {
-  if (filterUri(document.uri)) return;
+  if (!filterUri(document.uri)) return;
   log.debug('Opened text document ', document);
   if (openDocuments.containsKey(document.uri)) {
     log.warn('Opened duplicate text document', document);
@@ -26,7 +26,7 @@ function onDidOpenTextDocument(document: TextDocument) {
 }
 
 function onDidCloseTextDocument(document: TextDocument) {
-  if (filterUri(document.uri)) return;
+  if (!filterUri(document.uri)) return;
   log.debug('Closed text document ', document);
   openDocuments.remove(document.uri);
 }
