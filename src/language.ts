@@ -51,12 +51,20 @@ export function sendDidSave(document: vscode.TextDocument) {
   }
 }
 
+export function cclsInError() {
+  const extension = vscode.extensions.getExtension('ccls-project.ccls');
+  if (!extension || !extension.isActive) return false;
+  const exports = extension.exports;
+  if (typeof exports !== 'object' || !('inError' in exports)) return false;
+  return exports.inError();
+}
+
 export async function reindex() {
   const cquery = vscode.extensions.getExtension('cquery-project.cquery');
   const ccls = vscode.extensions.getExtension('ccls-project.ccls');
   if (cquery && cquery.isActive) {
     await vscode.commands.executeCommand('cquery.freshenIndex');
-  } else if (ccls && ccls.isActive) {
+  } else if (ccls && ccls.isActive && !cclsInError()) {
     await vscode.commands.executeCommand('ccls.reload');
   }
 }
