@@ -38,6 +38,15 @@ export interface LoggerOptions {
   name?: string;
 }
 
+export function assert(
+  condition: boolean | undefined | null | object,
+  ...args: unknown[]
+): asserts condition {
+  if (!condition) {
+    throw new Error(formatMessage(args, 'Assertion failed'));
+  }
+}
+
 export class Logger {
   constructor(options?: LoggerOptions) {
     this.name = '';
