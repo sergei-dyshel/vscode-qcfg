@@ -42,6 +42,7 @@ import * as exception from './exception';
 import * as savedSearch from './savedSearch';
 import * as peekOutline from './peekOutline';
 import * as editorGroups from './editorGroups';
+import * as sshFs from './sshFs';
 
 export function activate(context: vscode.ExtensionContext) {
   console.log('Extension active');
@@ -52,6 +53,7 @@ export function activate(context: vscode.ExtensionContext) {
   // history.activate(context);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (console as any).qcfg = {
+    vscode,
     nodejs,
     language,
     editing,
@@ -88,6 +90,7 @@ export function activate(context: vscode.ExtensionContext) {
     savedSearch,
     peekOutline,
     editorGroups,
+    sshFs,
   };
 }
 

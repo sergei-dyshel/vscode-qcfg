@@ -18,6 +18,7 @@ import { log } from './logging';
 import { Modules } from './module';
 import { parseNumber } from './stringUtils';
 import { focusWindow } from './windowState';
+import { openRemoteFileViaSsh } from './sshFs';
 
 // eslint-disable-next-line import/no-mutable-exports
 export let port = 48123;
@@ -73,6 +74,9 @@ function handleCmd(cmd: string) {
     case 'open':
       log.assert(args.length === 2);
       handleAsyncStd(handleOpen(args[0], args[1]));
+      break;
+    case 'openSsh':
+      handleAsyncStd(openRemoteFileViaSsh(args[0]));
       break;
     default:
       log.error('Invalid opcode: ' + opcode);
