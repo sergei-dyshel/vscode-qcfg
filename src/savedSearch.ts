@@ -32,7 +32,7 @@ export async function saveAndPeekSearch(
     });
     if (savedSearches.length > MAX_SAVED_SEARCHES) savedSearches.pop();
   }
-  peekLocations(locations);
+  await peekLocations(locations);
 }
 
 function calcNumFiles(locations: Location[]): number {
