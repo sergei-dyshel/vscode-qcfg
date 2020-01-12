@@ -6,6 +6,7 @@ import * as nodejs from './nodejs';
 
 import * as glob from 'glob';
 import * as chokidar from 'chokidar';
+import * as tempy from 'tempy';
 
 import { log } from './logging';
 import { getActiveTextEditor, DisposableLike } from './utils';
@@ -16,6 +17,10 @@ export const globAsync = nodejs.util.promisify(require('glob')) as (
   pattern: string,
   options?: glob.IOptions,
 ) => Promise<string[]>;
+
+export function getTempFile() {
+  return tempy.file();
+}
 
 export function expandHome(path: string): string {
   if (path.startsWith('~/')) {
