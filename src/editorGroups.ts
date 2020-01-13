@@ -8,7 +8,7 @@ import {
   ExtensionContext,
 } from 'vscode';
 
-import { windowIsVertical } from './windowState';
+import { shouldSplitVertically } from './windowState';
 
 import { Modules } from './module';
 import { registerAsyncCommandWrapped } from './exception';
@@ -16,9 +16,6 @@ import { log } from './logging';
 
 async function focusEditorBeside(syncPosition: boolean) {
   log.assert(window.activeTextEditor);
-  if (!syncPosition) {
-    return commands.executeCommand('workbench.action.focusNextGroup');
-  }
   const editor = window.activeTextEditor as TextEditor;
   const columns = new Set<ViewColumn>();
   for (const visEditor of window.visibleTextEditors)
@@ -27,11 +24,14 @@ async function focusEditorBeside(syncPosition: boolean) {
     case 0:
       throw new Error('No editors opened');
     case 1:
-      return splitEditorToDirection(windowIsVertical ? 'down' : 'right');
+      return splitEditorToDirection(shouldSplitVertically() ? 'down' : 'right');
     case 2:
       break;
     default:
       throw new Error('There is more than 2 editor groups');
+  }
+  if (!syncPosition) {
+    return commands.executeCommand('workbench.action.focusNextGroup');
   }
   let newColumn: ViewColumn;
   switch (editor.viewColumn) {

@@ -14,10 +14,12 @@ export async function focusWindow() {
   new Window(windowId).bringToTop();
 }
 
-export function windowIsVertical(): boolean {
+export function shouldSplitVertically(): boolean {
   if (!window.state.focused) return false;
   const bounds = windowManager.getActiveWindow().getBounds();
-  return (bounds.height ?? 0) > (bounds.width ?? 0);
+  const pivotMode = (bounds.height ?? 0) > (bounds.width ?? 0);
+  const screenTooSmall = bounds.width !== undefined && bounds.width < 1500;
+  return pivotMode || screenTooSmall;
 }
 
 let windowId: number | undefined;
