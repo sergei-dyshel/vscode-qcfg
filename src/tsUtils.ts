@@ -208,6 +208,8 @@ declare global {
     forEachRight(
       callbackfn: (value: T, index: number, array: T[]) => void,
     ): void;
+    isAnyTrue(): boolean;
+    areAllTrue(): boolean;
   }
 
   interface ReadonlyArray<T> {
@@ -221,6 +223,14 @@ declare global {
     keySet(): Set<K>;
   }
 }
+
+Array.prototype.isAnyTrue = function<T>(this: T[]): boolean {
+  return this.find(Boolean) !== undefined;
+};
+
+Array.prototype.areAllTrue = function<T>(this: T[]): boolean {
+  return this.every(Boolean);
+};
 
 Array.prototype.forEachRight = function<T>(
   this: T[],
