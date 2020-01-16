@@ -43,6 +43,7 @@ import * as savedSearch from './savedSearch';
 import * as peekOutline from './peekOutline';
 import * as editorGroups from './editorGroups';
 import * as sshFs from './sshFs';
+import * as langClient from './langClient';
 
 export function activate(context: vscode.ExtensionContext) {
   console.log('Extension active');
@@ -91,6 +92,7 @@ export function activate(context: vscode.ExtensionContext) {
     peekOutline,
     editorGroups,
     sshFs,
+    langClient,
   };
 }
 

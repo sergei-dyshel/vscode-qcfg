@@ -20,7 +20,6 @@ import {
 import { mapAsync, mapAsyncSequential } from '../async';
 import { ListSelectable } from '../dialog';
 import { getDocumentWorkspaceFolder, peekLocations } from '../fileUtils';
-import * as language from '../language';
 import { log, LogLevel } from '../logging';
 import * as nodejs from '../nodejs';
 import { ParseLocationFormat, parseLocations } from '../parseLocations';
@@ -47,6 +46,7 @@ import {
 } from './params';
 import { handleAsyncStd } from '../exception';
 import { saveAndPeekSearch } from '../savedSearch';
+import { refreshLangClients } from '../langClient';
 
 export interface FetchInfo {
   label: string;
@@ -347,7 +347,7 @@ export class TerminalTask extends BaseQcfgTask {
     const success = exitCodes.includes(this.taskRun.exitCode!);
     const term = this.taskRun.terminal;
     if (success && params.flags && params.flags.includes(Flag.REINDEX))
-      handleAsyncStd(language.reindex());
+      handleAsyncStd(refreshLangClients());
     let action = success ? params.onSuccess : params.onFailure;
     if (action === EndAction.AUTO || action === undefined) {
       if (success) {

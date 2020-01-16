@@ -9,7 +9,7 @@ import * as nodejs from './nodejs';
 import { PromiseQueue } from './async';
 
 import * as readline from 'readline';
-import { isLspActive } from './language';
+import { isAnyLangClientRunning } from './langClient';
 import { getActiveTextEditor } from './utils';
 import {
   parseNumber,
@@ -385,7 +385,7 @@ const gtagsDefinitionProvider: vscode.DefinitionProvider = {
     switch (document.languageId) {
       case 'cpp':
       case 'c':
-        if (isLspActive()) return;
+        if (isAnyLangClientRunning()) return;
         break;
       case 'typescript':
       case 'lua':
@@ -414,7 +414,7 @@ const gtagsHoverProvider: vscode.HoverProvider = {
     switch (document.languageId) {
       case 'cpp':
       case 'c':
-        if (isLspActive()) return;
+        if (isAnyLangClientRunning()) return;
         break;
       case 'typescript':
       case 'lua':

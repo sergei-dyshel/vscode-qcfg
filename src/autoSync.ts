@@ -1,13 +1,13 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import * as language from './language';
 import * as saveAll from './saveAll';
 import { log } from './logging';
 import * as subprocess from './subprocess';
 import { setTimeoutPromise } from './nodeUtils';
 import { registerSyncCommandWrapped } from './exception';
 import { Modules } from './module';
+import { sendDidSaveToLangClients } from './langClient';
 
 enum State {
   Off,
@@ -81,8 +81,8 @@ async function onSaveAll(docs: saveAll.DocumentsInFolder) {
     return;
   }
   log.debug('Waiting before sending didSave to clients');
-  await setTimeoutPromise(1000);
-  for (const doc of docs.documents) language.sendDidSave(doc);
+  await setTimeoutPromise(500);
+  for (const doc of docs.documents) sendDidSaveToLangClients(doc);
 }
 
 function activate(context: vscode.ExtensionContext) {

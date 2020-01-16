@@ -16,7 +16,7 @@ import * as subprocess from './subprocess';
 
 import { getActiveTextEditor } from './utils';
 import { getDocumentRoot } from './fileUtils';
-import { isLspActive } from './language';
+import { isAnyLangClientRunning } from './langClient';
 import { Modules } from './module';
 
 interface LanguageConfig {
@@ -115,7 +115,7 @@ const documentSymbolProvider: DocumentSymbolProvider = {
     switch (document.languageId) {
       case 'cpp':
       case 'c':
-        if (isLspActive()) return;
+        if (isAnyLangClientRunning()) return;
         break;
       case 'typescript':
         return;

@@ -295,7 +295,7 @@
     "tree-sitter-typescript": "^0.16.1",
     "tree-sitter-yaml": "^0.1.0",
     "typescript-collections": "^1.1.4",
-    "vscode-languageclient": "^5.2.1"
+    "vscode-languageclient": "^6.0.0"
   },
   "devDependencies": {
     "@types/clipboardy": "^1.1.0",

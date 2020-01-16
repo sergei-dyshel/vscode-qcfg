@@ -31,7 +31,11 @@ export type Outline = OutlineSymbol[];
 export async function peekOutlineHierarchy(outline: Outline) {
   log.assert(!outlineToPeek);
   outlineToPeek = outline;
-  await commands.executeCommand('editor.showCallHierarchy');
+  try {
+    await commands.executeCommand('editor.showCallHierarchy');
+  } finally {
+    outlineToPeek = undefined;
+  }
 }
 
 // Private
@@ -181,8 +185,8 @@ async function peekFlatOutline() {
 }
 
 function activate(context: ExtensionContext) {
-  languages.registerCallHierarchyProvider('*', outlineHierarchyProvider);
   context.subscriptions.push(
+    languages.registerCallHierarchyProvider('*', outlineHierarchyProvider),
     registerAsyncCommandWrapped('qcfg.peekFlatOutline', peekFlatOutline),
     registerAsyncCommandWrapped(
       'qcfg.peekDocumentOutline',

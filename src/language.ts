@@ -1,6 +1,5 @@
 'use strict';
 
-import * as lc from 'vscode-languageclient';
 import { log } from './logging';
 import * as nodejs from './nodejs';
 
@@ -18,55 +17,6 @@ export function getLanguageConfig(
 
 export function availableLanguageConfigs(): string[] {
   return Object.keys(langConfigs);
-}
-
-export function isLspActive() {
-  const extensions = ['cquery-project.cquery', 'ccls-project.ccls'];
-  for (const extName of extensions) {
-    const extension = vscode.extensions.getExtension(extName);
-    if (extension && extension.isActive) return true;
-  }
-  return false;
-}
-
-export function sendDidSave(document: vscode.TextDocument) {
-  const params: lc.DidSaveTextDocumentParams = {
-    textDocument: {
-      uri: document.uri.toString(),
-      version: null,
-    },
-  };
-
-  const extensions = ['cquery-project.cquery', 'ccls-project.ccls'];
-  for (const extName of extensions) {
-    const extension = vscode.extensions.getExtension(extName);
-    if (!extension || !extension.isActive) continue;
-    const exports = extension.exports;
-    if (typeof exports !== 'object' || !('languageClient' in exports)) continue;
-    const langClient: lc.LanguageClient = exports.languageClient;
-
-    langClient.sendNotification('textDocument/didSave', params);
-    const path = vscode.workspace.asRelativePath(document.fileName);
-    log.info(`Sent didSave for "${path}" to "${extension.id}`);
-  }
-}
-
-export function cclsInError() {
-  const extension = vscode.extensions.getExtension('ccls-project.ccls');
-  if (!extension || !extension.isActive) return false;
-  const exports = extension.exports;
-  if (typeof exports !== 'object' || !('inError' in exports)) return false;
-  return exports.inError();
-}
-
-export async function reindex() {
-  const cquery = vscode.extensions.getExtension('cquery-project.cquery');
-  const ccls = vscode.extensions.getExtension('ccls-project.ccls');
-  if (cquery && cquery.isActive) {
-    await vscode.commands.executeCommand('cquery.freshenIndex');
-  } else if (ccls && ccls.isActive && !cclsInError()) {
-    await vscode.commands.executeCommand('ccls.reload');
-  }
 }
 
 function fetchLangConfigs() {

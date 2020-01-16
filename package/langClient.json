@@ -1,0 +1,18 @@
+{
+    "contributes": {
+        "commands": [
+            {
+                "command": "qcfg.langClient.restart",
+                "title": "qcfg: Restart language clients"
+            },
+            {
+                "command": "qcfg.langClient.stop",
+                "title": "qcfg: Stop language clients"
+            },
+            {
+                "command": "qcfg.langClient.refresh",
+                "title": "qcfg: Refresh language clients"
+            }
+        ]
+    }
+}
