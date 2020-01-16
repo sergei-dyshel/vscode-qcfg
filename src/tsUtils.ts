@@ -222,6 +222,10 @@ declare global {
   interface Map<K, V> {
     keySet(): Set<K>;
   }
+
+  interface Promise<T> {
+    ignoreResult(): Promise<void>;
+  }
 }
 
 Array.prototype.isAnyTrue = function<T>(this: T[]): boolean {
@@ -360,4 +364,8 @@ Map.prototype.keySet = function<K, V>(this: Map<K, V>): Set<K> {
   const keys = new Set<K>();
   for (const key of this.keys()) keys.add(key);
   return keys;
+};
+
+Promise.prototype.ignoreResult = function<T>(this: Promise<T>): Promise<void> {
+  return this.then(() => {});
 };
