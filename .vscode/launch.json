@@ -15,7 +15,11 @@
 			"outFiles": [
 				"${workspaceFolder}/dist/extension.js"
 			],
-			"preLaunchTask": "npm: compile"
+			"preLaunchTask": "npm: compile",
+			"skipFiles": [
+					"<node_internals>/**/*.js",
+					"${workspaceFolder}/node_modules/**/*.js",
+			]
 		}
 	]
 }
