@@ -1,7 +1,5 @@
 'use strict';
 
-/* REFACTOR: import specific stuff from vscode */
-import * as vscode from 'vscode';
 import * as nodejs from './nodejs';
 
 import * as glob from 'glob';
@@ -10,6 +8,17 @@ import * as tempy from 'tempy';
 
 import { log } from './logging';
 import { getActiveTextEditor, DisposableLike } from './utils';
+import {
+  workspace,
+  WorkspaceFolder,
+  Location,
+  Range,
+  window,
+  commands,
+  Position,
+  Selection,
+  ViewColumn,
+} from 'vscode';
 
 export const globSync = glob.sync;
 // tslint:disable-next-line: no-unnecessary-type-assertion
@@ -30,10 +39,10 @@ export function expandHome(path: string): string {
 }
 
 export function getDocumentRoot(fileName: string) {
-  const wsPath = vscode.workspace.asRelativePath(fileName, true);
-  const relativePath = vscode.workspace.asRelativePath(fileName, false);
+  const wsPath = workspace.asRelativePath(fileName, true);
+  const relativePath = workspace.asRelativePath(fileName, false);
   const [wsDir] = wsPath.split(nodejs.path.sep, 1);
-  for (const workspaceFolder of vscode.workspace.workspaceFolders || []) {
+  for (const workspaceFolder of workspace.workspaceFolders || []) {
     if (workspaceFolder.name === wsDir)
       return { workspaceFolder, relativePath };
   }
@@ -56,10 +65,7 @@ export function getDocumentWorkspaceFolder(fileName: string) {
 export const exists = nodejs.util.promisify(nodejs.fs.exists);
 export const realPath = nodejs.util.promisify(nodejs.fs.realpath);
 
-export function existsInRoot(
-  wsFolder: vscode.WorkspaceFolder,
-  fileName: string,
-) {
+export function existsInRoot(wsFolder: WorkspaceFolder, fileName: string) {
   return exists(nodejs.path.join(wsFolder.uri.fsPath, fileName));
 }
 
@@ -68,7 +74,7 @@ export function existsInRoot(
  * location (optionally search for tag in the line)
  */
 export async function peekLocations(
-  locations: vscode.Location[],
+  locations: Location[],
   tagForSingle?: string,
 ) {
   if (locations.length === 1) {
@@ -78,12 +84,15 @@ export async function peekLocations(
         line: loc.range.start.line + 1,
         tag: tagForSingle,
       });
-    else
-      await vscode.window.showTextDocument(loc.uri, { selection: loc.range });
+    else {
+      const start = loc.range.start;
+      const selection = new Range(start, start);
+      await window.showTextDocument(loc.uri, { selection });
+    }
     return;
   }
   const editor = getActiveTextEditor();
-  await vscode.commands.executeCommand(
+  await commands.executeCommand(
     'editor.action.showReferences',
     editor.document.uri,
     editor.selection.active,
@@ -98,10 +107,10 @@ export async function openTagLocation(
   const line0 = options && options.line ? options.line - 1 : 0;
   let col0 = options && options.column ? options.column - 1 : 0;
 
-  const editor = vscode.window.activeTextEditor;
+  const editor = window.activeTextEditor;
   const mustOpenNewEditor = !editor || editor.document.uri.fsPath !== filePath;
   const document = mustOpenNewEditor
-    ? await vscode.workspace.openTextDocument(filePath)
+    ? await workspace.openTextDocument(filePath)
     : log.assertNonNull(editor).document;
 
   if (options && options.tag) {
@@ -116,13 +125,13 @@ export async function openTagLocation(
       col0 = 0;
     }
   }
-  const pos = new vscode.Position(line0, col0);
-  const selection = new vscode.Selection(pos, pos);
+  const pos = new Position(line0, col0);
+  const selection = new Selection(pos, pos);
   if (mustOpenNewEditor) {
-    const viewColumn: vscode.ViewColumn | undefined = editor
+    const viewColumn: ViewColumn | undefined = editor
       ? editor.viewColumn
       : undefined;
-    await vscode.window.showTextDocument(document, {
+    await window.showTextDocument(document, {
       viewColumn,
       selection,
     });
