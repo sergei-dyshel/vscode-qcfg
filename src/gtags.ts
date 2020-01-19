@@ -376,35 +376,6 @@ async function openDefinitionInWorkspace() {
   await runTask('gtags_def', params, { folder: 'all' });
 }
 
-const gtagsDefinitionProvider: vscode.DefinitionProvider = {
-  async provideDefinition(
-    document: vscode.TextDocument,
-    position: vscode.Position,
-    token: vscode.CancellationToken,
-  ): Promise<vscode.Location[] | undefined> {
-    switch (document.languageId) {
-      case 'cpp':
-      case 'c':
-        if (isAnyLangClientRunning()) return;
-        break;
-      case 'typescript':
-      case 'lua':
-      case 'go':
-      case 'python':
-        return;
-    }
-    const gtagsDir = log.assertNonNull(
-      await findGtagsDir(document.fileName),
-      'GTAGS not found',
-    );
-    const wordRange = document.getWordRangeAtPosition(position);
-    const range = log.assertNonNull(wordRange, 'Not on word');
-    const word = document.getText(range);
-    const tags = await searchGtags('definition', word, word, gtagsDir, token);
-    return tags.map(tag => tagToLocation(tag, gtagsDir));
-  },
-};
-
 const gtagsHoverProvider: vscode.HoverProvider = {
   async provideHover(
     document: vscode.TextDocument,
@@ -451,7 +422,6 @@ function activate(context: vscode.ExtensionContext) {
       'qcfg.gtags.definitionInWorkspace',
       openDefinitionInWorkspace,
     ),
-    vscode.languages.registerDefinitionProvider('*', gtagsDefinitionProvider),
     vscode.languages.registerHoverProvider('*', gtagsHoverProvider),
     registerAsyncCommandWrapped('qcfg.gtags.workspace', WorkspaceGtags.run),
   );
