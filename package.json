@@ -248,6 +248,10 @@
         "title": "qcfg: Toggle relative line numbers"
       },
       {
+        "command": "qcfg.resolveCompletions",
+        "title": "qcfg: Resolve completions (and dump to console)"
+      },
+      {
         "command": "qcfg.treeView.removeNode",
         "title": "qcfg: Remove tree view entry",
         "icon": {
