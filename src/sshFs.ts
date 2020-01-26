@@ -34,12 +34,15 @@ class WatchedFile {
 const watchedFiles: WatchedFile[] = [];
 
 function encodeUri(host: string, path: string) {
-  return Uri.parse('').with({ scheme: SCHEME, path: `/${host}:${path}` });
+  return Uri.parse('').with({ scheme: SCHEME, path: `/${host}/${path}` });
 }
 
 function decodeUri(uri: Uri) {
   assert(uri.scheme === SCHEME);
-  return uri.path.substr(1).split(':');
+  const parts = uri.path.split('/');
+  assert(parts[0] === '');
+  const path = parts.slice(2).join('/');
+  return [parts[1], path];
 }
 
 function uriToArg(uri: Uri) {
