@@ -12,9 +12,9 @@ import {
   ExtensionContext,
   Uri,
 } from 'vscode';
-import { handleErrors, handleAsyncStd } from './exception';
+import { handleAsyncStd, handleErrorsAsync } from './exception';
 import * as fileUtils from './fileUtils';
-import { log } from './logging';
+import { log, assert } from './logging';
 import { Modules } from './module';
 import { parseNumber } from './stringUtils';
 import { focusWindow } from './windowState';
@@ -23,7 +23,7 @@ import { openRemoteFileViaSsh } from './sshFs';
 // eslint-disable-next-line import/no-mutable-exports
 export let port = 48123;
 
-async function handleOpen(location: string, folder: string) {
+async function handleOpen(folder: string, location: string) {
   log.assert(path.isAbsolute(folder), `"${folder}" is not absolute path`);
   let wsFolder: WorkspaceFolder | undefined;
   let found = false;
@@ -36,6 +36,7 @@ async function handleOpen(location: string, folder: string) {
     log.info(`"${folder}" does not correspond to this workspace's folder`);
     return;
   }
+
   const [file, line = undefined, column = undefined] = location.split(':');
   if (!file) log.fatal('Filename missing');
 
@@ -58,22 +59,33 @@ async function handleOpen(location: string, folder: string) {
   await window.showTextDocument(Uri.file(fullPath), {
     selection: new Selection(pos, pos),
   });
-  await focusWindow();
 }
 
-function handleCmd(cmd: string) {
+function checkFolder(folder: string) {
+  log.assert(path.isAbsolute(folder), `"${folder}" is not absolute path`);
+  for (const wsFolder of workspace.workspaceFolders || [])
+    if (wsFolder.uri.fsPath === folder) {
+      return true;
+    }
+  return false;
+}
+
+async function handleCmd(cmd: string) {
   const parts = shlex.split(cmd);
-  if (!parts.length) {
-    log.warn('Empty command received');
+  assert(parts.length >= 2, 'Invalid command received', cmd);
+  const [opcode, folder, ...args] = parts;
+  log.debug(`Received command: ${opcode}, folder: ${folder}, args: ${args}`);
+
+  if (!checkFolder(folder)) {
+    log.info(`"${folder}" does not correspond to this workspace's folder`);
     return;
   }
-  log.debug(`Received command: ${cmd}`);
-  const opcode = parts[0];
-  const args = parts.slice(1);
+  await focusWindow();
+
   switch (opcode) {
     case 'open':
-      log.assert(args.length === 2);
-      handleAsyncStd(handleOpen(args[0], args[1]));
+      log.assert(args.length === 1);
+      handleAsyncStd(handleOpen(folder, args[0]));
       break;
     case 'openSsh':
       handleAsyncStd(openRemoteFileViaSsh(args[0]));
@@ -87,9 +99,7 @@ function activate(_context: ExtensionContext) {
   const server = net.createServer(socket => {
     socket.on(
       'data',
-      handleErrors(data => {
-        handleCmd(data.toString());
-      }),
+      handleErrorsAsync(data => handleCmd(data.toString())),
     );
   });
   server.listen(port, '127.0.0.1');
