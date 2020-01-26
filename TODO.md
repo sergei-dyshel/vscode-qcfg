@@ -5,6 +5,7 @@
   again now from BX)
 - After showing TODOs in side panel, removing some text which contains todo will
   cause assertion errors becaus tree element wasn't delete.
+- Log commands execution (executeCommand)
 
 # Tasks
 
