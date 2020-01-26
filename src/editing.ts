@@ -13,6 +13,7 @@ import {
   TextDocument,
   Range,
   Uri,
+  CompletionList,
 } from 'vscode';
 import * as clipboardy from 'clipboardy';
 
@@ -272,6 +273,16 @@ async function insertPathFromDialog() {
   await replaceText(editor, editor.selection, result);
 }
 
+async function executeCompletionItemProvider() {
+  const editor = getActiveTextEditor();
+  const complList: CompletionList | undefined = await commands.executeCommand(
+    'vscode.executeCompletionItemProvider',
+    editor.document.uri,
+    editor.selection.active,
+  );
+  console.info(complList);
+}
+
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
     registerSyncCommandWrapped('qcfg.gotoLineRelative', gotoLineRelative),
@@ -313,6 +324,10 @@ function activate(context: ExtensionContext) {
     registerAsyncCommandWrapped(
       'qcfg.toggleRelativeLineNumbers',
       toggleRelativeNumbers,
+    ),
+    registerAsyncCommandWrapped(
+      'qcfg.resolveCompletions',
+      executeCompletionItemProvider,
     ),
   );
 }

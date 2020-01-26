@@ -64,6 +64,10 @@
       {
         "command": "qcfg.toggleRelativeLineNumbers",
         "title": "qcfg: Toggle relative line numbers"
+      },
+      {
+        "command": "qcfg.resolveCompletions",
+        "title": "qcfg: Resolve completions (and dump to console)"
       }
     ],
     "keybindings": [
