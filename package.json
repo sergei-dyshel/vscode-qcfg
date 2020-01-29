@@ -1924,11 +1924,11 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "make package.json && webpack --mode none",
+    "vscode:prepublish": "make package.json && webpack --mode production",
     "tsc-compile": "tsc -p .",
     "compile": "make generate && webpack --mode none --env.DEBUG",
     "tsc-watch": "tsc -watch -p ./",
-    "watch": "webpack --mode none --watch",
+    "webpack-watch": "webpack --mode none --watch",
     "test": "npm run compile && node ./node_modules/vscode/bin/test",
     "check": "gts check",
     "clean": "gts clean",
