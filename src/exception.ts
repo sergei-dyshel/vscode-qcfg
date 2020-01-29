@@ -15,17 +15,13 @@ import { log } from './logging';
 import * as nodejs from './nodejs';
 import { replaceAll } from './stringUtils';
 import { showStatusBarMessage } from './windowUtils';
-import { PromiseType } from './tsUtils';
+import {
+  PromiseType,
+  AsyncFunction,
+  AnyFunction,
+  VoidFunction,
+} from './templateTypes';
 import { Modules } from './module';
-
-// type NotVoid = object | string | boolean | symbol | number | null | undefined;
-type AsyncFunction = (...args: any[]) => Promise<any>;
-/**
- * NOTE: Must used `undefined` because just using `void` wouldn't work,
- * see https://stackoverflow.com/questions/57951850/is-there-not-promise-type-in-typescipt
- */
-type VoidFunction = (...args: any[]) => void | undefined;
-type Function = (...args: any[]) => any;
 
 /**
  * Non-critical exception meant to show message to user
@@ -74,7 +70,7 @@ export function wrapWithErrorHandlerAsync<T extends AsyncFunction, R>(
   };
 }
 
-export function handleErrors<T extends Function>(
+export function handleErrors<T extends AnyFunction>(
   func: T,
 ): (...funcArgs: Parameters<T>) => ReturnType<T> | void {
   return wrapWithErrorHandler(func, stdErrorHandler);

@@ -352,10 +352,6 @@ export class DefaultMap<K, V> extends Map<K, V> {
   }
 }
 
-export type PromiseType<T extends Promise<unknown>> = T extends Promise<infer R>
-  ? R
-  : unknown;
-
 export function zipArrays<T1, T2>(a: T1[], b: T2[]): Array<[T1, T2]> {
   return a.map((k, i) => [k, b[i]]);
 }
