@@ -12,7 +12,7 @@ import {
 import { listenWrapped, registerAsyncCommandWrapped } from './exception';
 import { log, str } from './logging';
 import { Modules } from './module';
-import { ellipsize } from './stringUtils';
+import { ellipsize } from '../../library/stringUtils';
 import {
   onSyntaxTreeUpdated,
   SyntaxTrees,

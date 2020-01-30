@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import * as saveAll from './saveAll';
 import { log } from './logging';
 import * as subprocess from './subprocess';
-import { setTimeoutPromise } from './nodeUtils';
+import { setTimeoutPromise } from '../../library/nodeUtils';
 import { registerSyncCommandWrapped } from './exception';
 import { Modules } from './module';
 import { sendDidSaveToLangClients } from './langClient';

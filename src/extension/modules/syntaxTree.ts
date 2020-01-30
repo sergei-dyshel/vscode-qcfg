@@ -22,9 +22,9 @@ import { NumRange } from './documentUtils';
 import { listenWrapped, handleAsyncStd } from './exception';
 import { Logger } from './logging';
 import { Modules } from './module';
-import * as nodejs from './nodejs';
-import { Timer } from './nodeUtils';
-import { DefaultMap } from './tsUtils';
+import * as nodejs from '../../library/nodejs';
+import { Timer } from '../../library/nodeUtils';
+import { DefaultMap } from '../../library/tsUtils';
 
 type VsRange = Range;
 

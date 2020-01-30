@@ -21,7 +21,7 @@ import { mapAsync, mapAsyncSequential } from '../async';
 import { ListSelectable } from '../dialog';
 import { getDocumentWorkspaceFolder, peekLocations } from '../fileUtils';
 import { log, LogLevel } from '../logging';
-import * as nodejs from '../nodejs';
+import * as nodejs from '../../../library/nodejs';
 import { ParseLocationFormat, parseLocations } from '../parseLocations';
 import * as remoteControl from '../remoteControl';
 import { searchInFiles } from '../search';
@@ -31,7 +31,7 @@ import {
   TaskConfilictPolicy,
   TaskRun,
 } from '../taskRunner';
-import { concatArrays } from '../tsUtils';
+import { concatArrays } from '../../../library/tsUtils';
 import { currentWorkspaceFolder, getCursorWordContext } from '../utils';
 import {
   BaseTaskParams,

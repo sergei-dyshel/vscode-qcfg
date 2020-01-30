@@ -5,7 +5,7 @@ import * as fileUtils from './fileUtils';
 import * as saveAll from './saveAll';
 import { log, Logger } from './logging';
 import * as subprocess from './subprocess';
-import * as nodejs from './nodejs';
+import * as nodejs from '../../library/nodejs';
 import { PromiseQueue } from './async';
 
 import * as readline from 'readline';
@@ -16,7 +16,7 @@ import {
   buildFuzzyPattern,
   splitWithRemainder,
   buildAbbrevPattern,
-} from './stringUtils';
+} from '../../library/stringUtils';
 import {
   registerAsyncCommandWrapped,
   handleErrors,

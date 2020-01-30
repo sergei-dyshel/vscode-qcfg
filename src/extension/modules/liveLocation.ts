@@ -13,7 +13,7 @@ import {
 import { NumRange, offsetToRange } from './documentUtils';
 import { listenWrapped } from './exception';
 import { Modules } from './module';
-import { DefaultMap } from './tsUtils';
+import { DefaultMap } from '../../library/tsUtils';
 import { DisposableLike } from './utils';
 
 export abstract class LiveLocation extends Location implements DisposableLike {

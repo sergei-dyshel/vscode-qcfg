@@ -1,7 +1,7 @@
 'use strict';
 
 import { StatusBarItem, window, ThemeColor } from 'vscode';
-import { Timer } from './nodeUtils';
+import { Timer } from '../../library/nodeUtils';
 
 const DEFAULT_TIMEOUT_MS = 3000;
 

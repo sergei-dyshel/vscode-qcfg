@@ -1,8 +1,9 @@
 'use strict';
 
-import { getCallsite } from './sourceMap';
+// Must not import any modules
+import { getCallsite } from '../../library/sourceMap';
 import { ExtensionContext } from 'vscode';
-import * as nodejs from './nodejs';
+import * as nodejs from '../../library/nodejs';
 
 export namespace Modules {
   export function register(

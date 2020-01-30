@@ -16,9 +16,9 @@ import {
   Range,
 } from 'vscode';
 import { Logger, log, str } from './logging';
-import { setTimeoutPromise } from './nodeUtils';
+import { setTimeoutPromise } from '../../library/nodeUtils';
 import { getActiveTextEditor } from './utils';
-import { filterNonNull } from './tsUtils';
+import { filterNonNull } from '../../library/tsUtils';
 import {
   registerAsyncCommandWrapped,
   listenWrapped,

@@ -3,7 +3,7 @@
 import * as vscode from 'vscode';
 import { log } from './logging';
 import * as remoteControl from './remoteControl';
-import { parseNumber } from './stringUtils';
+import { parseNumber } from '../../library/stringUtils';
 
 let nextId = 0;
 

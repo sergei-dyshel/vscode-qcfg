@@ -10,10 +10,10 @@ import {
 } from 'vscode';
 import { Modules } from './module';
 import { log } from './logging';
-import * as nodejs from './nodejs';
+import * as nodejs from '../../library/nodejs';
 import { selectFromList } from './dialog';
 import { registerAsyncCommandWrapped } from './exception';
-import { expandTemplate } from './stringUtils';
+import { expandTemplate } from '../../library/stringUtils';
 import { mapAsyncNoThrowAndZip } from './async';
 import { parseJsonFileAsync } from './json';
 

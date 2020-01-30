@@ -1,7 +1,7 @@
 'use strict';
 
 import * as jsoncParser from 'jsonc-parser';
-import * as nodejs from './nodejs';
+import * as nodejs from '../../library/nodejs';
 import { Uri, workspace } from 'vscode';
 
 interface JsonParseOptions extends jsoncParser.ParseOptions {

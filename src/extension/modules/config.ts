@@ -10,8 +10,8 @@ import { listenWrapped } from './exception';
 import { watchFile } from './fileUtils';
 import { log } from './logging';
 import { Modules } from './module';
-import * as nodejs from './nodejs';
-import { expandPath } from './pathUtils';
+import * as nodejs from '../../library/nodejs';
+import { expandPath } from '../../library/pathUtils';
 import { DisposableLike } from './utils';
 
 /**

@@ -1,6 +1,6 @@
 'use strict';
 
-import * as nodejs from './nodejs';
+import * as nodejs from '../../library/nodejs';
 
 import * as glob from 'glob';
 import * as chokidar from 'chokidar';

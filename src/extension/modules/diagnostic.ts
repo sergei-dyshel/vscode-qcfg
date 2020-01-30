@@ -15,7 +15,7 @@ import {
 import { Modules } from './module';
 import { listenWrapped } from './exception';
 import { getCompletionPrefix } from './documentUtils';
-import { abbrevMatch } from './stringUtils';
+import { abbrevMatch } from '../../library/stringUtils';
 import { offsetPosition } from './textUtils';
 
 const eslintRules = new Set<string>();

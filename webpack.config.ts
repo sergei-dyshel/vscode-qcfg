@@ -11,7 +11,7 @@ const generateConfig = (env: any): webpack.Configuration => ({
   target: 'node', // vscode extensions run in a Node.js-context 📖 ->
   // https://webpack.js.org/configuration/node/
   context: __dirname,
-  entry: './src/extension.ts', // the entry point of this extension, 📖 ->
+  entry: './src/extension/extension.ts', // the entry point of this extension, 📖 ->
   // https://webpack.js.org/configuration/entry-context/
   output: {
     // the bundle is stored in the 'dist' folder (check package.json), 📖 ->

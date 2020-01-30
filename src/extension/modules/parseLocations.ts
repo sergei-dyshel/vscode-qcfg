@@ -8,8 +8,8 @@ import {
   workspace,
   Range,
 } from 'vscode';
-import { filterNonNull, concatArrays } from './tsUtils';
-import * as nodejs from './nodejs';
+import { filterNonNull, concatArrays } from '../../library/tsUtils';
+import * as nodejs from '../../library/nodejs';
 import { Subprocess } from './subprocess';
 import { mapAsync } from './async';
 import * as lodash from 'lodash';

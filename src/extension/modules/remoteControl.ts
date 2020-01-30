@@ -16,7 +16,7 @@ import { handleAsyncStd, handleErrorsAsync } from './exception';
 import * as fileUtils from './fileUtils';
 import { log, assert } from './logging';
 import { Modules } from './module';
-import { parseNumber } from './stringUtils';
+import { parseNumber } from '../../library/stringUtils';
 import { focusWindow } from './windowState';
 import { openRemoteFileViaSsh } from './sshFs';
 

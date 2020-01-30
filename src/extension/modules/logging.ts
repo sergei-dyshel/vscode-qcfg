@@ -16,8 +16,8 @@ import {
   languages,
   ExtensionContext,
 } from 'vscode';
-import * as nodejs from './nodejs';
-import { maxNumber } from './tsUtils';
+import * as nodejs from '../../library/nodejs';
+import { maxNumber } from '../../library/tsUtils';
 import { selectStringFromList } from './dialog';
 import {
   registerAsyncCommandWrapped,
@@ -26,8 +26,8 @@ import {
   handleAsyncStd,
 } from './exception';
 import { Modules } from './module';
-import { getCallsite } from './sourceMap';
-import { formatString } from './stringUtils';
+import { getCallsite } from '../../library/sourceMap';
+import { formatString } from '../../library/stringUtils';
 
 type LogLevelStr = 'info' | 'debug' | 'trace';
 

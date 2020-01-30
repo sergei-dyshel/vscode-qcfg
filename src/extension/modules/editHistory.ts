@@ -20,14 +20,14 @@ import {
   registerSyncCommandWrapped,
 } from './exception';
 import { Logger } from './logging';
-import { DefaultMap } from './tsUtils';
+import { DefaultMap } from '../../library/tsUtils';
 import { getActiveTextEditor } from './utils';
 import { Modules } from './module';
-import * as nodejs from './nodejs';
+import * as nodejs from '../../library/nodejs';
 import { LiveRange } from './liveLocation';
 import { offsetPosition } from './textUtils';
 import { NumRange } from './documentUtils';
-import { formatString } from './stringUtils';
+import { formatString } from '../../library/stringUtils';
 
 const HISTORY_SIZE = 20;
 

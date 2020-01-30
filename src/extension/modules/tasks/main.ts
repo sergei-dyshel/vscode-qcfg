@@ -19,7 +19,7 @@ import { globAsync } from '../fileUtils';
 import { parseJsonFileSync } from '../json';
 import { log } from '../logging';
 import { Modules } from '../module';
-import { concatArrays, mapObjectToArray } from '../tsUtils';
+import { concatArrays, mapObjectToArray } from '../../../library/tsUtils';
 import { currentWorkspaceFolder } from '../utils';
 import {
   ConfParamsSet,
@@ -48,7 +48,7 @@ import {
   SearchMultiTask,
   isFolderTask,
 } from './types';
-import * as nodejs from '../nodejs';
+import * as nodejs from '../../../library/nodejs';
 
 const CONFIG_FILE = 'vscode-qcfg.tasks.json';
 

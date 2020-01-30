@@ -1,7 +1,7 @@
 'use strict';
 
 import { Logger, log } from './logging';
-import { zipArrays, concatArrays, izip } from './tsUtils';
+import { zipArrays, concatArrays, izip } from '../../library/tsUtils';
 import { ExtensionContext } from 'vscode';
 import { Modules } from './module';
 

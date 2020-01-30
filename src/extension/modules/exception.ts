@@ -12,15 +12,15 @@ import {
   ExtensionContext,
 } from 'vscode';
 import { log } from './logging';
-import * as nodejs from './nodejs';
-import { replaceAll } from './stringUtils';
+import * as nodejs from '../../library/nodejs';
+import { replaceAll } from '../../library/stringUtils';
 import { showStatusBarMessage } from './windowUtils';
 import {
   PromiseType,
   AsyncFunction,
   AnyFunction,
   VoidFunction,
-} from './templateTypes';
+} from '../../library/templateTypes';
 import { Modules } from './module';
 
 /**

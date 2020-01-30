@@ -13,7 +13,7 @@ import { log } from './logging';
 import { getActiveTextEditor } from './utils';
 import { registerAsyncCommandWrapped } from './exception';
 import { Modules } from './module';
-import { baseName, stripExt } from './pathUtils';
+import { baseName, stripExt } from '../../library/pathUtils';
 
 interface Mapping {
   [ext: string]: string[];

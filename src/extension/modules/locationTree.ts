@@ -17,7 +17,7 @@ import { log, str } from './logging';
 import { StaticTreeNode, TreeProvider, QcfgTreeView } from './treeView';
 import { Modules } from './module';
 import { mapSomeAsyncAndZip } from './async';
-import { maxNumber } from './tsUtils';
+import { maxNumber } from '../../library/tsUtils';
 import { LiveLocation, createLiveLocation } from './liveLocation';
 
 export async function setPanelLocations(

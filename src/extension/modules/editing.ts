@@ -35,7 +35,7 @@ import {
 } from './exception';
 import { Modules } from './module';
 import { lineIndentation } from './documentUtils';
-import { NumberIterator } from './tsUtils';
+import { NumberIterator } from '../../library/tsUtils';
 import { expandHome, exists } from './fileUtils';
 
 function selectLines() {

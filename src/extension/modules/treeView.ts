@@ -23,7 +23,7 @@ import {
 } from './exception';
 import { log } from './logging';
 import { Modules } from './module';
-import { callIfNonNull } from './tsUtils';
+import { callIfNonNull } from '../../library/tsUtils';
 
 export const TREE_ITEM_REMOVABLE_CONTEXT = 'removable';
 

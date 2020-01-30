@@ -1,7 +1,7 @@
 'use strict';
 
 import { log } from './logging';
-import * as nodejs from './nodejs';
+import * as nodejs from '../../library/nodejs';
 
 import * as vscode from 'vscode';
 import { Modules } from './module';

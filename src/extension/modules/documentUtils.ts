@@ -8,7 +8,7 @@ import {
   Selection,
 } from 'vscode';
 import { log } from './logging';
-import { maxNumber, minNumber } from './tsUtils';
+import { maxNumber, minNumber } from '../../library/tsUtils';
 
 export class NumRange {
   constructor(readonly start: number, readonly end: number) {
