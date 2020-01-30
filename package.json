@@ -1924,7 +1924,7 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "make package.json && webpack --mode production",
+    "vscode:prepublish": "make generate && webpack --mode production",
     "tsc-compile": "tsc -p .",
     "compile": "make generate && webpack --mode none --env.DEBUG",
     "tsc-watch": "tsc -watch -p ./",

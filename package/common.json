@@ -255,9 +255,9 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "make package.json && webpack --mode production && make check",
+    "vscode:prepublish": "make generate && webpack --mode production",
     "tsc-compile": "tsc -p .",
-    "compile": "make generate && webpack --mode none --env.DEBUG && make check",
+    "compile": "make generate && webpack --mode none --env.DEBUG",
     "tsc-watch": "tsc -watch -p ./",
     "webpack-watch": "webpack --mode none --watch",
     "test": "npm run compile && node ./node_modules/vscode/bin/test",
