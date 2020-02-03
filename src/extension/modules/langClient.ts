@@ -12,8 +12,8 @@ export function isAnyLangClientRunning(): boolean {
   return ALL_CLIENTS.map(wrapper => wrapper.isClientRunning).isAnyTrue();
 }
 
-export async function refreshLangClients() {
-  return mapAsync(ALL_CLIENTS, wrapper => wrapper.refresh());
+export async function refreshOrRestartLangClients() {
+  return mapAsync(ALL_CLIENTS, wrapper => wrapper.refreshOrRestart());
 }
 
 export function sendDidSaveToLangClients(document: TextDocument) {
@@ -83,6 +83,11 @@ class LanguageClientWrapper {
     if (this.isClientRunning) return this.runRefreshCmd();
   }
 
+  async refreshOrRestart() {
+    if (this.isClientRunning) return this.runRefreshCmd();
+    if (this.isExtensionActive) return this.runRestartCmd();
+  }
+
   async stop() {
     if (this.isClientRunning) return this.client!.stop();
   }
@@ -122,6 +127,10 @@ class ClangdWrapper extends LanguageClientWrapper {
 }
 
 const ALL_CLIENTS = [new CclsWrapper(), new ClangdWrapper()];
+
+async function refreshLangClients() {
+  return mapAsync(ALL_CLIENTS, wrapper => wrapper.refresh());
+}
 
 async function restartLangClients() {
   return mapAsync(ALL_CLIENTS, wrapper => wrapper.restart());

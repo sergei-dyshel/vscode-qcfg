@@ -46,7 +46,7 @@ import {
 } from './params';
 import { handleAsyncStd } from '../exception';
 import { saveAndPeekSearch } from '../savedSearch';
-import { refreshLangClients } from '../langClient';
+import { refreshOrRestartLangClients } from '../langClient';
 
 export interface FetchInfo {
   label: string;
@@ -347,7 +347,7 @@ export class TerminalTask extends BaseQcfgTask {
     const success = exitCodes.includes(this.taskRun.exitCode!);
     const term = this.taskRun.terminal;
     if (success && params.flags && params.flags.includes(Flag.REINDEX))
-      handleAsyncStd(refreshLangClients());
+      handleAsyncStd(refreshOrRestartLangClients());
     let action = success ? params.onSuccess : params.onFailure;
     if (action === EndAction.AUTO || action === undefined) {
       if (success) {
