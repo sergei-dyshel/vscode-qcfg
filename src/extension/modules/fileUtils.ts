@@ -7,7 +7,8 @@ import * as chokidar from 'chokidar';
 import * as tempy from 'tempy';
 
 import { log } from './logging';
-import { getActiveTextEditor, DisposableLike } from './utils';
+import { getActiveTextEditor } from './utils';
+import { DisposableLike } from '../../library/types';
 import {
   workspace,
   WorkspaceFolder,

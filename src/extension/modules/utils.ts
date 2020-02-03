@@ -5,10 +5,6 @@ import { registerAsyncCommandWrapped } from './exception';
 import { getDocumentWorkspaceFolder } from './fileUtils';
 import { log } from './logging';
 
-export interface DisposableLike {
-  dispose(): unknown;
-}
-
 // XXX: currently unused
 export namespace Context {
   const contexts = new Set<string>();

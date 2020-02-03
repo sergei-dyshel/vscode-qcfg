@@ -12,7 +12,7 @@ import { log } from './logging';
 import { Modules } from './module';
 import * as nodejs from '../../library/nodejs';
 import { expandPath } from '../../library/pathUtils';
-import { DisposableLike } from './utils';
+import { DisposableLike } from '../../library/types';
 
 /**
  * Subscribe to configuration updates on section

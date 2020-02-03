@@ -18,7 +18,8 @@ import {
 import { listenWrapped, executeCommandHandled } from './exception';
 import { log, Logger } from './logging';
 import { Modules } from './module';
-import { registerTemporaryCommand, DisposableLike } from './utils';
+import { registerTemporaryCommand } from './utils';
+import { DisposableLike } from '../../library/types';
 
 export enum State {
   INITIALIZED,

@@ -14,7 +14,7 @@ import { NumRange, offsetToRange } from './documentUtils';
 import { listenWrapped } from './exception';
 import { Modules } from './module';
 import { DefaultMap } from '../../library/tsUtils';
-import { DisposableLike } from './utils';
+import { DisposableLike } from '../../library/types';
 
 export abstract class LiveLocation extends Location implements DisposableLike {
   private registered_ = false;

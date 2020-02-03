@@ -3,7 +3,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import {
-  Disposable,
   commands,
   TextEditor,
   TextEditorEdit,
@@ -11,6 +10,7 @@ import {
   extensions,
   ExtensionContext,
 } from 'vscode';
+import { DisposableLike } from '../../library/types';
 import { log } from './logging';
 import * as nodejs from '../../library/nodejs';
 import { replaceAll } from '../../library/stringUtils';
@@ -87,7 +87,7 @@ export function registerAsyncCommandWrapped(
   command: string,
   callback: AsyncFunction,
   thisArg?: any,
-): Disposable {
+): DisposableLike {
   return commands.registerCommand(
     command,
     wrapWithErrorHandlerAsync(callback, error =>
@@ -101,7 +101,7 @@ export function registerSyncCommandWrapped(
   command: string,
   callback: VoidFunction,
   thisArg?: any,
-): Disposable {
+): DisposableLike {
   return commands.registerCommand(
     command,
     wrapWithErrorHandler(callback, error =>
@@ -119,7 +119,7 @@ export function registerTextEditorCommandWrapped(
     ...args: any[]
   ) => void,
   thisArg?: any,
-): Disposable {
+): DisposableLike {
   return commands.registerTextEditorCommand(
     command,
     wrapWithErrorHandler(callback, error =>
@@ -133,8 +133,8 @@ export function listenWrapped<T>(
   event: Event<T>,
   listener: (e: T) => any,
   thisArgs?: any,
-  disposables?: Disposable[],
-): Disposable {
+  disposables?: DisposableLike[],
+): DisposableLike {
   return event(
     wrapWithErrorHandler(listener, handleErrorDuringEvent),
     thisArgs,
