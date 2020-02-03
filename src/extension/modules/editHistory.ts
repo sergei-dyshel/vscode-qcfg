@@ -14,11 +14,7 @@ import {
   TextEditor,
   StatusBarAlignment,
 } from 'vscode';
-import {
-  listenWrapped,
-  CheckError,
-  registerSyncCommandWrapped,
-} from './exception';
+import { listenWrapped, registerSyncCommandWrapped } from './exception';
 import { Logger } from './logging';
 import { DefaultMap } from '../../library/tsUtils';
 import { getActiveTextEditor } from './utils';
@@ -28,6 +24,7 @@ import { LiveRange } from './liveLocation';
 import { offsetPosition } from './textUtils';
 import { NumRange } from './documentUtils';
 import { formatString } from '../../library/stringUtils';
+import { CheckError } from '../../library/exception';
 
 const HISTORY_SIZE = 20;
 

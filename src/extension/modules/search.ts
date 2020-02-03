@@ -31,11 +31,7 @@ import {
   getCursorWordContext,
   getActiveTextEditor,
 } from './utils';
-import {
-  registerAsyncCommandWrapped,
-  CheckError,
-  checkNonNull,
-} from './exception';
+import { registerAsyncCommandWrapped } from './exception';
 import { Modules } from './module';
 import {
   parseLocations,
@@ -45,6 +41,7 @@ import {
 import { runTask } from './tasks/main';
 import { TaskType, Flag } from './tasks/params';
 import { saveAndPeekSearch } from './savedSearch';
+import { CheckError, checkNonNull } from '../../library/exception';
 
 const TODO_CATEGORIES = [
   'TODO',
