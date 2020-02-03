@@ -14,6 +14,8 @@ import { getActiveTextEditor } from './utils';
 import { registerAsyncCommandWrapped } from './exception';
 import { Modules } from './module';
 import { baseName, stripExt } from '../../library/pathUtils';
+import { selectFromList } from './dialog';
+import * as nodejs from '../../library/nodejs';
 
 interface Mapping {
   [ext: string]: string[];
@@ -57,10 +59,14 @@ async function switchToAlternate() {
       });
       return;
     }
-    await window.showWarningMessage(
-      `Multiple options for alternate file of "${relPath}"`,
-      ...files.map(uri => uri.fsPath),
-    );
+    const file = await selectFromList(files, uri => ({
+      label: nodejs.path.relative(folder.uri.fsPath, uri.fsPath),
+    }));
+    if (file) {
+      await window.showTextDocument(file, {
+        viewColumn: editor.viewColumn,
+      });
+    }
     return;
   }
   await window.showWarningMessage(
