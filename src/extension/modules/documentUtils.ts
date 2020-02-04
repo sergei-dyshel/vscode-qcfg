@@ -7,12 +7,12 @@ import {
   Position,
   Selection,
 } from 'vscode';
-import { log } from './logging';
+import { assert } from './logging';
 import { maxNumber, minNumber } from '../../library/tsUtils';
 
 export class NumRange {
   constructor(readonly start: number, readonly end: number) {
-    log.assert(start <= end, 'start > end');
+    assert(start <= end, 'start > end');
   }
 
   get length() {

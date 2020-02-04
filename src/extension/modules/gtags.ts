@@ -3,7 +3,7 @@
 import * as vscode from 'vscode';
 import * as fileUtils from './fileUtils';
 import * as saveAll from './saveAll';
-import { log, Logger } from './logging';
+import { log, Logger, assert, assertNonNull } from './logging';
 import * as subprocess from './subprocess';
 import * as nodejs from '../../library/nodejs';
 import { PromiseQueue } from './async';
@@ -101,9 +101,7 @@ namespace WorkspaceGtags {
 
   export async function run() {
     const editor = getActiveTextEditor();
-    gtagsDir = logger.assertNonNull(
-      await findGtagsDir(editor.document.fileName),
-    );
+    gtagsDir = assertNonNull(await findGtagsDir(editor.document.fileName));
     quickPick = vscode.window.createQuickPick();
     quickPick.onDidHide(handleErrors(onHide));
     quickPick.onDidAccept(handleErrors(abortSearch));
@@ -247,7 +245,7 @@ function tagToLocation(tag: TagInfo, gtagsDir: string): vscode.Location {
 
 function parseLine(line: string): TagInfo {
   const parts = splitWithRemainder(line, /\s+/, 3);
-  log.assert(parts.length === 4, `Cat not parse gtags line: ${line}`);
+  assert(parts.length === 4, `Cat not parse gtags line: ${line}`);
   return {
     name: parts[0],
     line: parseNumber(parts[1]),
@@ -277,7 +275,7 @@ const gtagsGlobalSymbolsProvider: vscode.WorkspaceSymbolProvider = {
       case 'typescript':
         throw new Error('Not used for typescript');
     }
-    const gtagsDir = log.assertNonNull(
+    const gtagsDir = assertNonNull(
       await findGtagsDir(editor.document.fileName),
     );
     const tags = await searchGtags(
@@ -334,18 +332,18 @@ async function searchDefinition(
 
 async function openDefinition() {
   const editor = getActiveTextEditor();
-  const gtagsDir = log.assertNonNull(
+  const gtagsDir = assertNonNull(
     await findGtagsDir(editor.document.fileName),
     'GTAGS not found',
   );
-  log.assert(editor.selection.isEmpty, 'Selection is not empty');
+  assert(editor.selection.isEmpty, 'Selection is not empty');
   const wordRange = editor.document.getWordRangeAtPosition(
     editor.selection.active,
   );
-  const range = log.assertNonNull(wordRange, 'Not on word');
+  const range = assertNonNull(wordRange, 'Not on word');
   const word = editor.document.getText(range);
   const tags = await searchDefinition(word, gtagsDir);
-  log.assert(tags.length > 0, `No definitions found for ${word}`);
+  assert(tags.length > 0, `No definitions found for ${word}`);
   if (tags.length === 1) {
     const tag = tags[0];
     await fileUtils.openTagLocation(nodejs.path.join(gtagsDir, tag.file), {
@@ -392,12 +390,12 @@ const gtagsHoverProvider: vscode.HoverProvider = {
         return;
     }
     if (document.fileName.startsWith('extension-output')) return;
-    const gtagsDir = log.assertNonNull(
+    const gtagsDir = assertNonNull(
       await findGtagsDir(document.fileName),
       'GTAGS not found',
     );
     const word = document.getWordRangeAtPosition(position);
-    const range = log.assertNonNull(word, 'Not on word');
+    const range = assertNonNull(word, 'Not on word');
     const tag = document.getText(range);
     const tags = await searchGtags('hover', tag, tag, gtagsDir, token);
     if (tags.length === 0 || tags.length > 1) return;

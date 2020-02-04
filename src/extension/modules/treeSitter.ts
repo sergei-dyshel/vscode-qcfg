@@ -11,7 +11,7 @@ import {
   TextEditor,
 } from 'vscode';
 import { handleErrorsAsync, registerAsyncCommandWrapped } from './exception';
-import { Logger, str } from './logging';
+import { Logger, str, assertNonNull } from './logging';
 import { Modules } from './module';
 import { SyntaxNode, SyntaxTree, SyntaxTrees } from './syntaxTree';
 import {
@@ -53,7 +53,7 @@ function findContainingNodeImpl(
 
 function findContainingNode(node: SyntaxNode, range: Range): SyntaxNode {
   const contNode = findContainingNodeImpl(node, range);
-  return log.assertNonNull<SyntaxNode>(
+  return assertNonNull<SyntaxNode>(
     contNode,
     `${str(node)} does not contain ${str(range)}`,
   );
@@ -64,9 +64,9 @@ function findContainingChildren(root: SyntaxNode, range: Range) {
   let firstChild: SyntaxNode | undefined;
   let lastChild: SyntaxNode | undefined;
 
-  if (parent.range.isEqual(range)) parent = log.assertNonNull(parent.parent);
+  if (parent.range.isEqual(range)) parent = assertNonNull(parent.parent);
   while (!isListNode(parent)) {
-    parent = log.assertNonNull(parent.parent);
+    parent = assertNonNull(parent.parent);
   }
   for (let i = 0; i < parent.namedChildCount; ++i) {
     const child = parent.namedChild(i)!;

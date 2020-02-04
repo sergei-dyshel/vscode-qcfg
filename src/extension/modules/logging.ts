@@ -47,6 +47,28 @@ export function assert(
   }
 }
 
+export function assertNonNull<T>(
+  val: T | undefined | null,
+  ...args: unknown[]
+): T {
+  assert(val !== undefined && val !== null, ...args);
+  return val as T;
+}
+
+export function assertNull<T>(val: T | undefined | null, ...args: unknown[]) {
+  assert(val === undefined || val === null, ...args);
+}
+
+export function assertInstanceOf<T extends B, B>(
+  value: B,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  cls: { new (...args: any[]): T },
+  ...args: any[]
+): T {
+  assert(value instanceof cls, ...args);
+  return value as T;
+}
+
 export class Logger {
   constructor(options?: LoggerOptions) {
     this.name = '';
@@ -119,33 +141,6 @@ export class Logger {
 
   fatal(...args: unknown[]): never {
     return this.logInternal(LogLevel.Fatal, args) as never;
-  }
-
-  /* TODO: move assert outside */
-  // eslint-disable-next-line class-methods-use-this
-  assert(condition: boolean | undefined | null | object, ...args: unknown[]) {
-    if (!condition) {
-      throw new Error(formatMessage(args, 'Assertion failed'));
-    }
-  }
-
-  assertNonNull<T>(val: T | undefined | null, ...args: unknown[]): T {
-    this.assert(val !== undefined && val !== null, ...args);
-    return val as T;
-  }
-
-  assertNull<T>(val: T | undefined | null, ...args: unknown[]) {
-    this.assert(val === undefined || val === null, ...args);
-  }
-
-  assertInstanceOf<T extends B, B>(
-    value: B,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    cls: { new (...args: any[]): T },
-    ...args: any[]
-  ): T {
-    this.assert(value instanceof cls, ...args);
-    return value as T;
   }
 
   // private

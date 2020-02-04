@@ -6,7 +6,7 @@ import * as glob from 'glob';
 import * as chokidar from 'chokidar';
 import * as tempy from 'tempy';
 
-import { log } from './logging';
+import { log, assertNonNull, assertNull } from './logging';
 import { getActiveTextEditor } from './utils';
 import { DisposableLike } from '../../library/types';
 import {
@@ -51,7 +51,7 @@ export function getDocumentRoot(fileName: string) {
 }
 
 export function getDocumentRootThrowing(fileName: string) {
-  return log.assertNonNull(
+  return assertNonNull(
     getDocumentRoot(fileName),
     `Could not get workspace folder of ${fileName}`,
   );
@@ -112,11 +112,11 @@ export async function openTagLocation(
   const mustOpenNewEditor = !editor || editor.document.uri.fsPath !== filePath;
   const document = mustOpenNewEditor
     ? await workspace.openTextDocument(filePath)
-    : log.assertNonNull(editor).document;
+    : assertNonNull(editor).document;
 
   if (options && options.tag) {
-    log.assertNull(options.column, 'Can not specify tag and column together');
-    log.assertNonNull(options.line, 'Can not specify "tag" without "line"');
+    assertNull(options.column, 'Can not specify tag and column together');
+    assertNonNull(options.line, 'Can not specify "tag" without "line"');
     const lineText = document.lineAt(line0);
     col0 = lineText.text.indexOf(options.tag);
     if (col0 === -1) {

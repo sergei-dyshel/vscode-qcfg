@@ -16,7 +16,7 @@ import {
   WorkspaceFolder,
 } from 'vscode';
 import { listenWrapped, executeCommandHandled } from './exception';
-import { log, Logger } from './logging';
+import { log, Logger, assert } from './logging';
 import { Modules } from './module';
 import { registerTemporaryCommand } from './utils';
 import { DisposableLike } from '../../library/types';
@@ -143,7 +143,7 @@ export class TaskRun {
   }
 
   async cancel() {
-    this.log.assert(
+    assert(
       this.state === State.RUNNING || this.state === State.PROCESS_STARTED,
       `Can not cancel task in state ${State[this.state]}`,
     );

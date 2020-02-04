@@ -12,10 +12,10 @@ import { shouldSplitVertically } from './windowState';
 
 import { Modules } from './module';
 import { registerAsyncCommandWrapped } from './exception';
-import { log } from './logging';
+import { assert } from './logging';
 
 async function focusEditorBeside(syncPosition: boolean) {
-  log.assert(window.activeTextEditor);
+  assert(window.activeTextEditor);
   const editor = window.activeTextEditor as TextEditor;
   const columns = new Set<ViewColumn>();
   for (const visEditor of window.visibleTextEditors)
@@ -66,7 +66,7 @@ async function splitEditorToDirection(direction: DirectionArg) {
 
 async function syncEditorToDirection(args: unknown[]) {
   const dir = args[0] as DirectionArg;
-  log.assert(window.activeTextEditor);
+  assert(window.activeTextEditor);
   const editor = window.activeTextEditor as TextEditor;
   const visible = editor.visibleRanges[0];
   const pos = editor.selection.active;

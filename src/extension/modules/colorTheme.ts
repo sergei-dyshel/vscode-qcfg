@@ -1,6 +1,6 @@
 'use strict';
 
-import { log } from './logging';
+import { log, assert } from './logging';
 import {
   workspace,
   commands,
@@ -60,7 +60,7 @@ async function selectWorkspaceTheme() {
     'Clearing workspace theme, persist explicitly again after you choose',
   );
   await setSettingsTheme(INVALID);
-  log.assert(
+  assert(
     getSettingsTheme() === INVALID,
     'Changed config file was not refreshed - symlinked workspace file?',
   );
@@ -72,7 +72,7 @@ async function persistWorkspaceTheme() {
     await window.showWarningMessage('Already persisted');
   }
   const settingsTheme = getSettingsTheme();
-  log.assert(
+  assert(
     settingsTheme !== INVALID && settingsTheme !== undefined,
     'Workspace theme is not set',
   );

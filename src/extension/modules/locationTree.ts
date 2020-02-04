@@ -13,7 +13,7 @@ import {
   Location,
 } from 'vscode';
 import { handleAsyncStd } from './exception';
-import { log, str } from './logging';
+import { str, assertInstanceOf, assert } from './logging';
 import { StaticTreeNode, TreeProvider, QcfgTreeView } from './treeView';
 import { Modules } from './module';
 import { mapSomeAsyncAndZip } from './async';
@@ -47,9 +47,9 @@ export async function setPanelLocations(
       return a.line - b.line;
     if (a instanceof DirNode && b instanceof FileNode) return -1;
     if (a instanceof FileNode && b instanceof DirNode) return 1;
-    return log
-      .assertInstanceOf(a, UriNode)
-      .fsPath.localeCompare(log.assertInstanceOf(b, UriNode).fsPath);
+    return assertInstanceOf(a, UriNode).fsPath.localeCompare(
+      assertInstanceOf(b, UriNode).fsPath,
+    );
   });
   currentTrees = nodes;
   currentMessage = message;
@@ -226,7 +226,7 @@ const locationTreeProvider: TreeProvider = {
   },
   removeNode(node: StaticTreeNode) {
     if (node.isRoot) {
-      log.assert(currentTrees!.removeFirst(node));
+      assert(currentTrees!.removeFirst(node));
       QcfgTreeView.treeChanged();
       return;
     }

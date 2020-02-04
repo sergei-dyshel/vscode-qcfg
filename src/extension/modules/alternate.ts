@@ -9,7 +9,7 @@ import {
 } from 'vscode';
 import * as fileUtils from './fileUtils';
 import * as path from 'path';
-import { log } from './logging';
+import { assertNonNull } from './logging';
 import { getActiveTextEditor } from './utils';
 import { registerAsyncCommandWrapped } from './exception';
 import { Modules } from './module';
@@ -30,7 +30,7 @@ async function switchToAlternate() {
   const mapping: Mapping = workspace
     .getConfiguration('qcfg.alternate')
     .get('mapping', {});
-  const altExts = log.assertNonNull(
+  const altExts = assertNonNull(
     mapping[ext],
     `No alternate mapping configured for ${ext}`,
   );
@@ -45,7 +45,7 @@ async function switchToAlternate() {
   }
   for (const altExt of altExts) {
     const shortName = baseName(filePath) + altExt;
-    const folder = log.assertNonNull(
+    const folder = assertNonNull(
       fileUtils.getDocumentWorkspaceFolder(filePath),
     );
     const pattern = new RelativePattern(folder, '**/' + shortName);

@@ -24,7 +24,7 @@ import { openRemoteFileViaSsh } from './sshFs';
 export let port = 48123;
 
 async function handleOpen(folder: string, location: string) {
-  log.assert(path.isAbsolute(folder), `"${folder}" is not absolute path`);
+  assert(path.isAbsolute(folder), `"${folder}" is not absolute path`);
   let wsFolder: WorkspaceFolder | undefined;
   let found = false;
   for (wsFolder of workspace.workspaceFolders || [])
@@ -62,7 +62,7 @@ async function handleOpen(folder: string, location: string) {
 }
 
 function checkFolder(folder: string) {
-  log.assert(path.isAbsolute(folder), `"${folder}" is not absolute path`);
+  assert(path.isAbsolute(folder), `"${folder}" is not absolute path`);
   for (const wsFolder of workspace.workspaceFolders || [])
     if (wsFolder.uri.fsPath === folder) {
       return true;
@@ -84,7 +84,7 @@ async function handleCmd(cmd: string) {
 
   switch (opcode) {
     case 'open':
-      log.assert(args.length === 1);
+      assert(args.length === 1);
       handleAsyncStd(handleOpen(folder, args[0]));
       break;
     case 'openSsh':

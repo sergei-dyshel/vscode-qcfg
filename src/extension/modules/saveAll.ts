@@ -2,7 +2,7 @@
 
 import * as vscode from 'vscode';
 import * as fileUtils from './fileUtils';
-import { log } from './logging';
+import { log, assertNonNull } from './logging';
 import { Modules } from './module';
 
 export interface DocumentsInFolder {
@@ -31,7 +31,7 @@ function onDidSaveTextDocument(document: vscode.TextDocument) {
   log.debug('onDidSaveTextDocument:', docPath);
 
   if (savedFiles.has(wsFolder))
-    log.assertNonNull(savedFiles.get(wsFolder)).push(document);
+    assertNonNull(savedFiles.get(wsFolder)).push(document);
   else savedFiles.set(wsFolder, [document]);
   setTimeout(emit, 200);
 }

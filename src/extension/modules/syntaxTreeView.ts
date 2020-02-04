@@ -10,7 +10,7 @@ import {
   Range,
 } from 'vscode';
 import { listenWrapped, registerAsyncCommandWrapped } from './exception';
-import { log, str } from './logging';
+import { str, assert } from './logging';
 import { Modules } from './module';
 import { ellipsize } from '../../library/stringUtils';
 import {
@@ -154,7 +154,7 @@ function buildNodeName(
 class SyntaxTreeViewNode extends StaticTreeNode {
   constructor(public syntaxNode: SyntaxNode, private document: TextDocument) {
     super(buildNodeLabel(syntaxNode, document));
-    log.assert(syntaxNode.isNamed);
+    assert(syntaxNode.isNamed);
     if (syntaxNode.namedChildCount > 0) this.setCollapsed();
     this.treeItem.id = this.calcId();
   }

@@ -15,7 +15,7 @@ import {
   TextDocumentChangeEvent,
   Range,
 } from 'vscode';
-import { Logger, log, str } from './logging';
+import { Logger, log, str, assert, assertNonNull } from './logging';
 import { setTimeoutPromise } from '../../library/nodeUtils';
 import { getActiveTextEditor } from './utils';
 import { filterNonNull } from '../../library/tsUtils';
@@ -160,14 +160,14 @@ function onDidChangeTextDocument(event: TextDocumentChangeEvent) {
 
 function getHistory(viewColumn: ViewColumn): History {
   const col = viewColumn as number;
-  log.assert(histories.length >= col);
+  assert(histories.length >= col);
   return histories[col - 1];
 }
 
 async function goBackward() {
   const viewCol = getActiveTextEditor().viewColumn;
   const history = getHistory(
-    log.assertNonNull(viewCol, 'Current text editor has no view column'),
+    assertNonNull(viewCol, 'Current text editor has no view column'),
   );
   await history.goBackward();
 }
@@ -175,7 +175,7 @@ async function goBackward() {
 async function goForward() {
   const viewCol = getActiveTextEditor().viewColumn;
   const history = getHistory(
-    log.assertNonNull(viewCol, 'Current text editor has no view column'),
+    assertNonNull(viewCol, 'Current text editor has no view column'),
   );
   await history.goForward();
 }
@@ -313,7 +313,7 @@ namespace History {
 
 class History {
   constructor(private viewColumn: ViewColumn) {
-    const editor = log.assertNonNull(getVisibleEditor(viewColumn));
+    const editor = assertNonNull(getVisibleEditor(viewColumn));
     this.current = Point.fromEditor(editor);
     this.log = new Logger({
       name: 'viewColumnHistory',
@@ -323,21 +323,21 @@ class History {
   }
 
   async goBackward() {
-    log.assert(temporaryMode === TemporaryMode.NORMAL);
+    assert(temporaryMode === TemporaryMode.NORMAL);
     this.forward.push(this.current);
     let back: Point | undefined;
     do {
       back = this.backward.pop();
     } while (back && !this.current.farEnough(back));
-    this.log.assert(back, 'No backward history');
+    assert(back, 'No backward history');
     this.current = back!;
     await this.current.goto();
     this.log.info(`Went backward to ${this.current}`);
   }
 
   async goForward() {
-    log.assert(temporaryMode === TemporaryMode.NORMAL);
-    this.log.assert(this.forward.length > 0, 'No forward history');
+    assert(temporaryMode === TemporaryMode.NORMAL);
+    assert(this.forward.length > 0, 'No forward history');
     this.backward.push(this.current);
     this.current = this.forward.pop()!;
     await this.current.goto();
@@ -348,7 +348,7 @@ class History {
     if (temporaryMode === TemporaryMode.FORCE_TEMPORARY) temporary = true;
     else if (temporaryMode === TemporaryMode.FORCE_NON_TEMPORARY)
       temporary = false;
-    const editor = log.assertNonNull(getVisibleEditor(this.viewColumn));
+    const editor = assertNonNull(getVisibleEditor(this.viewColumn));
     const point = Point.fromEditor(editor);
     if (point.equals(this.current)) return;
     if (temporary) {
@@ -371,7 +371,7 @@ class History {
   }
 
   top(): Point {
-    return log.assertNonNull(this.backward[this.backward.length - 1]);
+    return assertNonNull(this.backward[this.backward.length - 1]);
   }
 
   private pushCurrentIfNeeded() {

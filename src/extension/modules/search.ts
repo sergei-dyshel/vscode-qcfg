@@ -23,7 +23,7 @@ import {
 import { selectMultiple } from './dialog';
 import { getCompletionPrefix } from './documentUtils';
 import { availableLanguageConfigs, getLanguageConfig } from './language';
-import { log } from './logging';
+import { log, assertNonNull } from './logging';
 import { abbrevMatch } from '../../library/stringUtils';
 import { Subprocess } from './subprocess';
 import {
@@ -75,7 +75,7 @@ export async function searchInFiles(
 }
 
 async function searchTodos() {
-  const folder = log.assertNonNull(currentWorkspaceFolder());
+  const folder = assertNonNull(currentWorkspaceFolder());
   const filterCategories = await selectMultiple(
     TODO_CATEGORIES,
     label => ({ label }),

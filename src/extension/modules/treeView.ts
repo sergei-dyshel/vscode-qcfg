@@ -21,7 +21,7 @@ import {
   registerSyncCommandWrapped,
   registerAsyncCommandWrapped,
 } from './exception';
-import { log } from './logging';
+import { log, assertNonNull, assert } from './logging';
 import { Modules } from './module';
 import { callIfNonNull } from '../../library/tsUtils';
 
@@ -113,7 +113,7 @@ export namespace QcfgTreeView {
 
   export async function revealTree(node?: TreeNode, options?: RevealOptions) {
     if (!node) {
-      const nodes = await log.assertNonNull(currentProvider).getTrees();
+      const nodes = await assertNonNull(currentProvider).getTrees();
       if (!nodes || nodes.length === 0) return;
       node = nodes[0];
     }
@@ -153,7 +153,7 @@ export class StaticTreeNode implements TreeNode {
   }
 
   addChild(child: StaticTreeNode) {
-    log.assert(child.isRoot);
+    assert(child.isRoot);
     child.parent_ = this;
     this.children_.push(child);
     if (this.treeItem.collapsibleState === TreeItemCollapsibleState.None)
@@ -192,7 +192,7 @@ export class StaticTreeNode implements TreeNode {
     }
     const parent = this.parent;
     this.parent_ = undefined;
-    log.assert(parent.children_.removeFirst(this));
+    assert(parent.children_.removeFirst(this));
     if (parent.isLeaf) parent.remove();
     else onChangeEmitter.fire(parent);
   }
@@ -287,8 +287,8 @@ const treeDataProvider: TreeDataProvider<TreeNode> = {
 };
 
 function removeNode(...args: any[]) {
-  const node = log.assertNonNull(args[0]) as TreeNode;
-  const provider = log.assertNonNull(currentProvider);
+  const node = assertNonNull(args[0]) as TreeNode;
+  const provider = assertNonNull(currentProvider);
   if (!provider.removeNode)
     throw new Error(
       'TreeProvider with removable nodes must provide removeNode method',
@@ -297,7 +297,7 @@ function removeNode(...args: any[]) {
 }
 
 async function expandNode(...args: any[]) {
-  const node = log.assertNonNull(args[0]) as TreeNode;
+  const node = assertNonNull(args[0]) as TreeNode;
   await treeView.reveal(node, { expand: 3 });
 }
 

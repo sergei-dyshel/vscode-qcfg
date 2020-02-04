@@ -3,7 +3,7 @@
 import { commands, TextEditor, window, WorkspaceFolder, Range } from 'vscode';
 import { registerAsyncCommandWrapped } from './exception';
 import { getDocumentWorkspaceFolder } from './fileUtils';
-import { log } from './logging';
+import { assertNonNull } from './logging';
 
 // XXX: currently unused
 export namespace Context {
@@ -42,7 +42,7 @@ export function registerTemporaryCommand(
 let tempCmdCounter = 0;
 
 export function getActiveTextEditor(): TextEditor {
-  return log.assertNonNull(window.activeTextEditor, 'No active text editor');
+  return assertNonNull(window.activeTextEditor, 'No active text editor');
 }
 
 export function currentWorkspaceFolder(): WorkspaceFolder | undefined {

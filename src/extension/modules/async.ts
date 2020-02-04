@@ -1,6 +1,6 @@
 'use strict';
 
-import { Logger, log } from './logging';
+import { Logger, log, assertNonNull } from './logging';
 import { zipArrays, concatArrays, izip } from '../../library/tsUtils';
 import { ExtensionContext } from 'vscode';
 import { Modules } from './module';
@@ -40,7 +40,7 @@ export class PromiseQueue {
 
   private runNext() {
     if (this.queue.length === 0 || this.busy) return;
-    const entry = this.log.assertNonNull(this.queue.shift());
+    const entry = assertNonNull(this.queue.shift());
     /// #if DEBUG
     this.log.trace(`starting "${entry.name}`);
     /// #endif
