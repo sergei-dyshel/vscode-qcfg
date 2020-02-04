@@ -6,7 +6,7 @@ import * as glob from 'glob';
 import * as chokidar from 'chokidar';
 import * as tempy from 'tempy';
 
-import { log, assertNonNull, assertNull } from './logging';
+import { log } from './logging';
 import { getActiveTextEditor } from './utils';
 import { DisposableLike } from '../../library/types';
 import {
@@ -20,6 +20,7 @@ import {
   Selection,
   ViewColumn,
 } from 'vscode';
+import { assertNonNull, assertNull } from '../../library/exception';
 
 export const globSync = glob.sync;
 // tslint:disable-next-line: no-unnecessary-type-assertion

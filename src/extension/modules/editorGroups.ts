@@ -12,7 +12,7 @@ import { shouldSplitVertically } from './windowState';
 
 import { Modules } from './module';
 import { registerAsyncCommandWrapped } from './exception';
-import { assert } from './logging';
+import { assert } from '../../library/exception';
 
 async function focusEditorBeside(syncPosition: boolean) {
   assert(window.activeTextEditor);

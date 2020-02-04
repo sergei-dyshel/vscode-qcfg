@@ -1,6 +1,6 @@
 'use strict';
 
-import { log, assert } from './logging';
+import { log } from './logging';
 import {
   workspace,
   commands,
@@ -17,6 +17,7 @@ import {
   handleAsyncStd,
 } from './exception';
 import { Modules } from './module';
+import { assert } from '../../library/exception';
 
 const SECTION = 'workbench.colorTheme';
 const MEMENTO_PERSIST_KEY = 'qcfg.colors.persistent';

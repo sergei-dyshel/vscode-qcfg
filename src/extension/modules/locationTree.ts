@@ -13,12 +13,13 @@ import {
   Location,
 } from 'vscode';
 import { handleAsyncStd } from './exception';
-import { str, assertInstanceOf, assert } from './logging';
+import { str } from './logging';
 import { StaticTreeNode, TreeProvider, QcfgTreeView } from './treeView';
 import { Modules } from './module';
 import { mapSomeAsyncAndZip } from './async';
 import { maxNumber } from '../../library/tsUtils';
 import { LiveLocation, createLiveLocation } from './liveLocation';
+import { assertInstanceOf, assert } from '../../library/exception';
 
 export async function setPanelLocations(
   message: string,

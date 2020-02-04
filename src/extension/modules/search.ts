@@ -23,7 +23,7 @@ import {
 import { selectMultiple } from './dialog';
 import { getCompletionPrefix } from './documentUtils';
 import { availableLanguageConfigs, getLanguageConfig } from './language';
-import { log, assertNonNull } from './logging';
+import { log } from './logging';
 import { abbrevMatch } from '../../library/stringUtils';
 import { Subprocess } from './subprocess';
 import {
@@ -41,7 +41,11 @@ import {
 import { runTask } from './tasks/main';
 import { TaskType, Flag } from './tasks/params';
 import { saveAndPeekSearch } from './savedSearch';
-import { CheckError, checkNonNull } from '../../library/exception';
+import {
+  CheckError,
+  checkNonNull,
+  assertNonNull,
+} from '../../library/exception';
 
 const TODO_CATEGORIES = [
   'TODO',

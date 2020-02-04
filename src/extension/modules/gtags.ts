@@ -3,7 +3,7 @@
 import * as vscode from 'vscode';
 import * as fileUtils from './fileUtils';
 import * as saveAll from './saveAll';
-import { log, Logger, assert, assertNonNull } from './logging';
+import { log, Logger } from './logging';
 import * as subprocess from './subprocess';
 import * as nodejs from '../../library/nodejs';
 import { PromiseQueue } from './async';
@@ -27,6 +27,7 @@ import { runTask } from './tasks/main';
 import { Params, TaskType, Flag, LocationFormat } from './tasks/params';
 
 import RE2 from 're2';
+import { assertNonNull, assert } from '../../library/exception';
 
 async function findGtagsDir(dir: string) {
   while (true) {

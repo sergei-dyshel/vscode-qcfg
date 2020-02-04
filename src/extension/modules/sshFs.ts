@@ -11,9 +11,9 @@ import {
   window,
 } from 'vscode';
 import { Modules } from './module';
-import { assert } from './logging';
 import { getTempFile } from './fileUtils';
 import { runSubprocessAndWait } from './subprocess';
+import { assert } from '../../library/exception';
 
 const SCHEME = 'qsshfs';
 

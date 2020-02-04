@@ -1,5 +1,39 @@
 import { AsyncFunction, PromiseType } from './templateTypes';
 
+export function assert(
+  condition: boolean | undefined | null | object,
+  ...args: unknown[]
+): asserts condition {
+  if (!condition) {
+    const msg = args.isEmpty
+      ? 'Assertion failed'
+      : args.map(x => '' + x).join(' ');
+    throw new Error(msg);
+  }
+}
+
+export function assertNonNull<T>(
+  val: T | undefined | null,
+  ...args: unknown[]
+): T {
+  assert(val !== undefined && val !== null, ...args);
+  return val as T;
+}
+
+export function assertNull<T>(val: T | undefined | null, ...args: unknown[]) {
+  assert(val === undefined || val === null, ...args);
+}
+
+export function assertInstanceOf<T extends B, B>(
+  value: B,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  cls: { new (...args: any[]): T },
+  ...args: any[]
+): T {
+  assert(value instanceof cls, ...args);
+  return value as T;
+}
+
 /**
  * Non-critical exception meant to show message to user
  */

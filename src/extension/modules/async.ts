@@ -1,9 +1,10 @@
 'use strict';
 
-import { Logger, log, assertNonNull } from './logging';
+import { Logger, log } from './logging';
 import { zipArrays, concatArrays, izip } from '../../library/tsUtils';
 import { ExtensionContext } from 'vscode';
 import { Modules } from './module';
+import { assertNonNull } from '../../library/exception';
 
 type Callback = () => Promise<void>;
 type Resolve = () => void;

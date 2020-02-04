@@ -15,7 +15,7 @@ import {
   TextDocumentChangeEvent,
   Range,
 } from 'vscode';
-import { Logger, log, str, assert, assertNonNull } from './logging';
+import { Logger, log, str } from './logging';
 import { setTimeoutPromise } from '../../library/nodeUtils';
 import { getActiveTextEditor } from './utils';
 import { filterNonNull } from '../../library/tsUtils';
@@ -24,6 +24,7 @@ import {
   listenWrapped,
   handleAsyncStd,
 } from './exception';
+import { assert, assertNonNull } from '../../library/exception';
 
 let extContext: ExtensionContext;
 

@@ -3,7 +3,7 @@
 import { commands, TextEditor, window, WorkspaceFolder, Range } from 'vscode';
 import { registerAsyncCommandWrapped } from './exception';
 import { getDocumentWorkspaceFolder } from './fileUtils';
-import { assertNonNull } from './logging';
+import { assertNonNull } from '../../library/exception';
 
 // XXX: currently unused
 export namespace Context {

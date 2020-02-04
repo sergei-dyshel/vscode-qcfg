@@ -14,11 +14,12 @@ import {
 } from 'vscode';
 import { handleAsyncStd, handleErrorsAsync } from './exception';
 import * as fileUtils from './fileUtils';
-import { log, assert } from './logging';
+import { log } from './logging';
 import { Modules } from './module';
 import { parseNumber } from '../../library/stringUtils';
 import { focusWindow } from './windowState';
 import { openRemoteFileViaSsh } from './sshFs';
+import { assert } from '../../library/exception';
 
 // eslint-disable-next-line import/no-mutable-exports
 export let port = 48123;

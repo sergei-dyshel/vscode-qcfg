@@ -11,7 +11,7 @@ import {
   TextEditor,
 } from 'vscode';
 import { handleErrorsAsync, registerAsyncCommandWrapped } from './exception';
-import { Logger, str, assertNonNull } from './logging';
+import { Logger, str } from './logging';
 import { Modules } from './module';
 import { SyntaxNode, SyntaxTree, SyntaxTrees } from './syntaxTree';
 import {
@@ -21,6 +21,7 @@ import {
   trimWhitespace,
 } from './textUtils';
 import { getActiveTextEditor } from './utils';
+import { assertNonNull } from '../../library/exception';
 
 const log = new Logger({ level: 'trace' });
 

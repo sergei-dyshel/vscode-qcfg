@@ -2,8 +2,9 @@
 
 import * as vscode from 'vscode';
 import * as fileUtils from './fileUtils';
-import { log, assertNonNull } from './logging';
+import { log } from './logging';
 import { Modules } from './module';
+import { assertNonNull } from '../../library/exception';
 
 export interface DocumentsInFolder {
   folder: vscode.WorkspaceFolder;

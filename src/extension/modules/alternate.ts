@@ -9,13 +9,13 @@ import {
 } from 'vscode';
 import * as fileUtils from './fileUtils';
 import * as path from 'path';
-import { assertNonNull } from './logging';
 import { getActiveTextEditor } from './utils';
 import { registerAsyncCommandWrapped } from './exception';
 import { Modules } from './module';
 import { baseName, stripExt } from '../../library/pathUtils';
 import { selectFromList } from './dialog';
 import * as nodejs from '../../library/nodejs';
+import { assertNonNull } from '../../library/exception';
 
 interface Mapping {
   [ext: string]: string[];
