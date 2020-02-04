@@ -10,7 +10,6 @@ import {
   Range,
 } from 'vscode';
 import { listenWrapped, registerAsyncCommandWrapped } from './exception';
-import { str } from './logging';
 import { Modules } from './module';
 import { ellipsize } from '../../library/stringUtils';
 import {
@@ -20,6 +19,7 @@ import {
 } from './syntaxTree';
 import { QcfgTreeView, StaticTreeNode, TreeProvider } from './treeView';
 import { assert } from '../../library/exception';
+import { stringify as str } from '../../library/stringify';
 
 const ELLIPSIZE_LEN = 20;
 

@@ -28,6 +28,7 @@ import {
 import { Modules } from './module';
 import { getCallsite } from '../../library/sourceMap';
 import { formatString } from '../../library/stringUtils';
+import { registerStringifier, stringify as str } from '../../library/stringify';
 
 type LogLevelStr = 'info' | 'debug' | 'trace';
 
@@ -173,15 +174,6 @@ export enum LogLevel {
   Fatal = 7,
 }
 
-export function str(x: unknown): string {
-  switch (typeof x) {
-    case 'object':
-      return stringifyObject(x);
-    default:
-      return '' + x;
-  }
-}
-
 export class LoggedError extends Error {}
 
 //
@@ -229,7 +221,7 @@ function formatMessage(args: unknown[], default_ = ''): string {
 function formatMessageStr(fmt: string, args: unknown[]) {
   const normalizedArgs = args.map(arg =>
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    typeof arg === 'object' ? stringifyObject(arg) : (arg as any),
+    typeof arg === 'object' ? str(arg) : (arg as any),
   );
   return formatString(fmt, ...normalizedArgs);
 }
@@ -255,8 +247,7 @@ function stringifyTextEditor(editor: TextEditor) {
   return `<${relpath}>`;
 }
 
-function stringifyObject(x: object | null): string {
-  if (x === null) return '<null>';
+function stringifyVscode(x: object): string | undefined {
   if (x instanceof Uri) {
     if (x.scheme === 'file') return workspace.asRelativePath(x);
     return x.toString(true /* skip encoding */);
@@ -264,7 +255,7 @@ function stringifyObject(x: object | null): string {
   if ('fileName' in x && 'uri' in x) {
     // TextDocument
     const doc = x as TextDocument;
-    const relpath = stringifyObject(doc.uri);
+    const relpath = stringifyVscode(doc.uri);
     return `<${relpath}>`;
   }
   if ('document' in x && 'viewColumn' in x) {
@@ -279,16 +270,13 @@ function stringifyObject(x: object | null): string {
   }
   if (x instanceof Selection) {
     const sel = x;
-    if (sel.anchor.isEqual(sel.active)) return stringifyObject(sel.anchor);
+    if (sel.anchor.isEqual(sel.active)) return stringifyVscode(sel.anchor);
     if (sel.anchor.isBefore(sel.active))
       return `${str(sel.anchor)}->${str(sel.active)}`;
     return `${str(sel.active)}<-${str(sel.anchor)}`;
   }
-  if (x instanceof Error) {
-    return `${x.message}: ${x.name}`;
-  }
   if (x instanceof Range) {
-    if (x.start.isEqual(x.end)) return stringifyObject(x.start);
+    if (x.start.isEqual(x.end)) return stringifyVscode(x.start);
     return `[${str(x.start)}..${str(x.end)}]`;
   }
   if ('range' in x && 'rangeOffset' in x && 'rangeLength' in x && 'text' in x) {
@@ -307,16 +295,10 @@ function stringifyObject(x: object | null): string {
     const node = x as treeSitter.SyntaxNode;
     return `<${node.type} ${str(node.range)}>`;
   }
-  if (x instanceof Array) {
-    const arr = x;
-    return '[ ' + arr.map(str).join(', ') + ' ]';
-  }
-  if ('toString' in x) {
-    const s = x.toString();
-    if (s !== '[object Object]') return s;
-  }
-  return JSON.stringify(x);
+  return undefined;
 }
+
+registerStringifier(stringifyVscode);
 
 interface LogRecord {
   date: string;
