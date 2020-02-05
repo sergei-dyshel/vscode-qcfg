@@ -17,7 +17,6 @@ import * as dialog from '../dialog';
 import { registerAsyncCommandWrapped } from '../exception';
 import { globAsync } from '../fileUtils';
 import { parseJsonFileSync } from '../json';
-import { log } from '../logging';
 import { Modules } from '../module';
 import { concatArrays, mapObjectToArray } from '../../../library/tsUtils';
 import { currentWorkspaceFolder } from '../utils';
@@ -49,6 +48,7 @@ import {
   isFolderTask,
 } from './types';
 import * as nodejs from '../../../library/nodejs';
+import { log } from '../../../library/logging';
 
 const CONFIG_FILE = 'vscode-qcfg.tasks.json';
 

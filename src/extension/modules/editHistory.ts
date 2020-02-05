@@ -15,7 +15,7 @@ import {
   StatusBarAlignment,
 } from 'vscode';
 import { listenWrapped, registerSyncCommandWrapped } from './exception';
-import { Logger } from './logging';
+import { Logger } from '../../library/logging';
 import { DefaultMap } from '../../library/tsUtils';
 import { getActiveTextEditor } from './utils';
 import { Modules } from './module';
@@ -42,7 +42,7 @@ class DocumentHistory {
 
   constructor(private document: TextDocument) {
     const base = nodejs.path.parse(document.fileName).base;
-    this.log = new Logger({ instance: base, level: 'trace' });
+    this.log = new Logger({ name: 'DocumentHistory', instance: base });
   }
 
   get length() {

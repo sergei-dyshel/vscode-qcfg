@@ -9,7 +9,7 @@ import {
   FileType,
 } from 'vscode';
 import { Modules } from './module';
-import { log } from './logging';
+import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
 import { selectFromList } from './dialog';
 import { registerAsyncCommandWrapped } from './exception';

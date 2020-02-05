@@ -15,7 +15,7 @@ import {
   TextDocumentChangeEvent,
   Range,
 } from 'vscode';
-import { Logger, log } from './logging';
+import { Logger, log } from '../../library/logging';
 import { setTimeoutPromise } from '../../library/nodeUtils';
 import { getActiveTextEditor } from './utils';
 import { filterNonNull } from '../../library/tsUtils';

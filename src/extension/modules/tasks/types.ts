@@ -20,7 +20,6 @@ import {
 import { mapAsync, mapAsyncSequential } from '../async';
 import { ListSelectable } from '../dialog';
 import { getDocumentWorkspaceFolder, peekLocations } from '../fileUtils';
-import { log, LogLevel } from '../logging';
 import * as nodejs from '../../../library/nodejs';
 import { ParseLocationFormat, parseLocations } from '../parseLocations';
 import * as remoteControl from '../remoteControl';
@@ -47,6 +46,7 @@ import {
 import { handleAsyncStd } from '../exception';
 import { saveAndPeekSearch } from '../savedSearch';
 import { refreshOrRestartLangClients } from '../langClient';
+import { LogLevel, log } from '../../../library/logging';
 
 export interface FetchInfo {
   label: string;
@@ -458,7 +458,7 @@ export class ProcessTask extends BaseQcfgTask {
   private async runAndGetOutput(): Promise<string> {
     const subproc = new Subprocess(this.command, {
       cwd: this.cwd,
-      logLevel: LogLevel.Debug,
+      logLevel: LogLevel.DEBUG,
       statusBarMessage: this.info.label,
       allowedCodes: this.params.exitCodes,
     });

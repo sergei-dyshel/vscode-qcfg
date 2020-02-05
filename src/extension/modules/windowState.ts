@@ -1,6 +1,6 @@
 'use strict';
 
-import { log } from './logging';
+import { log } from '../../library/logging';
 import { listenWrapped } from './exception';
 import { Modules } from './module';
 import { windowManager, Window } from 'node-window-manager';

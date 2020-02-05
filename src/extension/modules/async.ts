@@ -1,6 +1,6 @@
 'use strict';
 
-import { Logger, log } from './logging';
+import { Logger, log } from '../../library/logging';
 import { zipArrays, concatArrays, izip } from '../../library/tsUtils';
 import { ExtensionContext } from 'vscode';
 import { Modules } from './module';
@@ -17,7 +17,6 @@ export class PromiseQueue {
     this.log = new Logger({
       name: 'PromiseQueue',
       instance: name,
-      level: 'debug',
     });
   }
 

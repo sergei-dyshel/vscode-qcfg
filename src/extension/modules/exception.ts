@@ -11,7 +11,7 @@ import {
   ExtensionContext,
 } from 'vscode';
 import { DisposableLike } from '../../library/types';
-import { log } from './logging';
+import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
 import { replaceAll } from '../../library/stringUtils';
 import { showStatusBarMessage } from './windowUtils';

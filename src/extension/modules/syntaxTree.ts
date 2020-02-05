@@ -20,7 +20,7 @@ import {
 import { PromiseContext } from './async';
 import { NumRange } from './documentUtils';
 import { listenWrapped, handleAsyncStd } from './exception';
-import { Logger } from './logging';
+import { Logger } from '../../library/logging';
 import { Modules } from './module';
 import * as nodejs from '../../library/nodejs';
 import { Timer } from '../../library/nodeUtils';

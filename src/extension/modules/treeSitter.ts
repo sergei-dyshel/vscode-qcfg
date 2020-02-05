@@ -11,7 +11,7 @@ import {
   TextEditor,
 } from 'vscode';
 import { handleErrorsAsync, registerAsyncCommandWrapped } from './exception';
-import { Logger } from './logging';
+import { Logger } from '../../library/logging';
 import { Modules } from './module';
 import { SyntaxNode, SyntaxTree, SyntaxTrees } from './syntaxTree';
 import {
@@ -24,7 +24,7 @@ import { getActiveTextEditor } from './utils';
 import { assertNonNull } from '../../library/exception';
 import { stringify as str } from 'querystring';
 
-const log = new Logger({ level: 'trace' });
+const log = new Logger({ name: 'treeSitter' });
 
 enum Direction {
   Left,

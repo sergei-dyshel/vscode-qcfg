@@ -8,7 +8,7 @@ import {
 } from 'vscode';
 import { listenWrapped } from './exception';
 import { watchFile } from './fileUtils';
-import { log } from './logging';
+import { log } from '../../library/logging';
 import { Modules } from './module';
 import * as nodejs from '../../library/nodejs';
 import { expandPath } from '../../library/pathUtils';

@@ -2,7 +2,7 @@
 
 import * as vscode from 'vscode';
 import * as fileUtils from './fileUtils';
-import { log } from './logging';
+import { log } from '../../library/logging';
 import { Modules } from './module';
 import { assertNonNull } from '../../library/exception';
 

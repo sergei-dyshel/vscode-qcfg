@@ -3,7 +3,7 @@
 import * as vscode from 'vscode';
 import * as fileUtils from './fileUtils';
 import * as saveAll from './saveAll';
-import { log, Logger } from './logging';
+import { log, Logger } from '../../library/logging';
 import * as subprocess from './subprocess';
 import * as nodejs from '../../library/nodejs';
 import { PromiseQueue } from './async';

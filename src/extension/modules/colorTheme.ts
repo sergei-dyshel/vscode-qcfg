@@ -1,6 +1,6 @@
 'use strict';
 
-import { log } from './logging';
+import { log } from '../../library/logging';
 import {
   workspace,
   commands,

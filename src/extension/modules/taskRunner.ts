@@ -16,7 +16,7 @@ import {
   WorkspaceFolder,
 } from 'vscode';
 import { listenWrapped, executeCommandHandled } from './exception';
-import { log, Logger } from './logging';
+import { log, Logger } from '../../library/logging';
 import { Modules } from './module';
 import { registerTemporaryCommand } from './utils';
 import { DisposableLike } from '../../library/types';

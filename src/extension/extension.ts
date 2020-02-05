@@ -7,8 +7,8 @@ import './modules/documentUtils';
 import { ALL_MODULES } from './modules/allModules';
 import { ExtensionContext } from 'vscode';
 import { Modules } from './modules/module';
-import { log } from './modules/logging';
 import { stringify as str } from '../library/stringify';
+import { log } from '../library/logging';
 
 export function activate(context: ExtensionContext) {
   console.log('Extension active');

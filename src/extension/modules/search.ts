@@ -23,7 +23,7 @@ import {
 import { selectMultiple } from './dialog';
 import { getCompletionPrefix } from './documentUtils';
 import { availableLanguageConfigs, getLanguageConfig } from './language';
-import { log } from './logging';
+import { log } from '../../library/logging';
 import { abbrevMatch } from '../../library/stringUtils';
 import { Subprocess } from './subprocess';
 import {

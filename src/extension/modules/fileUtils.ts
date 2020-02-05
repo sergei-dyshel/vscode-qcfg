@@ -6,7 +6,7 @@ import * as glob from 'glob';
 import * as chokidar from 'chokidar';
 import * as tempy from 'tempy';
 
-import { log } from './logging';
+import { log } from '../../library/logging';
 import { getActiveTextEditor } from './utils';
 import { DisposableLike } from '../../library/types';
 import {

@@ -11,7 +11,7 @@ import {
   languages,
   DocumentSymbolProvider,
 } from 'vscode';
-import { Logger } from './logging';
+import { Logger } from '../../library/logging';
 import * as subprocess from './subprocess';
 
 import { getActiveTextEditor } from './utils';
@@ -69,7 +69,7 @@ async function getTags(
   token: CancellationToken,
 ): Promise<TagInfo[]> {
   const langConfig = languageConfigs[document.languageId];
-  const log = new Logger({ instance: document.fileName, level: 'debug' });
+  const log = new Logger({ instance: document.fileName });
   if (!langConfig) return [];
   const docRoot = getDocumentRoot(document.fileName);
   if (!docRoot) return [];

@@ -21,7 +21,7 @@ import {
   registerSyncCommandWrapped,
   registerAsyncCommandWrapped,
 } from './exception';
-import { log } from './logging';
+import { log } from '../../library/logging';
 import { Modules } from './module';
 import { callIfNonNull } from '../../library/tsUtils';
 import { assertNonNull, assert } from '../../library/exception';

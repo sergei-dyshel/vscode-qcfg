@@ -1,3 +1,6 @@
+// must be first
+import * as logging from './logging';
+
 import * as alternate from './alternate';
 import * as autoSync from './autoSync';
 import * as colorTheme from './colorTheme';
@@ -9,7 +12,6 @@ import * as fuzzySearch from './fuzzySearch';
 import * as gtags from './gtags';
 import * as language from './language';
 import * as locationTree from './locationTree';
-import * as logging from './logging';
 import * as misc from './misc';
 import * as readOnlyProject from './readOnlyProject';
 import * as remoteControl from './remoteControl';

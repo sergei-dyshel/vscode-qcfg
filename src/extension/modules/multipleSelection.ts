@@ -9,7 +9,7 @@ import {
 import { Modules } from './module';
 import { listenWrapped, registerSyncCommandWrapped } from './exception';
 import { getActiveTextEditor } from './utils';
-import { log } from './logging';
+import { log } from '../../library/logging';
 
 const selectionIndex = new Map<TextEditor, number>();
 const decorationType = window.createTextEditorDecorationType({

@@ -1,5 +1,5 @@
 import { extensions, TextDocument, commands, ExtensionContext } from 'vscode';
-import { Logger, log } from './logging';
+import { Logger, log } from '../../library/logging';
 import {
   LanguageClient,
   DidSaveTextDocumentParams,

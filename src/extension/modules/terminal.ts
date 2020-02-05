@@ -1,7 +1,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { log } from './logging';
+import { log } from '../../library/logging';
 import * as remoteControl from './remoteControl';
 import { parseNumber } from '../../library/stringUtils';
 

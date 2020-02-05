@@ -1,6 +1,6 @@
 'use strict';
 
-import { log } from './logging';
+import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
 
 import * as vscode from 'vscode';

@@ -3,7 +3,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { log } from './logging';
+import { log } from '../../library/logging';
 import { getActiveTextEditor } from './utils';
 import * as history from './history';
 import { handleErrors, registerSyncCommandWrapped } from './exception';

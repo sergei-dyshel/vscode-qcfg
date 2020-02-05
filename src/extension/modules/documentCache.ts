@@ -4,7 +4,7 @@ import { ExtensionContext, TextDocument, workspace, Uri } from 'vscode';
 import { Modules } from './module';
 import { listenWrapped } from './exception';
 import { Dictionary } from 'typescript-collections';
-import { log } from './logging';
+import { log } from '../../library/logging';
 
 // Private
 

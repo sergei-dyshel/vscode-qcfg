@@ -2,9 +2,9 @@
 
 import * as vscode from 'vscode';
 import * as child_process from 'child_process';
-import { log, Logger, LogLevel } from './logging';
+import { log, Logger, LogLevel } from '../../library/logging';
 
-const DEFAULT_LOG_LEVEL = LogLevel.Trace;
+const DEFAULT_LOG_LEVEL = LogLevel.TRACE;
 
 export class ExecResult extends Error {
   constructor(
@@ -65,7 +65,6 @@ export class Subprocess {
     this.log = new Logger({
       parent: log,
       instance: `pid=${this.process.pid}`,
-      level: 'debug',
     });
     const cwd = options && options.cwd ? options.cwd : process.cwd;
     this.log.logStr(

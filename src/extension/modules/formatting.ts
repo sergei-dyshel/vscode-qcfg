@@ -7,7 +7,7 @@ import {
   Uri,
   window,
 } from 'vscode';
-import { log } from './logging';
+import { log } from '../../library/logging';
 import { Modules } from './module';
 
 // inspired by https://github.com/lacroixdavid1/vscode-format-context-menu
