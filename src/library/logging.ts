@@ -160,12 +160,17 @@ export const log = new Logger();
  */
 export type LogFilter = (record: LogRecord) => boolean | undefined;
 
+export interface LogFormatOptions {
+  preset: 'all' | 'short';
+}
+
 /**
  * Minimal handler interface, with level filter and user-customizable filters
  */
 export abstract class TextLogHandler implements LogHandler {
   filters: LogFilter[] = [];
   level: LogLevel = LogLevel.DEBUG;
+  formatOptions?: LogFormatOptions;
 
   constructor(public name: string) {}
 
@@ -176,7 +181,7 @@ export abstract class TextLogHandler implements LogHandler {
     // skip logs with lower severity
     if (record.level < this.level) return;
     for (const filter of this.filters) if (!filter(record)) return;
-    this.append(formatLogRecord(record), record);
+    this.append(formatLogRecord(record, this.formatOptions), record);
   }
 }
 
@@ -210,17 +215,16 @@ function getDate(): string {
   return dateStr + '.' + ms;
 }
 
-function formatLogRecord(record: LogRecord): string {
-  const level = LogLevels.toString(record.level);
-  const pathStr = record.name ? `[${record.name}]` : undefined;
-  const instanceStr = record.instance ? `{${record.instance}}` : undefined;
-  return filterNonNull([
-    record.date,
-    level,
-    record.location,
-    record.function + '()',
-    pathStr,
-    instanceStr,
-    record.message,
-  ]).join(' ');
+function formatLogRecord(record: LogRecord, opts?: LogFormatOptions): string {
+  const parts: string[] = [];
+  const all = !opts || opts.preset === 'all';
+  const short = !opts;
+  if (all) parts.push(record.date);
+  if (short) parts.push(LogLevels.toString(record.level));
+  if (short) parts.push(record.location);
+  if (all) parts.push(record.function + '()');
+  if (all && record.name) parts.push(`[${record.name}]`);
+  if (short && record.instance) parts.push(`{${record.instance}}`);
+  parts.push(record.message);
+  return parts.join(' ');
 }
