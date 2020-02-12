@@ -92,5 +92,6 @@ module.exports = {
       { allow: ['arrowFunctions'] },
     ],
     'new-cap': [warn, { newIsCapExceptions: ['default'] }],
+    indent: off,
   },
 };
