@@ -1,5 +1,5 @@
 import { Modules } from './module';
-import { ExtensionContext, Location, Uri, window } from 'vscode';
+import { ExtensionContext, Location, Uri } from 'vscode';
 import { peekLocations } from './fileUtils';
 import {
   registerSyncCommandWrapped,
@@ -16,7 +16,6 @@ export async function saveAndPeekSearch(
 ) {
   const locations = await func();
   if (locations.length === 0) {
-    window.showInformationMessage('Search returned no results');
     return;
   }
   if (locations.length > 1) {
