@@ -64,6 +64,8 @@ export interface LoggerOptions {
 }
 
 export class Logger {
+  public instance?: string;
+
   constructor(options?: LoggerOptions) {
     if (options) {
       this.instance = options.instance;
@@ -123,7 +125,6 @@ export class Logger {
   // private
 
   private name?: string;
-  private instance?: string;
 
   private logInternal(level: LogLevel, args: unknown[]) {
     return this.logImpl(level, 4, formatMessage(args));

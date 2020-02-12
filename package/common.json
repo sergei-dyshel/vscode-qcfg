@@ -259,9 +259,9 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "make generate && webpack --mode production",
+    "vscode:prepublish": "make generate && webpack --mode production && make check",
     "tsc-compile": "tsc -p .",
-    "compile": "make generate && webpack --mode none --env.DEBUG",
+    "compile": "make generate && webpack --mode none --env.DEBUG && make check",
     "tsc-watch": "tsc -watch -p ./",
     "webpack-watch": "webpack --mode none --watch",
     "test": "npm run compile && node ./node_modules/vscode/bin/test",
@@ -273,10 +273,12 @@
     "posttest": "npm run check"
   },
   "dependencies": {
+    "@microsoft/ts-command-line": "^4.3.10",
     "callsites": "^3.1.0",
     "chokidar": "^3.2.1",
     "clipboardy": "^1.2.3",
     "glob": "^7.1.4",
+    "jayson": "^3.2.0",
     "jsonc-parser": "^2.1.0",
     "lodash": "^4.17.15",
     "minimatch": "^3.0.4",

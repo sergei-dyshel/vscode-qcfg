@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec node --no-deprecation $(dirname $(readlink -f $0))/../dist/remoteCli.js "$@"

@@ -36,6 +36,7 @@ import * as peekOutline from './peekOutline';
 import * as editorGroups from './editorGroups';
 import * as sshFs from './sshFs';
 import * as langClient from './langClient';
+import * as remoteServer from './remoteServer';
 
 export const ALL_MODULES = {
   language,
@@ -74,4 +75,5 @@ export const ALL_MODULES = {
   editorGroups,
   sshFs,
   langClient,
+  remoteServer,
 };
