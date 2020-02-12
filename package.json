@@ -120,6 +120,10 @@
         "title": "qcfg: Open recent workspace (NEW window)"
       },
       {
+        "command": "qcfg.window.focus",
+        "title": "qcfg: Focus window"
+      },
+      {
         "command": "qcfg.tasks.show",
         "title": "qcfg: Show list of tasks"
       },

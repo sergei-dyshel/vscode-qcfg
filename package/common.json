@@ -114,6 +114,10 @@
       {
         "command": "qcfg.openRecent.newWindow",
         "title": "qcfg: Open recent workspace (NEW window)"
+      },
+      {
+        "command": "qcfg.window.focus",
+        "title": "qcfg: Focus window"
       }
     ],
     "keybindings": [

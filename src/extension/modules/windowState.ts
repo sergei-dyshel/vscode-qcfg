@@ -70,6 +70,7 @@ function activate(context: ExtensionContext) {
 
   context.subscriptions.push(
     listenWrapped(window.onDidChangeWindowState, windowStateChanged),
+    registerAsyncCommandWrapped('qcfg.window.focus', () => focusWindow()),
   );
 }
 
