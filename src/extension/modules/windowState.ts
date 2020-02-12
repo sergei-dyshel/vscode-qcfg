@@ -1,17 +1,42 @@
 'use strict';
 
 import { log } from '../../library/logging';
-import { listenWrapped } from './exception';
+import { listenWrapped, registerAsyncCommandWrapped } from './exception';
 import { Modules } from './module';
 import { windowManager, Window } from 'node-window-manager';
 import { WindowState, ExtensionContext, window } from 'vscode';
+import { runSubprocessSync } from './subprocess';
+
+async function callHammerspoon(
+  funcName: string,
+  ...args: Array<number | string>
+) {
+  const params = args
+    .map(x => {
+      if (typeof x === 'number') return x.toString();
+      if (typeof x === 'string') return JSON.stringify(x) as string;
+      return '';
+    })
+    .join(', ');
+  const callExpr = `${funcName}(${params})`;
+  return runSubprocessSync(['hs', '-c', callExpr]);
+}
 
 export async function focusWindow() {
   if (!windowId) {
     return;
   }
   log.info('Focusing current OS window');
-  new Window(windowId).bringToTop();
+  await callHammerspoon('ipcFocusWindow', windowId);
+  if (windowId === tryGetActiveWindowId()) {
+    log.warn("Couldn't focus window with Hammerspoon");
+  }
+  const win = new Window(windowId);
+  win.show();
+  win.bringToTop();
+  if (windowId === tryGetActiveWindowId()) return;
+
+  log.warn("Couldn't focus window with 'node-window-manager'");
 }
 
 export function shouldSplitVertically(): boolean {
