@@ -44,6 +44,30 @@ export async function runSubprocessAndWait(
   return subproc.wait();
 }
 
+export function runSubprocessSync(
+  command: string | string[],
+  options?: SubprocessOptions,
+): ExecResult {
+  let returns: child_process.SpawnSyncReturns<string>;
+  if (typeof command === 'string')
+    returns = child_process.spawnSync(command, [], {
+      shell: true,
+      encoding: 'utf8',
+      ...options,
+    });
+  else
+    returns = child_process.spawnSync(command[0], command.slice(1), {
+      encoding: 'utf8',
+      ...options,
+    });
+
+  const result = new ExecResult(returns.pid, returns.stdout, returns.stderr);
+  result.code = returns.status;
+  result.signal = returns.signal;
+  if ((options?.allowedCodes ?? [0]).includes(result.code)) return result;
+  throw result;
+}
+
 export class Subprocess {
   constructor(command: string | string[], private options?: SubprocessOptions) {
     this.waitingContext = { resolve: _ => {}, reject: _ => {} };
@@ -104,14 +128,10 @@ export class Subprocess {
         this.logLevel,
         `finished with code ${this.result.code} signal ${this.result.signal}`,
       );
-      if (
-        !this.options ||
-        !this.options.allowedCodes ||
-        !this.options.allowedCodes.includes(this.result.code)
-      ) {
-        this.waitingContext.reject(this.result);
-      } else {
+      if ((this.options?.allowedCodes ?? [0]).includes(this.result.code)) {
         this.waitingContext.resolve(this.result);
+      } else {
+        this.waitingContext.reject(this.result);
       }
     } else {
       this.log.log(this.logLevel, 'finished sucessfully');
