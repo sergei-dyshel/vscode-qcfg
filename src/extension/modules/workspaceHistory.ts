@@ -16,11 +16,15 @@ import { registerAsyncCommandWrapped } from './exception';
 import { expandTemplate } from '../../library/stringUtils';
 import { mapAsyncNoThrowAndZip } from './async';
 import { parseJsonFileAsync } from './json';
+import { assert } from '../../library/exception';
 
 let extContext: ExtensionContext;
 const PERSISTENT_KEY = 'workspaceHistory';
 
-function getWorkspaceFile(): string | undefined {
+/**
+ * Workspace file path or folder path if single folder is opened, `undefined` otherwise
+ */
+export function getWorkspaceFile(): string | undefined {
   if (workspace.workspaceFile) {
     if (workspace.workspaceFile.scheme === 'untitled') {
       log.debug('Opened untitled project');
@@ -30,6 +34,7 @@ function getWorkspaceFile(): string | undefined {
     return workspace.workspaceFile.fsPath;
   }
   if (workspace.workspaceFolders) {
+    assert(workspace.workspaceFolders.length === 1);
     log.debug(
       'Opened workspace folder',
       workspace.workspaceFolders[0].uri.fsPath,
@@ -37,6 +42,14 @@ function getWorkspaceFile(): string | undefined {
     return workspace.workspaceFolders[0].uri.fsPath;
   }
   return undefined;
+}
+
+export function getWorkspaceName(): string | undefined {
+  const wsFile = getWorkspaceFile();
+  if (!wsFile) return undefined;
+  const title = workspace.getConfiguration().get<string>('window.title');
+  if (!title) return undefined;
+  return expandTitle(wsFile, title);
 }
 
 function expandTitle(root: string, title: string): string {
@@ -48,11 +61,16 @@ function expandTitle(root: string, title: string): string {
   const rootDir3 = nodejs.path.basename(
     nodejs.path.dirname(nodejs.path.dirname(nodejs.path.dirname(root))),
   );
-  return expandTemplate(
-    title,
-    { rootBase, rootDir1, rootDir2, rootDir3 },
-    true,
-  );
+  const folderName = workspace.workspaceFolders![0].name;
+  try {
+    return expandTemplate(
+      title,
+      { rootBase, rootDir1, rootDir2, rootDir3, folderName },
+      true,
+    );
+  } catch (_) {
+    return '';
+  }
 }
 
 async function getWorkspaceConfig(root: string): Promise<string> {
