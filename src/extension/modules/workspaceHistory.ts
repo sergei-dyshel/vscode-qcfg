@@ -53,6 +53,7 @@ export function getWorkspaceName(): string | undefined {
 }
 
 function expandTitle(root: string, title: string): string {
+  const isWorkspace = nodejs.path.extname(root) === '.code-workspace';
   const rootBase = nodejs.path.basename(root, '.code-workspace');
   const rootDir1 = nodejs.path.basename(nodejs.path.dirname(root));
   const rootDir2 = nodejs.path.basename(
@@ -61,7 +62,7 @@ function expandTitle(root: string, title: string): string {
   const rootDir3 = nodejs.path.basename(
     nodejs.path.dirname(nodejs.path.dirname(nodejs.path.dirname(root))),
   );
-  const folderName = workspace.workspaceFolders![0].name;
+  const folderName = isWorkspace ? rootDir1 : rootBase;
   try {
     return expandTemplate(
       title,
@@ -73,6 +74,12 @@ function expandTitle(root: string, title: string): string {
   }
 }
 
+function getDefaultTitle() {
+  const config = workspace.getConfiguration();
+  const data = config.inspect('window.title')!;
+  return (data.globalValue ?? data.defaultValue) as string;
+}
+
 async function getWorkspaceConfig(root: string): Promise<string> {
   const stat = await workspace.fs.stat(Uri.file(root));
   switch (stat.type) {
@@ -82,7 +89,10 @@ async function getWorkspaceConfig(root: string): Promise<string> {
         try {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const settings = (await parseJsonFileAsync(filePath)) as any;
-          return expandTitle(root, settings['window.title']);
+          return expandTitle(
+            root,
+            settings['window.title'] ?? getDefaultTitle(),
+          );
         } catch (err) {
           log.debug(`Error parsing ${filePath}: ${err}`);
           return nodejs.path.basename(root);
