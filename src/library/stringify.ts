@@ -7,6 +7,10 @@ export function stringify(x: unknown): string {
   }
 }
 
+export function formatMessage(args: unknown[], default_ = ''): string {
+  return args.length === 0 ? default_ : args.map(stringify).join(' ');
+}
+
 export function registerStringifier(str: Stringifier) {
   stringifiers.push(str);
 }

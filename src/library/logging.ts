@@ -1,7 +1,7 @@
 import { filterNonNull } from './tsUtils';
 import { getCallsite } from './sourceMap';
 import { formatString } from './stringUtils';
-import { stringify as str } from './stringify';
+import { stringify as str, formatMessage } from './stringify';
 
 export enum LogLevel {
   TRACE = 1,
@@ -190,10 +190,6 @@ export abstract class TextLogHandler implements LogHandler {
 //
 
 const handlers: LogHandler[] = [];
-
-function formatMessage(args: unknown[], default_ = ''): string {
-  return args.length === 0 ? default_ : args.map(str).join(' ');
-}
 
 function formatMessageStr(fmt: string, args: unknown[]) {
   const normalizedArgs = args.map(arg =>

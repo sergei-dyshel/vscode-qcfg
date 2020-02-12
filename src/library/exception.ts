@@ -1,15 +1,15 @@
 import { AsyncFunction, PromiseType } from './templateTypes';
+import { formatMessage } from './stringify';
 
 export function assert(
   condition: boolean | undefined | null | object,
   ...args: unknown[]
 ): asserts condition {
-  if (!condition) {
-    const msg = args.isEmpty
-      ? 'Assertion failed'
-      : args.map(x => '' + x).join(' ');
-    throw new Error(msg);
-  }
+  if (!condition) abort(...args);
+}
+
+export function abort(...args: unknown[]): never {
+  throw new Error(formatMessage(args, 'Assertion failed'));
 }
 
 export function assertNonNull<T>(
