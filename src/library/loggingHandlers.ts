@@ -1,14 +1,13 @@
 import { TextLogHandler, log } from './logging';
 import * as nodejs from './nodejs';
 
-export class ConsoleHandler extends TextLogHandler {
-  constructor() {
-    super('Console');
+export class StreamHandler extends TextLogHandler {
+  constructor(name: string, private stream: NodeJS.WritableStream) {
+    super(name);
   }
 
-  // eslint-disable-next-line class-methods-use-this
   append(formattedMsg: string) {
-    console.log(formattedMsg);
+    this.stream.write(formattedMsg + '\n');
   }
 }
 

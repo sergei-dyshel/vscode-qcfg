@@ -218,7 +218,7 @@ function getDate(): string {
 function formatLogRecord(record: LogRecord, opts?: LogFormatOptions): string {
   const parts: string[] = [];
   const all = !opts || opts.preset === 'all';
-  const short = !opts;
+  const short = true;
   if (all) parts.push(record.date);
   if (short) parts.push(LogLevels.toString(record.level));
   if (short) parts.push(record.location);
