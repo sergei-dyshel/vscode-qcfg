@@ -49,7 +49,7 @@ class LanguageClientWrapper {
     if (!extension) return false;
     if (!extension.isActive) return false;
     const exports = extension.exports;
-    return exports.isRunning;
+    return exports.isRunning();
   }
 
   get client(): LanguageClient | undefined {
@@ -57,7 +57,7 @@ class LanguageClientWrapper {
     if (!extension) return undefined;
     if (!extension.isActive) return undefined;
     const exports = extension.exports;
-    if (!exports.isRunning) return undefined;
+    if (!exports.isRunning()) return undefined;
     return exports.languageClient;
   }
 
