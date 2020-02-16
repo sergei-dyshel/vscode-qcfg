@@ -210,6 +210,8 @@ declare global {
     ): void;
     isAnyTrue(): boolean;
     areAllTrue(): boolean;
+    /** Array of unique elements */
+    uniq(equals: (x: T, y: T) => boolean): T[];
   }
 
   interface ReadonlyArray<T> {
@@ -234,6 +236,19 @@ Array.prototype.isAnyTrue = function<T>(this: T[]): boolean {
 
 Array.prototype.areAllTrue = function<T>(this: T[]): boolean {
   return this.every(Boolean);
+};
+
+Array.prototype.uniq = function<T>(
+  this: T[],
+  equals: (x: T, y: T) => boolean,
+): T[] {
+  return this.reduce<T[]>(
+    (unique, item) =>
+      unique.find(item1 => equals(item, item1)) !== undefined
+        ? unique
+        : [...unique, item],
+    [],
+  );
 };
 
 Array.prototype.forEachRight = function<T>(
