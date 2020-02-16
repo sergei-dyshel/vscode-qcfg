@@ -14,10 +14,11 @@ export async function saveAndPeekSearch(
   name: string,
   func: () => Promise<Location[]>,
 ) {
-  const locations = await func();
+  let locations = await func();
   if (locations.length === 0) {
     return;
   }
+  locations = locations.uniq((loc1, loc2) => loc1.range.isEqual(loc2.range));
   if (locations.length > 1) {
     lastName = name;
     lastLocations = locations;
