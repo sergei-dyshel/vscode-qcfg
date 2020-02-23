@@ -28,16 +28,6 @@ export function trimBrackets(document: TextDocument, range: Range) {
   return range;
 }
 
-export function isLinewise(range: Range) {
-  return (
-    range.start.character === 0 && range.end.character === 0 && !range.isEmpty
-  );
-}
-
-export function expandLinewise(range: Range) {
-  return new Range(range.start.line, 0, range.end.line + 1, 0);
-}
-
 export function selectRange(
   editor: TextEditor,
   range: Range,

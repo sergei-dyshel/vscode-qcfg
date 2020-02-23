@@ -19,8 +19,6 @@ import * as clipboardy from 'clipboardy';
 
 import {
   offsetPosition,
-  isLinewise,
-  expandLinewise,
   trimWhitespace,
   selectRange,
   trimBrackets,
@@ -46,9 +44,9 @@ function selectLines() {
   const document = editor.document;
 
   if (editor.selections.length > 1) return;
-  if (isLinewise(selection))
+  if (selection.isLinewise)
     selectRange(editor, trimWhitespace(document, selection));
-  else selectRange(editor, expandLinewise(selection));
+  else selectRange(editor, selection.expandLinewise());
 }
 
 async function surroundWith(args: unknown[]) {

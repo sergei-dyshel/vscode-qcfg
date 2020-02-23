@@ -2,7 +2,8 @@
 
 // these modify prototypes of objects, must be imported first
 import '../library/tsUtils';
-import './modules/documentUtils';
+import './utils/positionPrototype';
+import './utils/rangePrototype';
 
 import { ALL_MODULES } from './modules/allModules';
 import { ExtensionContext } from 'vscode';
