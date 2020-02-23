@@ -28,6 +28,7 @@ const languageConfigs: { [id: string]: LanguageConfig } = {
   c: {},
   cpp: { lang: 'c++' },
   python: {},
+  go: {},
 };
 
 const ctagsToVscodeKind: { [name: string]: SymbolKind } = {
@@ -119,6 +120,8 @@ const documentSymbolProvider: DocumentSymbolProvider = {
         break;
       case 'typescript':
         return;
+      case 'go':
+        break;
     }
     const editor = getActiveTextEditor();
     const tags = await getTags(editor.document, token);
