@@ -14,8 +14,8 @@ import {
   Range,
   Uri,
   CompletionList,
+  env,
 } from 'vscode';
-import * as clipboardy from 'clipboardy';
 
 import {
   offsetPosition,
@@ -77,7 +77,7 @@ function swapCursorAndAnchor(editor: TextEditor) {
 }
 
 async function smartPaste(editor: TextEditor, edit: TextEditorEdit) {
-  const text = clipboardy.readSync();
+  const text = await env.clipboard.readText();
   if (!text.endsWith('\n') || editor.selections.length > 1) {
     await commands.executeCommand('editor.action.clipboardPasteAction');
     return;
