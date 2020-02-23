@@ -4,10 +4,12 @@
       {
         "command": "qcfg.peekFlatOutline",
         "title": "qcfg: Peek document outline (flat)"
-      },
+      }
+    ],
+    "keybindings": [
       {
-        "command": "qcfg.peekDocumentOutline",
-        "title": "qcfg: Peek document outline (hierarchical)"
+        "command": "qcfg.peekFlatOutline",
+        "key": "cmd+,"
       }
     ]
   }

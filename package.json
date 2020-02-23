@@ -328,10 +328,6 @@
         "title": "qcfg: Peek document outline (flat)"
       },
       {
-        "command": "qcfg.peekDocumentOutline",
-        "title": "qcfg: Peek document outline (hierarchical)"
-      },
-      {
         "command": "qcfg.focusEditorBeside",
         "title": "qcfg: Focus editor beside"
       },
@@ -1741,6 +1737,10 @@
         "key": "alt+shift+r",
         "command": "qcfg.search.selectedText.allFolders",
         "when": "editorTextFocus && editorHasSelection"
+      },
+      {
+        "command": "qcfg.peekFlatOutline",
+        "key": "cmd+,"
       },
       {
         "key": "ctrl+space",
