@@ -37,6 +37,7 @@ import * as editorGroups from './editorGroups';
 import * as sshFs from './sshFs';
 import * as langClient from './langClient';
 import * as remoteServer from './remoteServer';
+import * as smartCopy from './smartCopy';
 
 export const ALL_MODULES = {
   language,
@@ -76,4 +77,5 @@ export const ALL_MODULES = {
   sshFs,
   langClient,
   remoteServer,
+  smartCopy,
 };

@@ -550,6 +550,11 @@
         "command": "qcfg.smartPaste"
       },
       {
+        "key": "cmd+c",
+        "command": "qcfg.smartCopy",
+        "when": "editorTextFocus"
+      },
+      {
         "key": "shift+9",
         "command": "qcfg.surroundWith",
         "when": "editorTextFocus && editorHasSelection",

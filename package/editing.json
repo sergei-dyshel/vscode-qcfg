@@ -34,6 +34,10 @@
         "title": "qcfg: Smart paste"
       },
       {
+        "command": "qcfg.smartCopy",
+        "title": "qcfg: Smart copy"
+      },
+      {
         "command": "qcfg.surroundWith",
         "title": "qcfg: Surround text with..."
       },
@@ -116,6 +120,11 @@
         "key": "ctrl+v",
         "mac": "cmd+v",
         "command": "qcfg.smartPaste"
+      },
+      {
+        "key": "cmd+c",
+        "command": "qcfg.smartCopy",
+        "when": "editorTextFocus"
       },
       {
         "key": "shift+9",
