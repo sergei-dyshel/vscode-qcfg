@@ -76,7 +76,8 @@ function swapCursorAndAnchor(editor: TextEditor) {
   );
 }
 
-async function smartPaste(editor: TextEditor, edit: TextEditorEdit) {
+async function smartPaste() {
+  const editor = getActiveTextEditor();
   const text = await env.clipboard.readText();
   if (!text.endsWith('\n') || editor.selections.length > 1) {
     await commands.executeCommand('editor.action.clipboardPasteAction');
@@ -86,7 +87,7 @@ async function smartPaste(editor: TextEditor, edit: TextEditorEdit) {
   if (selection.isEmpty) {
     const cursor = selection.active;
     const lineStart = new Position(cursor.line, 0);
-    edit.replace(lineStart, text);
+    editor.edit(builder => builder.replace(lineStart, text));
   } else if (selection.end.character === 0) {
     await commands.executeCommand('editor.action.clipboardPasteAction');
   } else {
