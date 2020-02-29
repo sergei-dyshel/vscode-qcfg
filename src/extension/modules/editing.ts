@@ -14,7 +14,6 @@ import {
   Range,
   Uri,
   CompletionList,
-  env,
 } from 'vscode';
 
 import {
@@ -36,7 +35,7 @@ import { lineIndentation } from './documentUtils';
 import { NumberIterator } from '../../library/tsUtils';
 import { expandHome, exists } from './fileUtils';
 
-function selectLines() {
+export function expandSelectionLinewise() {
   const editor = getActiveTextEditor();
   if (editor.selections.length > 1) return;
 
@@ -74,26 +73,6 @@ function swapCursorAndAnchor(editor: TextEditor) {
   editor.selections = editor.selections.map(
     sel => new Selection(sel.active, sel.anchor),
   );
-}
-
-async function smartPaste() {
-  const editor = getActiveTextEditor();
-  const text = await env.clipboard.readText();
-  if (!text.endsWith('\n') || editor.selections.length > 1) {
-    await commands.executeCommand('editor.action.clipboardPasteAction');
-    return;
-  }
-  const selection = editor.selection;
-  if (selection.isEmpty) {
-    const cursor = selection.active;
-    const lineStart = new Position(cursor.line, 0);
-    editor.edit(builder => builder.replace(lineStart, text));
-  } else if (selection.end.character === 0) {
-    await commands.executeCommand('editor.action.clipboardPasteAction');
-  } else {
-    selectLines();
-    await commands.executeCommand('editor.action.clipboardPasteAction');
-  }
 }
 
 async function navigateBackToPreviousFile() {
@@ -151,7 +130,7 @@ async function wrapWithBracketsInline(args: string[]) {
 /**
  * Replace range with text and return replaced range
  */
-async function replaceText(
+export async function replaceText(
   editor: TextEditor,
   range: Range,
   text: string,
@@ -298,14 +277,13 @@ function activate(context: ExtensionContext) {
     registerSyncCommandWrapped('qcfg.block.selectDown', () =>
       goToBlockStart(false /* up */, true /* select */),
     ),
-    registerSyncCommandWrapped('qcfg.selectLines', selectLines),
+    registerSyncCommandWrapped('qcfg.selectLines', expandSelectionLinewise),
     registerAsyncCommandWrapped('qcfg.goToDefinition', goToDefinition),
     registerAsyncCommandWrapped('qcfg.peekReferences', peekReferences),
     registerTextEditorCommandWrapped(
       'qcfg.swapCursorAndAnchor',
       swapCursorAndAnchor,
     ),
-    registerTextEditorCommandWrapped('qcfg.smartPaste', smartPaste),
     registerAsyncCommandWrapped('qcfg.surroundWith', surroundWith),
     registerAsyncCommandWrapped(
       'qcfg.wrapWithBracketsInline',

@@ -38,6 +38,10 @@
         "title": "qcfg: Smart copy"
       },
       {
+        "command": "qcfg.swapWithMark",
+        "title": "qcfg: Swap selection and marked text"
+      },
+      {
         "command": "qcfg.surroundWith",
         "title": "qcfg: Surround text with..."
       },
@@ -119,12 +123,18 @@
       {
         "key": "ctrl+v",
         "mac": "cmd+v",
-        "command": "qcfg.smartPaste"
+        "command": "qcfg.smartPaste",
+        "when": "editorTextFocus && !editorReadonly"
       },
       {
         "key": "cmd+c",
         "command": "qcfg.smartCopy",
         "when": "editorTextFocus"
+      },
+      {
+        "key": "cmd+shift+v",
+        "command": "qcfg.swapWithMark",
+        "when": "editorTextFocus && !editorReadonly"
       },
       {
         "key": "shift+9",

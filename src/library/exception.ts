@@ -45,10 +45,20 @@ export class CheckError extends Error {
 }
 
 /**
+ * Throw non-critical exception which results in non-disruptive message in status bar.
+ */
+export function check(
+  condition: boolean | undefined | null | object,
+  message: string,
+): asserts condition {
+  if (!condition) throw new CheckError(message);
+}
+
+/**
  * Throw non-critical exception if value is null/undefined
  */
 export function checkNonNull<T>(val: T | undefined | null, message: string): T {
-  if (val === undefined || val === null) throw new CheckError(message);
+  check(val !== undefined && val !== null, message);
   return val as T;
 }
 

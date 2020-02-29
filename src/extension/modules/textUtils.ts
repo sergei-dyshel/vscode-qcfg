@@ -53,13 +53,30 @@ export function trimInner(document: TextDocument, range: Range) {
   return trimWhitespace(document, trimBrackets(document, range));
 }
 
-export function swapRanges(editor: TextEditor, range1: Range, range2: Range) {
+/**
+ * Swap given ranges. Select range 1 or 2 or the one that was previously
+ * selected (select === undefined) or none (select === none)
+ */
+export function swapRanges(
+  editor: TextEditor,
+  range1: Range,
+  range2: Range,
+  select?: 1 | 2 | null,
+) {
   const document = editor.document;
   return editor.edit(edit => {
     edit.replace(range1, document.getText(range2));
     edit.replace(range2, document.getText(range1));
-    if (editor.selection.isEqual(range1)) selectRange(editor, range2);
-    else if (editor.selection.isEqual(range2)) selectRange(editor, range1);
+    if (
+      select === 1 ||
+      (select === undefined && editor.selection.isEqual(range1))
+    )
+      selectRange(editor, range2);
+    else if (
+      select === 2 ||
+      (select === undefined && editor.selection.isEqual(range2))
+    )
+      selectRange(editor, range1);
   });
 }
 

@@ -1,4 +1,4 @@
-import { Range, Selection } from 'vscode';
+import { Range, Selection, Position } from 'vscode';
 
 declare module 'vscode' {
   export interface Range {
@@ -8,6 +8,10 @@ declare module 'vscode' {
     expandLinewise(): Range;
 
     isLinewise: boolean;
+  }
+
+  export namespace Range {
+    function fromPosition(position: Position): Range;
   }
 }
 
@@ -39,8 +43,14 @@ Range.prototype.expandLinewise = function(this: Range) {
   return new Range(
     this.start.withCharacter(0),
     this.end.with(
-      this.end.character === 0 ? this.end.line : this.end.line + 1,
+      this.end.character === 0 && !this.start.isEqual(this.end)
+        ? this.end.line
+        : this.end.line + 1,
       0 /* character */,
     ),
   );
+};
+
+Range.fromPosition = function(position: Position) {
+  return new Range(position, position);
 };
