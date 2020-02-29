@@ -16,7 +16,7 @@
     ],
     "keybindings": [
       {
-        "key": "insert",
+        "key": "tab",
         "command": "qcfg.multipleSelection.unselectMarked",
         "when": "editorTextFocus && editorHasMultipleSelections"
       },

@@ -1615,7 +1615,7 @@
         "args": -49
       },
       {
-        "key": "insert",
+        "key": "tab",
         "command": "qcfg.multipleSelection.unselectMarked",
         "when": "editorTextFocus && editorHasMultipleSelections"
       },
