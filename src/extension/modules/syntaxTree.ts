@@ -200,7 +200,7 @@ class DocumentContext {
       try {
         // TODO: make using previous tree configurable (may crash)
         const start = Date.now();
-        this.tree = await parserAsync.parseTextBuffer(buf, this.tree, {
+        this.tree = await parserAsync.parseTextBuffer(buf, undefined, {
           syncOperationCount: 1000,
         });
         const end = Date.now();
