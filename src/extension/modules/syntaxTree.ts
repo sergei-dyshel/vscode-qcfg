@@ -281,9 +281,9 @@ interface ParserWithAsync {
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
-    listenWrapped(workspace.onDidCloseTextDocument, document =>
-      trees.delete(document),
-    ),
+    listenWrapped(workspace.onDidCloseTextDocument, document => {
+      trees.delete(document);
+    }),
     listenWrapped(workspace.onDidChangeTextDocument, onDidChangeTextDocument),
   );
 }

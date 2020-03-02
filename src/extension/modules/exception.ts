@@ -89,12 +89,25 @@ export function registerTextEditorCommandWrapped(
 
 export function listenWrapped<T>(
   event: Event<T>,
-  listener: (e: T) => any,
+  listener: (e: T) => void | undefined,
   thisArgs?: any,
   disposables?: DisposableLike[],
 ): DisposableLike {
   return event(
     wrapWithErrorHandler(listener, handleErrorDuringEvent),
+    thisArgs,
+    disposables,
+  );
+}
+
+export function listenAsyncWrapped<T>(
+  event: Event<T>,
+  listener: (e: T) => Promise<void>,
+  thisArgs?: any,
+  disposables?: DisposableLike[],
+): DisposableLike {
+  return event(
+    wrapWithErrorHandlerAsync(listener, handleErrorDuringEvent),
     thisArgs,
     disposables,
   );

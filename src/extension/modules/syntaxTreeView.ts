@@ -9,7 +9,11 @@ import {
   window,
   Range,
 } from 'vscode';
-import { listenWrapped, registerAsyncCommandWrapped } from './exception';
+import {
+  listenWrapped,
+  registerAsyncCommandWrapped,
+  listenAsyncWrapped,
+} from './exception';
 import { Modules } from './module';
 import { ellipsize } from '../../library/stringUtils';
 import {
@@ -239,7 +243,10 @@ function activate(context: ExtensionContext) {
   context.subscriptions.push(
     registerAsyncCommandWrapped('qcfg.syntaxTree.show', showTree),
     listenWrapped(window.onDidChangeActiveTextEditor, onTextEditorChanged),
-    listenWrapped(window.onDidChangeTextEditorSelection, onSelectionChanged),
+    listenAsyncWrapped(
+      window.onDidChangeTextEditorSelection,
+      onSelectionChanged,
+    ),
     listenWrapped(onSyntaxTreeUpdated, onTreeUpdated),
   );
 }
