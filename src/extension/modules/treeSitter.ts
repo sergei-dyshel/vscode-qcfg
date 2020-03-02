@@ -22,7 +22,7 @@ import {
 } from './textUtils';
 import { getActiveTextEditor } from './utils';
 import { assertNonNull } from '../../library/exception';
-import { stringify as str } from 'querystring';
+import { stringify as str } from '../../library/stringify';
 
 const log = new Logger({ name: 'treeSitter' });
 
