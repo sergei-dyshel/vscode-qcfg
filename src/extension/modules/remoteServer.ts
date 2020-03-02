@@ -15,6 +15,7 @@ import { Modules } from './module';
 import { log } from '../../library/logging';
 import { focusWindow } from './windowState';
 import { stringify } from '../../library/stringify';
+import { handleErrorsAsync } from './exception';
 
 export type RemoteProtocol = typeof protocol;
 
@@ -28,13 +29,13 @@ export interface IdentifyResult {
 
 const protocol = {
   async identify(_: {}): Promise<IdentifyResult> {
-    return {
+    return Promise.resolve({
       workspaceFile: getWorkspaceFile(),
       workspaceName: getWorkspaceName(),
       workspaceFolders: workspace.workspaceFolders?.map(
         folder => folder.uri.fsPath,
       ),
-    };
+    });
   },
   async openFile(arg: {
     path: string;
@@ -60,9 +61,13 @@ const protocol = {
 
   async reloadWindow(_: {}): Promise<void> {
     setTimeout(
-      () => commands.executeCommand('workbench.action.reloadWindow'),
+      () =>
+        handleErrorsAsync(() =>
+          commands.executeCommand('workbench.action.reloadWindow'),
+        ),
       1000,
     );
+    return Promise.resolve();
   },
 };
 
@@ -75,7 +80,7 @@ interface AbstractProtocol {
 function activate(_: ExtensionContext) {
   const loggedProtocol: AbstractProtocol = mapObjectValues(
     protocol as AbstractProtocol,
-    (name, handler) => (arg: any): Promise<any> => {
+    (name, handler) => async (arg: any): Promise<any> => {
       log.info(`Received request "${name}" with arguments ${stringify(arg)}`);
       return handler(arg);
     },

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import { Range, Selection, Position } from 'vscode';
 
 declare module 'vscode' {
@@ -10,6 +11,7 @@ declare module 'vscode' {
     isLinewise: boolean;
   }
 
+  // eslint-disable-next-line no-shadow
   export namespace Range {
     function fromPosition(position: Position): Range;
   }

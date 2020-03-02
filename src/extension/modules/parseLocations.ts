@@ -49,7 +49,7 @@ export function parseLocation(
   format: ParseLocationFormat,
 ): Location | undefined {
   const regex = formatToRegex(format);
-  const match = line.match(regex);
+  const match = regex.exec(line);
   if (!match) return;
   const groups = match.groups!;
   if (!groups.file) return;
@@ -60,7 +60,7 @@ export function parseLocation(
     column = Number(groups.column);
   }
   return new Location(
-    Uri.file(nodejs.path.resolve(base || '', groups.file)),
+    Uri.file(nodejs.path.resolve(base, groups.file)),
     new Position(Number(groups.line) - 1, column - 1),
   );
 }
@@ -110,7 +110,7 @@ export async function gatherLocationsFromWorkspace(
   format: ParseLocationFormat,
 ): Promise<Location[]> {
   const locations = await Promise.all(
-    workspace.workspaceFolders!.map(folder =>
+    workspace.workspaceFolders!.map(async folder =>
       gatherLocationsFromFolder(cmd, folder, format),
     ),
   );

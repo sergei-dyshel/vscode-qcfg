@@ -1,4 +1,4 @@
-'use strict';
+/* eslint-disable @typescript-eslint/unbound-method */
 
 import { MultiDictionary } from 'typescript-collections';
 
@@ -52,6 +52,7 @@ export function mapWithThrow<T, V>(
     } catch (err) {
       if (handler) {
         const val = handler(elem, err);
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, @typescript-eslint/prefer-nullish-coalescing
         res.push(val || undefined);
       } else {
         res.push(undefined);
@@ -69,9 +70,9 @@ export function concatArrays<T>(...arrays: T[][]): T[] {
 }
 
 export function upcastReadonlyArray<B, T extends B>(
-  arr: ReadonlyArray<B>,
-): ReadonlyArray<T> {
-  return arr as ReadonlyArray<T>;
+  arr: readonly B[],
+): readonly T[] {
+  return arr as readonly T[];
 }
 
 export function upcastArray<B, T extends B>(arr: B[]): T[] {
@@ -114,7 +115,11 @@ export function minNumber<T>(...args: T[]): T {
 export class NumberIterator implements IterableIterator<number> {
   private cur: number;
 
-  constructor(start: number, private end: number, private step: number) {
+  constructor(
+    start: number,
+    private readonly end: number,
+    private readonly step: number,
+  ) {
     if (this.step === 0) throw new Error('Can not iterate with step 0');
     this.cur = start;
   }
@@ -136,7 +141,10 @@ export class NumberIterator implements IterableIterator<number> {
 }
 
 export class ArrayIterator<T> implements IterableIterator<T> {
-  constructor(private array: T[], private numIter: NumberIterator) {}
+  constructor(
+    private readonly array: T[],
+    private readonly numIter: NumberIterator,
+  ) {}
 
   next(): IteratorResult<T> {
     const numRes = this.numIter.next();
@@ -150,7 +158,11 @@ export class ArrayIterator<T> implements IterableIterator<T> {
 }
 
 export class ZipIterator<T, U> implements IterableIterator<[T, U]> {
-  constructor(private iter1: Iterator<T>, private iter2: Iterator<U>) {}
+  constructor(
+    private readonly iter1: Iterator<T>,
+    private readonly iter2: Iterator<U>,
+  ) {}
+
   next(): IteratorResult<[T, U]> {
     const result1 = this.iter1.next();
     const result2 = this.iter2.next();
@@ -354,7 +366,7 @@ Object.defineProperty(Array.prototype, 'isEmpty', {
 });
 
 export class DefaultMap<K, V> extends Map<K, V> {
-  constructor(private factory: (key: K) => V) {
+  constructor(private readonly factory: (key: K) => V) {
     super();
   }
 
@@ -377,6 +389,8 @@ Map.prototype.keySet = function<K, V>(this: Map<K, V>): Set<K> {
   return keys;
 };
 
-Promise.prototype.ignoreResult = function<T>(this: Promise<T>): Promise<void> {
+Promise.prototype.ignoreResult = async function<T>(
+  this: Promise<T>,
+): Promise<void> {
   return this.then(() => {});
 };

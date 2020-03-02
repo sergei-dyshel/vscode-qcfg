@@ -19,7 +19,7 @@ import {
 } from 'vscode';
 import { PromiseContext } from './async';
 import { NumRange } from './documentUtils';
-import { listenWrapped, handleAsyncStd } from './exception';
+import { listenWrapped, handleAsyncStd, handleErrorsAsync } from './exception';
 import { Logger } from '../../library/logging';
 import { Modules } from './module';
 import * as nodejs from '../../library/nodejs';
@@ -82,7 +82,7 @@ declare module 'tree-sitter' {
 }
 
 export namespace SyntaxTrees {
-  export function get(document: TextDocument): Promise<SyntaxTree> {
+  export async function get(document: TextDocument): Promise<SyntaxTree> {
     checkDocumentSupported(document);
     return trees.get(document).get();
   }
@@ -176,7 +176,7 @@ namespace Parsers {
 }
 
 class DocumentContext {
-  constructor(private document: TextDocument) {
+  constructor(private readonly document: TextDocument) {
     this.log = new Logger({
       instance: nodejs.path.parse(document.fileName).name,
     });
@@ -184,9 +184,9 @@ class DocumentContext {
 
   private tree?: SyntaxTree;
   private promiseContext?: PromiseContext<SyntaxTree>;
-  private timer: Timer = new Timer();
+  private readonly timer: Timer = new Timer();
   private generation_ = 0;
-  private log: Logger;
+  private readonly log: Logger;
   private isUpdating = false;
 
   async update() {
@@ -195,7 +195,7 @@ class DocumentContext {
     const parserAsync = (parser as unknown) as ParserWithAsync;
     const buf = new TextBuffer(this.document.getText());
     this.isUpdating = true;
-    while (true) {
+    for (;;) {
       const generation = this.generation_;
       try {
         // TODO: make using previous tree configurable (may crash)
@@ -230,7 +230,10 @@ class DocumentContext {
   }
 
   onDocumentUpdated() {
-    this.timer.setTimeout(UPDATE_DELAY_MS, this.update);
+    this.timer.setTimeout(UPDATE_DELAY_MS, () => {
+      this.generation_ += 1;
+      handleErrorsAsync(async () => this.update());
+    });
   }
 
   async get(): Promise<SyntaxTree> {
@@ -241,7 +244,7 @@ class DocumentContext {
     if (this.tree) return this.tree;
     this.promiseContext = new PromiseContext();
     // tslint:disable-next-line: no-floating-promises
-    this.update();
+    handleErrorsAsync(async () => this.update());
     return this.promiseContext.promise;
   }
 }

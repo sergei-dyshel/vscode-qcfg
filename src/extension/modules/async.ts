@@ -11,7 +11,7 @@ type Resolve = () => void;
 type Reject = (err: unknown) => void;
 
 export class PromiseQueue {
-  private log: Logger;
+  private readonly log: Logger;
 
   constructor(name: string) {
     this.log = new Logger({
@@ -20,11 +20,11 @@ export class PromiseQueue {
     });
   }
 
-  add(cb: Callback, name?: string): Promise<void> {
+  async add(cb: Callback, name: string): Promise<void> {
     // tslint:disable-next-line: promise-must-complete
     return new Promise((resolve: Resolve, reject: Reject) => {
       /// #if DEBUG
-      this.log.trace(`enqueing "${name}`);
+      this.log.trace(`enqueing "${name}"`);
       /// #endif
       this.queue.push({ cb, resolve, reject, name });
       this.runNext();
@@ -33,13 +33,13 @@ export class PromiseQueue {
 
   queued<T>(
     cb: (arg: T) => Promise<void>,
-    name?: string,
+    name: string,
   ): (arg: T) => Promise<void> {
-    return (arg: T) => this.add(() => cb(arg), name);
+    return async (arg: T) => this.add(async () => cb(arg), name);
   }
 
   private runNext() {
-    if (this.queue.length === 0 || this.busy) return;
+    if (this.queue.isEmpty || this.busy) return;
     const entry = assertNonNull(this.queue.shift());
     /// #if DEBUG
     this.log.trace(`starting "${entry.name}`);
@@ -76,11 +76,11 @@ export class PromiseQueue {
 
   private busy = false;
 
-  private queue: Array<{
+  private readonly queue: Array<{
     cb: Callback;
     resolve: Resolve;
     reject: Reject;
-    name?: string;
+    name: string;
   }> = [];
 }
 
@@ -102,7 +102,7 @@ export class PromiseContext<T> {
   reject: (err: Error) => void;
 }
 
-export function mapAsync<V, R>(
+export async function mapAsync<V, R>(
   arr: V[],
   func: (v: V) => Promise<R>,
 ): Promise<R[]> {
@@ -112,7 +112,7 @@ export function mapAsync<V, R>(
   );
 }
 
-export function mapAsyncParallel<V, R>(
+export async function mapAsyncParallel<V, R>(
   arr: V[],
   func: (v: V) => Promise<R>,
 ): Promise<R[]> {
@@ -139,6 +139,7 @@ declare global {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/unbound-method
 Set.prototype.mapAsync = async function<K, V>(
   this: Set<K>,
   func: (k: K) => Promise<V>,
@@ -242,6 +243,7 @@ function activate(_: ExtensionContext) {
   /// #endif
   log.infoStr(
     'Async mapping is {} by default',
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     sequentialAsyncByDefault ? 'SEQUENTIAL' : 'PARALLEL',
   );
 }

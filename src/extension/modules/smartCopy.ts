@@ -9,11 +9,7 @@ import {
   workspace,
   ThemeColor,
 } from 'vscode';
-import {
-  registerAsyncCommandWrapped,
-  listenWrapped,
-  registerTextEditorCommandWrapped,
-} from './exception';
+import { registerAsyncCommandWrapped, listenWrapped } from './exception';
 import { getActiveTextEditor } from './utils';
 import { trimWhitespace, swapRanges } from './textUtils';
 import { expandSelectionLinewise, replaceText } from './editing';
@@ -167,8 +163,8 @@ function invalidateMark() {
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
     registerAsyncCommandWrapped('qcfg.smartCopy', smartCopy),
-    registerTextEditorCommandWrapped('qcfg.smartPaste', smartPaste),
-    registerTextEditorCommandWrapped('qcfg.swapWithMark', swapWithMark),
+    registerAsyncCommandWrapped('qcfg.smartPaste', smartPaste),
+    registerAsyncCommandWrapped('qcfg.swapWithMark', swapWithMark),
     listenWrapped(workspace.onDidChangeTextDocument, invalidateMark),
   );
 }

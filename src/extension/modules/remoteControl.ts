@@ -12,7 +12,7 @@ import {
   ExtensionContext,
   Uri,
 } from 'vscode';
-import { handleAsyncStd, handleErrorsAsync } from './exception';
+import { handleAsyncStd, handleErrors } from './exception';
 import * as fileUtils from './fileUtils';
 import { log } from '../../library/logging';
 import { Modules } from './module';
@@ -28,7 +28,7 @@ async function handleOpen(folder: string, location: string) {
   assert(path.isAbsolute(folder), `"${folder}" is not absolute path`);
   let wsFolder: WorkspaceFolder | undefined;
   let found = false;
-  for (wsFolder of workspace.workspaceFolders || [])
+  for (wsFolder of workspace.workspaceFolders ?? [])
     if (wsFolder.uri.fsPath === folder) {
       found = true;
       break;
@@ -64,14 +64,14 @@ async function handleOpen(folder: string, location: string) {
 
 function checkFolder(folder: string) {
   assert(path.isAbsolute(folder), `"${folder}" is not absolute path`);
-  for (const wsFolder of workspace.workspaceFolders || [])
+  for (const wsFolder of workspace.workspaceFolders ?? [])
     if (wsFolder.uri.fsPath === folder) {
       return true;
     }
   return false;
 }
 
-async function handleCmd(cmd: string) {
+function handleCmd(cmd: string) {
   const parts = shlex.split(cmd);
   assert(parts.length >= 2, 'Invalid command received', cmd);
   const [opcode, folder, ...args] = parts;
@@ -81,7 +81,7 @@ async function handleCmd(cmd: string) {
     log.info(`"${folder}" does not correspond to this workspace's folder`);
     return;
   }
-  await focusWindow();
+  focusWindow();
 
   switch (opcode) {
     case 'open':
@@ -98,10 +98,9 @@ async function handleCmd(cmd: string) {
 
 function activate(_context: ExtensionContext) {
   const server = net.createServer(socket => {
-    socket.on(
-      'data',
-      handleErrorsAsync(data => handleCmd(data.toString())),
-    );
+    socket.on('data', () => {
+      handleErrors(data => handleCmd(data.toString()));
+    });
   });
   server.listen(port, '127.0.0.1');
   server.on('listening', () => {

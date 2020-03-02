@@ -1,6 +1,5 @@
 import {
   window,
-  TextEditor,
   ViewColumn,
   Selection,
   TextEditorRevealType,
@@ -12,11 +11,10 @@ import { shouldSplitVertically } from './windowState';
 
 import { Modules } from './module';
 import { registerAsyncCommandWrapped } from './exception';
-import { assert } from '../../library/exception';
+import { getActiveTextEditor } from './utils';
 
 async function focusEditorBeside(syncPosition: boolean) {
-  assert(window.activeTextEditor);
-  const editor = window.activeTextEditor as TextEditor;
+  const editor = getActiveTextEditor();
   const columns = new Set<ViewColumn>();
   for (const visEditor of window.visibleTextEditors)
     if (visEditor.viewColumn) columns.add(visEditor.viewColumn);
@@ -66,8 +64,7 @@ async function splitEditorToDirection(direction: DirectionArg) {
 
 async function syncEditorToDirection(args: unknown[]) {
   const dir = args[0] as DirectionArg;
-  assert(window.activeTextEditor);
-  const editor = window.activeTextEditor as TextEditor;
+  const editor = getActiveTextEditor();
   const visible = editor.visibleRanges[0];
   const pos = editor.selection.active;
   const doc = editor.document;
@@ -92,10 +89,10 @@ async function syncEditorToDirection(args: unknown[]) {
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
-    registerAsyncCommandWrapped('qcfg.focusEditorBeside', () =>
+    registerAsyncCommandWrapped('qcfg.focusEditorBeside', async () =>
       focusEditorBeside(false /* do not sync */),
     ),
-    registerAsyncCommandWrapped('qcfg.syncToEditorBeside', () =>
+    registerAsyncCommandWrapped('qcfg.syncToEditorBeside', async () =>
       focusEditorBeside(true /* sync */),
     ),
     registerAsyncCommandWrapped(

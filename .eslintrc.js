@@ -10,7 +10,9 @@ module.exports = {
     'airbnb',
     'plugin:import/recommended',
     'plugin:@typescript-eslint/eslint-recommended',
+    'plugin:@typescript-eslint/recommended-requiring-type-checking',
     'plugin:@typescript-eslint/recommended',
+    'plugin:@typescript-eslint/all',
     'prettier/@typescript-eslint',
   ],
   env: {
@@ -40,6 +42,13 @@ module.exports = {
     'import/prefer-default-export': off,
     'nonblock-statement-body-position': off,
     'import/no-unresolved': off,
+    'import/extensions': [
+      'error',
+      'ignorePackages',
+      {
+        ts: 'never',
+      },
+    ],
     'no-restricted-syntax': off,
     'prefer-template': off,
     'arrow-parens': off,
@@ -93,5 +102,37 @@ module.exports = {
     ],
     'new-cap': [warn, { newIsCapExceptions: ['default'] }],
     indent: off,
+    '@typescript-eslint/no-type-alias': off,
+    '@typescript-eslint/explicit-member-accessibility': [
+      warn,
+      {
+        accessibility: 'no-public',
+      },
+    ],
+    '@typescript-eslint/member-ordering': off,
+    '@typescript-eslint/typedef': off,
+    '@typescript-eslint/array-type': [warn, { default: 'array-simple' }],
+    '@typescript-eslint/generic-type-naming': off,
+    '@typescript-eslint/no-extraneous-class': [
+      warn,
+      {
+        allowEmpty: true,
+      },
+    ],
+    '@typescript-eslint/no-magic-numbers': off,
+    '@typescript-eslint/strict-boolean-expressions': off,
+    '@typescript-eslint/restrict-template-expressions': [
+      warn,
+      {
+        allowNumber: true,
+        allowBoolean: true,
+        allowNullable: false,
+      },
+    ],
+    '@typescript-eslint/no-untyped-public-signature': off,
+    '@typescript-eslint/no-require-imports': off,
+    '@typescript-eslint/no-parameter-properties': off,
+    '@typescript-eslint/restrict-template-expressions': off,
+    'max-len': off,
   },
 };

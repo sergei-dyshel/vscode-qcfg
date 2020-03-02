@@ -1,20 +1,17 @@
 'use strict';
 
 import { log } from '../../library/logging';
-import { listenWrapped, registerAsyncCommandWrapped } from './exception';
+import { listenWrapped, registerSyncCommandWrapped } from './exception';
 import { Modules } from './module';
 import { windowManager, Window } from 'node-window-manager';
 import { WindowState, ExtensionContext, window } from 'vscode';
 import { runSubprocessSync } from './subprocess';
 
-async function callHammerspoon(
-  funcName: string,
-  ...args: Array<number | string>
-) {
+function callHammerspoon(funcName: string, ...args: Array<number | string>) {
   const params = args
     .map(x => {
       if (typeof x === 'number') return x.toString();
-      if (typeof x === 'string') return JSON.stringify(x) as string;
+      if (typeof x === 'string') return JSON.stringify(x);
       return '';
     })
     .join(', ');
@@ -22,12 +19,12 @@ async function callHammerspoon(
   return runSubprocessSync(['hs', '-c', callExpr]);
 }
 
-export async function focusWindow() {
+export function focusWindow() {
   if (!windowId) {
     return;
   }
   log.info('Focusing current OS window');
-  await callHammerspoon('ipcFocusWindow', windowId);
+  callHammerspoon('ipcFocusWindow', windowId);
   if (windowId === tryGetActiveWindowId()) {
     log.warn("Couldn't focus window with Hammerspoon");
   }
@@ -70,7 +67,7 @@ function activate(context: ExtensionContext) {
 
   context.subscriptions.push(
     listenWrapped(window.onDidChangeWindowState, windowStateChanged),
-    registerAsyncCommandWrapped('qcfg.window.focus', () => focusWindow()),
+    registerSyncCommandWrapped('qcfg.window.focus', () => focusWindow()),
   );
 }
 

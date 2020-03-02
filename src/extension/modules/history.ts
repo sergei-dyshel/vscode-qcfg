@@ -24,6 +24,7 @@ import {
   listenWrapped,
   handleAsyncStd,
   listenAsyncWrapped,
+  handleErrorsAsync,
 } from './exception';
 import { assert, assertNonNull } from '../../library/exception';
 import { stringify as str } from '../../library/stringify';
@@ -42,7 +43,7 @@ export function activate(context: ExtensionContext) {
   extContext = context;
   setupDicts();
   loadHistory();
-  setInterval(saveHistory, 30000);
+  setInterval(() => handleErrorsAsync(() => saveHistory()), 30000);
   context.subscriptions.push(
     listenAsyncWrapped(
       window.onDidChangeVisibleTextEditors,
@@ -220,7 +221,7 @@ class Point {
     private document: TextDocument,
     private offset: number,
     private position?: Position,
-    private timestamp?: number,
+    private readonly timestamp?: number,
   ) {}
 
   static fromEditor(editor: TextEditor): Point {
@@ -315,7 +316,7 @@ namespace History {
 }
 
 class History {
-  constructor(private viewColumn: ViewColumn) {
+  constructor(private readonly viewColumn: ViewColumn) {
     const editor = assertNonNull(getVisibleEditor(viewColumn));
     this.current = Point.fromEditor(editor);
     this.log = new Logger({
@@ -333,7 +334,7 @@ class History {
       back = this.backward.pop();
     } while (back && !this.current.farEnough(back));
     assert(back, 'No backward history');
-    this.current = back!;
+    this.current = back;
     await this.current.goto();
     this.log.info(`Went backward to ${this.current}`);
   }
@@ -405,9 +406,9 @@ class History {
     );
   }
 
-  private log: Logger;
+  private readonly log: Logger;
   private backward: Point[] = [];
-  private forward: Point[] = [];
+  private readonly forward: Point[] = [];
 
   private current: Point;
   private currentIsTemporary = false;

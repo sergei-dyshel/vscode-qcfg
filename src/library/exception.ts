@@ -17,7 +17,7 @@ export function assertNonNull<T>(
   ...args: unknown[]
 ): T {
   assert(val !== undefined && val !== null, ...args);
-  return val as T;
+  return val;
 }
 
 export function assertNull<T>(val: T | undefined | null, ...args: unknown[]) {
@@ -27,11 +27,11 @@ export function assertNull<T>(val: T | undefined | null, ...args: unknown[]) {
 export function assertInstanceOf<T extends B, B>(
   value: B,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  cls: { new (...args: any[]): T },
+  cls: new (...args: any[]) => T,
   ...args: any[]
 ): T {
   assert(value instanceof cls, ...args);
-  return value as T;
+  return value;
 }
 
 /**
@@ -59,7 +59,7 @@ export function check(
  */
 export function checkNonNull<T>(val: T | undefined | null, message: string): T {
   check(val !== undefined && val !== null, message);
-  return val as T;
+  return val;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -85,6 +85,7 @@ export function wrapWithErrorHandlerAsync<T extends AsyncFunction, R>(
     ...args: Parameters<T>
   ): Promise<PromiseType<ReturnType<T>> | R> | R => {
     try {
+      // eslint-disable-next-line @typescript-eslint/return-await
       return func(...args).catch(exc => handler(exc));
     } catch (exc) {
       return handler(exc);

@@ -69,28 +69,30 @@ export function runSubprocessSync(
 }
 
 export class Subprocess {
-  constructor(command: string | string[], private options?: SubprocessOptions) {
+  constructor(
+    command: string | string[],
+    private readonly options?: SubprocessOptions,
+  ) {
     this.waitingContext = { resolve: _ => {}, reject: _ => {} };
-    this.logLevel =
-      options && options.logLevel ? options.logLevel : DEFAULT_LOG_LEVEL;
+    this.logLevel = options?.logLevel ?? DEFAULT_LOG_LEVEL;
     if (typeof command === 'string')
       this.process = child_process.exec(
         command,
-        options || {},
+        options ?? {},
         this.callback.bind(this),
       );
     else
       this.process = child_process.execFile(
         command[0],
         command.slice(1),
-        options || {},
+        options ?? {},
         this.callback.bind(this),
       );
     this.log = new Logger({
       parent: log,
       instance: `pid=${this.process.pid}`,
     });
-    const cwd = options && options.cwd ? options.cwd : process.cwd;
+    const cwd = options?.cwd ?? process.cwd();
     this.log.logStr(
       this.logLevel,
       'started command "{}" in cwd "{}"',
@@ -108,7 +110,7 @@ export class Subprocess {
     }
   }
 
-  wait(): Promise<ExecResult> {
+  async wait(): Promise<ExecResult> {
     return this.promise;
   }
 
@@ -122,8 +124,8 @@ export class Subprocess {
     this.result = new ExecResult(this.process.pid, stdout, stderr);
     if (error) {
       const err = (error as unknown) as { code?: number; signal?: string };
-      this.result.code = err.code || 0;
-      this.result.signal = err.signal || '';
+      this.result.code = err.code ?? 0;
+      this.result.signal = err.signal ?? '';
       this.log.log(
         this.logLevel,
         `finished with code ${this.result.code} signal ${this.result.signal}`,
@@ -139,20 +141,20 @@ export class Subprocess {
     }
   }
 
-  private logLevel: LogLevel;
+  private readonly logLevel: LogLevel;
   private result?: ExecResult;
-  private log: Logger;
-  private promise: Promise<ExecResult>;
+  private readonly log: Logger;
+  private readonly promise: Promise<ExecResult>;
   private waitingContext: {
     resolve: (result: ExecResult) => void;
     reject: (result: ExecResult | Error) => void;
   };
 
-  private process: child_process.ChildProcess;
+  private readonly process: child_process.ChildProcess;
   status?: vscode.StatusBarItem;
 }
 
-export function executeSubprocess(
+export async function executeSubprocess(
   command: string | string[],
   options?: SubprocessOptions,
 ): Promise<ExecResult> {

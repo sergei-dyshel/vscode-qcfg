@@ -130,7 +130,7 @@ export function getCompletionPrefix(
 ): string {
   const lineStart = position.with(undefined, 0);
   const text = document.getText(new Range(lineStart, position));
-  const match = text.match(pattern)!;
+  const match = pattern.exec(text)!;
   return match[1];
 }
 

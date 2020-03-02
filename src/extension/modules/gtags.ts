@@ -21,6 +21,7 @@ import {
   registerAsyncCommandWrapped,
   handleErrors,
   handleAsyncStd,
+  handleErrorsAsync,
 } from './exception';
 import { Modules } from './module';
 import { runTask } from './tasks/main';
@@ -30,7 +31,7 @@ import RE2 from 're2';
 import { assertNonNull, assert } from '../../library/exception';
 
 async function findGtagsDir(dir: string) {
-  while (true) {
+  for (;;) {
     if (await fileUtils.exists(nodejs.path.join(dir, 'GTAGS'))) {
       return dir;
     }
@@ -63,7 +64,7 @@ async function onSaveAll(docs: saveAll.DocumentsInFolder) {
 }
 
 async function updateDB() {
-  for (const folder of vscode.workspace.workspaceFolders || []) {
+  for (const folder of vscode.workspace.workspaceFolders ?? []) {
     const path = folder.uri.fsPath;
     const gtagsDir = await findGtagsDir(path);
 
@@ -184,7 +185,7 @@ namespace WorkspaceGtags {
       logger.debug(
         `Search yielded ${searchResults.length} results, ${currentItems.length} results are filtered`,
       );
-      if (!searchResults) updateItems();
+      if (searchResults.isEmpty) updateItems();
     });
     searchProcess.on('exit', (code, signal) => {
       logger.debug(`Search process exited with code ${code} signal ${signal}`);
@@ -410,9 +411,12 @@ const gtagsHoverProvider: vscode.HoverProvider = {
 function activate(context: vscode.ExtensionContext) {
   const queue = new PromiseQueue('gtags');
   handleAsyncStd(queue.add(updateDB, 'gtags check'));
-  setInterval(queue.queued(updateDB, 'gtags check'), 30000);
+  setInterval(
+    () => handleErrorsAsync(queue.queued(updateDB, 'gtags check')),
+    30000,
+  );
   context.subscriptions.push(
-    saveAll.onEvent(queue.queued(onSaveAll)),
+    saveAll.onEvent(queue.queued(onSaveAll, 'save all')),
     vscode.languages.registerWorkspaceSymbolProvider(
       gtagsGlobalSymbolsProvider,
     ),

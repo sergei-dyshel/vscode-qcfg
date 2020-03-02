@@ -135,10 +135,10 @@ async function selectSibling(direction: Direction, swap?: boolean) {
       : firstChild;
   const sibling = node.range.isEqual(ctx.selection)
     ? direction === Direction.Left
-      ? node.previousNamedSibling || node
-      : node.nextNamedSibling || node
+      ? node.previousNamedSibling ?? node
+      : node.nextNamedSibling ?? node
     : node;
-  if (!sibling) return;
+  // TODO: could be a bug here
   if (sibling === node) {
     selectChildren(ctx.editor, node, node, direction === Direction.Left);
     return;
@@ -173,15 +173,13 @@ async function extendSelection(direction: Direction) {
   }
   if (direction === Direction.Left) {
     if (ctx.selection.isReversed)
-      firstChild = firstChild.previousNamedSibling || firstChild;
+      firstChild = firstChild.previousNamedSibling ?? firstChild;
     else if (firstChild !== lastChild)
-      lastChild = lastChild.previousNamedSibling || lastChild;
-  } else if (direction === Direction.Right) {
-    if (!ctx.selection.isReversed)
-      lastChild = lastChild.nextNamedSibling || lastChild;
-    else if (firstChild !== lastChild)
-      firstChild = firstChild.nextNamedSibling || firstChild;
-  }
+      lastChild = lastChild.previousNamedSibling ?? lastChild;
+  } else if (!ctx.selection.isReversed)
+    lastChild = lastChild.nextNamedSibling ?? lastChild;
+  else if (firstChild !== lastChild)
+    firstChild = firstChild.nextNamedSibling ?? firstChild;
   selectChildren(ctx.editor, firstChild, lastChild, ctx.selection.isReversed);
 }
 
@@ -276,22 +274,22 @@ function activate(context: ExtensionContext) {
     }),
     registerAsyncCommandWrapped('qcfg.selection.expand', smartExpand),
     registerAsyncCommandWrapped('qcfg.selection.shrink', smartShrink),
-    registerAsyncCommandWrapped('qcfg.selection.left', () =>
+    registerAsyncCommandWrapped('qcfg.selection.left', async () =>
       selectSibling(Direction.Left),
     ),
-    registerAsyncCommandWrapped('qcfg.selection.right', () =>
+    registerAsyncCommandWrapped('qcfg.selection.right', async () =>
       selectSibling(Direction.Right),
     ),
-    registerAsyncCommandWrapped('qcfg.selection.extendLeft', () =>
+    registerAsyncCommandWrapped('qcfg.selection.extendLeft', async () =>
       extendSelection(Direction.Left),
     ),
-    registerAsyncCommandWrapped('qcfg.selection.extendRight', () =>
+    registerAsyncCommandWrapped('qcfg.selection.extendRight', async () =>
       extendSelection(Direction.Right),
     ),
-    registerAsyncCommandWrapped('qcfg.selection.swapLeft', () =>
+    registerAsyncCommandWrapped('qcfg.selection.swapLeft', async () =>
       selectSibling(Direction.Left, true /* swap */),
     ),
-    registerAsyncCommandWrapped('qcfg.selection.swapRight', () =>
+    registerAsyncCommandWrapped('qcfg.selection.swapRight', async () =>
       selectSibling(Direction.Right, true /* swap */),
     ),
   );

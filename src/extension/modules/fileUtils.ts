@@ -21,13 +21,10 @@ import {
   ViewColumn,
 } from 'vscode';
 import { assertNonNull, assertNull } from '../../library/exception';
+import { handleErrorsAsync } from './exception';
 
 export const globSync = glob.sync;
-// tslint:disable-next-line: no-unnecessary-type-assertion
-export const globAsync = nodejs.util.promisify(require('glob')) as (
-  pattern: string,
-  options?: glob.IOptions,
-) => Promise<string[]>;
+export const globAsync = nodejs.util.promisify(require('glob'));
 
 export function getTempFile() {
   return tempy.file();
@@ -44,7 +41,7 @@ export function getDocumentRoot(fileName: string) {
   const wsPath = workspace.asRelativePath(fileName, true);
   const relativePath = workspace.asRelativePath(fileName, false);
   const [wsDir] = wsPath.split(nodejs.path.sep, 1);
-  for (const workspaceFolder of workspace.workspaceFolders || []) {
+  for (const workspaceFolder of workspace.workspaceFolders ?? []) {
     if (workspaceFolder.name === wsDir)
       return { workspaceFolder, relativePath };
   }
@@ -67,7 +64,10 @@ export function getDocumentWorkspaceFolder(fileName: string) {
 export const exists = nodejs.util.promisify(nodejs.fs.exists);
 export const realPath = nodejs.util.promisify(nodejs.fs.realpath);
 
-export function existsInRoot(wsFolder: WorkspaceFolder, fileName: string) {
+export async function existsInRoot(
+  wsFolder: WorkspaceFolder,
+  fileName: string,
+) {
   return exists(nodejs.path.join(wsFolder.uri.fsPath, fileName));
 }
 
@@ -106,8 +106,8 @@ export async function openTagLocation(
   filePath: string,
   options: { line?: number; column?: number; tag?: string },
 ) {
-  const line0 = options && options.line ? options.line - 1 : 0;
-  let col0 = options && options.column ? options.column - 1 : 0;
+  const line0 = options.line ? options.line - 1 : 0;
+  let col0 = options.column ? options.column - 1 : 0;
 
   const editor = window.activeTextEditor;
   const mustOpenNewEditor = !editor || editor.document.uri.fsPath !== filePath;
@@ -115,7 +115,7 @@ export async function openTagLocation(
     ? await workspace.openTextDocument(filePath)
     : assertNonNull(editor).document;
 
-  if (options && options.tag) {
+  if (options.tag) {
     assertNull(options.column, 'Can not specify tag and column together');
     assertNonNull(options.line, 'Can not specify "tag" without "line"');
     const lineText = document.lineAt(line0);
@@ -160,10 +160,10 @@ export function watchFile(
 }
 
 class FileWatcher implements DisposableLike {
-  private watcher: chokidar.FSWatcher;
+  private readonly watcher: chokidar.FSWatcher;
   constructor(
-    private path: string,
-    private callback: (event: FileWatcherEvent) => unknown,
+    private readonly path: string,
+    private readonly callback: (event: FileWatcherEvent) => unknown,
   ) {
     this.watcher = chokidar.watch(path, {
       persistent: true,
@@ -193,6 +193,6 @@ class FileWatcher implements DisposableLike {
   }
 
   dispose() {
-    this.watcher.close();
+    handleErrorsAsync(async () => this.watcher.close());
   }
 }

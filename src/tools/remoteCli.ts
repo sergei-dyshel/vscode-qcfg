@@ -29,8 +29,8 @@ abstract class CliAction extends CommandLineAction {
 
   constructor(
     protected cli: Cli,
-    private options: ICommandLineActionOptions,
-    private opts?: {
+    private readonly options: ICommandLineActionOptions,
+    private readonly opts?: {
       autoInstance?: Instance;
       allAllowed?: boolean;
     },
@@ -50,6 +50,7 @@ abstract class CliAction extends CommandLineAction {
           abort(`Must specify instance for ${this.options.actionName} command`),
       );
     else this.client = this.cli.getClient(this.cli.instance);
+    return Promise.resolve();
   }
 }
 
@@ -101,8 +102,8 @@ class ReloadAction extends CliAction {
   async onExecute() {
     await super.onExecute();
     if (this.cli.instance === Instance.ALL)
-      this.cli.multiClient.sendNoResult('reloadWindow', {});
-    else this.client!.sendNoResult('reloadWindow', {});
+      await this.cli.multiClient.sendNoResult('reloadWindow', {});
+    else await this.client!.sendNoResult('reloadWindow', {});
   }
 }
 
@@ -130,11 +131,13 @@ class CommandAction extends CliAction {
   async onExecute() {
     await super.onExecute();
     if (this.cli.instance === Instance.ALL)
-      this.cli.multiClient.sendNoResult('executeCommand', {
+      await this.cli.multiClient.sendNoResult('executeCommand', {
         name: this.name.value!,
       });
     else
-      this.client!.sendNoResult('executeCommand', { name: this.name.value! });
+      await this.client!.sendNoResult('executeCommand', {
+        name: this.name.value!,
+      });
   }
 }
 
@@ -278,4 +281,5 @@ async function main() {
   await new Cli().executeWithoutErrorHandling();
 }
 
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 main();

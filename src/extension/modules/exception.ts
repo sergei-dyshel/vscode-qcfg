@@ -150,12 +150,12 @@ function createStdErrorHandler(prefix?: string) {
 }
 
 function stdErrorHandler(error: any, prefix?: string): never {
-  prefix = prefix || '';
+  prefix = prefix ?? '';
   if (error instanceof CheckError) {
     log.info(`${prefix}Check failed: ${error.message}`);
     showStatusBarMessage(error.message, { color: 'red' });
   } else if (error instanceof Error) {
-    const stack = simplifyErrorStack(error.stack || '');
+    const stack = simplifyErrorStack(error.stack ?? '');
     log.error(`${prefix}${stack}`);
   } else log.error(`${prefix}${String(error)}`);
   throw error;
