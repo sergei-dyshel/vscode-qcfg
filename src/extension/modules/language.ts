@@ -6,8 +6,9 @@ import * as nodejs from '../../library/nodejs';
 import * as vscode from 'vscode';
 import { Modules } from './module';
 import { parseJsonFileSync } from './json';
+import { PackageJson } from '../../library/packageJson';
 
-export const colorThemeFiles: { [id: string]: string } = {};
+export const colorThemeFiles: { [id: string]: string | undefined } = {};
 
 export function getLanguageConfig(
   id: string,
@@ -21,16 +22,16 @@ export function availableLanguageConfigs(): string[] {
 
 function fetchLangConfigs() {
   for (const ext of vscode.extensions.all) {
-    const json = ext.packageJSON;
+    const json = ext.packageJSON as PackageJson;
     // All vscode default extensions ids starts with "vscode."
     if (!json.contributes) continue;
-    for (const themeData of json.contributes.themes || []) {
+    for (const themeData of json.contributes.themes ?? []) {
       const label = themeData.label as string;
       const fullPath = nodejs.path.join(ext.extensionPath, themeData.path);
       if (!nodejs.fs.existsSync(fullPath)) continue;
       colorThemeFiles[label] = fullPath;
     }
-    for (const langData of json.contributes.languages || []) {
+    for (const langData of json.contributes.languages ?? []) {
       const langId: string = langData.id;
       if (!langData.configuration) {
         continue;
@@ -56,7 +57,9 @@ function fetchLangConfigs() {
 }
 
 /* TODO: move extension parsing to separate file */
-const langConfigs: { [id: string]: vscode.LanguageConfiguration } = {};
+const langConfigs: {
+  [id: string]: vscode.LanguageConfiguration | undefined;
+} = {};
 
 function activate(_: vscode.ExtensionContext) {
   fetchLangConfigs();

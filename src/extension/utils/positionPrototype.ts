@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import { Position, Range } from 'vscode';
 
 declare module 'vscode' {
@@ -14,8 +15,8 @@ Position.prototype.offset = function(
   offset: { line?: number; character?: number },
 ) {
   return this.with(
-    this.line + (offset.line || 0),
-    this.character + (offset.character || 0),
+    this.line + (offset.line ?? 0),
+    this.character + (offset.character ?? 0),
   );
 };
 

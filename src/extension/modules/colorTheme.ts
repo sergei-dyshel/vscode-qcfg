@@ -102,7 +102,7 @@ async function inspectTheme() {
   const themes = Object.keys(colorThemeFiles);
   const theme = await selectStringFromList(themes);
   if (theme) {
-    await window.showTextDocument(Uri.file(colorThemeFiles[theme]));
+    await window.showTextDocument(Uri.file(colorThemeFiles[theme]!));
   }
 }
 

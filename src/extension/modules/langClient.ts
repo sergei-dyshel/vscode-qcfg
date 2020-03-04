@@ -13,7 +13,7 @@ export function isAnyLangClientRunning(): boolean {
 }
 
 export async function refreshOrRestartLangClients() {
-  return mapAsync(ALL_CLIENTS, wrapper => wrapper.refreshOrRestart());
+  return mapAsync(ALL_CLIENTS, async wrapper => wrapper.refreshOrRestart());
 }
 
 export function sendDidSaveToLangClients(document: TextDocument) {
@@ -26,9 +26,9 @@ interface LanguageClientAPI {
 }
 
 class LanguageClientWrapper {
-  private log: Logger;
+  private readonly log: Logger;
 
-  constructor(name: string, private extentsionId: string) {
+  constructor(name: string, private readonly extentsionId: string) {
     this.log = new Logger({
       name: 'LanguageClient',
       instance: name,
@@ -129,15 +129,15 @@ class ClangdWrapper extends LanguageClientWrapper {
 const ALL_CLIENTS = [new CclsWrapper(), new ClangdWrapper()];
 
 async function refreshLangClients() {
-  return mapAsync(ALL_CLIENTS, wrapper => wrapper.refresh());
+  return mapAsync(ALL_CLIENTS, async wrapper => wrapper.refresh());
 }
 
 async function restartLangClients() {
-  return mapAsync(ALL_CLIENTS, wrapper => wrapper.restart());
+  return mapAsync(ALL_CLIENTS, async wrapper => wrapper.restart());
 }
 
 async function stopLangClients() {
-  return mapAsync(ALL_CLIENTS, wrapper => wrapper.stop());
+  return mapAsync(ALL_CLIENTS, async wrapper => wrapper.stop());
 }
 
 function activate(context: ExtensionContext) {

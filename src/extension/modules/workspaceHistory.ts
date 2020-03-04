@@ -12,7 +12,7 @@ import { Modules } from './module';
 import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
 import { selectFromList } from './dialog';
-import { registerAsyncCommandWrapped } from './exception';
+import { registerAsyncCommandWrapped, handleErrorsAsync } from './exception';
 import { expandTemplate } from '../../library/stringUtils';
 import { mapAsyncNoThrowAndZip } from './async';
 import { parseJsonFileAsync } from './json';
@@ -136,12 +136,12 @@ async function openFromHistory(newWindow: boolean) {
   await commands.executeCommand('vscode.openFolder', Uri.file(root), newWindow);
 }
 
-async function activate(context: ExtensionContext) {
+function activate(context: ExtensionContext) {
   context.subscriptions.push(
-    registerAsyncCommandWrapped('qcfg.openRecent.sameWindow', () =>
+    registerAsyncCommandWrapped('qcfg.openRecent.sameWindow', async () =>
       openFromHistory(false),
     ),
-    registerAsyncCommandWrapped('qcfg.openRecent.newWindow', () =>
+    registerAsyncCommandWrapped('qcfg.openRecent.newWindow', async () =>
       openFromHistory(true),
     ),
   );
@@ -153,7 +153,7 @@ async function activate(context: ExtensionContext) {
   const history: string[] = globalState.get(PERSISTENT_KEY, []);
   history.removeFirst(wsFile);
   history.unshift(wsFile);
-  await globalState.update(PERSISTENT_KEY, history);
+  handleErrorsAsync(() => globalState.update(PERSISTENT_KEY, history));
 }
 
 Modules.register(activate);

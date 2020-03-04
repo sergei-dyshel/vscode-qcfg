@@ -31,14 +31,14 @@ export function buildAbbrevPattern(query: string): string {
   const midPattern = goodChars
     .split('')
     .map(ch => {
-      if (ch.match(/[a-zA-Z]/)) {
+      if (/[a-zA-Z]/.exec(ch)) {
         const lower = ch.toLowerCase();
         const upper = ch.toUpperCase();
         const anyCase = `(.*[^a-zA-Z])?[${lower}${upper}]`;
         const camelCase = `(.*[^A-Z])?${upper}`;
         return `(${anyCase}|${camelCase})`;
       }
-      if (ch.match(/\d+/)) {
+      if (/\d+/.exec(ch)) {
         return `(.*[^0-9])?${ch}`;
       }
       return `.*${ch}`;
@@ -58,7 +58,7 @@ export function splitWithRemainder(
 ): string[] {
   const result: string[] = [];
   while (str && limit) {
-    const match = str.match(regex);
+    const match = regex.exec(str);
     if (!match || !match.index) {
       result.push(str);
       break;
@@ -68,7 +68,7 @@ export function splitWithRemainder(
     str = str.substring(match.index + match[0].length);
     limit -= 1;
   }
-  if (str || !result) result.push(str);
+  if (str !== '' || result.isEmpty) result.push(str);
   return result;
 }
 
@@ -87,7 +87,7 @@ export function ellipsize(
   options?: { delimiter?: string },
 ): string {
   if (str.length <= maxLen) return str;
-  const delimiter = options && options.delimiter ? options.delimiter : '...';
+  const delimiter = options?.delimiter ?? '...';
   const left = Math.ceil(maxLen / 2);
   const right = maxLen - left;
   return str.substr(0, left) + delimiter + str.substr(str.length - right);

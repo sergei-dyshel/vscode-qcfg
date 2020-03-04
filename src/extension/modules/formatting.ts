@@ -28,11 +28,13 @@ async function formatUris(uris: Uri[]) {
   }
 }
 
-function formatFilesInExplorer(clickedFile: Uri, selectedFiles: Uri[]) {
-  return formatUris(selectedFiles || [clickedFile]);
+async function formatFilesInExplorer(clickedFile: Uri, selectedFiles: Uri[]) {
+  return formatUris(selectedFiles.isEmpty ? [clickedFile] : selectedFiles);
 }
 
-function formatFilesInScm(...selectedFiles: SourceControlResourceState[]) {
+async function formatFilesInScm(
+  ...selectedFiles: SourceControlResourceState[]
+) {
   return formatUris(selectedFiles.map(x => x.resourceUri));
 }
 

@@ -97,12 +97,12 @@ class ConfigDirWatcher implements Disposable {
   private globalDir = parseGlobalDir();
   private workspaceDir = parseWorkspaceDir();
 
-  private configDisposable = Disposable.from(
+  private readonly configDisposable = Disposable.from(
     watchConfigVariable(GLOBAL_VAR, this.onConfigVarChanged.bind(this)),
     watchConfigVariable(WORKSPACE_VAR, this.onConfigVarChanged.bind(this)),
   );
 
-  private pairWatchers = new Map<string, ConfigPairWatcher>();
+  private readonly pairWatchers = new Map<string, ConfigPairWatcher>();
 
   watch(
     fileName: string,
@@ -156,7 +156,7 @@ class ConfigFileWatcher implements DisposableLike {
 
   constructor(
     public currentPath: string | undefined,
-    private callback: () => unknown,
+    private readonly callback: () => unknown,
   ) {
     this.watch();
   }
@@ -189,15 +189,15 @@ function resolveIfNonNull(first: string | undefined, second: string) {
  * Watches pair of global/workspace configuration files
  */
 class ConfigPairWatcher implements DisposableLike {
-  private global: ConfigFileWatcher;
-  private workspace: ConfigFileWatcher;
+  private readonly global: ConfigFileWatcher;
+  private readonly workspace: ConfigFileWatcher;
 
   constructor(
     public fileName: string,
     globalDir: string,
     workspaceDir: string | undefined,
-    private callback: (_: ConfigFilePair) => unknown,
-    private onDispose: () => void,
+    private readonly callback: (_: ConfigFilePair) => unknown,
+    private readonly onDispose: () => void,
   ) {
     this.global = new ConfigFileWatcher(
       nodejs.path.resolve(globalDir, fileName),

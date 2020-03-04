@@ -13,8 +13,7 @@ export function showStatusBarMessage(
   statusBarMsgItem = window.createStatusBarItem();
   statusBarMsgItem.text = text;
   if (options) statusBarMsgItem.color = options.color;
-  const timeoutMs =
-    options && options.timeoutMs ? options.timeoutMs : DEFAULT_TIMEOUT_MS;
+  const timeoutMs = options?.timeoutMs ? options.timeoutMs : DEFAULT_TIMEOUT_MS;
   timer.setTimeout(timeoutMs, clearStatusBarMessage);
   statusBarMsgItem.show();
 }

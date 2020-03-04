@@ -74,7 +74,7 @@ async function checkCondition(
   params: BaseTaskParams,
   context: TaskContext,
 ): Promise<void> {
-  const when = params.when || {};
+  const when = params.when ?? {};
   if (Object.keys(when).length > 1)
     throw new ParamsError("Only one property can be defined for 'when' clause");
   if (when.fileExists) {
@@ -114,23 +114,30 @@ function handleValidationError(
   }
 }
 
-interface FolderTask<P> {
-  new (params: P, info: FetchInfo, context: TaskContext): BaseQcfgTask;
-}
+type FolderTask<P> = new (
+  params: P,
+  info: FetchInfo,
+  context: TaskContext,
+) => BaseQcfgTask;
 
-interface MultiFolderTask<P> {
-  new (params: P, info: FetchInfo, folderContexts: TaskContext[]): BaseQcfgTask;
-}
+type MultiFolderTask<P> = new (
+  params: P,
+  info: FetchInfo,
+  folderContexts: TaskContext[],
+) => BaseQcfgTask;
 
 class TaskGenerator<P extends BaseTaskParams> {
   constructor(
-    private single: FolderTask<P>,
-    private multi: MultiFolderTask<P>,
-    private params: P,
-    private info: FetchInfo,
+    private readonly single: FolderTask<P>,
+    private readonly multi: MultiFolderTask<P>,
+    private readonly params: P,
+    private readonly info: FetchInfo,
   ) {}
 
-  generateAll(currentContext: TaskContext, folderContexts: TaskContext[]) {
+  async generateAll(
+    currentContext: TaskContext,
+    folderContexts: TaskContext[],
+  ) {
     if (isFolderTask(this.params)) return this.genFolderTasks(folderContexts);
     return this.genCurrentTask(currentContext);
   }
@@ -228,7 +235,7 @@ interface FetchOptions {
 async function fetchQcfgTasks(options?: FetchOptions): Promise<BaseQcfgTask[]> {
   const currentContext = new TaskContext();
   const curFolder = currentWorkspaceFolder();
-  const folders = workspace.workspaceFolders || [];
+  const folders = workspace.workspaceFolders ?? [];
 
   // move current folder to the top of list
   if (curFolder) {
@@ -241,7 +248,7 @@ async function fetchQcfgTasks(options?: FetchOptions): Promise<BaseQcfgTask[]> {
   const filteredParams = configuredParams.filter(fetchedParams => {
     const { params } = fetchedParams;
     if (!params.flags) params.flags = [];
-    if (params.flags.includes(Flag.HIDDEN) && !(options || {}).showHidden)
+    if (params.flags.includes(Flag.HIDDEN) && !(options ?? {}).showHidden)
       return false;
     return true;
   });
@@ -251,7 +258,7 @@ async function fetchQcfgTasks(options?: FetchOptions): Promise<BaseQcfgTask[]> {
     async fetchedParams => {
       try {
         const generator = createTaskGenerator(fetchedParams);
-        return generator.generateAll(currentContext, folderContexts);
+        return await generator.generateAll(currentContext, folderContexts);
       } catch (err) {
         if (err instanceof ParamsError) {
           log.warn(
@@ -321,10 +328,10 @@ async function createTask(
   const generator = createTaskGenerator(fetchedParams);
   const { fetchInfo, params } = fetchedParams;
   const { label } = fetchInfo;
-  if (options && options.folder) {
+  if (options?.folder) {
     if (options.folder === 'all') {
       if (isFolderTask(params)) {
-        const folders = workspace.workspaceFolders || [];
+        const folders = workspace.workspaceFolders ?? [];
         if (folders.isEmpty)
           throw new Error(`Task "${label}" can only run in workspace folder`);
         const folderContexts = folders.map(folder => new TaskContext(folder));
@@ -333,7 +340,7 @@ async function createTask(
       throw new Error(`Task "${label}" is not folder task`);
     }
     try {
-      return generator.createTask(new TaskContext(options.folder));
+      return await generator.createTask(new TaskContext(options.folder));
     } catch (err) {
       throw new Error(
         `Task "${label}" is not valid in folder "${options.folder.name}": ${err.message}`,
@@ -341,7 +348,7 @@ async function createTask(
     }
   }
   try {
-    return generator.createTask(new TaskContext());
+    return await generator.createTask(new TaskContext());
   } catch (err) {
     throw new Error(
       `Task "${label}" is not valid current context : ${err.message}`,

@@ -79,7 +79,7 @@ export class TaskContext {
 
   constructor(folder?: WorkspaceFolder) {
     const editor = window.activeTextEditor;
-    this.workspaceFolder = folder || currentWorkspaceFolder();
+    this.workspaceFolder = folder ?? currentWorkspaceFolder();
     if (editor) {
       const document = editor.document;
       this.vars.absoluteFile = document.fileName;
@@ -127,9 +127,9 @@ export class TaskContext {
   readonly vars: Substitute = {};
 }
 
-type Substitute = {
+interface Substitute {
   [name: string]: string;
-};
+}
 
 /**
  * Task definition (params) has mistakes.
@@ -189,7 +189,7 @@ export abstract class BaseTask implements ListSelectable {
       item.description = this.folderText;
     }
     const tags = this.suffixTags();
-    if (tags) item.label += '      ' + tags.join('  ');
+    if (!tags.isEmpty) item.label += '      ' + tags.join('  ');
     return item;
   }
 
@@ -274,17 +274,17 @@ export abstract class BaseQcfgTask extends BaseTask {
   }
 
   protected title() {
-    return 'qcfg: ' + (this.params.title || this.info.label);
+    return 'qcfg: ' + (this.params.title ?? this.info.label);
   }
 
   isBuild() {
     if (this.params.type === TaskType.SEARCH) return false;
-    return (this.params.flags || []).includes(Flag.BUILD);
+    return (this.params.flags ?? []).includes(Flag.BUILD);
   }
 }
 
 export class TerminalTask extends BaseQcfgTask {
-  private task: Task;
+  private readonly task: Task;
   protected taskRun?: TaskRun;
 
   constructor(
@@ -298,9 +298,9 @@ export class TerminalTask extends BaseQcfgTask {
     }
     this.params = params;
     const def: TaskDefinition = { type: 'qcfg', task: params };
-    const flags: Flag[] = params.flags || [];
+    const flags: Flag[] = params.flags ?? [];
 
-    const scope = context.workspaceFolder || TaskScope.Global;
+    const scope = context.workspaceFolder ?? TaskScope.Global;
     const environ = { QCFG_VSCODE_PORT: String(remoteControl.port) };
     const shellExec = new ShellExecution(context.substitute(params.command), {
       cwd: params.cwd,
@@ -312,7 +312,7 @@ export class TerminalTask extends BaseQcfgTask {
       info.label,
       'qcfg',
       shellExec,
-      params.problemMatchers || [],
+      params.problemMatchers ?? [],
     );
     this.task.presentationOptions = {
       focus: params.reveal === Reveal.FOCUS,
@@ -343,7 +343,7 @@ export class TerminalTask extends BaseQcfgTask {
     }
 
     const params = this.params;
-    const exitCodes = params.exitCodes || [0];
+    const exitCodes = params.exitCodes ?? [0];
     const success = exitCodes.includes(this.taskRun.exitCode!);
     const term = this.taskRun.terminal;
     if (success && params.flags && params.flags.includes(Flag.REINDEX))
@@ -390,7 +390,7 @@ export class TerminalTask extends BaseQcfgTask {
 }
 
 export class TerminalMultiTask extends BaseQcfgTask {
-  private folderTasks: TerminalTask[];
+  private readonly folderTasks: TerminalTask[];
   constructor(
     params: TerminalTaskParams,
     info: FetchInfo,
@@ -405,18 +405,18 @@ export class TerminalMultiTask extends BaseQcfgTask {
       .join(', ');
   }
 
-  run() {
-    return mapAsyncSequential(this.folderTasks, task => task.run()).then<
+  async run() {
+    return mapAsyncSequential(this.folderTasks, async task => task.run()).then<
       void
     >();
   }
 }
 
 export class ProcessTask extends BaseQcfgTask {
-  private command: string;
-  private cwd: string;
-  private parseFormat?: ParseLocationFormat;
-  private parseTag?: string;
+  private readonly command: string;
+  private readonly cwd: string;
+  private readonly parseFormat?: ParseLocationFormat;
+  private readonly parseTag?: string;
 
   constructor(
     protected params: ProcessTaskParams,
@@ -489,9 +489,9 @@ export class ProcessTask extends BaseQcfgTask {
 }
 
 export class ProcessMultiTask extends BaseQcfgTask {
-  private parseOutput = false;
-  private parseTag?: string;
-  private folderTasks: ProcessTask[];
+  private readonly parseOutput: boolean = false;
+  private readonly parseTag?: string;
+  private readonly folderTasks: ProcessTask[];
 
   constructor(
     params: ProcessTaskParams,
@@ -515,7 +515,7 @@ export class ProcessMultiTask extends BaseQcfgTask {
   }
 
   async getLocations() {
-    const locsPerFolder = await mapAsync(this.folderTasks, task =>
+    const locsPerFolder = await mapAsync(this.folderTasks, async task =>
       task.getLocations(),
     );
     return concatArrays(...locsPerFolder);
@@ -528,16 +528,16 @@ export class ProcessMultiTask extends BaseQcfgTask {
         log.warn(`Task "${this.info.label}" returned no locations`);
       else await peekLocations(locations, this.parseTag);
     } else {
-      await Promise.all(this.folderTasks.map(task => task.run()));
+      await Promise.all(this.folderTasks.map(async task => task.run()));
     }
   }
 }
 
 export class SearchMultiTask extends BaseQcfgTask {
-  private query: TextSearchQuery;
-  private options: FindTextInFilesOptions;
-  private folders: WorkspaceFolder[];
-  private searchTitle: string;
+  private readonly query: TextSearchQuery;
+  private readonly options: FindTextInFilesOptions;
+  private readonly folders: WorkspaceFolder[];
+  private readonly searchTitle: string;
 
   constructor(
     params: SearchTaskParams,
@@ -554,7 +554,7 @@ export class SearchMultiTask extends BaseQcfgTask {
         throw new Error('Search task can only be defined for workspace folder');
       return context.workspaceFolder;
     });
-    const flags = params.flags || [];
+    const flags = params.flags ?? [];
     this.query = {
       pattern: folderContexts[0].substitute(params.query),
       isRegExp: flags.includes(Flag.REGEX),
@@ -583,7 +583,7 @@ export class SearchMultiTask extends BaseQcfgTask {
   }
 
   async run() {
-    return saveAndPeekSearch(this.searchTitle, () => this.getLocations());
+    return saveAndPeekSearch(this.searchTitle, async () => this.getLocations());
   }
 }
 

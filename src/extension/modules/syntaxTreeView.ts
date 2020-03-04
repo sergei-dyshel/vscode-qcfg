@@ -30,11 +30,7 @@ const ELLIPSIZE_LEN = 20;
 const treeProvider: TreeProvider = {
   async getTrees(): Promise<SyntaxTreeViewNode[] | undefined> {
     const editor = window.activeTextEditor;
-    if (
-      !editor ||
-      !editor.document ||
-      !SyntaxTrees.isDocumentSupported(editor.document)
-    ) {
+    if (!editor || !SyntaxTrees.isDocumentSupported(editor.document)) {
       currentRoot = undefined;
       return [];
     }
@@ -134,6 +130,9 @@ function buildNodeName(
             node.firstNamedChild.nodeType === 'identifier')
         )
           return buildNodeName(node.firstNamedChild, document);
+        break;
+      default:
+        return undefined;
     }
   }
   switch (node.nodeType) {
@@ -152,12 +151,17 @@ function buildNodeName(
     case 'template_type':
     case 'scoped_type_identifier':
       return ellipsize(node.text, ELLIPSIZE_LEN);
+    default:
+      return undefined;
   }
   return undefined;
 }
 
 class SyntaxTreeViewNode extends StaticTreeNode {
-  constructor(public syntaxNode: SyntaxNode, private document: TextDocument) {
+  constructor(
+    public syntaxNode: SyntaxNode,
+    private readonly document: TextDocument,
+  ) {
     super(buildNodeLabel(syntaxNode, document));
     assert(syntaxNode.isNamed);
     if (syntaxNode.namedChildCount > 0) this.setCollapsed();

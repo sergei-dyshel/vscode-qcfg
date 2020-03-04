@@ -64,7 +64,7 @@ export interface LoggerOptions {
 }
 
 export class Logger {
-  public instance?: string;
+  instance?: string;
 
   constructor(options?: LoggerOptions) {
     if (options) {
@@ -124,7 +124,7 @@ export class Logger {
 
   // private
 
-  private name?: string;
+  private readonly name?: string;
 
   private logInternal(level: LogLevel, args: unknown[]) {
     return this.logImpl(level, 4, formatMessage(args));
@@ -215,13 +215,12 @@ function getDate(): string {
 function formatLogRecord(record: LogRecord, opts?: LogFormatOptions): string {
   const parts: string[] = [];
   const all = !opts || opts.preset === 'all';
-  const short = true;
   if (all) parts.push(record.date);
-  if (short) parts.push(LogLevels.toString(record.level));
-  if (short) parts.push(record.location);
+  parts.push(LogLevels.toString(record.level));
+  parts.push(record.location);
   if (all) parts.push(record.function + '()');
   if (all && record.name) parts.push(`[${record.name}]`);
-  if (short && record.instance) parts.push(`{${record.instance}}`);
+  if (record.instance) parts.push(`{${record.instance}}`);
   parts.push(record.message);
   return parts.join(' ');
 }

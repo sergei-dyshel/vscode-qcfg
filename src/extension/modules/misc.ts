@@ -34,7 +34,7 @@ function terminalInWorkspaceFolder() {
 function terminalInFileFolder() {
   const document = getActiveTextEditor().document;
   const relPath = workspace.asRelativePath(document.fileName);
-  const name = path.dirname(relPath) || 'root';
+  const name = path.dirname(relPath);
   openOrCreateTerminal(name, path.dirname(document.fileName));
 }
 

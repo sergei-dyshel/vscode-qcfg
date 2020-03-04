@@ -38,7 +38,7 @@ export class TerminalProcess {
     TerminalProcess.activeProcesses.push(this);
   }
 
-  wait(): Promise<number> {
+  async wait(): Promise<number> {
     if (this.waitingContext) return this.waitingContext.promise;
     // tslint:disable-next-line: promise-must-complete
     const promise = new Promise<number>(
@@ -70,7 +70,7 @@ export class TerminalProcess {
 
   exitCode?: number;
 
-  private genId: number;
+  private readonly genId: number;
 
   private waitingContext?: {
     promise: Promise<number>;

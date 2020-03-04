@@ -124,7 +124,7 @@ export class TaskRun {
     try {
       this.execution = await tasks.executeTask(this.task);
     } catch (err) {
-      this.log.debug('executeTask failed: ' + err.message);
+      this.log.debug('executeTask failed: ' + (err.message as string));
       allRuns.remove(this.desc);
       return err;
     }
@@ -132,7 +132,7 @@ export class TaskRun {
     this.log.debug('Started');
   }
 
-  wait(): Promise<void> {
+  async wait(): Promise<void> {
     if (this.waitingPromise) return this.waitingPromise;
     // tslint:disable-next-line: promise-must-complete
     this.waitingPromise = new Promise(
@@ -154,7 +154,7 @@ export class TaskRun {
     try {
       await this.wait();
     } catch (err) {
-      if (this.cancelled && err instanceof TaskCancelledError) return;
+      if (err instanceof TaskCancelledError) return;
       throw err;
     }
   }
@@ -176,7 +176,7 @@ export class TaskRun {
   // Private
 
   private static onDidEndTaskProcess(event: TaskProcessEndEvent) {
-    const self = allRuns.getValue(new TaskDescriptor(event.execution.task))!;
+    const self = allRuns.getValue(new TaskDescriptor(event.execution.task));
     if (!self) return;
     self.exitCode = event.exitCode;
     self.state = State.PROCESS_ENDED;
@@ -186,7 +186,7 @@ export class TaskRun {
   }
 
   private static onDidStartTaskProcess(event: TaskProcessStartEvent) {
-    const self = allRuns.getValue(new TaskDescriptor(event.execution.task))!;
+    const self = allRuns.getValue(new TaskDescriptor(event.execution.task));
     if (!self) return;
     self.pid = event.processId;
     self.state = State.PROCESS_STARTED;
@@ -214,7 +214,7 @@ export class TaskRun {
   }
 
   private static onDidEndTask(event: TaskEndEvent) {
-    const self = allRuns.getValue(new TaskDescriptor(event.execution.task))!;
+    const self = allRuns.getValue(new TaskDescriptor(event.execution.task));
     if (!self) return;
     self.state = State.DONE;
     if (self.waitingContext) {
@@ -229,7 +229,7 @@ export class TaskRun {
     allRuns.remove(self.desc);
   }
 
-  private log: Logger;
+  private readonly log: Logger;
   private waitingPromise?: Promise<void>;
   private waitingContext?: {
     resolve: () => void;

@@ -12,8 +12,8 @@ export function getCallsite(frame: number) {
     column: site.getColumnNumber()!,
   };
   // strip everything before last '.' (happens for callbacks)
-  let funcName = site.getFunctionName() || '';
-  const m = funcName.match(/\.?([^.]+)$/);
+  let funcName = site.getFunctionName() ?? '';
+  const m = /\.?([^.]+)$/.exec(funcName);
   if (m) funcName = m[1];
   const tsPos = sourceMapSupport.mapSourcePosition(jsPos);
   // show up to 2 elements from path (do not include 'src')

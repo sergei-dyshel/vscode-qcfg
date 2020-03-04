@@ -219,22 +219,23 @@ function activate(context: ExtensionContext) {
       availableLanguageConfigs(),
       TodoCompletion.provider,
     ),
-    registerAsyncCommandWrapped('qcfg.search.word', () =>
+    registerAsyncCommandWrapped('qcfg.search.word', async () =>
       searchWordUnderCursor(false),
     ),
-    registerAsyncCommandWrapped('qcfg.search.word.allFolders', () =>
+    registerAsyncCommandWrapped('qcfg.search.word.allFolders', async () =>
       searchWordUnderCursor(true),
     ),
-    registerAsyncCommandWrapped('qcfg.search.selectedText', () =>
+    registerAsyncCommandWrapped('qcfg.search.selectedText', async () =>
       searchSelectedText(false),
     ),
-    registerAsyncCommandWrapped('qcfg.search.selectedText.allFolders', () =>
-      searchSelectedText(true),
+    registerAsyncCommandWrapped(
+      'qcfg.search.selectedText.allFolders',
+      async () => searchSelectedText(true),
     ),
-    registerAsyncCommandWrapped('qcfg.search.definitions', () =>
+    registerAsyncCommandWrapped('qcfg.search.definitions', async () =>
       searchWithCommand('Definitions', 'vscode.executeDefinitionProvider'),
     ),
-    registerAsyncCommandWrapped('qcfg.search.references', () =>
+    registerAsyncCommandWrapped('qcfg.search.references', async () =>
       searchWithCommand('References', 'vscode.executeReferenceProvider'),
     ),
     registerAsyncCommandWrapped('qcfg.search.todos', searchTodos),

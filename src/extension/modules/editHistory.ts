@@ -36,11 +36,11 @@ function changeToOffsetRange(change: TextDocumentContentChangeEvent) {
 }
 
 class DocumentHistory {
-  private ranges: LiveRange[] = [];
+  private readonly ranges: LiveRange[] = [];
   private index = 0;
   private savedSelection?: Selection;
 
-  constructor(private document: TextDocument) {
+  constructor(private readonly document: TextDocument) {
     const base = nodejs.path.parse(document.fileName).base;
     this.log = new Logger({ name: 'DocumentHistory', instance: base });
   }
@@ -57,7 +57,7 @@ class DocumentHistory {
     if (change.text.length === 0) return;
     this.log.trace(change);
     const top = this.ranges.top;
-    if (top && top.offsetRange.contains(changeToOffsetRange(change))) return;
+    if (top?.offsetRange.contains(changeToOffsetRange(change))) return;
     const range = new Range(
       change.range.start,
       offsetPosition(this.document, change.range.start, change.text.length),
@@ -115,7 +115,7 @@ class DocumentHistory {
     return this.currentSelection()!;
   }
 
-  private log: Logger;
+  private readonly log: Logger;
 }
 
 const history = new DefaultMap<TextDocument, DocumentHistory>(

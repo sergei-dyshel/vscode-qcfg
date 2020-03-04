@@ -24,14 +24,14 @@ interface LanguageConfig {
   kinds?: string;
 }
 
-const languageConfigs: { [id: string]: LanguageConfig } = {
+const languageConfigs: { [id: string]: LanguageConfig | undefined } = {
   c: {},
   cpp: { lang: 'c++' },
   python: {},
   go: {},
 };
 
-const ctagsToVscodeKind: { [name: string]: SymbolKind } = {
+const ctagsToVscodeKind: { [name: string]: SymbolKind | undefined } = {
   macro: SymbolKind.Constant,
   enumerator: SymbolKind.EnumMember,
   function: SymbolKind.Function,
@@ -79,7 +79,7 @@ async function getTags(
     [
       'ctags',
       '--sort=no',
-      `--language-force=${langConfig.lang || document.languageId}`,
+      `--language-force=${langConfig.lang ?? document.languageId}`,
       '--output-format=json',
       '--fields=*',
       relativePath,
@@ -101,8 +101,8 @@ async function getTags(
 
 function tag2Symbol(tag: TagInfo, document: TextDocument): SymbolInformation {
   const location = new Location(document.uri, new Position(tag.line - 1, 0));
-  const kind = ctagsToVscodeKind[tag.kind] || SymbolKind.File;
-  return new SymbolInformation(tag.name, kind, tag.scope || '', location);
+  const kind = ctagsToVscodeKind[tag.kind] ?? SymbolKind.File;
+  return new SymbolInformation(tag.name, kind, tag.scope ?? '', location);
 }
 function parseLine(line: string): TagInfo {
   return JSON.parse(line) as TagInfo;

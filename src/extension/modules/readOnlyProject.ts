@@ -7,7 +7,11 @@ import {
   StatusBarItem,
   ExtensionContext,
 } from 'vscode';
-import { listenWrapped, registerAsyncCommandWrapped } from './exception';
+import {
+  listenWrapped,
+  registerAsyncCommandWrapped,
+  handleErrorsAsync,
+} from './exception';
 import { Modules } from './module';
 
 const MEMENTO_KEY = 'qcfgIsReadOnly';
@@ -37,9 +41,11 @@ function onDidChangeTextDocument(_: TextDocumentChangeEvent) {
   if (!getState()) return;
 
   // tslint:disable-next-line: no-floating-promises
-  window.showErrorMessage('Current workspace is marked as READ-ONLY', {
-    modal: true,
-  });
+  handleErrorsAsync(async () =>
+    window.showErrorMessage('Current workspace is marked as READ-ONLY', {
+      modal: true,
+    }),
+  );
 }
 
 function activate(extContext: ExtensionContext) {

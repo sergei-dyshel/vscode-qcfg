@@ -134,5 +134,8 @@ module.exports = {
     '@typescript-eslint/no-parameter-properties': off,
     '@typescript-eslint/restrict-template-expressions': off,
     'max-len': off,
+    '@typescript-eslint/explicit-module-boundary-types': off,
+    '@typescript-eslint/prefer-readonly-parameter-types': off,
+    '@typescript-eslint/unbound-method': [warn, { ignoreStatic: true }],
   },
 };

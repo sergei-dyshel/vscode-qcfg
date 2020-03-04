@@ -2,7 +2,7 @@ import { TextLogHandler, log } from './logging';
 import * as nodejs from './nodejs';
 
 export class StreamHandler extends TextLogHandler {
-  constructor(name: string, private stream: NodeJS.WritableStream) {
+  constructor(name: string, private readonly stream: NodeJS.WritableStream) {
     super(name);
   }
 

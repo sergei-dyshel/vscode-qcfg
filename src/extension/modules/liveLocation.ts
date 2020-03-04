@@ -23,7 +23,7 @@ export abstract class LiveLocation extends Location implements DisposableLike {
   constructor(
     document: TextDocument,
     range: Range,
-    private onInvalidated?: () => void,
+    private readonly onInvalidated?: () => void,
   ) {
     super(document.uri, range);
   }
@@ -102,7 +102,7 @@ export class LivePosition extends LiveLocation {
 export class LiveRange extends LiveLocation {
   private start: number;
   private end: number;
-  private mergeOnReplace: boolean;
+  private readonly mergeOnReplace: boolean;
 
   constructor(
     document: TextDocument,
@@ -112,15 +112,11 @@ export class LiveRange extends LiveLocation {
       onInvalidated?: () => void;
     },
   ) {
-    super(
-      document,
-      range,
-      opts && opts.onInvalidated ? opts.onInvalidated : undefined,
-    );
+    super(document, range, opts.onInvalidated);
     if (range.isEmpty) throw new Error('LiveRange range must be non-empty');
     this.start = document.offsetAt(range.start);
     this.end = document.offsetAt(range.end);
-    this.mergeOnReplace = opts && opts.mergeOnReplace;
+    this.mergeOnReplace = opts.mergeOnReplace;
   }
 
   get startOffset(): number {

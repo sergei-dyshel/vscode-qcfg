@@ -54,14 +54,20 @@ export function activate(context: ExtensionContext) {
       treeView.onDidChangeSelection,
       (event: TreeViewSelectionChangeEvent<TreeNode>) => {
         if (currentProvider)
-          callIfNonNull(currentProvider.onDidChangeSelection, event.selection);
+          callIfNonNull(
+            currentProvider.onDidChangeSelection?.bind(currentProvider),
+            event.selection,
+          );
       },
     ),
     listenWrapped(
       treeView.onDidChangeVisibility,
       (event: TreeViewVisibilityChangeEvent) => {
         if (currentProvider)
-          callIfNonNull(currentProvider.onDidChangeVisibility, event.visible);
+          callIfNonNull(
+            currentProvider.onDidChangeVisibility?.bind(currentProvider),
+            event.visible,
+          );
       },
     ),
   );
@@ -89,7 +95,7 @@ export interface TreeProvider {
 export namespace QcfgTreeView {
   export function setProvider(provider: TreeProvider) {
     if (currentProvider !== provider) {
-      if (currentProvider && currentProvider.onUnset) currentProvider.onUnset();
+      if (currentProvider?.onUnset) currentProvider.onUnset();
       currentProvider = provider;
     }
     refresh();
@@ -250,9 +256,9 @@ export namespace StaticTreeNode {
 
   export function sortNodes(nodes: StaticTreeNode[], cmpFunc?: Compare) {
     nodes.sort(
-      cmpFunc ||
+      cmpFunc ??
         ((a, b) =>
-          (a.treeItem.label || '').localeCompare(b.treeItem.label || '')),
+          (a.treeItem.label ?? '').localeCompare(b.treeItem.label ?? '')),
     );
   }
 
@@ -290,6 +296,7 @@ const treeDataProvider: TreeDataProvider<TreeNode> = {
 function removeNode(...args: any[]) {
   const node = assertNonNull(args[0]) as TreeNode;
   const provider = assertNonNull(currentProvider);
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   if (!provider.removeNode)
     throw new Error(
       'TreeProvider with removable nodes must provide removeNode method',

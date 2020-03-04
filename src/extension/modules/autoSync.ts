@@ -91,7 +91,7 @@ function activate(context: vscode.ExtensionContext) {
 
   state = vscode.workspace
     .getConfiguration('qcfg')
-    .get('autoSync.enabled', false)
+    .get<boolean>('autoSync.enabled', false)
     ? State.On
     : State.Off;
   setStatusBar();

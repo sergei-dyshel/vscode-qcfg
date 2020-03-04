@@ -16,7 +16,7 @@ export const PORT_RANGE = [...Array(9).keys()].map(i => i + START_PORT);
 type MethodName = Extract<keyof RemoteProtocol, string>;
 
 export class RemoteClient {
-  private _client: jayson.Client;
+  private readonly _client: jayson.Client;
   protected log: Logger;
 
   constructor(protected tcpPort: number) {
@@ -53,7 +53,7 @@ export class RemoteClient {
     );
   }
 
-  sendNoResult<K extends MethodName>(
+  async sendNoResult<K extends MethodName>(
     k: K,
     arg: FirstParameter<RemoteProtocol[K]>,
   ): Promise<unknown> {
@@ -129,12 +129,12 @@ export class MultiClient {
   /**
    * Send request to all clients (ignores result)
    */
-  sendNoResult<K extends MethodName>(
+  async sendNoResult<K extends MethodName>(
     k: K,
     arg: FirstParameter<RemoteProtocol[K]>,
   ): Promise<void> {
     return Promise.all(
-      this.clients.map(client => client.sendNoResult(k, arg)),
+      this.clients.map(async client => client.sendNoResult(k, arg)),
     ).ignoreResult();
   }
 }

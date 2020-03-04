@@ -52,7 +52,7 @@ async function surroundWith(args: unknown[]) {
   const editor = getActiveTextEditor();
   const selection = editor.selection;
   if (selection.isEmpty) return;
-  const [prefix, suffix, direction] = args;
+  const [prefix, suffix, direction] = args as string[];
   const text = editor.document.getText(selection);
   const newText = prefix + text + suffix;
   const selectionStart = selection.start;
@@ -181,7 +181,7 @@ async function toggleRelativeNumbers() {
   const info = conf.inspect<string>(SECTION)!;
   if (info.workspaceFolderValue || info.workspaceValue)
     throw Error(`"${SECTION}" is overriden on workspace/folder level`);
-  const value = (info.globalValue || info.defaultValue) as LineNumberConf;
+  const value = (info.globalValue ?? info.defaultValue) as LineNumberConf;
   switch (value) {
     case 'on':
       await conf.update(SECTION, 'relative', ConfigurationTarget.Global);

@@ -157,7 +157,7 @@ function onDidChangeTextDocument(event: TextDocumentChangeEvent) {
   if (eventCopy.document !== editor.document) return;
   /// #if DEBUG
   log.trace(
-    `Edited ${str(editor.document)}${eventCopy.contentChanges[0].range}`,
+    `Edited ${str(editor.document)}${str(eventCopy.contentChanges[0].range)}`,
   );
   /// #endif
 }

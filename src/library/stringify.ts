@@ -3,6 +3,7 @@ export function stringify(x: unknown): string {
     case 'object':
       return stringifyObject(x);
     default:
+      // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
       return '' + x;
   }
 }
@@ -35,6 +36,7 @@ function stringifyObject(x: object | null): string {
     if (s) return s;
   }
   if ('toString' in x) {
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string
     const s = x.toString();
     if (s !== '[object Object]') return s;
   }

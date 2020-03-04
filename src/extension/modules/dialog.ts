@@ -50,7 +50,6 @@ export async function inputWithHistory(
         if (button !== buttons.REMOVE) {
           return;
         }
-        if (!qp.activeItems) return;
         const active = qp.activeItems[0];
         if ('detail' in active) return;
         if (!qpItems.removeFirst(active)) return;

@@ -1,10 +1,7 @@
 import { Modules } from './module';
 import { ExtensionContext, Location, Uri } from 'vscode';
 import { peekLocations } from './fileUtils';
-import {
-  registerSyncCommandWrapped,
-  registerAsyncCommandWrapped,
-} from './exception';
+import { registerAsyncCommandWrapped } from './exception';
 import { setPanelLocations } from './locationTree';
 import { selectFromList } from './dialog';
 
@@ -49,11 +46,11 @@ interface SavedSearch {
   };
 }
 
-function showLastLocationsInPanel() {
+async function showLastLocationsInPanel() {
   if (!lastName) {
     throw Error('No search was issued yet');
   }
-  setPanelLocations(lastName, lastLocations!);
+  return setPanelLocations(lastName, lastLocations!);
 }
 
 async function rerunPreviousSearch() {
@@ -63,7 +60,7 @@ async function rerunPreviousSearch() {
   }));
   if (!prevSearch) return;
   savedSearches.removeFirst(prevSearch);
-  await saveAndPeekSearch(prevSearch.name, prevSearch.func);
+  await saveAndPeekSearch(prevSearch.name, async () => prevSearch.func());
 }
 
 const savedSearches: SavedSearch[] = [];
@@ -73,7 +70,7 @@ let lastLocations: Location[] | undefined;
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
-    registerSyncCommandWrapped(
+    registerAsyncCommandWrapped(
       'qcfg.showLastLocationsInPanel',
       showLastLocationsInPanel,
     ),

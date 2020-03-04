@@ -36,7 +36,7 @@ interface LanguageConfig {
   parser: unknown;
 }
 
-const languageConfig: { [language: string]: LanguageConfig } = {
+const languageConfig: { [language: string]: LanguageConfig | undefined } = {
   python: { parser: require('tree-sitter-python') },
   c: { parser: require('tree-sitter-c') },
   cpp: { parser: require('tree-sitter-cpp') },
@@ -166,7 +166,7 @@ namespace Parsers {
     if (!parsers.isEmpty) return parsers.pop()!;
     // eslint-disable-next-line new-cap
     const parser = new Parser.default();
-    parser.setLanguage(languageConfig[language].parser);
+    parser.setLanguage(languageConfig[language]!.parser);
     return parser;
   }
 

@@ -89,7 +89,7 @@ const sshFsProvider: FileSystemProvider = {
 
   readDirectory(
     _uri: Uri,
-  ): [string, FileType][] | Thenable<[string, FileType][]> {
+  ): Array<[string, FileType]> | Thenable<Array<[string, FileType]>> {
     throw new Error('unimplementd');
   },
 

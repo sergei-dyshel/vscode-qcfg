@@ -119,7 +119,7 @@ class OutputChannelHandler extends TextLogHandler {
   constructor() {
     super('OutputPanel');
     const envLevel = LogLevels.fromString(
-      process.env.VSCODE_QCFG_LOGLEVEL || 'info',
+      process.env.VSCODE_QCFG_LOGLEVEL ?? 'info',
     );
     this.level = envLevel !== undefined ? envLevel : LogLevel.INFO;
     /// #if DEBUG
@@ -139,7 +139,7 @@ class OutputChannelHandler extends TextLogHandler {
     this.outputChannel.show();
   }
 
-  private outputChannel: OutputChannel;
+  private readonly outputChannel: OutputChannel;
 }
 
 function getLogFileName() {
@@ -180,10 +180,10 @@ function activate(context: ExtensionContext) {
       onDidChangeVisibleTextEditors,
     ),
     registerSyncCommandWrapped('qcfg.log.show', () => outputHandler.show()),
-    registerAsyncCommandWrapped('qcfg.log.setHandlerLevel.output', () =>
+    registerAsyncCommandWrapped('qcfg.log.setHandlerLevel.output', async () =>
       promptForLevel(outputHandler),
     ),
-    registerAsyncCommandWrapped('qcfg.log.setHandlerLevel.file', () =>
+    registerAsyncCommandWrapped('qcfg.log.setHandlerLevel.file', async () =>
       promptForLevel(fileHandler),
     ),
   );
