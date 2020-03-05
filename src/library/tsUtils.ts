@@ -222,8 +222,12 @@ declare global {
     ): void;
     isAnyTrue(): boolean;
     areAllTrue(): boolean;
+
     /** Array of unique elements */
     uniq(equals: (x: T, y: T) => boolean): T[];
+
+    /** Group (sorted) array by binary predicate, return array of groups */
+    group(func: (x: T, y: T) => boolean): T[][];
   }
 
   interface ReadonlyArray<T> {
@@ -261,6 +265,17 @@ Array.prototype.uniq = function<T>(
         : [...unique, item],
     [],
   );
+};
+
+Array.prototype.group = function<T>(this: T[], func: (x: T, y: T) => boolean) {
+  return this.reduce<T[][]>((prev: T[][], cur: T) => {
+    if (prev.length === 0 || !func(prev[prev.length - 1][0], cur)) {
+      prev.push([cur]);
+    } else {
+      prev[prev.length - 1].push(cur);
+    }
+    return prev;
+  }, []);
 };
 
 Array.prototype.forEachRight = function<T>(
