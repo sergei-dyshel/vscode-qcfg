@@ -38,6 +38,7 @@ import * as sshFs from './sshFs';
 import * as langClient from './langClient';
 import * as remoteServer from './remoteServer';
 import * as smartCopy from './smartCopy';
+import * as callHierarchy from './callHierarchy';
 
 export const ALL_MODULES = {
   language,
@@ -78,4 +79,5 @@ export const ALL_MODULES = {
   langClient,
   remoteServer,
   smartCopy,
+  callHierarchy,
 };

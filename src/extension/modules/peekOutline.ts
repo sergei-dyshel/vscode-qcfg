@@ -7,6 +7,7 @@ import {
   Range,
   Location,
   SymbolKind,
+  Uri,
 } from 'vscode';
 import { Modules } from './module';
 import { getActiveTextEditor } from './utils';
@@ -16,6 +17,13 @@ import { offsetPosition } from './textUtils';
 
 export type OutlineSymbol = SymbolInformation | DocumentSymbol;
 export type Outline = OutlineSymbol[];
+
+export async function executeDocumentSymbolProvider(uri: Uri) {
+  return (await commands.executeCommand(
+    'vscode.executeDocumentSymbolProvider',
+    uri,
+  )) as DocumentSymbol[];
+}
 
 function findTextInRange(
   document: TextDocument,
@@ -93,8 +101,7 @@ function isDocumentSymbol(
 async function peekFlatOutline() {
   const editor = getActiveTextEditor();
   const document = editor.document;
-  const outline = (await commands.executeCommand(
-    'vscode.executeDocumentSymbolProvider',
+  const outline = (await executeDocumentSymbolProvider(
     document.uri,
   )) as Outline;
   if (outline.isEmpty) return;

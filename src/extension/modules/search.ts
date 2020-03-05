@@ -19,6 +19,7 @@ import {
   ExtensionContext,
   languages,
   commands,
+  Uri,
 } from 'vscode';
 import { selectMultiple } from './dialog';
 import { getCompletionPrefix } from './documentUtils';
@@ -57,6 +58,22 @@ const TODO_CATEGORIES = [
   'DOCS',
   'STUB',
 ];
+
+export async function executeDefinitionProvider(uri: Uri, position: Position) {
+  return (await commands.executeCommand(
+    'vscode.executeDefinitionProvider',
+    uri,
+    position,
+  )) as Location[];
+}
+
+export async function executeReferenceProvider(uri: Uri, position: Position) {
+  return (await commands.executeCommand(
+    'vscode.executeReferenceProvider',
+    uri,
+    position,
+  )) as Location[];
+}
 
 export async function searchInFiles(
   query: TextSearchQuery,
@@ -146,16 +163,13 @@ async function searchSelectedText(allFolders: boolean) {
   );
 }
 
-async function searchWithCommand(type: string, command: string) {
+async function searchWithCommand(
+  type: string,
+  searchFunc: (uri: Uri, location: Position) => Promise<Location[]>,
+) {
   const ctx = checkNonNull(getCursorWordContext(), 'The cursor is not on word');
-  return saveAndPeekSearch(
-    `${type} of "${ctx.word}"`,
-    async () =>
-      (await commands.executeCommand(
-        command,
-        ctx.editor.document.uri,
-        ctx.range.start,
-      )) as Location[],
+  return saveAndPeekSearch(`${type} of "${ctx.word}"`, async () =>
+    searchFunc(ctx.editor.document.uri, ctx.range.start),
   );
 }
 
@@ -233,10 +247,10 @@ function activate(context: ExtensionContext) {
       async () => searchSelectedText(true),
     ),
     registerAsyncCommandWrapped('qcfg.search.definitions', async () =>
-      searchWithCommand('Definitions', 'vscode.executeDefinitionProvider'),
+      searchWithCommand('Definitions', executeDefinitionProvider),
     ),
     registerAsyncCommandWrapped('qcfg.search.references', async () =>
-      searchWithCommand('References', 'vscode.executeReferenceProvider'),
+      searchWithCommand('References', executeReferenceProvider),
     ),
     registerAsyncCommandWrapped('qcfg.search.todos', searchTodos),
   );
