@@ -4,6 +4,7 @@
 import '../library/tsUtils';
 import './utils/positionPrototype';
 import './utils/rangePrototype';
+import './utils/locationPrototype';
 
 import { ALL_MODULES } from './modules/allModules';
 import { ExtensionContext } from 'vscode';

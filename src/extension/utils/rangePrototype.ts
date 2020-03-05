@@ -13,7 +13,9 @@ declare module 'vscode' {
 
   // eslint-disable-next-line no-shadow
   export namespace Range {
+    /* TODO: move to position prototype */
     function fromPosition(position: Position): Range;
+    function compare(range1: Range, range2: Range): number;
   }
 }
 
@@ -55,4 +57,11 @@ Range.prototype.expandLinewise = function(this: Range) {
 
 Range.fromPosition = function(position: Position) {
   return new Range(position, position);
+};
+
+Range.compare = function(range1: Range, range2: Range): number {
+  return (
+    Position.compare(range1.start, range2.start) ||
+    Position.compare(range1.end, range2.end)
+  );
 };

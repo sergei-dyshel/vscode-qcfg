@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { Position, Range } from 'vscode';
+import { defaultCompare } from '../../library/compare';
 
 declare module 'vscode' {
   export interface Position {
@@ -7,6 +8,10 @@ declare module 'vscode' {
     offset(offs: { line?: number; character?: number }): Position;
     withLine(line: number): Position;
     withCharacter(characer: number): Position;
+  }
+  // eslint-disable-next-line no-shadow
+  export namespace Position {
+    function compare(pos1: Position, pos2: Position): number;
   }
 }
 
@@ -33,3 +38,10 @@ Object.defineProperty(Position.prototype, 'asRange', {
     return new Range(this, this);
   },
 });
+
+Position.compare = function(pos1: Position, pos2: Position): number {
+  return (
+    defaultCompare(pos1.line, pos2.line) ||
+    defaultCompare(pos1.character, pos2.character)
+  );
+};
