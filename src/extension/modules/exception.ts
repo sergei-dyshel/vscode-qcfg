@@ -28,12 +28,18 @@ import {
   CheckError,
 } from '../../library/exception';
 
+/**
+ * Takes sync function and returns it where exceptions are handled
+ */
 export function handleErrors<T extends AnyFunction>(
   func: T,
 ): (...funcArgs: Parameters<T>) => ReturnType<T> | void {
   return wrapWithErrorHandler(func, stdErrorHandler);
 }
 
+/**
+ * Takes async function and returns it where sync/async exceptions are handled
+ */
 export function handleErrorsAsync<T extends AsyncFunction>(
   func: T,
   prefix?: string,
@@ -120,6 +126,17 @@ export function handleAsyncStd<T>(promise: Thenable<T>): void {
   promise.then(undefined, err => {
     stdErrorHandler(err);
   });
+}
+
+/**
+ * Call async function and handle sync/async errors
+ */
+export function handleStd(func: () => Promise<void>): void {
+  try {
+    handleAsyncStd(func());
+  } catch (err) {
+    stdErrorHandler(err);
+  }
 }
 
 /**

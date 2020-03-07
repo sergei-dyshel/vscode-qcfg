@@ -24,7 +24,6 @@ import {
   listenWrapped,
   handleAsyncStd,
   listenAsyncWrapped,
-  handleErrorsAsync,
 } from './exception';
 import { assert, assertNonNull } from '../../library/exception';
 import { stringify as str } from '../../library/stringify';
@@ -43,7 +42,7 @@ export function activate(context: ExtensionContext) {
   extContext = context;
   setupDicts();
   loadHistory();
-  setInterval(() => handleErrorsAsync(() => saveHistory()), 30000);
+  setInterval(() => handleAsyncStd(saveHistory()), 30000);
   context.subscriptions.push(
     listenAsyncWrapped(
       window.onDidChangeVisibleTextEditors,

@@ -19,7 +19,7 @@ import {
 } from 'vscode';
 import { PromiseContext } from './async';
 import { NumRange } from './documentUtils';
-import { listenWrapped, handleAsyncStd, handleErrorsAsync } from './exception';
+import { listenWrapped, handleAsyncStd, handleStd } from './exception';
 import { Logger } from '../../library/logging';
 import { Modules } from './module';
 import * as nodejs from '../../library/nodejs';
@@ -232,7 +232,7 @@ class DocumentContext {
   onDocumentUpdated() {
     this.timer.setTimeout(UPDATE_DELAY_MS, () => {
       this.generation_ += 1;
-      handleErrorsAsync(async () => this.update());
+      handleStd(async () => this.update());
     });
   }
 
@@ -244,7 +244,7 @@ class DocumentContext {
     if (this.tree) return this.tree;
     this.promiseContext = new PromiseContext();
     // tslint:disable-next-line: no-floating-promises
-    handleErrorsAsync(async () => this.update());
+    handleStd(async () => this.update());
     return this.promiseContext.promise;
   }
 }

@@ -10,7 +10,7 @@ import {
 import {
   listenWrapped,
   registerAsyncCommandWrapped,
-  handleErrorsAsync,
+  handleAsyncStd,
 } from './exception';
 import { Modules } from './module';
 
@@ -40,8 +40,7 @@ function updateStatus() {
 function onDidChangeTextDocument(_: TextDocumentChangeEvent) {
   if (!getState()) return;
 
-  // tslint:disable-next-line: no-floating-promises
-  handleErrorsAsync(async () =>
+  handleAsyncStd(
     window.showErrorMessage('Current workspace is marked as READ-ONLY', {
       modal: true,
     }),

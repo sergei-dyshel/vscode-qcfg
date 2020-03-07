@@ -12,7 +12,7 @@ import { Modules } from './module';
 import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
 import { selectFromList } from './dialog';
-import { registerAsyncCommandWrapped, handleErrorsAsync } from './exception';
+import { registerAsyncCommandWrapped, handleStd } from './exception';
 import { expandTemplate } from '../../library/stringUtils';
 import { mapAsyncNoThrowAndZip } from './async';
 import { parseJsonFileAsync } from './json';
@@ -153,7 +153,7 @@ function activate(context: ExtensionContext) {
   const history: string[] = globalState.get(PERSISTENT_KEY, []);
   history.removeFirst(wsFile);
   history.unshift(wsFile);
-  handleErrorsAsync(() => globalState.update(PERSISTENT_KEY, history));
+  handleStd(() => globalState.update(PERSISTENT_KEY, history));
 }
 
 Modules.register(activate);

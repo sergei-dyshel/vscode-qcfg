@@ -21,7 +21,6 @@ import {
   registerAsyncCommandWrapped,
   handleErrors,
   handleAsyncStd,
-  handleErrorsAsync,
 } from './exception';
 import { Modules } from './module';
 import { runTask } from './tasks/main';
@@ -411,10 +410,7 @@ const gtagsHoverProvider: vscode.HoverProvider = {
 function activate(context: vscode.ExtensionContext) {
   const queue = new PromiseQueue('gtags');
   handleAsyncStd(queue.add(updateDB, 'gtags check'));
-  setInterval(
-    () => handleErrorsAsync(queue.queued(updateDB, 'gtags check')),
-    30000,
-  );
+  setInterval(() => handleAsyncStd(queue.add(updateDB, 'gtags check')), 30000);
   context.subscriptions.push(
     saveAll.onEvent(queue.queued(onSaveAll, 'save all')),
     vscode.languages.registerWorkspaceSymbolProvider(

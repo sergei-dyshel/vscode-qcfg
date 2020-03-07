@@ -15,7 +15,7 @@ import { Modules } from './module';
 import { log } from '../../library/logging';
 import { focusWindow } from './windowState';
 import { stringify } from '../../library/stringify';
-import { handleErrorsAsync } from './exception';
+import { handleAsyncStd } from './exception';
 
 export type RemoteProtocol = typeof protocol;
 
@@ -62,7 +62,7 @@ const protocol = {
   async reloadWindow(_: {}): Promise<void> {
     setTimeout(
       () =>
-        handleErrorsAsync(() =>
+        handleAsyncStd(
           commands.executeCommand('workbench.action.reloadWindow'),
         ),
       1000,

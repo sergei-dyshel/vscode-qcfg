@@ -21,7 +21,7 @@ import {
   ViewColumn,
 } from 'vscode';
 import { assertNonNull, assertNull } from '../../library/exception';
-import { handleErrorsAsync } from './exception';
+import { handleAsyncStd } from './exception';
 
 export const globSync = glob.sync;
 export const globAsync = nodejs.util.promisify(require('glob'));
@@ -193,6 +193,6 @@ class FileWatcher implements DisposableLike {
   }
 
   dispose() {
-    handleErrorsAsync(async () => this.watcher.close());
+    handleAsyncStd(this.watcher.close());
   }
 }
