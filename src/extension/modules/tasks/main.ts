@@ -235,7 +235,7 @@ interface FetchOptions {
 async function fetchQcfgTasks(options?: FetchOptions): Promise<BaseQcfgTask[]> {
   const currentContext = new TaskContext();
   const curFolder = currentWorkspaceFolder();
-  const folders = workspace.workspaceFolders ?? [];
+  const folders = [...(workspace.workspaceFolders ?? [])];
 
   // move current folder to the top of list
   if (curFolder) {
