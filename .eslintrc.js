@@ -137,5 +137,10 @@ module.exports = {
     '@typescript-eslint/explicit-module-boundary-types': off,
     '@typescript-eslint/prefer-readonly-parameter-types': off,
     '@typescript-eslint/unbound-method': [warn, { ignoreStatic: true }],
+
+    // no-explicit-any is enough
+    '@typescript-eslint/no-unsafe-member-access': off,
+    '@typescript-eslint/no-unsafe-call': off,
+    '@typescript-eslint/no-unsafe-return': off,
   },
 };
