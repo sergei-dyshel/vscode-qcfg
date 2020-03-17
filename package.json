@@ -9,7 +9,7 @@
     "url": "https://github.com/sergei-dyshel/qyron-config.git"
   },
   "engines": {
-    "vscode": "^1.42.0"
+    "vscode": "^1.43.0"
   },
   "enableProposedApi": true,
   "categories": [
@@ -1976,7 +1976,7 @@
     "source-map-support": "^0.5.12",
     "sprintf-js": "^1.1.2",
     "string-format": "^2.0.0",
-    "superstring": "^2.4.0",
+    "superstring": "github:sergei-dyshel/superstring#master-dev",
     "tempy": "^0.3.0",
     "tree-sitter": "^0.15.15",
     "tree-sitter-bash": "^0.16.1",
@@ -1999,7 +1999,7 @@
     "@types/source-map-support": "^0.5.1",
     "@types/sprintf-js": "^1.1.2",
     "@types/string-format": "^2.0.0",
-    "@types/vscode": "^1.42.0",
+    "@types/vscode": "^1.43.0",
     "@types/webpack": "^4.41.7",
     "@typescript-eslint/eslint-plugin": "^2.22.0",
     "@typescript-eslint/parser": "^2.22.0",
