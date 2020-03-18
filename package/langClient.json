@@ -13,6 +13,15 @@
                 "command": "qcfg.langClient.refresh",
                 "title": "qcfg: Refresh language clients"
             }
-        ]
+        ],
+        "configuration": {
+            "properties": {
+                "qcfg.langClient.remote": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "C/C++ language clients are remote (over SSH)"
+                }
+            }
+        }
     }
 }

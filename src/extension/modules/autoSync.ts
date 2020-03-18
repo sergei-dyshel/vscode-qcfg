@@ -8,6 +8,7 @@ import { setTimeoutPromise } from '../../library/nodeUtils';
 import { registerSyncCommandWrapped } from './exception';
 import { Modules } from './module';
 import { sendDidSaveToLangClients } from './langClient';
+import { workspace } from 'vscode';
 
 enum State {
   Off,
@@ -80,9 +81,11 @@ async function onSaveAll(docs: saveAll.DocumentsInFolder) {
     }
     return;
   }
-  log.debug('Waiting before sending didSave to clients');
-  await setTimeoutPromise(500);
-  for (const doc of docs.documents) sendDidSaveToLangClients(doc);
+  if (workspace.getConfiguration().get<boolean>('qcfg.langClient.remote')) {
+    log.debug('Waiting before sending didSave to clients');
+    await setTimeoutPromise(500);
+    for (const doc of docs.documents) sendDidSaveToLangClients(doc);
+  }
 }
 
 function activate(context: vscode.ExtensionContext) {

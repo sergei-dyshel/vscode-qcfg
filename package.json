@@ -1840,6 +1840,11 @@
         "qcfg.autoSync.command": {
           "type": "string",
           "description": "AutoSync command"
+        },
+        "qcfg.langClient.remote": {
+          "type": "boolean",
+          "default": false,
+          "description": "C/C++ language clients are remote (over SSH)"
         }
       }
     },
