@@ -18,6 +18,7 @@ import { getActiveTextEditor } from './utils';
 import { getDocumentRoot } from './fileUtils';
 import { isAnyLangClientRunning } from './langClient';
 import { Modules } from './module';
+import { stdErrorHandler } from './exception';
 
 interface LanguageConfig {
   lang?: string;
@@ -124,8 +125,12 @@ const documentSymbolProvider: DocumentSymbolProvider = {
         break;
     }
     const editor = getActiveTextEditor();
-    const tags = await getTags(editor.document, token);
-    return tags.map(tag => tag2Symbol(tag, document));
+    try {
+      const tags = await getTags(editor.document, token);
+      return tags.map(tag => tag2Symbol(tag, document));
+    } catch (err) {
+      stdErrorHandler(err);
+    }
   },
 };
 

@@ -28,6 +28,18 @@ import {
   CheckError,
 } from '../../library/exception';
 
+export function stdErrorHandler(error: any, prefix?: string): never {
+  prefix = prefix ?? '';
+  if (error instanceof CheckError) {
+    log.info(`${prefix}Check failed: ${error.message}`);
+    showStatusBarMessage(error.message, { color: 'red' });
+  } else if (error instanceof Error) {
+    const stack = simplifyErrorStack(error.stack ?? '');
+    log.error(`${prefix}${stack}`);
+  } else log.error(`${prefix}${String(error)}`);
+  throw error;
+}
+
 /**
  * Takes sync function and returns it where exceptions are handled
  */
@@ -164,18 +176,6 @@ function handleErrorDuringCommand(command: string, error: any) {
 
 function createStdErrorHandler(prefix?: string) {
   return (error: any) => stdErrorHandler(error, prefix);
-}
-
-function stdErrorHandler(error: any, prefix?: string): never {
-  prefix = prefix ?? '';
-  if (error instanceof CheckError) {
-    log.info(`${prefix}Check failed: ${error.message}`);
-    showStatusBarMessage(error.message, { color: 'red' });
-  } else if (error instanceof Error) {
-    const stack = simplifyErrorStack(error.stack ?? '');
-    log.error(`${prefix}${stack}`);
-  } else log.error(`${prefix}${String(error)}`);
-  throw error;
 }
 
 function handleErrorDuringEvent(error: any) {
