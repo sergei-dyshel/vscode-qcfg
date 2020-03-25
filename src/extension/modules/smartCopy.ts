@@ -115,8 +115,8 @@ async function normalPaste() {
 async function pasteAndMark(editor: TextEditor, text: string) {
   await replaceText(editor, editor.selection, text, { select: true });
   const range = editor.selection;
+  await markAndCopy(editor, range);
   editor.selection = range.end.asRange.asSelection();
-  return markAndCopy(editor, range);
 }
 
 async function smartPaste() {
