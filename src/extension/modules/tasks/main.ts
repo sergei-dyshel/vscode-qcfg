@@ -62,6 +62,18 @@ export async function runTask(
   await task.run();
 }
 
+export async function runTaskAndGetLocations(
+  label: string,
+  params: ProcessTaskParams,
+  options?: TaskRunOptions,
+) {
+  const fetchedParams = { params, fetchInfo: { label, fromWorkspace: false } };
+  const task = await createTask(fetchedParams, options);
+  if (task instanceof ProcessTask) return task.getLocations();
+  if (task instanceof ProcessMultiTask) return task.getLocations();
+  throw new Error('Expected to create a process task');
+}
+
 interface TaskRunOptions {
   folder?: 'all' | WorkspaceFolder;
 }

@@ -7,12 +7,13 @@ import {
   WorkspaceFolder,
   workspace,
   Range,
+  TextDocument,
 } from 'vscode';
 import { filterNonNull, concatArrays } from '../../library/tsUtils';
 import * as nodejs from '../../library/nodejs';
 import { Subprocess } from './subprocess';
 import { mapAsync } from './async';
-import * as lodash from 'lodash';
+import { offsetPosition } from './textUtils';
 
 const VIMGREP_PARSE_REGEX = /^(?<file>.+?):(?<line>\d+)(:(?<column>\d+))?(: (?<text>.*))?$/;
 
@@ -65,28 +66,58 @@ export function parseLocation(
   );
 }
 
-export async function findPatternInLocations(
+/**
+ * Find pattern in given range and return match range
+ */
+export function findInRange(
+  document: TextDocument,
+  range: Range,
+  pattern: RegExp | string,
+): Range | undefined {
+  const text = document.getText(range);
+  const match = text.searchFirst(pattern);
+  if (!match) return;
+
+  const [start, length] = match;
+  return new Range(
+    offsetPosition(document, range.start, start),
+    offsetPosition(document, range.start, start + length),
+  );
+}
+
+/**
+ * If parsed location is only a position, try to expand it to non-empty
+ * range by searching the tag inside
+ */
+export function adjustRangeInParsedPosition(
+  document: TextDocument,
+  position: Position,
+  pattern: string | RegExp,
+): Range {
+  const line = document.lineAt(position);
+  const range = findInRange(document, line.range, pattern);
+  if (range) return range;
+
+  if (line.isEmptyOrWhitespace) return line.range.start.asRange;
+
+  if (!document.getWordRangeAtPosition(position)) {
+    const firstNonWS = line.range.start.withCharacter(
+      line.firstNonWhitespaceCharacterIndex,
+    );
+    return firstNonWS.asRange;
+  }
+  return position.asRange;
+}
+
+export async function findPatternInParsedLocations(
   locations: Location[],
   pattern: string | RegExp,
 ): Promise<Location[]> {
-  const escapedPattern =
-    pattern instanceof RegExp
-      ? pattern
-      : new RegExp(lodash.escapeRegExp(pattern));
   return mapAsync(locations, async loc => {
     if (!loc.range.isEmpty) return loc;
     const doc = await workspace.openTextDocument(loc.uri);
-    const start = loc.range.start;
-    const text = doc.lineAt(start.line).text;
-    const match = escapedPattern.exec(text);
-    if (!match) return loc;
-    return new Location(
-      loc.uri,
-      new Range(
-        start.withCharacter(match.index),
-        start.withCharacter(match.index + match[0].length),
-      ),
-    );
+    const range = adjustRangeInParsedPosition(doc, loc.range.start, pattern);
+    return new Location(doc.uri, range);
   });
 }
 

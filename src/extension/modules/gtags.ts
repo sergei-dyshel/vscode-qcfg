@@ -23,7 +23,7 @@ import {
   handleAsyncStd,
 } from './exception';
 import { Modules } from './module';
-import { runTask } from './tasks/main';
+import { runTaskAndGetLocations } from './tasks/main';
 import { Params, TaskType, Flag, LocationFormat } from './tasks/params';
 
 import RE2 from 're2';
@@ -362,17 +362,17 @@ async function openDefinition() {
   );
 }
 
-async function openDefinitionInWorkspace() {
+export async function getGtagsDefinitionsInWorkspace() {
   const params: Params = {
     // eslint-disable-next-line no-template-curly-in-string
     command: 'global -d -x -n ${cursorWord}',
     type: TaskType.PROCESS,
     // eslint-disable-next-line no-template-curly-in-string
-    parseOutput: { format: LocationFormat.GTAGS, tag: '${cursorWord}' },
+    parseOutput: { format: LocationFormat.GTAGS, tag: '\\b${cursorWord}\\b' },
     flags: [Flag.FOLDER],
     when: { fileExists: 'GTAGS' },
   };
-  await runTask('gtags_def', params, { folder: 'all' });
+  return runTaskAndGetLocations('gtags_def', params, { folder: 'all' });
 }
 
 const gtagsHoverProvider: vscode.HoverProvider = {
@@ -417,10 +417,6 @@ function activate(context: vscode.ExtensionContext) {
       gtagsGlobalSymbolsProvider,
     ),
     registerAsyncCommandWrapped('qcfg.gtags.definition', openDefinition),
-    registerAsyncCommandWrapped(
-      'qcfg.gtags.definitionInWorkspace',
-      openDefinitionInWorkspace,
-    ),
     vscode.languages.registerHoverProvider('*', gtagsHoverProvider),
     registerAsyncCommandWrapped('qcfg.gtags.workspace', WorkspaceGtags.run),
   );

@@ -37,7 +37,7 @@ import { Modules } from './module';
 import {
   parseLocations,
   ParseLocationFormat,
-  findPatternInLocations,
+  findPatternInParsedLocations,
 } from './parseLocations';
 import { runTask } from './tasks/main';
 import { TaskType, Flag } from './tasks/params';
@@ -47,6 +47,8 @@ import {
   checkNonNull,
   assertNonNull,
 } from '../../library/exception';
+import { getGtagsDefinitionsInWorkspace } from './gtags';
+import { getDocumentSymbolsFromCtags } from './ctags';
 
 const TODO_CATEGORIES = [
   'TODO',
@@ -119,7 +121,7 @@ async function searchTodos() {
       folder.uri.fsPath,
       ParseLocationFormat.VIMGREP,
     );
-    const locsWithRanges = await findPatternInLocations(
+    const locsWithRanges = await findPatternInParsedLocations(
       parsedLocations,
       new RegExp(patterns),
     );
@@ -227,6 +229,25 @@ namespace TodoCompletion {
   };
 }
 
+async function getCtagsDefinitions(document: TextDocument, word: string) {
+  const symbols = await getDocumentSymbolsFromCtags(document);
+  return symbols
+    .filter(symbol => symbol.name === word)
+    .map(symbol => new Location(document.uri, symbol.selectionRange));
+}
+
+async function getGtagsCtagsDefinitions() {
+  const ctx = getCursorWordContext()!;
+  const { word } = ctx;
+  return saveAndPeekSearch(`ctags/gtags for ${word}`, async () => {
+    const [gtagsDefs, ctagsDefs] = await Promise.all([
+      getGtagsDefinitionsInWorkspace(),
+      getCtagsDefinitions(ctx.editor.document, word),
+    ]);
+    return gtagsDefs.concat(ctagsDefs);
+  });
+}
+
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
     languages.registerCompletionItemProvider(
@@ -253,6 +274,10 @@ function activate(context: ExtensionContext) {
       searchWithCommand('References', executeReferenceProvider),
     ),
     registerAsyncCommandWrapped('qcfg.search.todos', searchTodos),
+    registerAsyncCommandWrapped(
+      'qcfg.search.GtagsCtagsDefinition',
+      getGtagsCtagsDefinitions,
+    ),
   );
 }
 

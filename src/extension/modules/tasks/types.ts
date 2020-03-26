@@ -21,7 +21,11 @@ import { mapAsync, mapAsyncSequential } from '../async';
 import { ListSelectable } from '../dialog';
 import { getDocumentWorkspaceFolder, peekLocations } from '../fileUtils';
 import * as nodejs from '../../../library/nodejs';
-import { ParseLocationFormat, parseLocations } from '../parseLocations';
+import {
+  ParseLocationFormat,
+  parseLocations,
+  findPatternInParsedLocations,
+} from '../parseLocations';
 import * as remoteControl from '../remoteControl';
 import { searchInFiles } from '../search';
 import { ExecResult, Subprocess } from '../subprocess';
@@ -416,7 +420,7 @@ export class ProcessTask extends BaseQcfgTask {
   private readonly command: string;
   private readonly cwd: string;
   private readonly parseFormat?: ParseLocationFormat;
-  private readonly parseTag?: string;
+  private readonly parseTag?: RegExp;
 
   constructor(
     protected params: ProcessTaskParams,
@@ -444,7 +448,7 @@ export class ProcessTask extends BaseQcfgTask {
           break;
       }
       if (params.parseOutput.tag)
-        this.parseTag = context.substitute(params.parseOutput.tag);
+        this.parseTag = new RegExp(context.substitute(params.parseOutput.tag));
     }
   }
 
@@ -452,7 +456,11 @@ export class ProcessTask extends BaseQcfgTask {
     if (this.parseFormat === undefined)
       throw Error('Output parsing not defined for this task');
     const output = await this.runAndGetOutput();
-    return parseLocations(output, this.cwd, this.parseFormat);
+    const locations = parseLocations(output, this.cwd, this.parseFormat);
+    if (this.parseTag) {
+      return findPatternInParsedLocations(locations, new RegExp(this.parseTag));
+    }
+    return locations;
   }
 
   private async runAndGetOutput(): Promise<string> {
@@ -481,7 +489,7 @@ export class ProcessTask extends BaseQcfgTask {
       const locations = await this.getLocations();
       if (locations.isEmpty)
         log.warn(`Task "${this.info.label}" returned no locations`);
-      else await peekLocations(locations, this.parseTag);
+      else await peekLocations(locations);
     } else {
       await this.runAndGetOutput();
     }
@@ -490,7 +498,6 @@ export class ProcessTask extends BaseQcfgTask {
 
 export class ProcessMultiTask extends BaseQcfgTask {
   private readonly parseOutput: boolean = false;
-  private readonly parseTag?: string;
   private readonly folderTasks: ProcessTask[];
 
   constructor(
@@ -507,9 +514,6 @@ export class ProcessMultiTask extends BaseQcfgTask {
       .join(', ');
     if (params.parseOutput) {
       this.parseOutput = true;
-      // assuming no folder-specific vars are used in tag template
-      if (params.parseOutput.tag)
-        this.parseTag = folderContexts[0].substitute(params.parseOutput.tag);
     }
     this.parseOutput = params.parseOutput !== undefined;
   }
@@ -526,7 +530,7 @@ export class ProcessMultiTask extends BaseQcfgTask {
       const locations = await this.getLocations();
       if (locations.isEmpty)
         log.warn(`Task "${this.info.label}" returned no locations`);
-      else await peekLocations(locations, this.parseTag);
+      else await peekLocations(locations);
     } else {
       await Promise.all(this.folderTasks.map(async task => task.run()));
     }

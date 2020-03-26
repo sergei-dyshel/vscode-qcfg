@@ -48,10 +48,6 @@
         "title": "qcfg: Open gtags definition (current folder and up)"
       },
       {
-        "command": "qcfg.gtags.definitionInWorkspace",
-        "title": "qcfg: Open gtags definition (in workspace)"
-      },
-      {
         "command": "qcfg.search.todos",
         "title": "qcfg: search ToDos"
       },
@@ -154,10 +150,6 @@
         "key": "ctrl+u",
         "mac": "cmd+u",
         "command": "qcfg.gtags.workspace"
-      },
-      {
-        "key": "alt+d",
-        "command": "qcfg.gtags.definitionInWorkspace"
       },
       {
         "key": "ctrl+o",

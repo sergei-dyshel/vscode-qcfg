@@ -75,22 +75,12 @@ export async function existsInRoot(
  * Show peek dialog in case of multiple location or jump to the only
  * location (optionally search for tag in the line)
  */
-export async function peekLocations(
-  locations: Location[],
-  tagForSingle?: string,
-) {
+export async function peekLocations(locations: Location[]) {
   if (locations.length === 1) {
     const loc = locations[0];
-    if (loc.range.isEmpty && tagForSingle)
-      await openTagLocation(loc.uri.fsPath, {
-        line: loc.range.start.line + 1,
-        tag: tagForSingle,
-      });
-    else {
-      const start = loc.range.start;
-      const selection = new Range(start, start);
-      await window.showTextDocument(loc.uri, { selection });
-    }
+    const start = loc.range.start;
+    const selection = new Range(start, start);
+    await window.showTextDocument(loc.uri, { selection });
     return;
   }
   const editor = getActiveTextEditor();

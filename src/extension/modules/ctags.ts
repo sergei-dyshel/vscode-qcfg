@@ -4,32 +4,48 @@ import {
   SymbolKind,
   TextDocument,
   CancellationToken,
-  SymbolInformation,
-  Location,
-  Position,
   ExtensionContext,
   languages,
   DocumentSymbolProvider,
+  DocumentSymbol,
 } from 'vscode';
 import { Logger } from '../../library/logging';
 import * as subprocess from './subprocess';
 
-import { getActiveTextEditor } from './utils';
 import { getDocumentRoot } from './fileUtils';
 import { isAnyLangClientRunning } from './langClient';
 import { Modules } from './module';
 import { stdErrorHandler } from './exception';
+import { adjustRangeInParsedPosition } from './parseLocations';
+
+const C_KINDS =
+    'm' /* struct members */ +
+    'p' /* prototypes */ +
+    'x' /* extern variables */;
+
+const CPP_KINDS =
+    'A' /* namespace aliases */ +
+    'U' /* using namespace */ +
+    'N' /* using scope::symbol */;
 
 interface LanguageConfig {
-  lang?: string;
+  ctagsLang?: string;
   kinds?: string;
 }
 
-const languageConfigs: { [id: string]: LanguageConfig | undefined } = {
-  c: {},
-  cpp: { lang: 'c++' },
+const languageConfigs: { [languageId: string]: LanguageConfig | undefined } = {
+  c: { kinds: '+' + C_KINDS },
+  cpp: { ctagsLang: 'c++', kinds: '+' + C_KINDS + CPP_KINDS },
   python: {},
   go: {},
+  javascript: {},
+  json: {},
+  lua: {},
+  makefile: { ctagsLang: 'make' },
+  markdown: {},
+  shellscript: { ctagsLang: 'sh' },
+  typescript: {},
+  yaml: {},
 };
 
 const ctagsToVscodeKind: { [name: string]: SymbolKind | undefined } = {
@@ -68,7 +84,7 @@ interface TagInfo {
 
 async function getTags(
   document: TextDocument,
-  token: CancellationToken,
+  token?: CancellationToken,
 ): Promise<TagInfo[]> {
   const langConfig = languageConfigs[document.languageId];
   const log = new Logger({ instance: document.fileName });
@@ -76,35 +92,53 @@ async function getTags(
   const docRoot = getDocumentRoot(document.fileName);
   if (!docRoot) return [];
   const { workspaceFolder, relativePath } = docRoot;
+  const lang = langConfig.ctagsLang ?? document.languageId;
+  const kindsArg = langConfig.kinds
+    ? [`--kinds-${lang}=${langConfig.kinds}`]
+    : [];
   const proc = new subprocess.Subprocess(
     [
       'ctags',
       '--sort=no',
-      `--language-force=${langConfig.lang ?? document.languageId}`,
+      `--language-force=${lang}`,
       '--output-format=json',
       '--fields=*',
-      relativePath,
-    ],
+    ].concat(kindsArg, [relativePath]),
     { cwd: workspaceFolder.uri.fsPath, maxBuffer: 1 * 1024 * 1024 },
   );
   log.trace('Started');
-  token.onCancellationRequested(() => {
-    log.trace('Cancelled');
-    proc.kill();
-  });
+  if (token)
+    token.onCancellationRequested(() => {
+      log.trace('Cancelled');
+      proc.kill();
+    });
   const result = await proc.wait();
-  if (token.isCancellationRequested) return [];
+  if (token?.isCancellationRequested) return [];
   const lines = result.stdout.split('\n');
   const tags = lines.filter(line => line !== '').map(parseLine);
   log.trace(`Returned ${lines.length} results`);
   return tags;
 }
 
-function tag2Symbol(tag: TagInfo, document: TextDocument): SymbolInformation {
-  const location = new Location(document.uri, new Position(tag.line - 1, 0));
-  const kind = ctagsToVscodeKind[tag.kind] ?? SymbolKind.File;
-  return new SymbolInformation(tag.name, kind, tag.scope ?? '', location);
+export async function getDocumentSymbolsFromCtags(
+  document: TextDocument,
+  token?: CancellationToken,
+) {
+  const tags = await getTags(document, token);
+  return tags.map(tag => tag2Symbol(tag, document));
 }
+
+function tag2Symbol(tag: TagInfo, document: TextDocument): DocumentSymbol {
+  const regexp = new RegExp('\\b' + tag.name + '\\b');
+  const range = adjustRangeInParsedPosition(
+    document,
+    document.lineAt(tag.line - 1).range.start,
+    regexp,
+  );
+  const kind = ctagsToVscodeKind[tag.kind] ?? SymbolKind.File;
+  return new DocumentSymbol(tag.name, tag.scope ?? '', kind, range, range);
+}
+
 function parseLine(line: string): TagInfo {
   return JSON.parse(line) as TagInfo;
 }
@@ -113,7 +147,7 @@ const documentSymbolProvider: DocumentSymbolProvider = {
   async provideDocumentSymbols(
     document: TextDocument,
     token: CancellationToken,
-  ): Promise<SymbolInformation[] | undefined> {
+  ): Promise<DocumentSymbol[] | undefined> {
     switch (document.languageId) {
       case 'cpp':
       case 'c':
@@ -124,10 +158,8 @@ const documentSymbolProvider: DocumentSymbolProvider = {
       case 'go':
         break;
     }
-    const editor = getActiveTextEditor();
     try {
-      const tags = await getTags(editor.document, token);
-      return tags.map(tag => tag2Symbol(tag, document));
+      return await getDocumentSymbolsFromCtags(document, token);
     } catch (err) {
       stdErrorHandler(err);
     }

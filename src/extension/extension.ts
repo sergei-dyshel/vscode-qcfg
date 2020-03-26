@@ -2,6 +2,7 @@
 
 // these modify prototypes of objects, must be imported first
 import '../library/tsUtils';
+import '../library/stringPrototype';
 import './utils/positionPrototype';
 import './utils/rangePrototype';
 import './utils/locationPrototype';

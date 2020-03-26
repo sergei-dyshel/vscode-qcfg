@@ -7,7 +7,7 @@ import { selectFromList } from './dialog';
 
 const MAX_SAVED_SEARCHES = 20;
 
-export function uniqueLocations(locations: Location[]): Location[] {
+export function dedupeLocations(locations: Location[]): Location[] {
   return locations.uniq((loc1, loc2) => loc1.range.isEqual(loc2.range));
 }
 
@@ -19,7 +19,7 @@ export async function saveAndPeekSearch(
   if (locations.length === 0) {
     return;
   }
-  locations = uniqueLocations(locations);
+  locations = dedupeLocations(locations);
   if (locations.length > 1) {
     lastName = name;
     lastLocations = locations;

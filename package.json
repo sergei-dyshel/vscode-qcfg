@@ -52,10 +52,6 @@
         "title": "qcfg: Open gtags definition (current folder and up)"
       },
       {
-        "command": "qcfg.gtags.definitionInWorkspace",
-        "title": "qcfg: Open gtags definition (in workspace)"
-      },
-      {
         "command": "qcfg.search.todos",
         "title": "qcfg: search ToDos"
       },
@@ -332,6 +328,10 @@
         "command": "qcfg.search.references"
       },
       {
+        "title": "qcfg: Find definitions using gtags/ctags",
+        "command": "qcfg.search.GtagsCtagsDefinition"
+      },
+      {
         "command": "qcfg.peekFlatOutline",
         "title": "qcfg: Peek document outline (flat)"
       },
@@ -390,10 +390,6 @@
         "key": "ctrl+u",
         "mac": "cmd+u",
         "command": "qcfg.gtags.workspace"
-      },
-      {
-        "key": "alt+d",
-        "command": "qcfg.gtags.definitionInWorkspace"
       },
       {
         "key": "ctrl+o",
@@ -1726,6 +1722,10 @@
         "args": {
           "text": "\u001bf"
         }
+      },
+      {
+        "key": "alt+d",
+        "command": "qcfg.search.GtagsCtagsDefinition"
       },
       {
         "mac": "cmd+d",

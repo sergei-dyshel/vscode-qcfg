@@ -26,24 +26,32 @@
         "command": "qcfg.search.selectedText.allFolders"
       },
       {
-          "title": "qcfg: Search definitions",
-          "command": "qcfg.search.definitions"
+        "title": "qcfg: Search definitions",
+        "command": "qcfg.search.definitions"
       },
       {
-          "title": "qcfg: Search references",
-          "command": "qcfg.search.references"
+        "title": "qcfg: Search references",
+        "command": "qcfg.search.references"
+      },
+      {
+        "title": "qcfg: Find definitions using gtags/ctags",
+        "command": "qcfg.search.GtagsCtagsDefinition"
       }
     ],
     "keybindings": [
       {
-          "mac": "cmd+d",
-          "command": "qcfg.search.definitions",
-          "when": "editorHasDefinitionProvider && editorTextFocus"
+        "key": "alt+d",
+        "command": "qcfg.search.GtagsCtagsDefinition"
       },
       {
-          "mac": "cmd+r",
-          "command": "qcfg.search.references",
-          "when": "editorHasReferenceProvider && editorTextFocus"
+        "mac": "cmd+d",
+        "command": "qcfg.search.definitions",
+        "when": "editorHasDefinitionProvider && editorTextFocus"
+      },
+      {
+        "mac": "cmd+r",
+        "command": "qcfg.search.references",
+        "when": "editorHasReferenceProvider && editorTextFocus"
       },
       {
         "key": "alt+r",
