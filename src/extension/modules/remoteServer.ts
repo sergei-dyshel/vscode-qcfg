@@ -16,6 +16,7 @@ import { log } from '../../library/logging';
 import { focusWindow } from './windowState';
 import { stringify } from '../../library/stringify';
 import { handleAsyncStd } from './exception';
+import { openRemoteFileViaSsh } from './sshFs';
 
 export type RemoteProtocol = typeof protocol;
 
@@ -33,7 +34,7 @@ const protocol = {
       workspaceFile: getWorkspaceFile(),
       workspaceName: getWorkspaceName(),
       workspaceFolders: workspace.workspaceFolders?.map(
-        folder => folder.uri.fsPath,
+        (folder) => folder.uri.fsPath,
       ),
     });
   },
@@ -53,6 +54,10 @@ const protocol = {
       focusWindow(),
       window.showTextDocument(Uri.file(arg.path), { selection }).ignoreResult(),
     ]);
+  },
+
+  async openSsh(arg: { path: string }): Promise<void> {
+    await Promise.all([focusWindow(), openRemoteFileViaSsh(arg.path)]);
   },
 
   async executeCommand(args: { name: string }): Promise<void> {
@@ -92,7 +97,7 @@ function activate(_: ExtensionContext) {
   tcpServer.on('listening', () => {
     log.info(`TCP server started on port ${port}`);
   });
-  tcpServer.on('error', err => {
+  tcpServer.on('error', (err) => {
     const error = err as NodeJS.ErrnoException;
     if (error.code === 'EADDRINUSE') {
       log.debug(`Port ${port} already in use`);

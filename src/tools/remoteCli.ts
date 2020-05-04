@@ -200,6 +200,45 @@ class OpenAction extends CliAction {
   }
 }
 
+class OpenSshAction extends CliAction {
+  private fileParam!: CommandLineStringParameter;
+
+  constructor(cli: Cli) {
+    super(
+      cli,
+      {
+        actionName: 'open-ssh',
+        summary: 'Open file via SSH',
+        documentation: 'Open file via SSH in given instance',
+      },
+      {
+        autoInstance: Instance.FOLDER,
+      },
+    );
+  }
+
+  onDefineParameters() {
+    this.fileParam = this.defineStringParameter({
+      parameterLongName: '--file',
+      parameterShortName: '-f',
+      description: 'File path in format HOST:PATH',
+      argumentName: 'FILE_NAME',
+      required: true,
+    });
+  }
+
+  async onExecute() {
+    await super.onExecute();
+    assert(
+      this.cli.instance !== Instance.ALL,
+      'Can not open file in ALL clients',
+    );
+    return this.client!.send('openSsh', {
+      path: this.fileParam.value!,
+    });
+  }
+}
+
 class Cli extends CommandLineParser {
   folder!: string;
   instance!: Instance;
@@ -219,6 +258,7 @@ class Cli extends CommandLineParser {
     this.addAction(new IdentifyAction(this));
     this.addAction(new CommandAction(this));
     this.addAction(new ReloadAction(this));
+    this.addAction(new OpenSshAction(this));
   }
 
   protected onDefineParameters() {
@@ -233,7 +273,7 @@ class Cli extends CommandLineParser {
       parameterLongName: '--instance',
       parameterShortName: '-i',
       description: 'Choose instance to send command to',
-      alternatives: Object.keys(Instance).map(x => x.toLowerCase()),
+      alternatives: Object.keys(Instance).map((x) => x.toLowerCase()),
       defaultValue: Instance.AUTO,
     });
     this.folderParam = this.defineStringParameter({
