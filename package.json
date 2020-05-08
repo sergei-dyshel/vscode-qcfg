@@ -1866,6 +1866,22 @@
         }
       },
       {
+        "name": "qcfg-go",
+        "owner": "qcfg",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}"
+        ],
+        "severity": "warning",
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+): (.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "message": 4
+        }
+      },
+      {
         "name": "gcc-absolute",
         "owner": "qcfg",
         "fileLocation": "absolute",
