@@ -156,7 +156,7 @@ const documentSymbolProvider: DocumentSymbolProvider = {
       case 'typescript':
         return;
       case 'go':
-        break;
+        return;
     }
     try {
       return await getDocumentSymbolsFromCtags(document, token);
