@@ -9,7 +9,7 @@ import { runSubprocessSync } from './subprocess';
 
 function callHammerspoon(funcName: string, ...args: Array<number | string>) {
   const params = args
-    .map(x => {
+    .map((x) => {
       if (typeof x === 'number') return x.toString();
       if (typeof x === 'string') return JSON.stringify(x);
       return '';
@@ -53,9 +53,16 @@ function tryGetActiveWindowId(): number {
 function windowStateChanged(state: WindowState) {
   const msg = state.focused ? 'Focused' : 'Unfocused';
   log.debug(msg);
-  if (state.focused && !windowId) {
-    windowId = tryGetActiveWindowId();
-    log.info(`Current window id: ${windowId}`);
+  if (state.focused) {
+    const newWindowId = tryGetActiveWindowId();
+    if (newWindowId !== windowId) {
+      if (!windowId) {
+        log.info(`Current window id: ${windowId}`);
+      } else {
+        log.info(`Current window id changed ${windowId} => ${newWindowId}`);
+      }
+      windowId = newWindowId;
+    }
   }
 }
 
