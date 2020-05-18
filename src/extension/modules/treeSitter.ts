@@ -14,12 +14,7 @@ import { handleErrorsAsync, registerAsyncCommandWrapped } from './exception';
 import { Logger } from '../../library/logging';
 import { Modules } from './module';
 import { SyntaxNode, SyntaxTree, SyntaxTrees } from './syntaxTree';
-import {
-  selectRange,
-  swapRanges,
-  trimInner,
-  trimWhitespace,
-} from './textUtils';
+import { selectRange, swapRanges, trimInner } from './textUtils';
 import { getActiveTextEditor } from './utils';
 import { assertNonNull } from '../../library/exception';
 import { stringify as str } from '../../library/stringify';
@@ -240,27 +235,11 @@ async function provideSelectionRanges(
   positions: Position[],
 ) {
   const tree = await SyntaxTrees.get(document);
-  return positions.map(pos => computeSelectionRange(document, tree, pos));
+  return positions.map((pos) => computeSelectionRange(document, tree, pos));
 }
 
 async function smartExpand() {
-  const editor = getActiveTextEditor();
-  const document = editor.document;
-  const selection = editor.selection;
   await commands.executeCommand('editor.action.smartSelect.expand');
-  const selection1 = editor.selection;
-  if (selection1.isEqual(selection)) return;
-  await commands.executeCommand('editor.action.smartSelect.expand');
-  const selection2 = editor.selection;
-  if (selection2.isEqual(selection1)) return;
-  if (
-    (trimInner(document, selection2).isEqual(selection1) &&
-      !trimWhitespace(document, selection2).isEqual(selection1)) ||
-    trimWhitespace(document, selection1).isEqual(selection)
-  ) {
-    return;
-  }
-  await commands.executeCommand('editor.action.smartSelect.shrink');
 }
 
 async function smartShrink() {
