@@ -19,14 +19,14 @@ import { stdErrorHandler } from './exception';
 import { adjustRangeInParsedPosition } from './parseLocations';
 
 const C_KINDS =
-    'm' /* struct members */ +
-    'p' /* prototypes */ +
-    'x' /* extern variables */;
+  'm' /* struct members  */ +
+  'p' /* prototypes */ +
+  'x'; /* extern variables  */
 
 const CPP_KINDS =
-    'A' /* namespace aliases */ +
-    'U' /* using namespace */ +
-    'N' /* using scope::symbol */;
+  'A' /* namespace aliases */ +
+  'U' /* using namespace */ +
+  'N'; /* using scope::symbol */
 
 interface LanguageConfig {
   ctagsLang?: string;
@@ -115,7 +115,7 @@ async function getTags(
   const result = await proc.wait();
   if (token?.isCancellationRequested) return [];
   const lines = result.stdout.split('\n');
-  const tags = lines.filter(line => line !== '').map(parseLine);
+  const tags = lines.filter((line) => line !== '').map(parseLine);
   log.trace(`Returned ${lines.length} results`);
   return tags;
 }
@@ -125,7 +125,7 @@ export async function getDocumentSymbolsFromCtags(
   token?: CancellationToken,
 ) {
   const tags = await getTags(document, token);
-  return tags.map(tag => tag2Symbol(tag, document));
+  return tags.map((tag) => tag2Symbol(tag, document));
 }
 
 function tag2Symbol(tag: TagInfo, document: TextDocument): DocumentSymbol {
