@@ -1876,6 +1876,19 @@
         }
       },
       {
+        "name": "gcc-absolute",
+        "owner": "qcfg",
+        "fileLocation": "absolute",
+        "severity": "warning",
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "message": 5
+        }
+      },
+      {
         "name": "qcfg-go",
         "owner": "qcfg",
         "fileLocation": [
@@ -1889,19 +1902,6 @@
           "line": 2,
           "column": 3,
           "message": 4
-        }
-      },
-      {
-        "name": "gcc-absolute",
-        "owner": "qcfg",
-        "fileLocation": "absolute",
-        "severity": "warning",
-        "pattern": {
-          "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
-          "file": 1,
-          "line": 2,
-          "column": 3,
-          "message": 5
         }
       }
     ],

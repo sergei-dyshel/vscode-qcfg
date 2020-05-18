@@ -233,6 +233,22 @@
           "column": 3,
           "message": 5
         }
+      },
+      {
+        "name": "qcfg-go",
+        "owner": "qcfg",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}"
+        ],
+        "severity": "warning",
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+): (.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "message": 4
+        }
       }
     ],
     "languages": [
