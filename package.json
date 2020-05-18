@@ -1758,6 +1758,16 @@
         "when": "editorTextFocus && editorHasSelection"
       },
       {
+        "key": "cmd+g",
+        "command": "qcfg.rerunPreviousSearch",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "cmd+shift+g",
+        "command": "qcfg.showLastLocationsInPanel",
+        "when": "editorTextFocus"
+      },
+      {
         "command": "qcfg.peekFlatOutline",
         "key": "cmd+,"
       },

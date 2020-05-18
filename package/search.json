@@ -72,6 +72,16 @@
         "key": "alt+shift+r",
         "command": "qcfg.search.selectedText.allFolders",
         "when": "editorTextFocus && editorHasSelection"
+      },
+      {
+        "key": "cmd+g",
+        "command": "qcfg.rerunPreviousSearch",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "cmd+shift+g",
+        "command": "qcfg.showLastLocationsInPanel",
+        "when": "editorTextFocus"
       }
     ]
   }
