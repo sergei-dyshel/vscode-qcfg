@@ -20,6 +20,7 @@ import {
   languages,
   commands,
   Uri,
+  LocationLink,
 } from 'vscode';
 import { selectMultiple } from './dialog';
 import { getCompletionPrefix } from './documentUtils';
@@ -62,11 +63,19 @@ const TODO_CATEGORIES = [
 ];
 
 export async function executeDefinitionProvider(uri: Uri, position: Position) {
-  return (await commands.executeCommand(
+  const locationOrLinks = (await commands.executeCommand(
     'vscode.executeDefinitionProvider',
     uri,
     position,
-  )) as Location[];
+  )) as Array<Location | LocationLink>;
+
+  return locationOrLinks.map((locOrLink) => {
+    if ('targetRange' in locOrLink) {
+      const range = locOrLink.targetSelectionRange ?? locOrLink.targetRange;
+      return new Location(locOrLink.targetUri, range);
+    }
+    return locOrLink;
+  });
 }
 
 export async function executeReferenceProvider(uri: Uri, position: Position) {
