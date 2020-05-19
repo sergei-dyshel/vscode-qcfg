@@ -110,9 +110,9 @@ async function searchTodos() {
   const folder = assertNonNull(currentWorkspaceFolder());
   const filterCategories = await selectMultiple(
     TODO_CATEGORIES,
-    label => ({ label }),
+    (label) => ({ label }),
     'todos',
-    label => label,
+    (label) => label,
   );
   if (!filterCategories) return;
   const patterns = filterCategories.join('|');
@@ -230,7 +230,9 @@ namespace TodoCompletion {
       const prefix = getCompletionPrefix(document, position);
       if (prefix === '') return [];
       const items: CompletionItem[] = [];
-      const filtered = TODO_CATEGORIES.filter(cat => abbrevMatch(cat, prefix));
+      const filtered = TODO_CATEGORIES.filter((cat) =>
+        abbrevMatch(cat, prefix),
+      );
       for (const category of filtered)
         generateItems(document.languageId, category, items);
       return items;
@@ -241,8 +243,8 @@ namespace TodoCompletion {
 async function getCtagsDefinitions(document: TextDocument, word: string) {
   const symbols = await getDocumentSymbolsFromCtags(document);
   return symbols
-    .filter(symbol => symbol.name === word)
-    .map(symbol => new Location(document.uri, symbol.selectionRange));
+    .filter((symbol) => symbol.name === word)
+    .map((symbol) => new Location(document.uri, symbol.selectionRange));
 }
 
 async function getGtagsCtagsDefinitions() {
