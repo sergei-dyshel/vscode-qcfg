@@ -273,7 +273,7 @@ export namespace StaticTreeNode {
 
 // private
 
-const onChangeEmitter = new EventEmitter<TreeNode>();
+const onChangeEmitter = new EventEmitter<TreeNode | void>();
 
 const treeDataProvider: TreeDataProvider<TreeNode> = {
   onDidChangeTreeData: onChangeEmitter.event,
