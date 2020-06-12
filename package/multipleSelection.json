@@ -12,23 +12,32 @@
       {
         "command": "qcfg.multipleSelection.unselectMarked",
         "title": "qcfg: Multiple selections - unselect marked"
+      },
+      {
+        "command": "qcfg.multipleSelection.resetToMark",
+        "title": "qcfg: Multiple selections - reset selection to mark"
       }
     ],
     "keybindings": [
       {
         "key": "tab",
         "command": "qcfg.multipleSelection.unselectMarked",
-        "when": "editorTextFocus && editorHasMultipleSelections"
+        "when": "editorTextFocus && editorHasMultipleSelections && !suggestWidgetVisible"
       },
       {
         "key": "up",
         "command": "qcfg.multipleSelection.moveMarkUp",
-        "when": "editorTextFocus && editorHasMultipleSelections"
+        "when": "editorTextFocus && editorHasMultipleSelections && !suggestWidgetVisible"
       },
       {
         "key": "down",
         "command": "qcfg.multipleSelection.moveMarkDown",
-        "when": "editorTextFocus && editorHasMultipleSelections"
+        "when": "editorTextFocus && editorHasMultipleSelections && !suggestWidgetVisible"
+      },
+      {
+        "key": "escape",
+        "command": "qcfg.multipleSelection.resetToMark",
+        "when": "editorTextFocus && editorHasMultipleSelections && !suggestWidgetVisible && qcfgMultipleSelectionsMarker"
       }
     ]
   }

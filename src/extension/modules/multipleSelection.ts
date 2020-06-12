@@ -7,9 +7,15 @@ import {
   TextEditorSelectionChangeEvent,
 } from 'vscode';
 import { Modules } from './module';
-import { listenWrapped, registerSyncCommandWrapped } from './exception';
-import { getActiveTextEditor } from './utils';
+import {
+  listenWrapped,
+  registerSyncCommandWrapped,
+  handleAsyncStd,
+} from './exception';
+import { getActiveTextEditor, Context } from './utils';
 import { log } from '../../library/logging';
+
+const CONTEXT = 'qcfgMultipleSelectionsMarker';
 
 const selectionIndex = new Map<TextEditor, number>();
 const decorationType = window.createTextEditorDecorationType({
@@ -19,6 +25,7 @@ const decorationType = window.createTextEditorDecorationType({
 function clearMark(editor: TextEditor) {
   selectionIndex.delete(editor);
   editor.setDecorations(decorationType, []);
+  handleAsyncStd(Context.clear(CONTEXT));
 }
 
 function updateMark(editor: TextEditor, index: number) {
@@ -30,6 +37,7 @@ function updateMark(editor: TextEditor, index: number) {
   editor.setDecorations(decorationType, []);
   editor.setDecorations(decorationType, [range]);
   editor.revealRange(range);
+  handleAsyncStd(Context.set(CONTEXT));
   log.debugStr(
     '{}: marking selection #{} out of {}, range {}',
     editor,
@@ -79,6 +87,12 @@ function moveMark(down: boolean) {
   }
 }
 
+function resetToMark() {
+  const editor = getActiveTextEditor();
+  const index = selectionIndex.get(editor)!;
+  editor.selection = editor.selections[index];
+}
+
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
     listenWrapped(window.onDidChangeTextEditorSelection, onSelectionChanged),
@@ -91,6 +105,9 @@ function activate(context: ExtensionContext) {
     ),
     registerSyncCommandWrapped('qcfg.multipleSelection.moveMarkUp', () =>
       moveMark(false /* up */),
+    ),
+    registerSyncCommandWrapped('qcfg.multipleSelection.resetToMark', () =>
+      resetToMark(),
     ),
   );
 }
