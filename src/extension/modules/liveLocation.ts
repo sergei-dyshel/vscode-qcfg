@@ -23,6 +23,9 @@ export abstract class LiveLocation extends Location implements DisposableLike {
   constructor(
     document: TextDocument,
     range: Range,
+    /** Called when location was (partially) overwritten
+     * by edit operation and is not longer valid
+     */
     private readonly onInvalidated?: () => void,
   ) {
     super(document.uri, range);
@@ -108,7 +111,7 @@ export class LiveRange extends LiveLocation {
     document: TextDocument,
     range: Range,
     opts: {
-      mergeOnReplace: boolean;
+      mergeOnReplace?: boolean;
       onInvalidated?: () => void;
     },
   ) {
@@ -116,7 +119,7 @@ export class LiveRange extends LiveLocation {
     if (range.isEmpty) throw new Error('LiveRange range must be non-empty');
     this.start = document.offsetAt(range.start);
     this.end = document.offsetAt(range.end);
-    this.mergeOnReplace = opts.mergeOnReplace;
+    this.mergeOnReplace = opts.mergeOnReplace ?? false;
   }
 
   get startOffset(): number {
@@ -156,11 +159,12 @@ export class LiveRange extends LiveLocation {
   }
 }
 
+/** Create LiveRange/LivePosition depending on range emptiness */
 export function createLiveLocation(
   document: TextDocument,
   range: Range,
   opts: {
-    mergeOnReplace: boolean;
+    mergeOnReplace?: boolean;
     onInvalidated?: () => void;
   },
 ): LiveLocation {
@@ -169,7 +173,60 @@ export function createLiveLocation(
   return new LiveRange(document, range, opts);
 }
 
-export function adjustOffsetAfterChange(
+export async function createLiveLocationAsync(
+  location: Location,
+  opts: {
+    mergeOnReplace?: boolean;
+    onInvalidated?: () => void;
+  },
+) {
+  return createLiveLocation(
+    await workspace.openTextDocument(location.uri),
+    location.range,
+    opts,
+  );
+}
+
+export class LiveLocationArray implements DisposableLike {
+  private array: LiveLocation[] = [];
+
+  add(document: TextDocument, range: Range, mergeOnReplace?: boolean) {
+    let liveLoc = createLiveLocation(document, range, {
+      mergeOnReplace,
+      onInvalidated: () => {
+        this.array.removeFirst(liveLoc);
+      },
+    });
+    this.array.push(liveLoc);
+  }
+
+  async addAsync(location: Location, mergeOnReplace?: boolean) {
+    this.add(
+      await workspace.openTextDocument(location.uri),
+      location.range,
+      mergeOnReplace,
+    );
+  }
+
+  locations(): readonly Location[] {
+    return this.array;
+  }
+
+  clear() {
+    this.array.forEach((loc) => {
+      loc.unregister();
+    });
+    this.array = [];
+  }
+
+  dispose() {
+    this.clear();
+  }
+}
+
+// Private
+
+function adjustOffsetAfterChange(
   offset: number,
   change: TextDocumentContentChangeEvent,
   isEnd = false,

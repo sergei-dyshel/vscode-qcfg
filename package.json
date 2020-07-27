@@ -300,12 +300,20 @@
         "title": "Format selected files"
       },
       {
-        "title": "qcfg: Show last locations in panel",
+        "title": "qcfg: Show search last locations in panel",
         "command": "qcfg.showLastLocationsInPanel"
       },
       {
-        "title": "qcfg: Rerun previous search",
+        "title": "qcfg: Select search last locations in current editor",
+        "command": "qcfg.selectLastLocations"
+      },
+      {
+        "title": "qcfg: Rerun one of previous searches",
         "command": "qcfg.rerunPreviousSearch"
+      },
+      {
+        "title": "qcfg: Rerun last search",
+        "command": "qcfg.rerunLastSearch"
       },
       {
         "command": "qcfg.search.word",
@@ -1768,11 +1776,16 @@
       },
       {
         "key": "cmd+g",
-        "command": "qcfg.rerunPreviousSearch",
+        "command": "qcfg.rerunLastSearch",
         "when": "editorTextFocus"
       },
       {
         "key": "cmd+shift+g",
+        "command": "qcfg.rerunPreviousSearch",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "alt+g",
         "command": "qcfg.showLastLocationsInPanel",
         "when": "editorTextFocus"
       },

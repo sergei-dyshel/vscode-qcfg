@@ -23,14 +23,14 @@ import { stringify as str } from '../../library/stringify';
 
 export async function setPanelLocations(
   message: string,
-  locations: Location[],
+  locations: readonly Location[],
   reveal = true,
 ) {
   const dict = new MultiDictionary<Uri, Location>();
   const fileNodes: FileNode[] = [];
   for (const loc of locations) dict.setValue(loc.uri, loc);
   const documents = new Map<Uri, TextDocument>(
-    await mapSomeAsyncAndZip(dict.keys(), uri =>
+    await mapSomeAsyncAndZip(dict.keys(), (uri) =>
       workspace.openTextDocument(uri),
     ),
   );
@@ -94,7 +94,7 @@ namespace TreeBuilder {
   export function buildDirHierarchy(files: FileNode[]): StaticTreeNode[] {
     const forest = build(files);
     compress(forest);
-    return convertToHierarchy(forest, '').map(root => {
+    return convertToHierarchy(forest, '').map((root) => {
       root.provider = locationTreeProvider;
       return root;
     });
@@ -186,6 +186,7 @@ class LocationNode extends StaticTreeNode {
     const text = docLine.text;
     const trimOffset = docLine.firstNonWhitespaceCharacterIndex;
     super(text.substr(trimOffset));
+    /* TODO: use createLiveLocationAsync */
     this.location = createLiveLocation(document, loc.range, {
       mergeOnReplace: true,
       onInvalidated: () => {
@@ -242,8 +243,8 @@ const locationTreeProvider: TreeProvider = {
   },
   onUnset() {
     if (!currentTrees) return;
-    currentTrees.map(root =>
-      root.applyRecursively(node => {
+    currentTrees.map((root) =>
+      root.applyRecursively((node) => {
         if (!(node instanceof LocationNode)) return true;
         node.location.unregister();
         return true;
