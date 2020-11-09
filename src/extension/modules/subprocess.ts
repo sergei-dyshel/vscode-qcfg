@@ -20,7 +20,7 @@ export class ExecResult extends Error {
   }
 
   code: number;
-  signal: string;
+  signal?: string;
 
   updateMessage() {
     this.message = `Process ${this.pid} exited with code: ${this.code}, signal: ${this.signal}, stdout: ${this.stdout}, stder: ${this.stderr}`;
@@ -62,8 +62,8 @@ export function runSubprocessSync(
     });
 
   const result = new ExecResult(returns.pid, returns.stdout, returns.stderr);
-  result.code = returns.status;
-  result.signal = returns.signal;
+  result.code = returns.status ?? 0;
+  result.signal = returns.signal ?? undefined;
   if ((options?.allowedCodes ?? [0]).includes(result.code)) return result;
   throw result;
 }
@@ -73,7 +73,7 @@ export class Subprocess {
     command: string | string[],
     private readonly options?: SubprocessOptions,
   ) {
-    this.waitingContext = { resolve: _ => {}, reject: _ => {} };
+    this.waitingContext = { resolve: (_) => {}, reject: (_) => {} };
     this.logLevel = options?.logLevel ?? DEFAULT_LOG_LEVEL;
     if (typeof command === 'string')
       this.process = child_process.exec(
@@ -114,7 +114,7 @@ export class Subprocess {
     return this.promise;
   }
 
-  kill(signal = 'SIGTERM') {
+  kill(signal: NodeJS.Signals = 'SIGTERM') {
     this.log.log(this.logLevel, 'killing with {}', signal);
     this.process.kill(signal);
   }

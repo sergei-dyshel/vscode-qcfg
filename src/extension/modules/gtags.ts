@@ -49,7 +49,7 @@ async function onSaveAll(docs: saveAll.DocumentsInFolder) {
   }
   log.debug(`Found GTAGS in ${gtagsDir}`);
 
-  const docPaths = docs.documents.map(doc =>
+  const docPaths = docs.documents.map((doc) =>
     nodejs.path.relative(gtagsDir, doc.uri.fsPath),
   );
 
@@ -141,7 +141,9 @@ namespace WorkspaceGtags {
     currentQeury = query;
     re2pattern = new RE2(buildFuzzyPattern(query), 'i');
     if (query.startsWith(searchedQuery) && !limitReached) {
-      currentItems = searchResults.filter(item => re2pattern.test(item.label));
+      currentItems = searchResults.filter((item) =>
+        re2pattern.test(item.label),
+      );
       logger.debug(
         `Reused results from previous query "${searchedQuery}", filtered ${currentItems.length} out of ${searchResults.length} items`,
       );
@@ -156,7 +158,7 @@ namespace WorkspaceGtags {
     if (searchProcess) {
       logger.debug('Aborting search');
       reader.close();
-      searchProcess.stdout.destroy();
+      searchProcess.stdout!.destroy();
       searchProcess.kill();
     }
     searchProcess = undefined;
@@ -178,7 +180,7 @@ namespace WorkspaceGtags {
       ['-i', '-n', '-x', '-d', pattern + '.*'],
       spawnOptions,
     );
-    reader = readline.createInterface(searchProcess.stdout);
+    reader = readline.createInterface(searchProcess.stdout!);
     reader.on('line', onLine);
     reader.on('close', () => {
       logger.debug(
@@ -286,7 +288,7 @@ const gtagsGlobalSymbolsProvider: vscode.WorkspaceSymbolProvider = {
       gtagsDir,
       token,
     );
-    return tags.map(tag => tag2Symbol(tag, gtagsDir));
+    return tags.map((tag) => tag2Symbol(tag, gtagsDir));
   },
 };
 
@@ -314,7 +316,7 @@ async function searchGtags(
   const result = await proc.wait();
   if (token.isCancellationRequested) return [];
   const lines = result.stdout.split('\n');
-  const tags = lines.filter(line => line !== '').map(parseLine);
+  const tags = lines.filter((line) => line !== '').map(parseLine);
   logger.debug(`Returned ${lines.length} results`);
   return tags;
 }
@@ -328,7 +330,7 @@ async function searchDefinition(
     { cwd: gtagsDir },
   );
   const lines = result.stdout.split('\n');
-  return lines.filter(line => line !== '').map(parseLine);
+  return lines.filter((line) => line !== '').map(parseLine);
 }
 
 async function openDefinition() {
@@ -353,7 +355,7 @@ async function openDefinition() {
     });
     return;
   }
-  const locations = tags.map(tag => tagToLocation(tag, gtagsDir));
+  const locations = tags.map((tag) => tagToLocation(tag, gtagsDir));
   await vscode.commands.executeCommand(
     'editor.action.showReferences',
     editor.document.uri,

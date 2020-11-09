@@ -6,7 +6,7 @@ import {
   CommandLineAction,
   CommandLineIntegerParameter,
   ICommandLineActionOptions,
-} from '@microsoft/ts-command-line';
+} from '@rushstack/ts-command-line';
 import { StreamHandler } from '../library/loggingHandlers';
 import { LogLevel, registerLogHandler } from '../library/logging';
 import * as nodejs from '../library/nodejs';
