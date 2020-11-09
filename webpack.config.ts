@@ -68,13 +68,18 @@ const generateConfig = (env: any): webpack.Configuration => ({
       { test: /\.node$/, use: 'node-loader', exclude: '/Debug/iconv.node' },
     ],
   },
+  ignoreWarnings: [
+    {
+      message: /Can't resolve 'spawn-sync'/,
+    },
+    {
+      message: /build\/Debug/,
+    },
+  ],
   stats: {
     all: false,
     errors: true,
     warnings: true,
-    warningsFilter: warning =>
-      warning.includes("Can't resolve 'spawn-sync'") ||
-      warning.includes('build/Debug'),
   },
 });
 
