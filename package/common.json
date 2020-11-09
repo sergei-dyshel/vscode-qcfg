@@ -9,7 +9,7 @@
     "url": "https://github.com/sergei-dyshel/qyron-config.git"
   },
   "engines": {
-    "vscode": "^1.45.1"
+    "vscode": "^1.51.0"
   },
   "enableProposedApi": true,
   "categories": ["Other"],
