@@ -25,5 +25,6 @@
             "command": "make install",
             "flags": ["build"]
         }
-    }
+    },
+    "typescript.tsdk": "node_modules/typescript/lib"
 }
