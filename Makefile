@@ -3,7 +3,7 @@ include $(d)/Makefile
 
 npm_pre_install:
 	npm install -g vsce
-	npm install json-merger deepmerge ts-node typescript @types/node
+	npm install json-merger deepmerge ts-node typescript @types/node npm-check-updates
 
 npm_install: | package.json
 	./npm-wrapper.sh install
@@ -11,12 +11,15 @@ npm_install: | package.json
 npm_update: | package.json
 	./npm-wrapper.sh update
 
+npm_update_major: | package.json
+	npx ncu -u
+	echo "Now run merge changes to common.json make npm_install"
+
 npm_full_reinstall:
 	rm -rf package.json node_modules
 	$(MAKE) npm_pre_install
 	$(MAKE) package.json
 	$(MAKE) npm_install
-	$(MAKE) npm_update
 
 TASKS_SCHEMA = tasks.schema.json
 
