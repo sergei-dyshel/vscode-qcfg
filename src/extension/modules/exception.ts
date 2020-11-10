@@ -66,7 +66,7 @@ export function registerAsyncCommandWrapped(
 ): DisposableLike {
   return commands.registerCommand(
     command,
-    wrapWithErrorHandlerAsync(callback, error =>
+    wrapWithErrorHandlerAsync(callback, (error) =>
       handleErrorDuringCommand(command, error),
     ),
     thisArg,
@@ -80,7 +80,7 @@ export function registerSyncCommandWrapped(
 ): DisposableLike {
   return commands.registerCommand(
     command,
-    wrapWithErrorHandler(callback, error =>
+    wrapWithErrorHandler(callback, (error) =>
       handleErrorDuringCommand(command, error),
     ),
     thisArg,
@@ -98,7 +98,7 @@ export function registerTextEditorCommandWrapped(
 ): DisposableLike {
   return commands.registerTextEditorCommand(
     command,
-    wrapWithErrorHandler(callback, error =>
+    wrapWithErrorHandler(callback, (error) =>
       handleErrorDuringCommand(command, error),
     ),
     thisArg,
@@ -135,7 +135,7 @@ export function listenAsyncWrapped<T>(
  * Evaluate promise and handle async error with @stdErrorHandler
  */
 export function handleAsyncStd<T>(promise: Thenable<T>): void {
-  promise.then(undefined, err => {
+  promise.then(undefined, (err) => {
     stdErrorHandler(err);
   });
 }

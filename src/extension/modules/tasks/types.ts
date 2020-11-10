@@ -113,7 +113,7 @@ export class TaskContext {
     }
     if (workspace.workspaceFolders)
       this.vars.allWorkspaceFolders = workspace.workspaceFolders
-        .map(wf => wf.uri.fsPath)
+        .map((wf) => wf.uri.fsPath)
         .join(' ');
   }
 
@@ -402,17 +402,17 @@ export class TerminalMultiTask extends BaseQcfgTask {
   ) {
     super(params, info);
     this.folderTasks = folderContexts.map(
-      context => new TerminalTask(params, info, context),
+      (context) => new TerminalTask(params, info, context),
     );
     this.folderText = folderContexts
-      .map(context => context.workspaceFolder!.name)
+      .map((context) => context.workspaceFolder!.name)
       .join(', ');
   }
 
   async run() {
-    return mapAsyncSequential(this.folderTasks, async task => task.run()).then<
-      void
-    >();
+    return mapAsyncSequential(this.folderTasks, async (task) =>
+      task.run(),
+    ).then<void>();
   }
 }
 
@@ -507,10 +507,10 @@ export class ProcessMultiTask extends BaseQcfgTask {
   ) {
     super(params, info);
     this.folderTasks = folderContexts.map(
-      context => new ProcessTask(params, info, context),
+      (context) => new ProcessTask(params, info, context),
     );
     this.folderText = folderContexts
-      .map(context => context.workspaceFolder!.name)
+      .map((context) => context.workspaceFolder!.name)
       .join(', ');
     if (params.parseOutput) {
       this.parseOutput = true;
@@ -519,7 +519,7 @@ export class ProcessMultiTask extends BaseQcfgTask {
   }
 
   async getLocations() {
-    const locsPerFolder = await mapAsync(this.folderTasks, async task =>
+    const locsPerFolder = await mapAsync(this.folderTasks, async (task) =>
       task.getLocations(),
     );
     return concatArrays(...locsPerFolder);
@@ -532,7 +532,7 @@ export class ProcessMultiTask extends BaseQcfgTask {
         log.warn(`Task "${this.info.label}" returned no locations`);
       else await peekLocations(locations);
     } else {
-      await Promise.all(this.folderTasks.map(async task => task.run()));
+      await Promise.all(this.folderTasks.map(async (task) => task.run()));
     }
   }
 }
@@ -550,10 +550,10 @@ export class SearchMultiTask extends BaseQcfgTask {
   ) {
     super(params, info);
     this.folderText = folderContexts
-      .map(context => context.workspaceFolder!.name)
+      .map((context) => context.workspaceFolder!.name)
       .join(', ');
 
-    this.folders = folderContexts.map(context => {
+    this.folders = folderContexts.map((context) => {
       if (!context.workspaceFolder)
         throw new Error('Search task can only be defined for workspace folder');
       return context.workspaceFolder;
@@ -579,7 +579,7 @@ export class SearchMultiTask extends BaseQcfgTask {
 
   async getLocations() {
     const locations = await searchInFiles(this.query, this.options);
-    return locations.filter(location => {
+    return locations.filter((location) => {
       const folder = getDocumentWorkspaceFolder(location.uri.fsPath);
       if (!folder) return false;
       return this.folders.includes(folder);

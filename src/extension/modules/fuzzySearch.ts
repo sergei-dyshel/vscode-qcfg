@@ -56,7 +56,7 @@ function showFuzzySearch() {
   if (lastSelected) {
     // Update `lastSelected` reference to point to the current entry in `items`.
     lastSelected = quickPickEntries.find(
-      t => t.line === lastSelected!.line || t.label === lastSelected!.label,
+      (t) => t.line === lastSelected!.line || t.label === lastSelected!.label,
     );
     pick.activeItems = [lastSelected!];
   }
@@ -72,7 +72,7 @@ function showFuzzySearch() {
 
   // Show the currently selected item in the editor.
   pick.onDidChangeActive(
-    handleErrors(items => {
+    handleErrors((items) => {
       if (!items.length) return;
 
       const p = new vscode.Position(items[0].line - 1, 0);
@@ -90,7 +90,7 @@ function showFuzzySearch() {
   const previewValue = valueFromPreviousInvocation;
   let hasPreviewValue = previewValue.length > 0;
   pick.onDidChangeValue(
-    handleErrors(value => {
+    handleErrors((value) => {
       if (!hasPreviewValue) {
         return;
       }
@@ -108,7 +108,7 @@ function showFuzzySearch() {
   );
   // Save the search string so we can show it next time fuzzy search is
   // invoked.
-  pick.onDidChangeValue(value => {
+  pick.onDidChangeValue((value) => {
     valueFromPreviousInvocation = value;
   });
 

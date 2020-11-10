@@ -13,7 +13,7 @@ interface KeyBinding {
   key: string;
 }
 
-const result = (origin as KeyBinding[]).map(binding => {
+const result = (origin as KeyBinding[]).map((binding) => {
   const key = binding.key;
   const newKey = key.replace('ctrl+', 'cmd+');
   binding.key = newKey;

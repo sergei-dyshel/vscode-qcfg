@@ -87,8 +87,8 @@ export class PromiseQueue {
 export class PromiseContext<T> {
   constructor() {
     // required by "strictPropertyInitialization"
-    this.resolve = _ => {};
-    this.reject = _ => {};
+    this.resolve = (_) => {};
+    this.reject = (_) => {};
 
     // tslint:disable-next-line: promise-must-complete
     this.promise = new Promise<T>((resolve, reject) => {
@@ -140,7 +140,7 @@ declare global {
 }
 
 // eslint-disable-next-line @typescript-eslint/unbound-method
-Set.prototype.mapAsync = async function<K, V>(
+Set.prototype.mapAsync = async function <K, V>(
   this: Set<K>,
   func: (k: K) => Promise<V>,
 ): Promise<Map<K, V>> {
@@ -167,7 +167,7 @@ export async function mapSomeAsyncAndZip<V, R>(
 ): Promise<Array<[V, R]>> {
   const results: Array<R | MapUndefined> = await mapAsync(arr, func);
   return zipArrays(arr, results).filter(
-    tuple => tuple[1] !== MAP_UNDEFINED,
+    (tuple) => tuple[1] !== MAP_UNDEFINED,
   ) as Array<[V, R]>;
 }
 
@@ -179,7 +179,7 @@ export async function mapSomeAsync<V, R>(
   arr: V[],
   func: (v: V) => Promise<R | MapUndefined>,
 ): Promise<R[]> {
-  return (await mapSomeAsyncAndZip(arr, func)).map(pair => pair[1]);
+  return (await mapSomeAsyncAndZip(arr, func)).map((pair) => pair[1]);
 }
 
 /**
@@ -212,7 +212,7 @@ export async function mapAsyncNoThrowAndZip<V, R>(
     }
   });
   return zipArrays(arr, results).filter(
-    tuple => tuple[1] !== undefined,
+    (tuple) => tuple[1] !== undefined,
   ) as Array<[V, R]>;
 }
 
@@ -222,7 +222,7 @@ export async function mapAsyncNoThrow<V, R>(
   handler?: (err: unknown, v: V) => R | void | undefined,
 ): Promise<R[]> {
   const result = await mapAsyncNoThrowAndZip(arr, func, handler);
-  return result.map(pair => pair[1]);
+  return result.map((pair) => pair[1]);
 }
 
 /**

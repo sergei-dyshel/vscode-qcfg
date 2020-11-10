@@ -9,11 +9,11 @@ import { registerAsyncCommandWrapped } from './exception';
 import { mapAsync } from './async';
 
 export function isAnyLangClientRunning(): boolean {
-  return ALL_CLIENTS.map(wrapper => wrapper.isClientRunning).isAnyTrue();
+  return ALL_CLIENTS.map((wrapper) => wrapper.isClientRunning).isAnyTrue();
 }
 
 export async function refreshOrRestartLangClients() {
-  return mapAsync(ALL_CLIENTS, async wrapper => wrapper.refreshOrRestart());
+  return mapAsync(ALL_CLIENTS, async (wrapper) => wrapper.refreshOrRestart());
 }
 
 export function sendDidSaveToLangClients(document: TextDocument) {
@@ -129,15 +129,15 @@ class ClangdWrapper extends LanguageClientWrapper {
 const ALL_CLIENTS = [new CclsWrapper(), new ClangdWrapper()];
 
 async function refreshLangClients() {
-  return mapAsync(ALL_CLIENTS, async wrapper => wrapper.refresh());
+  return mapAsync(ALL_CLIENTS, async (wrapper) => wrapper.refresh());
 }
 
 async function restartLangClients() {
-  return mapAsync(ALL_CLIENTS, async wrapper => wrapper.restart());
+  return mapAsync(ALL_CLIENTS, async (wrapper) => wrapper.restart());
 }
 
 async function stopLangClients() {
-  return mapAsync(ALL_CLIENTS, async wrapper => wrapper.stop());
+  return mapAsync(ALL_CLIENTS, async (wrapper) => wrapper.stop());
 }
 
 function activate(context: ExtensionContext) {

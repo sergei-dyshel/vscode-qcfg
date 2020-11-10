@@ -124,7 +124,7 @@ async function openFromHistory(newWindow: boolean) {
   const history: string[] = extContext.globalState.get(PERSISTENT_KEY, []);
   const current = getWorkspaceFile();
   const histWithTitles = await mapAsyncNoThrowAndZip(
-    history.filter(file => file !== current),
+    history.filter((file) => file !== current),
     getWorkspaceConfig,
   );
   const rootAndTitle = await selectFromList(histWithTitles, toQuickPickItem, {

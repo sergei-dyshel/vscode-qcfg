@@ -193,7 +193,7 @@ export abstract class TextLogHandler implements LogHandler {
 const handlers: LogHandler[] = [];
 
 function formatMessageStr(fmt: string, args: unknown[]) {
-  const normalizedArgs = args.map(arg =>
+  const normalizedArgs = args.map((arg) =>
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     typeof arg === 'object' ? str(arg) : (arg as any),
   );

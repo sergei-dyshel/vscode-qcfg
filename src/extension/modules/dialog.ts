@@ -22,12 +22,12 @@ export async function inputWithHistory(
 ): Promise<string | undefined> {
   const items: string[] = extContext.globalState.get(persistentKey, []);
   const quickPick = window.createQuickPick();
-  quickPick.items = items.map(x => ({ label: x }));
+  quickPick.items = items.map((x) => ({ label: x }));
   quickPick.buttons = [buttons.REMOVE];
 
-  const selected = await new Promise<string | undefined>(resolve => {
+  const selected = await new Promise<string | undefined>((resolve) => {
     const qp = window.createQuickPick();
-    const qpItems: QuickPickItem[] = items.map(x => ({ label: x }));
+    const qpItems: QuickPickItem[] = items.map((x) => ({ label: x }));
     qp.items = qpItems;
     qp.buttons = [buttons.REMOVE];
     const onDidHideDisposer = qp.onDidHide(
@@ -55,7 +55,7 @@ export async function inputWithHistory(
         if (!qpItems.removeFirst(active)) return;
         await extContext.globalState.update(
           persistentKey,
-          qpItems.map(item => item.label),
+          qpItems.map((item) => item.label),
         );
         const newItems = Object.assign([], qpItems);
         if (active.detail) newItems.push(active);
@@ -64,7 +64,7 @@ export async function inputWithHistory(
     );
     qp.onDidChangeValue(
       handleErrors(() => {
-        const exactLabel = qp.items.find(item => item.label === qp.value);
+        const exactLabel = qp.items.find((item) => item.label === qp.value);
         if (!exactLabel && qp.value) {
           const newItems = Object.assign([], qpItems);
           newItems.push({ label: qp.value, detail: '\n' });
@@ -77,7 +77,7 @@ export async function inputWithHistory(
     qp.show();
   });
   if (!selected) return;
-  const nonSelected = items.filter(x => x !== selected);
+  const nonSelected = items.filter((x) => x !== selected);
   nonSelected.unshift(selected);
   await extContext.globalState.update(persistentKey, nonSelected);
   return selected;
@@ -98,7 +98,7 @@ export async function selectFromList<T>(
   toQuickPickItem: (x: T) => QuickPickItem,
   options?: QuickPickOptions,
 ): Promise<T | undefined> {
-  const qpItems = items.map(item => ({ item, ...toQuickPickItem(item) }));
+  const qpItems = items.map((item) => ({ item, ...toQuickPickItem(item) }));
   const selected = await window.showQuickPick(qpItems, options);
   if (selected) return selected.item;
   return;
@@ -108,7 +108,7 @@ export async function selectStringFromList(
   items: string[],
   options?: QuickPickOptions,
 ): Promise<string | undefined> {
-  return selectFromList(items, label => ({ label }), options);
+  return selectFromList(items, (label) => ({ label }), options);
 }
 
 export async function selectFromListMru<T>(
@@ -124,11 +124,11 @@ export async function selectFromListMru<T>(
     if (index === -1) index = origIndex + labels.length;
     return { item, index };
   });
-  mruItems = lodash.sortBy(mruItems, x => x.index);
+  mruItems = lodash.sortBy(mruItems, (x) => x.index);
   // mruItems.sort((x, y) => (x.index - y.index));
   const selectedMru = await selectFromList(
     mruItems,
-    item => toQuickPickItem(item.item),
+    (item) => toQuickPickItem(item.item),
     options,
   );
   if (!selectedMru) return;
@@ -155,7 +155,7 @@ export async function selectMultiple<T>(
     persistentKey,
     [],
   );
-  const qpItems = items.map(item => ({
+  const qpItems = items.map((item) => ({
     ...toQuickPickItem(item),
     item,
     picked: previouslySelected.includes(toPersistentLabel(item)),
@@ -167,9 +167,9 @@ export async function selectMultiple<T>(
   if (selected) {
     await extContext.globalState.update(
       persistentKey,
-      selected.map(qpItem => toPersistentLabel(qpItem.item)),
+      selected.map((qpItem) => toPersistentLabel(qpItem.item)),
     );
-    return selected.map(qpitem => qpitem.item);
+    return selected.map((qpitem) => qpitem.item);
   }
   return undefined;
 }
@@ -195,9 +195,9 @@ export async function selectStringFromListMru(
 ): Promise<string | undefined> {
   return selectFromListMru(
     items,
-    label => ({ label }),
+    (label) => ({ label }),
     persistentKey,
-    label => label,
+    (label) => label,
     options,
   );
 }

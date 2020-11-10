@@ -21,7 +21,7 @@ export class FileHandler extends TextLogHandler {
 
   append(formattedMsg: string) {
     if (!this.fd) return;
-    nodejs.fs.write(this.fd, formattedMsg + '\n', error => {
+    nodejs.fs.write(this.fd, formattedMsg + '\n', (error) => {
       if (error) {
         log.error('Could not write to log file, closing the file');
         nodejs.fs.close(this.fd!, () => {});

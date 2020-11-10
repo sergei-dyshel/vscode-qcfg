@@ -27,7 +27,7 @@ export namespace Modules {
   }
 
   export function fileNames() {
-    return modules.map(module => module.name);
+    return modules.map((module) => module.name);
   }
 }
 

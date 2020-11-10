@@ -32,7 +32,7 @@ export function parseLocations(
 ): Location[] {
   const lines = text.match(/[^\r\n]+/g);
   if (!lines) return [];
-  return filterNonNull(lines.map(line => parseLocation(line, base, format)));
+  return filterNonNull(lines.map((line) => parseLocation(line, base, format)));
 }
 
 function formatToRegex(format: ParseLocationFormat): RegExp {
@@ -113,7 +113,7 @@ export async function findPatternInParsedLocations(
   locations: Location[],
   pattern: string | RegExp,
 ): Promise<Location[]> {
-  return mapAsync(locations, async loc => {
+  return mapAsync(locations, async (loc) => {
     if (!loc.range.isEmpty) return loc;
     const doc = await workspace.openTextDocument(loc.uri);
     const range = adjustRangeInParsedPosition(doc, loc.range.start, pattern);
@@ -141,7 +141,7 @@ export async function gatherLocationsFromWorkspace(
   format: ParseLocationFormat,
 ): Promise<Location[]> {
   const locations = await Promise.all(
-    workspace.workspaceFolders!.map(async folder =>
+    workspace.workspaceFolders!.map(async (folder) =>
       gatherLocationsFromFolder(cmd, folder, format),
     ),
   );

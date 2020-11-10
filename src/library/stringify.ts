@@ -29,7 +29,7 @@ function stringifyObject(x: object | null): string {
   }
   if (x instanceof Array) {
     const arr = x;
-    return '[ ' + arr.map(elem => stringify(elem)).join(', ') + ' ]';
+    return '[ ' + arr.map((elem) => stringify(elem)).join(', ') + ' ]';
   }
   for (const str of stringifiers) {
     const s = str(x);

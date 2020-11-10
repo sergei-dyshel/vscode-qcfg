@@ -137,14 +137,14 @@ class ConfigDirWatcher implements Disposable {
   onConfigVarChanged() {
     this.globalDir = parseGlobalDir();
     this.workspaceDir = parseWorkspaceDir();
-    this.pairWatchers.forEach(watcher =>
+    this.pairWatchers.forEach((watcher) =>
       watcher.reset(this.globalDir, this.workspaceDir),
     );
   }
 
   dispose() {
     this.configDisposable.dispose();
-    this.pairWatchers.forEach(pairWatcher => pairWatcher.dispose());
+    this.pairWatchers.forEach((pairWatcher) => pairWatcher.dispose());
   }
 }
 

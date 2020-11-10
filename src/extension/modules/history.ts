@@ -89,8 +89,8 @@ export function resetTemporary() {
 
 function resetHistory() {
   histories = window.visibleTextEditors
-    .filter(editor => editor.viewColumn)
-    .map(editor => new History(editor.viewColumn!));
+    .filter((editor) => editor.viewColumn)
+    .map((editor) => new History(editor.viewColumn!));
   numViewColumns = histories.length;
 }
 
@@ -114,7 +114,7 @@ async function onDidChangeVisibleTextEditors(_: TextEditor[]) {
   // const visibleTextEditors = window.visibleTextEditors;
   // log.info(`TEMP: onDidChangeVisibleTextEditors ${str(visibleTextEditors)}`);
   const newNumViewColumns = window.visibleTextEditors.filter(
-    editor => editor.viewColumn,
+    (editor) => editor.viewColumn,
   ).length;
   if (newNumViewColumns === numViewColumns) return;
   if (newNumViewColumns < numViewColumns) {
@@ -184,12 +184,12 @@ async function goForward() {
 }
 
 function saveHistory() {
-  const savedHistories: History.Saved[] = histories.map(history =>
+  const savedHistories: History.Saved[] = histories.map((history) =>
     history.getSaved(),
   );
   log.info(
     'Saving histories: ',
-    histories.map(hist => hist.size()),
+    histories.map((hist) => hist.size()),
   );
   return extContext.workspaceState.update('history', savedHistories);
 }
@@ -204,7 +204,7 @@ function loadHistory() {
   });
   log.info(
     'Loaded histories: ',
-    histories.map(hist => hist.size()),
+    histories.map((hist) => hist.size()),
   );
 }
 
@@ -262,8 +262,9 @@ class Point {
 
   toString(): string {
     if (this.position)
-      return `<${this.document.fileName}:${this.position.line + 1}:${this
-        .position.character + 1}>`;
+      return `<${this.document.fileName}:${this.position.line + 1}:${
+        this.position.character + 1
+      }>`;
     return `<${this.document.fileName}(${this.offset})>`;
   }
 
@@ -378,7 +379,7 @@ class History {
   }
 
   private pushCurrentIfNeeded() {
-    this.backward = this.backward.filter(point =>
+    this.backward = this.backward.filter((point) =>
       point.farEnough(this.current),
     );
     this.backward.push(this.current);
@@ -386,8 +387,8 @@ class History {
   }
 
   fixAfterChange(event: TextDocumentChangeEvent) {
-    this.backward.map(point => point.fixAfterChange(event));
-    this.forward.map(point => point.fixAfterChange(event));
+    this.backward.map((point) => point.fixAfterChange(event));
+    this.forward.map((point) => point.fixAfterChange(event));
     this.current.fixAfterChange(event);
   }
 
@@ -396,12 +397,12 @@ class History {
   }
 
   getSaved(): History.Saved {
-    return this.backward.map(point => point.getSaved());
+    return this.backward.map((point) => point.getSaved());
   }
 
   load(savedHistory: History.Saved) {
     this.backward = filterNonNull(
-      savedHistory.map(savedPoint => Point.fromSaved(savedPoint)),
+      savedHistory.map((savedPoint) => Point.fromSaved(savedPoint)),
     );
   }
 
@@ -415,7 +416,7 @@ class History {
 
 function getVisibleEditor(viewColumn: ViewColumn): TextEditor | undefined {
   return window.visibleTextEditors.firstOf(
-    editor => editor.viewColumn === viewColumn,
+    (editor) => editor.viewColumn === viewColumn,
   );
 }
 

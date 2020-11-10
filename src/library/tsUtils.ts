@@ -24,12 +24,12 @@ export function mapNonNull<T, V>(
 ): V[] {
   return array
     .map(func)
-    .filter(x => x !== null && x !== undefined)
-    .map(x => x!);
+    .filter((x) => x !== null && x !== undefined)
+    .map((x) => x!);
 }
 
 export function filterNonNull<T>(array: Array<T | null | undefined>): T[] {
-  return array.filter(x => x !== null && x !== undefined).map(x => x!);
+  return array.filter((x) => x !== null && x !== undefined).map((x) => x!);
 }
 
 /**
@@ -59,7 +59,7 @@ export function mapWithThrow<T, V>(
       }
     }
   }
-  return zipArrays(array, res).filter(pair => pair[1] !== undefined) as Array<
+  return zipArrays(array, res).filter((pair) => pair[1] !== undefined) as Array<
     [T, V]
   >;
 }
@@ -105,11 +105,11 @@ export function groupBy<K, T>(
 }
 
 export function maxNumber<T>(...args: T[]): T {
-  return (args.map(x => (x as unknown) as number).max() as unknown) as T;
+  return (args.map((x) => (x as unknown) as number).max() as unknown) as T;
 }
 
 export function minNumber<T>(...args: T[]): T {
-  return (args.map(x => (x as unknown) as number).min() as unknown) as T;
+  return (args.map((x) => (x as unknown) as number).min() as unknown) as T;
 }
 
 export class NumberIterator implements IterableIterator<number> {
@@ -246,28 +246,28 @@ declare global {
   }
 }
 
-Array.prototype.isAnyTrue = function<T>(this: T[]): boolean {
+Array.prototype.isAnyTrue = function <T>(this: T[]): boolean {
   return this.find(Boolean) !== undefined;
 };
 
-Array.prototype.areAllTrue = function<T>(this: T[]): boolean {
+Array.prototype.areAllTrue = function <T>(this: T[]): boolean {
   return this.every(Boolean);
 };
 
-Array.prototype.uniq = function<T>(
+Array.prototype.uniq = function <T>(
   this: T[],
   equals: (x: T, y: T) => boolean,
 ): T[] {
   return this.reduce<T[]>(
     (unique, item) =>
-      unique.find(item1 => equals(item, item1)) !== undefined
+      unique.find((item1) => equals(item, item1)) !== undefined
         ? unique
         : [...unique, item],
     [],
   );
 };
 
-Array.prototype.group = function<T>(this: T[], func: (x: T, y: T) => boolean) {
+Array.prototype.group = function <T>(this: T[], func: (x: T, y: T) => boolean) {
   return this.reduce<T[][]>((prev: T[][], cur: T) => {
     if (prev.length === 0 || !func(prev[prev.length - 1][0], cur)) {
       prev.push([cur]);
@@ -278,7 +278,7 @@ Array.prototype.group = function<T>(this: T[], func: (x: T, y: T) => boolean) {
   }, []);
 };
 
-Array.prototype.forEachRight = function<T>(
+Array.prototype.forEachRight = function <T>(
   this: T[],
   callbackfn: (value: T, index: number, array: T[]) => void,
 ): void {
@@ -288,7 +288,7 @@ Array.prototype.forEachRight = function<T>(
   }, undefined);
 };
 
-Array.prototype.iter = function<T>(
+Array.prototype.iter = function <T>(
   this: T[],
   start?: number,
   end?: number,
@@ -305,15 +305,15 @@ Array.prototype.iter = function<T>(
   );
 };
 
-Array.prototype.reverseIter = function<T>(this: T[]) {
+Array.prototype.reverseIter = function <T>(this: T[]) {
   return this.iter(this.length - 1, 0, -1);
 };
 
-Array.prototype.pairIter = function<T>(this: T[]) {
+Array.prototype.pairIter = function <T>(this: T[]) {
   return izip(this.iter(0, this.length - 1), this.iter(1, this.length));
 };
 
-Array.prototype.removeFirst = function<T>(this: T[], val: T): boolean {
+Array.prototype.removeFirst = function <T>(this: T[], val: T): boolean {
   const index = this.indexOf(val);
   if (index === -1) return false;
   this.splice(index, 1);
@@ -332,7 +332,7 @@ function defaultEquals<T>(a: T, b: T) {
   return a === b;
 }
 
-Array.prototype.firstOf = function<T>(
+Array.prototype.firstOf = function <T>(
   this: T[],
   cond: (val: T) => boolean,
 ): T | undefined {
@@ -341,7 +341,7 @@ Array.prototype.firstOf = function<T>(
   return this[idx];
 };
 
-Array.prototype.equals = function<T>(
+Array.prototype.equals = function <T>(
   this: T[],
   that: T[],
   eq: (x: T, y: T) => boolean = defaultEquals,
@@ -351,7 +351,7 @@ Array.prototype.equals = function<T>(
   return true;
 };
 
-Array.prototype.min = function<T>(
+Array.prototype.min = function <T>(
   this: T[],
   cmp: (x: T, y: T) => number = numberCompare,
 ) {
@@ -359,7 +359,7 @@ Array.prototype.min = function<T>(
   return this.reduce((x, y) => (cmp(x, y) === -1 ? x : y));
 };
 
-Array.prototype.max = function<T>(
+Array.prototype.max = function <T>(
   this: T[],
   cmp: (x: T, y: T) => number = numberCompare,
 ) {
@@ -398,13 +398,13 @@ export function zipArrays<T1, T2>(a: T1[], b: T2[]): Array<[T1, T2]> {
   return a.map((k, i) => [k, b[i]]);
 }
 
-Map.prototype.keySet = function<K, V>(this: Map<K, V>): Set<K> {
+Map.prototype.keySet = function <K, V>(this: Map<K, V>): Set<K> {
   const keys = new Set<K>();
   for (const key of this.keys()) keys.add(key);
   return keys;
 };
 
-Promise.prototype.ignoreResult = async function<T>(
+Promise.prototype.ignoreResult = async function <T>(
   this: Promise<T>,
 ): Promise<void> {
   return this.then(() => {});

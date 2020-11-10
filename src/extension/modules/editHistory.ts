@@ -119,7 +119,7 @@ class DocumentHistory {
 }
 
 const history = new DefaultMap<TextDocument, DocumentHistory>(
-  document => new DocumentHistory(document),
+  (document) => new DocumentHistory(document),
 );
 
 function onDidChangeTextDocument(event: TextDocumentChangeEvent) {
