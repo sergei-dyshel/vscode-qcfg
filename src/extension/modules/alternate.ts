@@ -34,7 +34,7 @@ async function switchToAlternate() {
     mapping[ext],
     `No alternate mapping configured for ${ext}`,
   );
-  const altFiles = altExts.map(altExt => stripExt(filePath) + altExt);
+  const altFiles = altExts.map((altExt) => stripExt(filePath) + altExt);
   for (const alt of altFiles) {
     const exists = await fileUtils.exists(alt);
     if (!exists) continue;
@@ -59,7 +59,7 @@ async function switchToAlternate() {
       });
       return;
     }
-    const file = await selectFromList(files, uri => ({
+    const file = await selectFromList(files, (uri) => ({
       label: nodejs.path.relative(folder.uri.fsPath, uri.fsPath),
     }));
     if (file) {

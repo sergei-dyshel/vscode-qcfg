@@ -71,7 +71,7 @@ async function surroundWith(args: unknown[]) {
 
 function swapCursorAndAnchor(editor: TextEditor) {
   editor.selections = editor.selections.map(
-    sel => new Selection(sel.active, sel.anchor),
+    (sel) => new Selection(sel.active, sel.anchor),
   );
 }
 
@@ -118,7 +118,7 @@ async function wrapWithBracketsInline(args: string[]) {
   const nextLine = selection.end.line + 1;
   if (prevLine < 0 || nextLine > document.lineCount - 1)
     throw new Error('Can not wrap first or last line');
-  await editor.edit(builder => {
+  await editor.edit((builder) => {
     const start = document.lineAt(prevLine).range.end;
     const indentation = lineIndentation(document, prevLine);
     builder.insert(start, ' ' + args[0]);
@@ -136,7 +136,7 @@ export async function replaceText(
   text: string,
   options?: { select?: boolean; reveal?: boolean },
 ): Promise<Range> {
-  await editor.edit(builder => {
+  await editor.edit((builder) => {
     builder.replace(range, text);
   });
   const newRange = new Range(
@@ -158,7 +158,7 @@ async function stripBrackets() {
   const strippedText = editor.document.getText(strippedRange);
   const start = selection.start;
   const reversed = selection.isReversed;
-  await editor.edit(builder => {
+  await editor.edit((builder) => {
     builder.replace(selection, strippedText);
   });
   const end = offsetPosition(editor.document, start, strippedText.length);
@@ -247,7 +247,7 @@ async function insertPathFromDialog() {
   if (!uris || uris.isEmpty) return;
   let result: string;
   if (uris.length === 1) result = uris[0].fsPath;
-  else result = uris.map(uri => uri.fsPath).join(' ');
+  else result = uris.map((uri) => uri.fsPath).join(' ');
   await replaceText(editor, editor.selection, result);
 }
 

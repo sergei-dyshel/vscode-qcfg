@@ -7,7 +7,7 @@ interface String {
   searchFirst(pattern: string | RegExp): [number, number] | undefined;
 }
 
-String.prototype.searchFirst = function(
+String.prototype.searchFirst = function (
   this: string,
   pattern: string | RegExp,
 ): [number, number] | undefined {

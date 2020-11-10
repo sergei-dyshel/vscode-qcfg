@@ -11,7 +11,7 @@ import { filterNonNull } from './tsUtils';
 
 const START_PORT = 7890;
 
-export const PORT_RANGE = [...Array(9).keys()].map(i => i + START_PORT);
+export const PORT_RANGE = [...Array(9).keys()].map((i) => i + START_PORT);
 
 type MethodName = Extract<keyof RemoteProtocol, string>;
 
@@ -114,7 +114,7 @@ export class MultiClient {
    * Try connecting to all ports and return set of working clients
    */
   static async connect(): Promise<MultiClient> {
-    const requests = PORT_RANGE.map(async port => {
+    const requests = PORT_RANGE.map(async (port) => {
       try {
         return await IdentifiedClient.connect(port);
       } catch (_) {
@@ -134,7 +134,7 @@ export class MultiClient {
     arg: FirstParameter<RemoteProtocol[K]>,
   ): Promise<void> {
     return Promise.all(
-      this.clients.map(async client => client.sendNoResult(k, arg)),
+      this.clients.map(async (client) => client.sendNoResult(k, arg)),
     ).ignoreResult();
   }
 }

@@ -97,16 +97,16 @@ function handleCmd(cmd: string) {
 }
 
 function activate(_context: ExtensionContext) {
-  const server = net.createServer(socket => {
+  const server = net.createServer((socket) => {
     socket.on('data', () => {
-      handleErrors(data => handleCmd(data.toString()));
+      handleErrors((data) => handleCmd(data.toString()));
     });
   });
   server.listen(port, '127.0.0.1');
   server.on('listening', () => {
     log.info(`Listening on port ${port}`);
   });
-  server.on('error', err => {
+  server.on('error', (err) => {
     const error = err as NodeJS.ErrnoException;
     if (error.code === 'EADDRINUSE') {
       log.debug(`Port ${port} already in use`);

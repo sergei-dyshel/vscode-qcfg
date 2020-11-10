@@ -15,7 +15,7 @@ declare module 'vscode' {
   }
 }
 
-Position.prototype.offset = function(
+Position.prototype.offset = function (
   this: Position,
   offset: { line?: number; character?: number },
 ) {
@@ -25,11 +25,14 @@ Position.prototype.offset = function(
   );
 };
 
-Position.prototype.withLine = function(this: Position, line: number) {
+Position.prototype.withLine = function (this: Position, line: number) {
   return this.with(line);
 };
 
-Position.prototype.withCharacter = function(this: Position, character: number) {
+Position.prototype.withCharacter = function (
+  this: Position,
+  character: number,
+) {
   return this.with(undefined, character);
 };
 
@@ -39,7 +42,7 @@ Object.defineProperty(Position.prototype, 'asRange', {
   },
 });
 
-Position.compare = function(pos1: Position, pos2: Position): number {
+Position.compare = function (pos1: Position, pos2: Position): number {
   return (
     defaultCompare(pos1.line, pos2.line) ||
     defaultCompare(pos1.character, pos2.character)

@@ -30,7 +30,7 @@ export function buildAbbrevPattern(query: string): string {
   const goodChars = query.replace(/\W/g, '');
   const midPattern = goodChars
     .split('')
-    .map(ch => {
+    .map((ch) => {
       if (/[a-zA-Z]/.exec(ch)) {
         const lower = ch.toLowerCase();
         const upper = ch.toUpperCase();

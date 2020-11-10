@@ -41,7 +41,7 @@ function rangeToSymbol(
     const child = rangeToSymbol(range, symbol.children);
     if (child) return child;
   }
-  return symbols.firstOf(sym => sym.range.contains(range));
+  return symbols.firstOf((sym) => sym.range.contains(range));
 }
 
 async function location2Call(
@@ -60,7 +60,7 @@ const callHierarchyProvider: CallHierarchyProvider = {
   ): Promise<CallHierarchyItem[]> {
     const definitions = await executeDefinitionProvider(document.uri, position);
     return filterNonNull(
-      await mapAsync(definitions, async loc => location2Call(loc)),
+      await mapAsync(definitions, async (loc) => location2Call(loc)),
     );
   },
 
@@ -74,7 +74,7 @@ const callHierarchyProvider: CallHierarchyProvider = {
     );
     refs.sort(Location.compare);
     // array of incoming calls, each may be undefined
-    const callsOrNulls = await mapAsync(refs, async ref => {
+    const callsOrNulls = await mapAsync(refs, async (ref) => {
       const call = await location2Call(ref);
       return call
         ? new CallHierarchyIncomingCall(call, [ref.range])
@@ -82,7 +82,7 @@ const callHierarchyProvider: CallHierarchyProvider = {
     });
     // filter undefined and orinal item
     const allCalls = filterNonNull(callsOrNulls).filter(
-      call => !call.from.range.isEqual(item.range),
+      (call) => !call.from.range.isEqual(item.range),
     );
     const groupedCalls = allCalls.group(
       (call1, call2) =>
@@ -90,10 +90,10 @@ const callHierarchyProvider: CallHierarchyProvider = {
         call1.from.range.isEqual(call2.from.range),
     );
     return groupedCalls.map(
-      calls =>
+      (calls) =>
         new CallHierarchyIncomingCall(
           calls[0].from,
-          concatArrays(...calls.map(call => call.fromRanges)),
+          concatArrays(...calls.map((call) => call.fromRanges)),
         ),
     );
   },

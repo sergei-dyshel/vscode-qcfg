@@ -161,7 +161,7 @@ class TaskGenerator<P extends BaseTaskParams> {
   }
 
   private async filterValidContexts(folderContexts: TaskContext[]) {
-    return filterAsync(folderContexts, async context => {
+    return filterAsync(folderContexts, async (context) => {
       if (
         this.params.folders &&
         !this.params.folders.includes(context.workspaceFolder!.name)
@@ -255,9 +255,9 @@ async function fetchQcfgTasks(options?: FetchOptions): Promise<BaseQcfgTask[]> {
     folders.unshift(curFolder);
   }
 
-  const folderContexts = folders.map(folder => new TaskContext(folder));
+  const folderContexts = folders.map((folder) => new TaskContext(folder));
 
-  const filteredParams = configuredParams.filter(fetchedParams => {
+  const filteredParams = configuredParams.filter((fetchedParams) => {
     const { params } = fetchedParams;
     if (!params.flags) params.flags = [];
     if (params.flags.includes(Flag.HIDDEN) && !(options ?? {}).showHidden)
@@ -267,7 +267,7 @@ async function fetchQcfgTasks(options?: FetchOptions): Promise<BaseQcfgTask[]> {
 
   const tasks = await mapSomeAsync<FetchedParams, BaseQcfgTask[]>(
     filteredParams,
-    async fetchedParams => {
+    async (fetchedParams) => {
       try {
         const generator = createTaskGenerator(fetchedParams);
         return await generator.generateAll(currentContext, folderContexts);
@@ -325,7 +325,7 @@ async function showTasks() {
     fetchQcfgTasks(),
     fetchVscodeTasksChecked(),
   ]);
-  const vscodeTasks = rawVscodeTasks.map(task => new VscodeTask(task));
+  const vscodeTasks = rawVscodeTasks.map((task) => new VscodeTask(task));
   const allTasks = [...qcfgTasks, ...vscodeTasks];
   const anyTask = await dialog.selectObjectFromListMru(allTasks, 'tasks');
   if (!anyTask) return;
@@ -346,7 +346,7 @@ async function createTask(
         const folders = workspace.workspaceFolders ?? [];
         if (folders.isEmpty)
           throw new Error(`Task "${label}" can only run in workspace folder`);
-        const folderContexts = folders.map(folder => new TaskContext(folder));
+        const folderContexts = folders.map((folder) => new TaskContext(folder));
         return generator.genMultiTask(folderContexts);
       }
       throw new Error(`Task "${label}" is not folder task`);
@@ -370,7 +370,7 @@ async function createTask(
 
 async function runConfiguredTask(name: string, options?: TaskRunOptions) {
   const fetchedParams = configuredParams.firstOf(
-    fp => fp.fetchInfo.label === name,
+    (fp) => fp.fetchInfo.label === name,
   );
   if (!fetchedParams) throw new Error(`Task "${name}" is not available`);
   const task = await createTask(fetchedParams, options);

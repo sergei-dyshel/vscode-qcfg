@@ -56,7 +56,9 @@ const treeProvider: TreeProvider = {
   onDidChangeSelection(nodes: SyntaxTreeViewNode[]) {
     const editor = window.activeTextEditor;
     if (!editor) return;
-    editor.selections = nodes.map(node => node.syntaxNode.range.asSelection());
+    editor.selections = nodes.map((node) =>
+      node.syntaxNode.range.asSelection(),
+    );
     editor.revealRange(editor.selection);
   },
   onDidChangeVisibility(visible: boolean) {

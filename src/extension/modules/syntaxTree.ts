@@ -250,7 +250,7 @@ class DocumentContext {
 }
 
 const trees = new DefaultMap<TextDocument, DocumentContext>(
-  document => new DocumentContext(document),
+  (document) => new DocumentContext(document),
 );
 
 function checkDocumentSupported(document: TextDocument) {
@@ -284,7 +284,7 @@ interface ParserWithAsync {
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
-    listenWrapped(workspace.onDidCloseTextDocument, document => {
+    listenWrapped(workspace.onDidCloseTextDocument, (document) => {
       trees.delete(document);
     }),
     listenWrapped(workspace.onDidChangeTextDocument, onDidChangeTextDocument),

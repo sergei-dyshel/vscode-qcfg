@@ -86,7 +86,7 @@ export function wrapWithErrorHandlerAsync<T extends AsyncFunction, R>(
   ): Promise<PromiseType<ReturnType<T>> | R> | R => {
     try {
       // eslint-disable-next-line @typescript-eslint/return-await
-      return func(...args).catch(exc => handler(exc));
+      return func(...args).catch((exc) => handler(exc));
     } catch (exc) {
       return handler(exc);
     }

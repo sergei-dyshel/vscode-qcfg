@@ -47,7 +47,9 @@ function flattenSubtree(
   const root = [narrowRange(symbol.name, symbol.selectionRange, document)];
   if (shouldSkipChildren(symbol)) return root;
   return root.concat(
-    ...symbol.children.map(child => flattenSubtree(child, document, newParent)),
+    ...symbol.children.map((child) =>
+      flattenSubtree(child, document, newParent),
+    ),
   );
 }
 
@@ -56,7 +58,7 @@ function flattenOutline(
   document: TextDocument,
 ): Location[] {
   return ([] as Location[]).concat(
-    ...symbols.map(symbol => flattenSubtree(symbol, document)),
+    ...symbols.map((symbol) => flattenSubtree(symbol, document)),
   );
 }
 
@@ -110,7 +112,7 @@ async function peekFlatOutline() {
     ? flattenOutline(outline as DocumentSymbol[], document)
     : (outline as SymbolInformation[])
         .filter(symbolIsBlock)
-        .map(symbol => symbol.location);
+        .map((symbol) => symbol.location);
   await peekLocations(locations);
 }
 

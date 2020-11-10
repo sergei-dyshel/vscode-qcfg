@@ -35,7 +35,7 @@ async function formatFilesInExplorer(clickedFile: Uri, selectedFiles: Uri[]) {
 async function formatFilesInScm(
   ...selectedFiles: SourceControlResourceState[]
 ) {
-  return formatUris(selectedFiles.map(x => x.resourceUri));
+  return formatUris(selectedFiles.map((x) => x.resourceUri));
 }
 
 function activate(context: ExtensionContext) {

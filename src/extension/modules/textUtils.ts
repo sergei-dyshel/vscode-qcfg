@@ -64,7 +64,7 @@ export function swapRanges(
   select?: 1 | 2 | null,
 ) {
   const document = editor.document;
-  return editor.edit(edit => {
+  return editor.edit((edit) => {
     edit.replace(range1, document.getText(range2));
     edit.replace(range2, document.getText(range1));
     if (

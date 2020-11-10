@@ -19,19 +19,19 @@ declare module 'vscode' {
   }
 }
 
-Range.prototype.compareTo = function(this: Range, that: Range) {
+Range.prototype.compareTo = function (this: Range, that: Range) {
   const startCmp = this.start.compareTo(that.start);
   if (startCmp !== 0) return startCmp;
   return this.end.compareTo(that.end);
 };
 
-Range.prototype.asSelection = function(this: Range, reverse = false) {
+Range.prototype.asSelection = function (this: Range, reverse = false) {
   const anchor = reverse ? this.end : this.start;
   const active = reverse ? this.start : this.end;
   return new Selection(anchor, active);
 };
 
-Range.prototype.strictlyContains = function(this: Range, that: Range) {
+Range.prototype.strictlyContains = function (this: Range, that: Range) {
   return this.contains(that) && !this.isEqual(that);
 };
 
@@ -43,7 +43,7 @@ Object.defineProperty(Range.prototype, 'isLinewise', {
   },
 });
 
-Range.prototype.expandLinewise = function(this: Range) {
+Range.prototype.expandLinewise = function (this: Range) {
   return new Range(
     this.start.withCharacter(0),
     this.end.with(
@@ -55,11 +55,11 @@ Range.prototype.expandLinewise = function(this: Range) {
   );
 };
 
-Range.fromPosition = function(position: Position) {
+Range.fromPosition = function (position: Position) {
   return new Range(position, position);
 };
 
-Range.compare = function(range1: Range, range2: Range): number {
+Range.compare = function (range1: Range, range2: Range): number {
   return (
     Position.compare(range1.start, range2.start) ||
     Position.compare(range1.end, range2.end)

@@ -54,7 +54,7 @@ async function onSaveAll(docs: saveAll.DocumentsInFolder) {
 
   if (!command) return;
 
-  const docPaths = docs.documents.map(doc =>
+  const docPaths = docs.documents.map((doc) =>
     vscode.workspace.asRelativePath(doc.fileName, false),
   );
   log.info('Auto syncing ', docPaths, 'in', docs.folder.name);
