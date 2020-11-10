@@ -2068,6 +2068,7 @@
     "gts": "^3.0.2",
     "ifdef-loader": "^2.1.5",
     "json-merger": "^1.1.2",
+    "prettier": "^2.1.2",
     "ts-json-schema-generator": "^0.77.0",
     "ts-loader": "^8.0.11",
     "ts-node": "^9.0.0",
