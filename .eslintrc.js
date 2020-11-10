@@ -1,7 +1,7 @@
-off = 'off';
-never = 'never';
-warn = 'warn';
-always = 'always';
+const off = 'off';
+const never = 'never';
+const warn = 'warn';
+const always = 'always';
 
 module.exports = {
   parser: '@typescript-eslint/parser',
@@ -28,7 +28,7 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 2018,
     sourceType: 'module',
-    project: './tsconfig.json',
+    project: './tsconfig.eslint.json',
   },
   rules: {
     // Place to specify ESLint rules. Can be used to overwrite rules specified
@@ -132,7 +132,6 @@ module.exports = {
     '@typescript-eslint/no-untyped-public-signature': off,
     '@typescript-eslint/no-require-imports': off,
     '@typescript-eslint/no-parameter-properties': off,
-    '@typescript-eslint/restrict-template-expressions': off,
     'max-len': off,
     '@typescript-eslint/explicit-module-boundary-types': off,
     '@typescript-eslint/prefer-readonly-parameter-types': off,
