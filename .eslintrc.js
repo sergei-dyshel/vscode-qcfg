@@ -3,7 +3,10 @@ const never = 'never';
 const warn = 'warn';
 const always = 'always';
 
-module.exports = {
+/**
+ * @type {import("eslint").Linter.Config}
+ */
+const config = {
   parser: '@typescript-eslint/parser',
   plugins: ['@typescript-eslint', 'import', 'only-warn'],
   extends: [
@@ -28,7 +31,7 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 2018,
     sourceType: 'module',
-    project: './tsconfig.eslint.json',
+    project: './tsconfig.json',
   },
   rules: {
     // Place to specify ESLint rules. Can be used to overwrite rules specified
@@ -85,7 +88,8 @@ module.exports = {
     'no-plusplus': [warn, { allowForLoopAfterthoughts: true }],
     'no-constant-condition': [warn, { checkLoops: false }],
     '@typescript-eslint/no-namespace': off,
-    '@typescript-eslint/camelcase': [warn, { allow: ['child_process'] }],
+    // see: https://github.com/typescript-eslint/typescript-eslint/issues/2077
+    '@typescript-eslint/camelcase': off,
     'no-inner-declarations': off,
     'no-underscore-dangle': off,
     '@typescript-eslint/no-explicit-any': [warn, { ignoreRestArgs: true }],
@@ -121,14 +125,7 @@ module.exports = {
     ],
     '@typescript-eslint/no-magic-numbers': off,
     '@typescript-eslint/strict-boolean-expressions': off,
-    '@typescript-eslint/restrict-template-expressions': [
-      warn,
-      {
-        allowNumber: true,
-        allowBoolean: true,
-        allowNullable: false,
-      },
-    ],
+    '@typescript-eslint/restrict-template-expressions': off,
     '@typescript-eslint/no-untyped-public-signature': off,
     '@typescript-eslint/no-require-imports': off,
     '@typescript-eslint/no-parameter-properties': off,
@@ -143,5 +140,20 @@ module.exports = {
     '@typescript-eslint/no-unsafe-return': off,
     '@typescript-eslint/init-declarations': off,
     'semi-spacing': off,
+
+    '@typescript-eslint/lines-between-class-members': [
+      warn,
+      { exceptAfterSingleLine: true },
+    ],
+    '@typescript-eslint/naming-convention': [
+      warn,
+      {
+        selector: 'enumMember',
+        format: ['UPPER_CASE'],
+      },
+    ],
+    '@typescript-eslint/prefer-enum-initializers': off,
   },
 };
+
+module.exports = config;
