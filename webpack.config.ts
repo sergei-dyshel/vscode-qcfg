@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable import/no-extraneous-dependencies */
 // @ts-check
 
 'use strict';
 
 import path from 'path';
-import webpack from 'webpack';
+import type webpack from 'webpack';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const generateConfig = (env: any): webpack.Configuration => ({
@@ -62,7 +63,7 @@ const generateConfig = (env: any): webpack.Configuration => ({
               },
             },
           },
-          { loader: 'ifdef-loader', options: { DEBUG: env && env.DEBUG } },
+          { loader: 'ifdef-loader', options: { DEBUG: env?.DEBUG } },
         ],
       },
       { test: /\.node$/, use: 'node-loader', exclude: '/Debug/iconv.node' },
@@ -72,7 +73,7 @@ const generateConfig = (env: any): webpack.Configuration => ({
     all: false,
     errors: true,
     warnings: true,
-    warningsFilter: warning =>
+    warningsFilter: (warning) =>
       warning.includes("Can't resolve 'spawn-sync'") ||
       warning.includes('build/Debug'),
   },
