@@ -47,7 +47,7 @@ export interface LogRecord {
 }
 
 export interface LogHandler {
-  handle(record: LogRecord): void;
+  handle: (record: LogRecord) => void;
 }
 
 export function registerLogHandler(handler: LogHandler) {
@@ -75,11 +75,11 @@ export class Logger {
   }
 
   log(level: LogLevel, ...args: unknown[]) {
-    return this.logImpl(level, 3, formatMessage(args));
+    this.logImpl(level, 3, formatMessage(args));
   }
 
   logStr(level: LogLevel, fmt: string, ...args: unknown[]) {
-    return this.logImpl(level, 3, formatMessageStr(fmt, args));
+    this.logImpl(level, 3, formatMessageStr(fmt, args));
   }
 
   trace(...args: unknown[]) {
@@ -119,6 +119,7 @@ export class Logger {
   }
 
   fatal(...args: unknown[]): never {
+    // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
     return this.logInternal(LogLevel.FATAL, args) as never;
   }
 
@@ -127,11 +128,11 @@ export class Logger {
   private readonly name?: string;
 
   private logInternal(level: LogLevel, args: unknown[]) {
-    return this.logImpl(level, 4, formatMessage(args));
+    this.logImpl(level, 4, formatMessage(args));
   }
 
   private logStrInternal(level: LogLevel, fmt: string, args: unknown[]) {
-    return this.logImpl(level, 4, formatMessageStr(fmt, args));
+    this.logImpl(level, 4, formatMessageStr(fmt, args));
   }
 
   private logImpl(logLevel: LogLevel, callDepth: number, message: string) {
@@ -145,7 +146,7 @@ export class Logger {
     };
     for (const handler of handlers) handler.handle(record);
     if (logLevel === LogLevel.FATAL) {
-      throw new Error(`[${this.name}] ${message}`);
+      throw new Error(this.name ? `[${this.name}] ${message}` : message);
     }
   }
 }

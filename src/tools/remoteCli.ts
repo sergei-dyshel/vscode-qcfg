@@ -1,20 +1,19 @@
 /* eslint-disable class-methods-use-this */
-import {
-  CommandLineParser,
+import type {
   CommandLineChoiceParameter,
   CommandLineStringParameter,
-  CommandLineAction,
   CommandLineIntegerParameter,
   ICommandLineActionOptions,
+} from '@rushstack/ts-command-line';
+import {
+  CommandLineParser,
+  CommandLineAction,
 } from '@rushstack/ts-command-line';
 import { StreamHandler } from '../library/loggingHandlers';
 import { LogLevel, registerLogHandler } from '../library/logging';
 import * as nodejs from '../library/nodejs';
-import {
-  MultiClient,
-  RemoteClient,
-  IdentifiedClient,
-} from '../library/remoteClient';
+import type { RemoteClient, IdentifiedClient } from '../library/remoteClient';
+import { MultiClient } from '../library/remoteClient';
 import { abort, assert } from '../library/exception';
 import { parseNumber } from '../library/stringUtils';
 

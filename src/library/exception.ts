@@ -1,8 +1,8 @@
-import { AsyncFunction, PromiseType } from './templateTypes';
+import type { AsyncFunction, PromiseType } from './templateTypes';
 import { formatMessage } from './stringify';
 
 export function assert(
-  condition: boolean | undefined | null | object,
+  condition: boolean | undefined | null,
   ...args: unknown[]
 ): asserts condition {
   if (!condition) abort(...args);
@@ -27,7 +27,7 @@ export function assertNull<T>(val: T | undefined | null, ...args: unknown[]) {
 export function assertInstanceOf<T extends B, B>(
   value: B,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  cls: new (...args: any[]) => T,
+  cls: new (..._: any[]) => T,
   ...args: any[]
 ): T {
   assert(value instanceof cls, ...args);
@@ -47,10 +47,7 @@ export class CheckError extends Error {
 /**
  * Throw non-critical exception which results in non-disruptive message in status bar.
  */
-export function check(
-  condition: boolean | undefined | null | object,
-  message: string,
-): asserts condition {
+export function check(condition: boolean, message: string): asserts condition {
   if (!condition) throw new CheckError(message);
 }
 
@@ -70,7 +67,7 @@ export function wrapWithErrorHandler<T extends (...args: any[]) => any, R>(
   return (...args: Parameters<T>): ReturnType<T> | R => {
     try {
       return func(...args);
-    } catch (exc) {
+    } catch (exc: unknown) {
       return handler(exc);
     }
   };
@@ -87,7 +84,7 @@ export function wrapWithErrorHandlerAsync<T extends AsyncFunction, R>(
     try {
       // eslint-disable-next-line @typescript-eslint/return-await
       return func(...args).catch((exc) => handler(exc));
-    } catch (exc) {
+    } catch (exc: unknown) {
       return handler(exc);
     }
   };

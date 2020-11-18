@@ -1,10 +1,10 @@
 import * as jayson from 'jayson/promise';
 /* TODO: use import type with TS 3.8 */
-import {
+import type {
   RemoteProtocol,
   IdentifyResult,
 } from '../extension/modules/remoteServer';
-import { FirstParameter } from './templateTypes';
+import type { FirstParameter } from './templateTypes';
 import { Logger, log } from './logging';
 import * as nodejs from './nodejs';
 import { filterNonNull } from './tsUtils';
@@ -117,7 +117,7 @@ export class MultiClient {
     const requests = PORT_RANGE.map(async (port) => {
       try {
         return await IdentifiedClient.connect(port);
-      } catch (_) {
+      } catch (_: unknown) {
         return undefined;
       }
     });

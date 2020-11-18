@@ -97,10 +97,10 @@ export class TemplateError extends Error {}
 
 export function expandTemplate(
   text: string,
-  substitute: { [name: string]: string },
+  substitute: Record<string, string>,
   throwWhenNotExist = false,
 ): string {
-  return text.replace(/\$\{([a-zA-Z0-9]+)\}/g, (_, varname) => {
+  return text.replace(/\$\{([a-zA-Z0-9]+)\}/g, (_, varname: string) => {
     const sub = substitute[varname] as string | undefined;
     if (!sub) {
       if (throwWhenNotExist)

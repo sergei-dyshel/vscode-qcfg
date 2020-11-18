@@ -1,14 +1,14 @@
 'use strict';
 
-import { SyntaxNode } from 'tree-sitter';
-import {
+import type { SyntaxNode } from 'tree-sitter';
+import type {
   ExtensionContext,
   TextDocument,
   TextEditorSelectionChangeEvent,
   TreeItemLabel,
-  window,
   Range,
 } from 'vscode';
+import { window } from 'vscode';
 import {
   listenWrapped,
   registerAsyncCommandWrapped,
@@ -16,12 +16,10 @@ import {
 } from './exception';
 import { Modules } from './module';
 import { ellipsize } from '../../library/stringUtils';
-import {
-  onSyntaxTreeUpdated,
-  SyntaxTrees,
-  SyntaxTreeUpdatedEvent,
-} from './syntaxTree';
-import { QcfgTreeView, StaticTreeNode, TreeProvider } from './treeView';
+import type { SyntaxTreeUpdatedEvent } from './syntaxTree';
+import { onSyntaxTreeUpdated, SyntaxTrees } from './syntaxTree';
+import type { TreeNode, TreeProvider } from './treeView';
+import { QcfgTreeView, StaticTreeNode } from './treeView';
 import { assert } from '../../library/exception';
 import { stringify as str } from '../../library/stringify';
 
@@ -53,7 +51,8 @@ const treeProvider: TreeProvider = {
       return `Language ${document.languageId} is not supported`;
     return '';
   },
-  onDidChangeSelection(nodes: SyntaxTreeViewNode[]) {
+  onDidChangeSelection(nodes_: TreeNode[]) {
+    const nodes = nodes_ as SyntaxTreeViewNode[];
     const editor = window.activeTextEditor;
     if (!editor) return;
     editor.selections = nodes.map((node) =>

@@ -2,7 +2,7 @@ import { Location, Range } from 'vscode';
 import { defaultCompare } from '../../library/compare';
 
 declare module 'vscode' {
-  // eslint-disable-next-line no-shadow
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   export namespace Location {
     function compare(loc1: Location, loc2: Location): number;
   }

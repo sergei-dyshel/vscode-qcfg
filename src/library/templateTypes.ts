@@ -6,6 +6,7 @@ export type AsyncFunction = (...args: any[]) => Promise<any>;
  * NOTE: Must used `undefined` because just using `void` wouldn't work,
  * see https://stackoverflow.com/questions/57951850/is-there-not-promise-type-in-typescipt
  */
+// eslint-disable-next-line @typescript-eslint/no-invalid-void-type
 export type VoidFunction = (...args: any[]) => void | undefined;
 export type AnyFunction = (...args: any[]) => any;
 

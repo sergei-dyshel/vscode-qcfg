@@ -4,7 +4,7 @@ interface String {
   /**
    * Search first occurence of pattern and return the match's [start, length]
    */
-  searchFirst(pattern: string | RegExp): [number, number] | undefined;
+  searchFirst: (pattern: string | RegExp) => [number, number] | undefined;
 }
 
 String.prototype.searchFirst = function (

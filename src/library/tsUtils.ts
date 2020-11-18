@@ -3,16 +3,16 @@
 import { MultiDictionary } from 'typescript-collections';
 
 export function mapObjectValues<V, R>(
-  obj: { [key: string]: V },
+  obj: Record<string, V>,
   func: (k: string, v: V) => R,
-): { [key: string]: R } {
-  const res: { [key: string]: R } = {};
+): Record<string, R> {
+  const res: Record<string, R> = {};
   const entryObjs = mapObjectToArray(obj, (k, v) => ({ [k]: func(k, v) }));
   return Object.assign(res, ...entryObjs);
 }
 
 export function mapObjectToArray<V, R>(
-  obj: { [key: string]: V },
+  obj: Record<string, V>,
   func: (k: string, v: V) => R,
 ): R[] {
   return Object.entries(obj).map(([k, v]) => func(k, v));
@@ -43,13 +43,13 @@ export function filterNonNull<T>(array: Array<T | null | undefined>): T[] {
 export function mapWithThrow<T, V>(
   array: T[],
   func: (elem: T) => V,
-  handler?: (elem: T, err: Error) => V | void | undefined,
+  handler?: (elem: T, err: unknown) => V | undefined,
 ): Array<[T, V]> {
   const res: Array<V | undefined> = [];
   for (const elem of array) {
     try {
       res.push(func(elem));
-    } catch (err) {
+    } catch (err: unknown) {
       if (handler) {
         const val = handler(elem, err);
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, @typescript-eslint/prefer-nullish-coalescing
@@ -184,65 +184,49 @@ export function izip<T, U>(
 
 declare global {
   // Allows passing Thenable as Promise
-  interface Thenable<T> extends Promise<T> {
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(
-      onfulfilled?:
-        | ((value: T) => TResult1 | PromiseLike<TResult1>)
-        | undefined
-        | null,
-      onrejected?:
-        | ((reason: unknown) => TResult2 | PromiseLike<TResult2>)
-        | undefined
-        | null,
-    ): Promise<TResult1 | TResult2>;
-  }
+  // eslint-disable-next-line @typescript-eslint/no-empty-interface
+  interface Thenable<T> extends Promise<T> {}
 
   interface Array<T> {
     /**
      * Iterate over array in reverse order.
      */
-    reverseIter(): Iterable<T>;
-    iter(start?: number, end?: number, step?: number): Iterable<T>;
-    pairIter(): Iterable<[T, T]>;
+    reverseIter: () => Iterable<T>;
+    iter: (start?: number, end?: number, step?: number) => Iterable<T>;
+    pairIter: () => Iterable<[T, T]>;
     readonly top: T | undefined;
     readonly isEmpty: boolean;
-    min(cmp?: (x: T, y: T) => number): T | undefined;
-    max(cmp?: (x: T, y: T) => number): T | undefined;
-    equals(that: T[], eq?: (x: T, y: T) => boolean): boolean;
-    removeFirst(val: T): boolean;
-    firstOf(cond: (val: T) => boolean): T | undefined;
-    forEachRight(
+    min: (cmp?: (x: T, y: T) => number) => T | undefined;
+    max: (cmp?: (x: T, y: T) => number) => T | undefined;
+    equals: (that: T[], eq?: (x: T, y: T) => boolean) => boolean;
+    removeFirst: (val: T) => boolean;
+    firstOf: (cond: (val: T) => boolean) => T | undefined;
+    forEachRight: (
       callbackfn: (value: T, index: number, array: T[]) => void,
-    ): void;
-    isAnyTrue(): boolean;
-    areAllTrue(): boolean;
+    ) => void;
+    isAnyTrue: () => boolean;
+    areAllTrue: () => boolean;
 
     /** Array of unique elements */
-    uniq(equals: (x: T, y: T) => boolean): T[];
+    uniq: (equals: (x: T, y: T) => boolean) => T[];
 
     /** Group (sorted) array by binary predicate, return array of groups */
-    group(func: (x: T, y: T) => boolean): T[][];
+    group: (func: (x: T, y: T) => boolean) => T[][];
   }
 
   interface ReadonlyArray<T> {
-    reverseIter(): Iterable<T>;
-    iter(start: number, end: number, step?: number): Iterable<T>;
-    pairIter(): Iterable<[T, T]>;
+    reverseIter: () => Iterable<T>;
+    iter: (start: number, end: number, step?: number) => Iterable<T>;
+    pairIter: () => Iterable<[T, T]>;
     readonly isEmpty: boolean;
   }
 
   interface Map<K, V> {
-    keySet(): Set<K>;
+    keySet: () => Set<K>;
   }
 
   interface Promise<T> {
-    ignoreResult(): Promise<void>;
+    ignoreResult: () => Promise<void>;
   }
 }
 
@@ -282,7 +266,7 @@ Array.prototype.forEachRight = function <T>(
   this: T[],
   callbackfn: (value: T, index: number, array: T[]) => void,
 ): void {
-  return this.reduceRight((_, cur, index, array) => {
+  this.reduceRight((_, cur, index, array) => {
     callbackfn(cur, index, array);
     return undefined;
   }, undefined);

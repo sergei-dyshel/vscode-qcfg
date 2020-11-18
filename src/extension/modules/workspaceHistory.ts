@@ -1,13 +1,7 @@
 'use strict';
 
-import {
-  ExtensionContext,
-  workspace,
-  QuickPickItem,
-  commands,
-  Uri,
-  FileType,
-} from 'vscode';
+import type { ExtensionContext, QuickPickItem } from 'vscode';
+import { workspace, commands, Uri, FileType } from 'vscode';
 import { Modules } from './module';
 import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
@@ -69,7 +63,7 @@ function expandTitle(root: string, title: string): string {
       { rootBase, rootDir1, rootDir2, rootDir3, folderName },
       true,
     );
-  } catch (_) {
+  } catch (_: unknown) {
     return '';
   }
 }
@@ -87,13 +81,14 @@ async function getWorkspaceConfig(root: string): Promise<string> {
       {
         const filePath = nodejs.path.join(root, '.vscode', 'settings.json');
         try {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const settings = (await parseJsonFileAsync(filePath)) as any;
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          const settings = await parseJsonFileAsync(filePath);
           return expandTitle(
             root,
-            settings['window.title'] ?? getDefaultTitle(),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (settings as any)['window.title'] ?? getDefaultTitle(),
           );
-        } catch (err) {
+        } catch (err: unknown) {
           log.debug(`Error parsing ${filePath}: ${err}`);
           return nodejs.path.basename(root);
         }
@@ -102,10 +97,10 @@ async function getWorkspaceConfig(root: string): Promise<string> {
     case FileType.File:
     case FileType.SymbolicLink:
       try {
+        const settings = await parseJsonFileAsync(root);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const settings = (await parseJsonFileAsync(root)) as any;
-        return expandTitle(root, settings.settings['window.title']);
-      } catch (err) {
+        return expandTitle(root, (settings as any).settings['window.title']);
+      } catch (err: unknown) {
         log.debug(`Error parsing ${root}: ${err}`);
         return nodejs.path.basename(nodejs.path.dirname(root));
       }

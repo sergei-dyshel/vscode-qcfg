@@ -3,11 +3,12 @@ import { Position, Range } from 'vscode';
 import { defaultCompare } from '../../library/compare';
 
 declare module 'vscode' {
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   export interface Position {
     readonly asRange: Range;
-    offset(offs: { line?: number; character?: number }): Position;
-    withLine(line: number): Position;
-    withCharacter(characer: number): Position;
+    offset: (offs: { line?: number; character?: number }) => Position;
+    withLine: (line: number) => Position;
+    withCharacter: (characer: number) => Position;
   }
   // eslint-disable-next-line no-shadow
   export namespace Position {

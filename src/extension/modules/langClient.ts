@@ -1,6 +1,7 @@
-import { extensions, TextDocument, commands, ExtensionContext } from 'vscode';
+import type { TextDocument, ExtensionContext } from 'vscode';
+import { extensions, commands } from 'vscode';
 import { Logger, log } from '../../library/logging';
-import {
+import type {
   LanguageClient,
   DidSaveTextDocumentParams,
 } from 'vscode-languageclient';
@@ -22,7 +23,7 @@ export function sendDidSaveToLangClients(document: TextDocument) {
 
 interface LanguageClientAPI {
   languageClient: LanguageClient;
-  isRunning(): boolean;
+  isRunning: () => boolean;
 }
 
 class LanguageClientWrapper {

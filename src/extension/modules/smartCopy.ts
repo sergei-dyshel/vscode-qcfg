@@ -1,14 +1,6 @@
 import { Modules } from './module';
-import {
-  ExtensionContext,
-  commands,
-  env,
-  TextEditor,
-  Range,
-  window,
-  workspace,
-  ThemeColor,
-} from 'vscode';
+import type { ExtensionContext, TextEditor } from 'vscode';
+import { commands, env, Range, window, workspace, ThemeColor } from 'vscode';
 import { registerAsyncCommandWrapped, listenWrapped } from './exception';
 import { getActiveTextEditor } from './utils';
 import { trimWhitespace, swapRanges } from './textUtils';
@@ -65,7 +57,8 @@ async function isMarked(editor: TextEditor, range: Range) {
 }
 
 async function isMarkValid() {
-  const result = mark && (await isMarked(mark.editor, mark.range));
+  const result =
+    mark !== undefined && (await isMarked(mark.editor, mark.range));
   return result;
 }
 
@@ -143,7 +136,7 @@ async function smartPaste() {
 
 async function swapWithMark() {
   const editor = getActiveTextEditor();
-  check(mark && (await isMarkValid()), 'No text marked');
+  check(mark !== undefined && (await isMarkValid()), 'No text marked');
   check(editor.selections.length === 1, 'Multiple ranges selected');
 
   if (mark.editor.document === editor.document) {

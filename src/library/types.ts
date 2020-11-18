@@ -1,5 +1,5 @@
 export interface DisposableLike {
-  dispose(): unknown;
+  dispose: () => unknown;
 }
 
 export class DisposableHolder<T extends DisposableLike>

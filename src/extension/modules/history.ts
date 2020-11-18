@@ -1,18 +1,20 @@
 'use strict';
 
 import { Dictionary } from 'typescript-collections';
-import {
+import type {
   Position,
   TextDocument,
   TextEditor,
   ViewColumn,
-  window,
-  workspace,
   ExtensionContext,
   TextEditorViewColumnChangeEvent,
   TextEditorSelectionChangeEvent,
-  TextEditorSelectionChangeKind,
   TextDocumentChangeEvent,
+} from 'vscode';
+import {
+  window,
+  workspace,
+  TextEditorSelectionChangeKind,
   Range,
 } from 'vscode';
 import { Logger, log } from '../../library/logging';
@@ -42,7 +44,9 @@ export function activate(context: ExtensionContext) {
   extContext = context;
   setupDicts();
   loadHistory();
-  setInterval(() => handleAsyncStd(saveHistory()), 30000);
+  setInterval(() => {
+    handleAsyncStd(saveHistory());
+  }, 30000);
   context.subscriptions.push(
     listenAsyncWrapped(
       window.onDidChangeVisibleTextEditors,
@@ -333,7 +337,7 @@ class History {
     do {
       back = this.backward.pop();
     } while (back && !this.current.farEnough(back));
-    assert(back, 'No backward history');
+    assert(back !== undefined, 'No backward history');
     this.current = back;
     await this.current.goto();
     this.log.info(`Went backward to ${this.current}`);
@@ -387,8 +391,12 @@ class History {
   }
 
   fixAfterChange(event: TextDocumentChangeEvent) {
-    this.backward.map((point) => point.fixAfterChange(event));
-    this.forward.map((point) => point.fixAfterChange(event));
+    this.backward.forEach((point) => {
+      point.fixAfterChange(event);
+    });
+    this.forward.forEach((point) => {
+      point.fixAfterChange(event);
+    });
     this.current.fixAfterChange(event);
   }
 

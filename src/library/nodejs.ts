@@ -1,6 +1,4 @@
-'use strict';
-
-/* eslint-disable @typescript-eslint/camelcase */
+/* eslint-disable camelcase */
 
 import * as path from 'path';
 import * as fs from 'fs';

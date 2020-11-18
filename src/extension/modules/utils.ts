@@ -1,6 +1,7 @@
 'use strict';
 
-import { commands, TextEditor, window, WorkspaceFolder, Range } from 'vscode';
+import type { TextEditor, WorkspaceFolder, Range } from 'vscode';
+import { commands, window } from 'vscode';
 import { registerAsyncCommandWrapped } from './exception';
 import { getDocumentWorkspaceFolder } from './fileUtils';
 import { assertNonNull } from '../../library/exception';
