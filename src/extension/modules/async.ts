@@ -2,7 +2,7 @@
 
 import { Logger, log } from '../../library/logging';
 import { zipArrays, concatArrays, izip } from '../../library/tsUtils';
-import { ExtensionContext } from 'vscode';
+import type { ExtensionContext } from 'vscode';
 import { Modules } from './module';
 import { assertNonNull } from '../../library/exception';
 
@@ -21,7 +21,6 @@ export class PromiseQueue {
   }
 
   async add(cb: Callback, name: string): Promise<void> {
-    // tslint:disable-next-line: promise-must-complete
     return new Promise((resolve: Resolve, reject: Reject) => {
       /// #if DEBUG
       this.log.trace(`enqueing "${name}"`);
@@ -64,7 +63,7 @@ export class PromiseQueue {
           this.runNext();
         },
       );
-    } catch (err) {
+    } catch (err: unknown) {
       this.busy = false;
       /// #if DEBUG
       this.log.trace(`failed synchronously "${entry.name}"`);
@@ -90,7 +89,6 @@ export class PromiseContext<T> {
     this.resolve = (_) => {};
     this.reject = (_) => {};
 
-    // tslint:disable-next-line: promise-must-complete
     this.promise = new Promise<T>((resolve, reject) => {
       this.resolve = resolve;
       this.reject = reject;
@@ -104,7 +102,7 @@ export class PromiseContext<T> {
 
 export async function mapAsync<V, R>(
   arr: V[],
-  func: (v: V) => Promise<R>,
+  func: (v: V) => Thenable<R>,
 ): Promise<R[]> {
   return (sequentialAsyncByDefault ? mapAsyncSequential : mapAsyncParallel)(
     arr,
@@ -114,14 +112,14 @@ export async function mapAsync<V, R>(
 
 export async function mapAsyncParallel<V, R>(
   arr: V[],
-  func: (v: V) => Promise<R>,
+  func: (v: V) => Thenable<R>,
 ): Promise<R[]> {
   return Promise.all(arr.map(func));
 }
 
 export async function mapAsyncSequential<V, R>(
   arr: V[],
-  func: (v: V) => Promise<R>,
+  func: (v: V) => Thenable<R>,
 ): Promise<R[]> {
   const result: R[] = [];
   for (const v of arr) {
@@ -135,7 +133,7 @@ declare global {
    * Map set keys to values asyncronously and return key -> value map
    */
   interface Set<T> {
-    mapAsync<V>(func: (k: T) => Promise<V>): Promise<Map<T, V>>;
+    mapAsync: <V>(func: (k: T) => Promise<V>) => Promise<Map<T, V>>;
   }
 }
 
@@ -163,7 +161,7 @@ export const MAP_UNDEFINED = new MapUndefined();
  */
 export async function mapSomeAsyncAndZip<V, R>(
   arr: V[],
-  func: (v: V) => Promise<R | MapUndefined>,
+  func: (v: V) => Thenable<R | MapUndefined>,
 ): Promise<Array<[V, R]>> {
   const results: Array<R | MapUndefined> = await mapAsync(arr, func);
   return zipArrays(arr, results).filter(
@@ -197,12 +195,12 @@ export async function filterAsync<T>(
 export async function mapAsyncNoThrowAndZip<V, R>(
   arr: V[],
   func: (v: V) => Promise<R>,
-  handler?: (err: unknown, v: V) => R | void | undefined,
+  handler?: (err: unknown, v: V) => R | undefined,
 ): Promise<Array<[V, R]>> {
   const results: Array<R | undefined> = await mapAsync(arr, async (v: V) => {
     try {
       return await func(v);
-    } catch (err) {
+    } catch (err: unknown) {
       if (handler) {
         const res = handler(err, v);
         if (!res) return undefined;
@@ -219,7 +217,7 @@ export async function mapAsyncNoThrowAndZip<V, R>(
 export async function mapAsyncNoThrow<V, R>(
   arr: V[],
   func: (v: V) => Promise<R>,
-  handler?: (err: unknown, v: V) => R | void | undefined,
+  handler?: (err: unknown, v: V) => R | undefined,
 ): Promise<R[]> {
   const result = await mapAsyncNoThrowAndZip(arr, func, handler);
   return result.map((pair) => pair[1]);

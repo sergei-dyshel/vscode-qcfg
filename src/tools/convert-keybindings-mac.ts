@@ -8,12 +8,12 @@ const path = process.argv[2];
 const text = fs.readFileSync(path, 'utf8');
 // const parsed = jsonc.parseTree(text);
 
-const origin = JSON.parse(jsonc.stripComments(text));
+const origin = JSON.parse(jsonc.stripComments(text)) as KeyBinding[];
 interface KeyBinding {
   key: string;
 }
 
-const result = (origin as KeyBinding[]).map((binding) => {
+const result = origin.map((binding) => {
   const key = binding.key;
   const newKey = key.replace('ctrl+', 'cmd+');
   binding.key = newKey;

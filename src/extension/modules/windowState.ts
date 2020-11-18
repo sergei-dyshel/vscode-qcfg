@@ -4,7 +4,8 @@ import { log } from '../../library/logging';
 import { listenWrapped, registerSyncCommandWrapped } from './exception';
 import { Modules } from './module';
 import { windowManager, Window } from 'node-window-manager';
-import { WindowState, ExtensionContext, window } from 'vscode';
+import type { WindowState, ExtensionContext } from 'vscode';
+import { window } from 'vscode';
 import { runSubprocessSync } from './subprocess';
 
 function callHammerspoon(funcName: string, ...args: Array<number | string>) {
@@ -74,7 +75,9 @@ function activate(context: ExtensionContext) {
 
   context.subscriptions.push(
     listenWrapped(window.onDidChangeWindowState, windowStateChanged),
-    registerSyncCommandWrapped('qcfg.window.focus', () => focusWindow()),
+    registerSyncCommandWrapped('qcfg.window.focus', () => {
+      focusWindow();
+    }),
   );
 }
 

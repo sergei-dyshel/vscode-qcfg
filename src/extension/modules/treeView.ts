@@ -1,19 +1,21 @@
 'use strict';
 
-import {
-  EventEmitter,
+import type {
   ExtensionContext,
   ProviderResult,
   TreeDataProvider,
   TreeItem,
-  TreeItem2,
-  TreeItemCollapsibleState,
   TreeItemLabel,
   TreeView,
   TreeViewExpansionEvent,
   TreeViewOptions,
   TreeViewSelectionChangeEvent,
   TreeViewVisibilityChangeEvent,
+} from 'vscode';
+import {
+  EventEmitter,
+  TreeItem2,
+  TreeItemCollapsibleState,
   window,
 } from 'vscode';
 import {
@@ -74,22 +76,22 @@ export function activate(context: ExtensionContext) {
 }
 
 export interface TreeNode {
-  getTreeItem(): TreeItem | Thenable<TreeItem>;
-  getChildren(): ProviderResult<TreeNode[]>;
-  getParent(): ProviderResult<TreeNode>;
+  getTreeItem: () => TreeItem | Thenable<TreeItem>;
+  getChildren: () => ProviderResult<TreeNode[]>;
+  getParent: () => ProviderResult<TreeNode>;
   onDidExpand?: () => void;
   onDidCollapse?: () => void;
   provider?: TreeProvider;
 }
 
 export interface TreeProvider {
-  getTrees(): ProviderResult<TreeNode[]>;
-  getMessage?(): string | undefined;
-  removeNode?(node: TreeNode): void;
-  onDidChangeSelection?(nodes: TreeNode[]): void;
-  onDidChangeVisibility?(visible: boolean): void;
+  getTrees: () => ProviderResult<TreeNode[]>;
+  getMessage?: () => string | undefined;
+  removeNode?: (node: TreeNode) => void;
+  onDidChangeSelection?: (nodes: TreeNode[]) => void;
+  onDidChangeVisibility?: (visible: boolean) => void;
   /** Called when provider becomes inactive, e.g. other provider is set */
-  onUnset?(): void;
+  onUnset?: () => void;
 }
 
 export namespace QcfgTreeView {
@@ -273,6 +275,7 @@ export namespace StaticTreeNode {
 
 // private
 
+// eslint-disable-next-line @typescript-eslint/no-invalid-void-type
 const onChangeEmitter = new EventEmitter<TreeNode | void>();
 
 const treeDataProvider: TreeDataProvider<TreeNode> = {

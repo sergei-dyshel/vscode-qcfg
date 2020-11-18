@@ -16,6 +16,7 @@ class JsonParseError extends Error {
 
 export function parseJson(text: string, options?: JsonParseOptions) {
   const errors: jsoncParser.ParseError[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const json = jsoncParser.parse(text, errors, options);
   if (errors.length > 0 && options && options.forbidErrors)
     throw new JsonParseError('Errors occured while parsing JSON', errors);

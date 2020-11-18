@@ -2,22 +2,21 @@
 
 import * as path from 'path';
 import { MultiDictionary } from 'typescript-collections';
-import {
-  Uri,
-  ThemeIcon,
+import type {
   TreeItemLabel,
-  workspace,
-  window,
   ExtensionContext,
   TextDocument,
   Location,
 } from 'vscode';
+import { Uri, ThemeIcon, workspace, window } from 'vscode';
 import { handleAsyncStd } from './exception';
-import { StaticTreeNode, TreeProvider, QcfgTreeView } from './treeView';
+import type { TreeNode, TreeProvider } from './treeView';
+import { StaticTreeNode, QcfgTreeView } from './treeView';
 import { Modules } from './module';
 import { mapSomeAsyncAndZip } from './async';
 import { maxNumber } from '../../library/tsUtils';
-import { LiveLocation, createLiveLocation } from './liveLocation';
+import type { LiveLocation } from './liveLocation';
+import { createLiveLocation } from './liveLocation';
 import { assertInstanceOf, assert } from '../../library/exception';
 import { stringify as str } from '../../library/stringify';
 
@@ -103,6 +102,7 @@ namespace TreeBuilder {
   function build(files: FileNode[]): Forest {
     const forest = createForest();
     for (const file of files) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const components = file.fsPath.split(path.sep);
       if (components[0] === '') components.shift();
       insert(forest, components, file);
@@ -116,6 +116,7 @@ namespace TreeBuilder {
       if (!(tree instanceof Map)) continue;
       compress(tree);
       if (tree.size > 1) continue;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const [subcomp, subtree] = tree.entries().next().value;
       if (!(subtree instanceof Map)) continue;
       forest.delete(comp);
@@ -196,7 +197,8 @@ class LocationNode extends StaticTreeNode {
     this.location.register();
     this.allowRemoval();
     this.treeItem.id = str(loc);
-    const label = this.treeItem.label as TreeItemLabel;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const label: TreeItemLabel = this.treeItem.label;
     if (!start.isEqual(loc.range.end))
       label.highlights = [
         [
@@ -226,7 +228,8 @@ const locationTreeProvider: TreeProvider = {
   getMessage() {
     return currentMessage;
   },
-  removeNode(node: StaticTreeNode) {
+  removeNode(node_: TreeNode) {
+    const node = node_ as StaticTreeNode;
     if (node.isRoot) {
       assert(currentTrees!.removeFirst(node));
       QcfgTreeView.treeChanged();
@@ -234,7 +237,8 @@ const locationTreeProvider: TreeProvider = {
     }
     node.remove();
   },
-  onDidChangeSelection(nodes: StaticTreeNode[]) {
+  onDidChangeSelection(nodes_: TreeNode[]) {
+    const nodes = nodes_ as StaticTreeNode[];
     if (nodes.length !== 1) return;
     const node = nodes[0];
     if (node instanceof LocationNode) {
@@ -243,13 +247,13 @@ const locationTreeProvider: TreeProvider = {
   },
   onUnset() {
     if (!currentTrees) return;
-    currentTrees.map((root) =>
+    currentTrees.forEach((root) => {
       root.applyRecursively((node) => {
         if (!(node instanceof LocationNode)) return true;
         node.location.unregister();
         return true;
-      }),
-    );
+      });
+    });
   },
 };
 

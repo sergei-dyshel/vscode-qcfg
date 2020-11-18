@@ -18,10 +18,12 @@ export function registerStringifier(str: Stringifier) {
 
 /* Private */
 
+// eslint-disable-next-line @typescript-eslint/ban-types
 type Stringifier = (value: object) => string | undefined;
 
 const stringifiers: Stringifier[] = [];
 
+// eslint-disable-next-line @typescript-eslint/ban-types
 function stringifyObject(x: object | null): string {
   if (x === null) return '<null>';
   if (x instanceof Error) {

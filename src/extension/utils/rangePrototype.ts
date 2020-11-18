@@ -2,11 +2,12 @@
 import { Range, Selection, Position } from 'vscode';
 
 declare module 'vscode' {
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   export interface Range {
-    compareTo(that: Range): number;
-    strictlyContains(that: Range): boolean;
-    asSelection(reverse?: boolean): Selection;
-    expandLinewise(): Range;
+    compareTo: (that: Range) => number;
+    strictlyContains: (that: Range) => boolean;
+    asSelection: (reverse?: boolean) => Selection;
+    expandLinewise: () => Range;
 
     isLinewise: boolean;
   }

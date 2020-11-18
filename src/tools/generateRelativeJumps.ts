@@ -1,6 +1,6 @@
 'use strict';
 
-import { KeyBinding, PackageJson, Key } from '../library/packageJson';
+import type { KeyBinding, PackageJson, Key } from '../library/packageJson';
 
 const START_LINE = 5;
 const END_LINE = START_LINE * 10;
