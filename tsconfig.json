@@ -15,6 +15,7 @@
 		"noImplicitReturns": true
 	},
 	"exclude": [
+		"webpack.config.js",
 		"node_modules",
 		"server"
 	]
