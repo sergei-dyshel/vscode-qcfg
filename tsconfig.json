@@ -1,10 +1,11 @@
 {
 	"compilerOptions": {
-		"target": "es2018",
+		// https://stackoverflow.com/questions/59787574/typescript-tsconfig-settings-for-node-js-12/59787575#59787575
+		"target": "es2019",
 		"module": "commonjs",
 		"moduleResolution": "node",
 		"outDir": "out",
-		"lib": [ "es2018" ],
+		"lib": [ "es2020" ],
 		"sourceMap": true,
 		"alwaysStrict": true,
 		"noUnusedLocals": true,
