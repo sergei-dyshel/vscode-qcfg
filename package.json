@@ -2053,7 +2053,6 @@
     "@types/sprintf-js": "^1.1.2",
     "@types/string-format": "^2.0.0",
     "@types/vscode": "^1.51.0",
-    "@types/webpack": "^4.41.24",
     "@typescript-eslint/eslint-plugin": "^4.7.0",
     "@typescript-eslint/parser": "^4.7.0",
     "deepmerge": "^4.2.2",
