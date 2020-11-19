@@ -1,16 +1,13 @@
-.vscode/**
-.vscode-test/**
-out/test/**
-out/**/*.map
-src/**
-.gitignore
-tsconfig.json
-vsc-extension-quickstart.md
-tslint.json
+# exclude all
+**/*
 
-# webpack
-node_modules
-webpack.config.js
-out/**
-package/**
-!node_modules/**/*.node
+!dist
+!package.json
+!plistOld.language-configuration.json
+!tasks.schema.json
+!syntaxes
+
+# All modules excluded in webpack "externals" and their dependencies
+!node_modules/node-window-manager
+!node_modules/extract-file-icon
+!node_modules/node-gyp-build
