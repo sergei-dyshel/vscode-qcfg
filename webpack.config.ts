@@ -27,6 +27,16 @@ const generateConfig = (env: any): webpack.Configuration => ({
   devtool: 'source-map',
   optimization: {
     minimize: false,
+    mangleExports: false,
+    concatenateModules: false,
+    chunkIds: 'named',
+    moduleIds: 'named',
+    removeAvailableModules: false,
+    removeEmptyChunks: false,
+    flagIncludedChunks: false,
+    providedExports: false,
+    // this one is needed, otherwise bundle can't be loaded because of resolving nodejs
+    usedExports: false,
   },
   externals: [
     {
@@ -37,17 +47,18 @@ const generateConfig = (env: any): webpack.Configuration => ({
       // https://webpack.js.org/configuration/externals/
     },
     /Debug\/iconv\.node/,
+    // add native modules which cause trouble with webpack
+    'node-window-manager',
   ],
   resolve: {
     // support reading TypeScript and JavaScript files, 📖 ->
     // https://github.com/TypeStrong/ts-loader
     extensions: ['.ts', '.js', '.node'],
   },
-  node: {
-    // needed so that `active-win` could work
-    __dirname: true,
-  },
   module: {
+    // becaues of `typescript-collections`
+    noParse: /.*umd\.js/,
+
     rules: [
       {
         test: /\.ts$/,
@@ -75,6 +86,9 @@ const generateConfig = (env: any): webpack.Configuration => ({
     },
     {
       message: /build\/Debug/,
+    },
+    {
+      message: /the request of a dependency is an expression/,
     },
   ],
   stats: {
