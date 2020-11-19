@@ -8,23 +8,24 @@ import * as tempy from 'tempy';
 
 import { log } from '../../library/logging';
 import { getActiveTextEditor } from './utils';
-import { DisposableLike } from '../../library/types';
+import type { DisposableLike } from '../../library/types';
+import type { WorkspaceFolder, Location, ViewColumn } from 'vscode';
 import {
   workspace,
-  WorkspaceFolder,
-  Location,
   Range,
   window,
   commands,
   Position,
   Selection,
-  ViewColumn,
 } from 'vscode';
 import { assertNonNull, assertNull } from '../../library/exception';
 import { handleAsyncStd } from './exception';
 
 export const globSync = glob.sync;
-export const globAsync = nodejs.util.promisify(require('glob'));
+export const globAsync: (
+  pattern: string,
+  options?: glob.IOptions,
+) => Promise<string[]> = nodejs.util.promisify(require('glob'));
 
 export function getTempFile() {
   return tempy.file();
@@ -60,7 +61,6 @@ export function getDocumentWorkspaceFolder(fileName: string) {
   return docRoot ? docRoot.workspaceFolder : undefined;
 }
 
-// tslint:disable-next-line: deprecation
 export const exists = nodejs.util.promisify(nodejs.fs.exists);
 export const realPath = nodejs.util.promisify(nodejs.fs.realpath);
 

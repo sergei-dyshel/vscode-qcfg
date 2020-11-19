@@ -1,24 +1,26 @@
 'use strict';
 
-import {
-  commands,
+import type {
   FindTextInFilesOptions,
   Location,
   QuickPickItem,
+  TaskDefinition,
+  TextSearchQuery,
+  WorkspaceFolder,
+} from 'vscode';
+import {
+  commands,
   ShellExecution,
   Task,
-  TaskDefinition,
   TaskGroup,
   TaskPanelKind,
   TaskRevealKind,
   TaskScope,
-  TextSearchQuery,
   window,
   workspace,
-  WorkspaceFolder,
 } from 'vscode';
 import { mapAsync, mapAsyncSequential } from '../async';
-import { ListSelectable } from '../dialog';
+import type { ListSelectable } from '../dialog';
 import { getDocumentWorkspaceFolder, peekLocations } from '../fileUtils';
 import * as nodejs from '../../../library/nodejs';
 import {
@@ -36,17 +38,13 @@ import {
 } from '../taskRunner';
 import { concatArrays } from '../../../library/tsUtils';
 import { currentWorkspaceFolder, getCursorWordContext } from '../utils';
-import {
+import type {
   BaseTaskParams,
-  EndAction,
-  Flag,
-  LocationFormat,
   ProcessTaskParams,
-  Reveal,
   SearchTaskParams,
-  TaskType,
   TerminalTaskParams,
 } from './params';
+import { EndAction, Flag, LocationFormat, Reveal, TaskType } from './params';
 import { handleAsyncStd } from '../exception';
 import { saveAndPeekSearch } from '../savedSearch';
 import { refreshOrRestartLangClients } from '../langClient';
@@ -59,8 +57,7 @@ export interface FetchInfo {
 
 export function isFolderTask(params: BaseTaskParams) {
   return (
-    (params.flags && params.flags.includes(Flag.FOLDER)) ||
-    params.type === TaskType.SEARCH ||
+    (params.flags?.includes(Flag.FOLDER) ?? params.type === TaskType.SEARCH) ||
     params.folders
   );
 }
@@ -131,9 +128,7 @@ export class TaskContext {
   readonly vars: Substitute = {};
 }
 
-interface Substitute {
-  [name: string]: string;
-}
+type Substitute = Record<string, string>;
 
 /**
  * Task definition (params) has mistakes.
@@ -334,14 +329,13 @@ export class TerminalTask extends BaseQcfgTask {
 
   async run() {
     this.taskRun = new TaskRun(this.task);
-    const conflictPolicy =
-      this.params.flags && this.params.flags.includes(Flag.AUTO_RESTART)
-        ? TaskConfilictPolicy.CANCEL_PREVIOUS
-        : undefined;
+    const conflictPolicy = this.params.flags?.includes(Flag.AUTO_RESTART)
+      ? TaskConfilictPolicy.CANCEL_PREVIOUS
+      : undefined;
     await this.taskRun.start(conflictPolicy);
     try {
       await this.taskRun.wait();
-    } catch (err) {
+    } catch (err: unknown) {
       if (err instanceof TaskCancelledError) return;
       throw err;
     }
@@ -412,7 +406,7 @@ export class TerminalMultiTask extends BaseQcfgTask {
   async run() {
     return mapAsyncSequential(this.folderTasks, async (task) =>
       task.run(),
-    ).then<void>();
+    ).ignoreResult();
   }
 }
 
@@ -428,7 +422,7 @@ export class ProcessTask extends BaseQcfgTask {
     context: TaskContext,
   ) {
     super(params, info);
-    if (params.flags && params.flags.includes(Flag.FOLDER)) {
+    if (params.flags?.includes(Flag.FOLDER)) {
       this.folderText = context.workspaceFolder!.name;
     }
     this.command = context.substitute(params.command);
@@ -473,7 +467,7 @@ export class ProcessTask extends BaseQcfgTask {
     try {
       const result = await subproc.wait();
       return result.stdout;
-    } catch (err) {
+    } catch (err: unknown) {
       if (err instanceof ExecResult) {
         log.warn(
           `Task "${this.info.label}" failed with code ${err.code} signal ${err.signal}`,

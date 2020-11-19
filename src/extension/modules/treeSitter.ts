@@ -1,19 +1,17 @@
 'use strict';
 
-import {
-  commands,
+import type {
   ExtensionContext,
-  languages,
   Position,
-  Range,
-  SelectionRange,
   TextDocument,
   TextEditor,
 } from 'vscode';
+import { commands, languages, Range, SelectionRange } from 'vscode';
 import { handleErrorsAsync, registerAsyncCommandWrapped } from './exception';
 import { Logger } from '../../library/logging';
 import { Modules } from './module';
-import { SyntaxNode, SyntaxTree, SyntaxTrees } from './syntaxTree';
+import type { SyntaxNode, SyntaxTree } from './syntaxTree';
+import { SyntaxTrees } from './syntaxTree';
 import { selectRange, swapRanges, trimInner } from './textUtils';
 import { getActiveTextEditor } from './utils';
 import { assertNonNull } from '../../library/exception';
@@ -22,8 +20,8 @@ import { stringify as str } from '../../library/stringify';
 const log = new Logger({ name: 'treeSitter' });
 
 enum Direction {
-  Left,
-  Right,
+  LEFT,
+  RIGHT,
 }
 
 function selectAndRememberRange(
@@ -124,18 +122,18 @@ async function selectSibling(direction: Direction, swap?: boolean) {
   );
   let node =
     firstChild !== lastChild
-      ? direction === Direction.Left
+      ? direction === Direction.LEFT
         ? firstChild
         : lastChild
       : firstChild;
   const sibling = node.range.isEqual(ctx.selection)
-    ? direction === Direction.Left
+    ? direction === Direction.LEFT
       ? node.previousNamedSibling ?? node
       : node.nextNamedSibling ?? node
     : node;
   // TODO: could be a bug here
   if (sibling === node) {
-    selectChildren(ctx.editor, node, node, direction === Direction.Left);
+    selectChildren(ctx.editor, node, node, direction === Direction.LEFT);
     return;
   }
   let siblingRange = sibling.range;
@@ -166,7 +164,7 @@ async function extendSelection(direction: Direction) {
     selectChildren(ctx.editor, firstChild, lastChild);
     return;
   }
-  if (direction === Direction.Left) {
+  if (direction === Direction.LEFT) {
     if (ctx.selection.isReversed)
       firstChild = firstChild.previousNamedSibling ?? firstChild;
     else if (firstChild !== lastChild)
@@ -254,22 +252,22 @@ function activate(context: ExtensionContext) {
     registerAsyncCommandWrapped('qcfg.selection.expand', smartExpand),
     registerAsyncCommandWrapped('qcfg.selection.shrink', smartShrink),
     registerAsyncCommandWrapped('qcfg.selection.left', async () =>
-      selectSibling(Direction.Left),
+      selectSibling(Direction.LEFT),
     ),
     registerAsyncCommandWrapped('qcfg.selection.right', async () =>
-      selectSibling(Direction.Right),
+      selectSibling(Direction.RIGHT),
     ),
     registerAsyncCommandWrapped('qcfg.selection.extendLeft', async () =>
-      extendSelection(Direction.Left),
+      extendSelection(Direction.LEFT),
     ),
     registerAsyncCommandWrapped('qcfg.selection.extendRight', async () =>
-      extendSelection(Direction.Right),
+      extendSelection(Direction.RIGHT),
     ),
     registerAsyncCommandWrapped('qcfg.selection.swapLeft', async () =>
-      selectSibling(Direction.Left, true /* swap */),
+      selectSibling(Direction.LEFT, true /* swap */),
     ),
     registerAsyncCommandWrapped('qcfg.selection.swapRight', async () =>
-      selectSibling(Direction.Right, true /* swap */),
+      selectSibling(Direction.RIGHT, true /* swap */),
     ),
   );
 }

@@ -1,18 +1,17 @@
 'use strict';
 
+import type { ExtensionContext, WorkspaceFolder, Task } from 'vscode';
 import {
   commands,
-  ExtensionContext,
   TaskGroup,
   tasks as vstasks,
   workspace,
-  WorkspaceFolder,
   window,
   Uri,
-  Task,
 } from 'vscode';
 import { mapSomeAsync, MAP_UNDEFINED, filterAsync } from '../async';
-import { ConfigFilePair, watchConfigFile, getConfigFileNames } from '../config';
+import type { ConfigFilePair } from '../config';
+import { watchConfigFile, getConfigFileNames } from '../config';
 import * as dialog from '../dialog';
 import { registerAsyncCommandWrapped } from '../exception';
 import { globAsync } from '../fileUtils';
@@ -20,27 +19,24 @@ import { parseJsonFileSync } from '../json';
 import { Modules } from '../module';
 import { concatArrays, mapObjectToArray } from '../../../library/tsUtils';
 import { currentWorkspaceFolder } from '../utils';
-import {
+import type {
   ConfParamsSet,
   Params,
   TerminalTaskParams,
-  TaskType,
   ProcessTaskParams,
-  Flag,
   SearchTaskParams,
   BaseTaskParams,
 } from './params';
+import { TaskType, Flag } from './params';
+import type { BaseQcfgTask, BaseTask, FetchInfo } from './types';
 import {
   TaskContext,
   ConditionError,
   ParamsError,
   TerminalTask,
   TerminalMultiTask,
-  BaseQcfgTask,
   VscodeTask,
-  BaseTask,
   ValidationError,
-  FetchInfo,
   ProcessTask,
   ProcessMultiTask,
   SearchTask,
@@ -170,7 +166,7 @@ class TaskGenerator<P extends BaseTaskParams> {
       try {
         await this.createTask(context);
         return true;
-      } catch (err) {
+      } catch (err: unknown) {
         handleValidationError(this.info.label, context, err);
         return false;
       }
@@ -206,7 +202,7 @@ class TaskGenerator<P extends BaseTaskParams> {
   private async genCurrentTask(currentContext: TaskContext) {
     try {
       return [await this.createTask(currentContext)];
-    } catch (err) {
+    } catch (err: unknown) {
       handleValidationError(this.info.label, currentContext, err);
       return [];
     }
@@ -271,7 +267,7 @@ async function fetchQcfgTasks(options?: FetchOptions): Promise<BaseQcfgTask[]> {
       try {
         const generator = createTaskGenerator(fetchedParams);
         return await generator.generateAll(currentContext, folderContexts);
-      } catch (err) {
+      } catch (err: unknown) {
         if (err instanceof ParamsError) {
           log.warn(
             `Error in parameters for task "${fetchedParams.fetchInfo.label}": ${err.message}`,
@@ -314,7 +310,7 @@ function expandParamsOrCmd(paramsOrCmd: Params | string): Params {
 async function fetchVscodeTasksChecked(): Promise<Task[]> {
   try {
     return await vstasks.fetchTasks();
-  } catch (err) {
+  } catch (err: unknown) {
     log.error('Error fetching vscode tasks: ', err);
     return [];
   }
@@ -353,18 +349,16 @@ async function createTask(
     }
     try {
       return await generator.createTask(new TaskContext(options.folder));
-    } catch (err) {
+    } catch (err: unknown) {
       throw new Error(
-        `Task "${label}" is not valid in folder "${options.folder.name}": ${err.message}`,
+        `Task "${label}" is not valid in folder "${options.folder.name}": ${err}`,
       );
     }
   }
   try {
     return await generator.createTask(new TaskContext());
-  } catch (err) {
-    throw new Error(
-      `Task "${label}" is not valid current context : ${err.message}`,
-    );
+  } catch (err: unknown) {
+    throw new Error(`Task "${label}" is not valid current context : ${err}`);
   }
 }
 
@@ -397,7 +391,7 @@ function loadConfig(filePair: ConfigFilePair) {
       const globalTasks = parseJsonFileSync(filePair.global) as ConfParamsSet;
       log.debug('Loaded tasks from ' + filePair.global);
       Object.assign(allTasks, globalTasks);
-    } catch (err) {
+    } catch (err: unknown) {
       log.error(`Could not load JSON file ${filePair.global}: ${err}`);
     }
   }
@@ -406,7 +400,7 @@ function loadConfig(filePair: ConfigFilePair) {
       workspaceTasks = parseJsonFileSync(filePair.workspace) as ConfParamsSet;
       log.debug('Loaded tasks from ' + filePair.workspace);
       Object.assign(allTasks, workspaceTasks);
-    } catch (err) {
+    } catch (err: unknown) {
       log.error(`Could not load JSON file ${filePair.workspace}: ${err}`);
     }
   }
@@ -415,7 +409,7 @@ function loadConfig(filePair: ConfigFilePair) {
   configuredParams.length = 0;
   configuredParams.push(
     ...mapObjectToArray(allTasks, (label, paramsOrCmd) => {
-      // tslint:disable-next-line: strict-type-predicates
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       const fromWorkspace = workspaceTasks[label] !== undefined;
       const fetchInfo: FetchInfo = { label, fromWorkspace };
       return { fetchInfo, params: expandParamsOrCmd(paramsOrCmd) };

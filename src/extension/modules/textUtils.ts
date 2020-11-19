@@ -1,6 +1,7 @@
 'use strict';
 
-import { TextDocument, Position, Range, TextEditor } from 'vscode';
+import type { TextDocument, Position, TextEditor } from 'vscode';
+import { Range } from 'vscode';
 
 // TODO: add as property to position class
 export function offsetPosition(

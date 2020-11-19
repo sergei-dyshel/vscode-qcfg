@@ -138,6 +138,4 @@ export interface SearchTaskParams extends BaseTaskParams {
 
 export type Params = TerminalTaskParams | ProcessTaskParams | SearchTaskParams;
 
-export interface ConfParamsSet {
-  [name: string]: Params | string;
-}
+export type ConfParamsSet = Record<string, Params | string>;

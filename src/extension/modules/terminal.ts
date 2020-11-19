@@ -9,7 +9,7 @@ let nextId = 0;
 
 interface TerminalProcessOptions {
   cwd?: string;
-  env?: { [name: string]: string | null };
+  env?: Record<string, string | null>;
 }
 
 export class TerminalProcess {
@@ -40,7 +40,6 @@ export class TerminalProcess {
 
   async wait(): Promise<number> {
     if (this.waitingContext) return this.waitingContext.promise;
-    // tslint:disable-next-line: promise-must-complete
     const promise = new Promise<number>(
       (resolve: (exitCode: number) => void, reject: (err: unknown) => void) => {
         this.waitingContext = { promise, resolve, reject };
