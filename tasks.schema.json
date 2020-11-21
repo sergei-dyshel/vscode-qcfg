@@ -1,15 +1,6 @@
 {
+  "$ref": "#/definitions/Record%3Cstring%2C(Params%7Cstring)%3E",
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "additionalProperties": {
-    "anyOf": [
-      {
-        "$ref": "#/definitions/Params"
-      },
-      {
-        "type": "string"
-      }
-    ]
-  },
   "definitions": {
     "BaseProcessTaskFlag": {
       "anyOf": [
@@ -35,81 +26,46 @@
       ],
       "type": "string"
     },
-    "Flag": {
-      "enum": [
-        "dedicatedPanel",
-        "clear",
-        "autoRestart",
-        "reindex",
-        "build",
-        "hidden",
-        "folder",
-        "regex",
-        "word",
-        "case"
-      ],
-      "type": "string"
-    },
     "Flag.AUTO_RESTART": {
-      "enum": [
-        "autoRestart"
-      ],
+      "const": "autoRestart",
       "type": "string"
     },
     "Flag.BUILD": {
-      "enum": [
-        "build"
-      ],
+      "const": "build",
       "type": "string"
     },
     "Flag.CASE": {
-      "enum": [
-        "case"
-      ],
+      "const": "case",
       "type": "string"
     },
     "Flag.CLEAR": {
-      "enum": [
-        "clear"
-      ],
+      "const": "clear",
       "type": "string"
     },
     "Flag.DEDICATED_PANEL": {
-      "enum": [
-        "dedicatedPanel"
-      ],
+      "const": "dedicatedPanel",
       "type": "string"
     },
     "Flag.FOLDER": {
+      "const": "folder",
       "description": "Task applies to any workspace folder (i.e. not current dir/file)",
-      "enum": [
-        "folder"
-      ],
       "type": "string"
     },
     "Flag.HIDDEN": {
+      "const": "hidden",
       "description": "Task is hidden when from pick list, i.e. can be run only directly",
-      "enum": [
-        "hidden"
-      ],
       "type": "string"
     },
     "Flag.REGEX": {
-      "enum": [
-        "regex"
-      ],
+      "const": "regex",
       "type": "string"
     },
     "Flag.REINDEX": {
-      "enum": [
-        "reindex"
-      ],
+      "const": "reindex",
       "type": "string"
     },
     "Flag.WORD": {
-      "enum": [
-        "word"
-      ],
+      "const": "word",
       "type": "string"
     },
     "KnownProblemMatcher": {
@@ -207,6 +163,19 @@
       ],
       "type": "object"
     },
+    "Record<string,(Params|string)>": {
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/Params"
+          },
+          {
+            "type": "string"
+          }
+        ]
+      },
+      "type": "object"
+    },
     "Reveal": {
       "enum": [
         "focus",
@@ -268,30 +237,16 @@
       ],
       "type": "object"
     },
-    "TaskType": {
-      "enum": [
-        "process",
-        "terminal",
-        "search"
-      ],
-      "type": "string"
-    },
     "TaskType.PROCESS": {
-      "enum": [
-        "process"
-      ],
+      "const": "process",
       "type": "string"
     },
     "TaskType.SEARCH": {
-      "enum": [
-        "search"
-      ],
+      "const": "search",
       "type": "string"
     },
     "TaskType.TERMINAL": {
-      "enum": [
-        "terminal"
-      ],
+      "const": "terminal",
       "type": "string"
     },
     "TerminalTaskParams": {
@@ -411,6 +366,5 @@
       },
       "type": "object"
     }
-  },
-  "type": "object"
+  }
 }
