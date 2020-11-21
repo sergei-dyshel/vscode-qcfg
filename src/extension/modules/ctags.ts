@@ -1,14 +1,12 @@
 'use strict';
 
-import {
-  SymbolKind,
+import type {
   TextDocument,
   CancellationToken,
   ExtensionContext,
-  languages,
   DocumentSymbolProvider,
-  DocumentSymbol,
 } from 'vscode';
+import { SymbolKind, languages, DocumentSymbol } from 'vscode';
 import { Logger } from '../../library/logging';
 import * as subprocess from './subprocess';
 
@@ -33,7 +31,7 @@ interface LanguageConfig {
   kinds?: string;
 }
 
-const languageConfigs: { [languageId: string]: LanguageConfig | undefined } = {
+const languageConfigs: Record<string, LanguageConfig | undefined> = {
   c: { kinds: '+' + C_KINDS },
   cpp: { ctagsLang: 'c++', kinds: '+' + C_KINDS + CPP_KINDS },
   python: {},
@@ -48,7 +46,7 @@ const languageConfigs: { [languageId: string]: LanguageConfig | undefined } = {
   yaml: {},
 };
 
-const ctagsToVscodeKind: { [name: string]: SymbolKind | undefined } = {
+const ctagsToVscodeKind: Record<string, SymbolKind | undefined> = {
   macro: SymbolKind.Constant,
   enumerator: SymbolKind.EnumMember,
   function: SymbolKind.Function,
@@ -160,7 +158,7 @@ const documentSymbolProvider: DocumentSymbolProvider = {
     }
     try {
       return await getDocumentSymbolsFromCtags(document, token);
-    } catch (err) {
+    } catch (err: unknown) {
       stdErrorHandler(err);
     }
   },

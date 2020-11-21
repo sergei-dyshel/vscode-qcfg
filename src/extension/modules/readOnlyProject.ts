@@ -1,12 +1,11 @@
 'use strict';
 
-import {
+import type {
   TextDocumentChangeEvent,
-  window,
-  workspace,
   StatusBarItem,
   ExtensionContext,
 } from 'vscode';
+import { window, workspace } from 'vscode';
 import {
   listenWrapped,
   registerAsyncCommandWrapped,

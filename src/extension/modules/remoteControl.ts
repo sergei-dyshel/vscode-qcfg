@@ -3,15 +3,8 @@
 import * as net from 'net';
 import * as path from 'path';
 import * as shlex from 'shlex';
-import {
-  window,
-  workspace,
-  WorkspaceFolder,
-  Position,
-  Selection,
-  ExtensionContext,
-  Uri,
-} from 'vscode';
+import type { WorkspaceFolder, ExtensionContext } from 'vscode';
+import { window, workspace, Position, Selection, Uri } from 'vscode';
 import { handleAsyncStd, handleErrors } from './exception';
 import * as fileUtils from './fileUtils';
 import { log } from '../../library/logging';
@@ -99,7 +92,9 @@ function handleCmd(cmd: string) {
 function activate(_context: ExtensionContext) {
   const server = net.createServer((socket) => {
     socket.on('data', () => {
-      handleErrors((data) => handleCmd(data.toString()));
+      handleErrors((data) => {
+        handleCmd(data.toString());
+      });
     });
   });
   server.listen(port, '127.0.0.1');

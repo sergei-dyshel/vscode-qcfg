@@ -5,7 +5,8 @@ import { selectStringFromListMru } from './dialog';
 
 import * as fileUtils from './fileUtils';
 import { getActiveTextEditor } from './utils';
-import { window, workspace, commands, ExtensionContext } from 'vscode';
+import type { ExtensionContext } from 'vscode';
+import { window, workspace, commands } from 'vscode';
 import {
   registerAsyncCommandWrapped,
   registerSyncCommandWrapped,

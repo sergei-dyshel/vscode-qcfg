@@ -2,20 +2,19 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import {
-  commands,
+import type {
   TextEditor,
   TextEditorEdit,
   Event,
-  extensions,
   ExtensionContext,
 } from 'vscode';
-import { DisposableLike } from '../../library/types';
+import { commands, extensions } from 'vscode';
+import type { DisposableLike } from '../../library/types';
 import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
 import { replaceAll } from '../../library/stringUtils';
 import { showStatusBarMessage } from './windowUtils';
-import {
+import type {
   PromiseType,
   AsyncFunction,
   AnyFunction,
@@ -45,7 +44,7 @@ export function stdErrorHandler(error: any, prefix?: string): never {
  */
 export function handleErrors<T extends AnyFunction>(
   func: T,
-): (...funcArgs: Parameters<T>) => ReturnType<T> | void {
+): (...funcArgs: Parameters<T>) => ReturnType<T> {
   return wrapWithErrorHandler(func, stdErrorHandler);
 }
 
@@ -66,9 +65,9 @@ export function registerAsyncCommandWrapped(
 ): DisposableLike {
   return commands.registerCommand(
     command,
-    wrapWithErrorHandlerAsync(callback, (error) =>
-      handleErrorDuringCommand(command, error),
-    ),
+    wrapWithErrorHandlerAsync(callback, (error) => {
+      handleErrorDuringCommand(command, error);
+    }),
     thisArg,
   );
 }
@@ -80,9 +79,9 @@ export function registerSyncCommandWrapped(
 ): DisposableLike {
   return commands.registerCommand(
     command,
-    wrapWithErrorHandler(callback, (error) =>
-      handleErrorDuringCommand(command, error),
-    ),
+    wrapWithErrorHandler(callback, (error) => {
+      handleErrorDuringCommand(command, error);
+    }),
     thisArg,
   );
 }
@@ -98,16 +97,16 @@ export function registerTextEditorCommandWrapped(
 ): DisposableLike {
   return commands.registerTextEditorCommand(
     command,
-    wrapWithErrorHandler(callback, (error) =>
-      handleErrorDuringCommand(command, error),
-    ),
+    wrapWithErrorHandler(callback, (error) => {
+      handleErrorDuringCommand(command, error);
+    }),
     thisArg,
   );
 }
 
 export function listenWrapped<T>(
   event: Event<T>,
-  listener: (e: T) => void | undefined,
+  listener: (e: T) => void,
   thisArgs?: any,
   disposables?: DisposableLike[],
 ): DisposableLike {
@@ -146,7 +145,7 @@ export function handleAsyncStd<T>(promise: Thenable<T>): void {
 export function handleStd(func: () => Promise<void>): void {
   try {
     handleAsyncStd(func());
-  } catch (err) {
+  } catch (err: unknown) {
     stdErrorHandler(err);
   }
 }

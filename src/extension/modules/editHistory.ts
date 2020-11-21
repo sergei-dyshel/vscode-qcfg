@@ -1,19 +1,16 @@
 'use strict';
 
-import {
+import type {
   ExtensionContext,
-  Range,
   Selection,
   TextDocument,
   TextDocumentChangeEvent,
   TextDocumentContentChangeEvent,
-  workspace,
-  window,
   TextEditorSelectionChangeEvent,
   StatusBarItem,
   TextEditor,
-  StatusBarAlignment,
 } from 'vscode';
+import { Range, workspace, window, StatusBarAlignment } from 'vscode';
 import { listenWrapped, registerSyncCommandWrapped } from './exception';
 import { Logger } from '../../library/logging';
 import { DefaultMap } from '../../library/tsUtils';

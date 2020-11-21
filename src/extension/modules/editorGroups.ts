@@ -1,10 +1,10 @@
+import type { ExtensionContext } from 'vscode';
 import {
   window,
   ViewColumn,
   Selection,
   TextEditorRevealType,
   commands,
-  ExtensionContext,
 } from 'vscode';
 
 import { shouldSplitVertically } from './windowState';

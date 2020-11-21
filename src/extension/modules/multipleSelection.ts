@@ -1,11 +1,11 @@
 'use strict';
 
-import {
+import type {
   TextEditor,
   ExtensionContext,
-  window,
   TextEditorSelectionChangeEvent,
 } from 'vscode';
+import { window } from 'vscode';
 import { Modules } from './module';
 import {
   listenWrapped,
@@ -100,15 +100,15 @@ function activate(context: ExtensionContext) {
       'qcfg.multipleSelection.unselectMarked',
       unselectMarked,
     ),
-    registerSyncCommandWrapped('qcfg.multipleSelection.moveMarkDown', () =>
-      moveMark(true /* down */),
-    ),
-    registerSyncCommandWrapped('qcfg.multipleSelection.moveMarkUp', () =>
-      moveMark(false /* up */),
-    ),
-    registerSyncCommandWrapped('qcfg.multipleSelection.resetToMark', () =>
-      resetToMark(),
-    ),
+    registerSyncCommandWrapped('qcfg.multipleSelection.moveMarkDown', () => {
+      moveMark(true /* down */);
+    }),
+    registerSyncCommandWrapped('qcfg.multipleSelection.moveMarkUp', () => {
+      moveMark(false /* up */);
+    }),
+    registerSyncCommandWrapped('qcfg.multipleSelection.resetToMark', () => {
+      resetToMark();
+    }),
   );
 }
 

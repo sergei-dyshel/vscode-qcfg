@@ -1,11 +1,7 @@
 'use strict';
 
-import {
-  TextDocument,
-  TextDocumentContentChangeEvent,
-  Range,
-  Position,
-} from 'vscode';
+import type { TextDocument, TextDocumentContentChangeEvent } from 'vscode';
+import { Range, Position } from 'vscode';
 import { maxNumber, minNumber } from '../../library/tsUtils';
 import { assert } from '../../library/exception';
 

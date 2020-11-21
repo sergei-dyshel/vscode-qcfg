@@ -1,18 +1,14 @@
 'use strict';
 
-import {
-  ConfigurationChangeEvent,
-  ExtensionContext,
-  workspace,
-  Disposable,
-} from 'vscode';
+import type { ConfigurationChangeEvent, ExtensionContext } from 'vscode';
+import { workspace, Disposable } from 'vscode';
 import { listenWrapped } from './exception';
 import { watchFile } from './fileUtils';
 import { log } from '../../library/logging';
 import { Modules } from './module';
 import * as nodejs from '../../library/nodejs';
 import { expandPath } from '../../library/pathUtils';
-import { DisposableLike } from '../../library/types';
+import type { DisposableLike } from '../../library/types';
 
 /**
  * Subscribe to configuration updates on section
@@ -137,14 +133,16 @@ class ConfigDirWatcher implements Disposable {
   onConfigVarChanged() {
     this.globalDir = parseGlobalDir();
     this.workspaceDir = parseWorkspaceDir();
-    this.pairWatchers.forEach((watcher) =>
-      watcher.reset(this.globalDir, this.workspaceDir),
-    );
+    this.pairWatchers.forEach((watcher) => {
+      watcher.reset(this.globalDir, this.workspaceDir);
+    });
   }
 
   dispose() {
     this.configDisposable.dispose();
-    this.pairWatchers.forEach((pairWatcher) => pairWatcher.dispose());
+    this.pairWatchers.forEach((pairWatcher) => {
+      pairWatcher.dispose();
+    });
   }
 }
 

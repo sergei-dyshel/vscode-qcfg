@@ -1,12 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  ExtensionContext,
-  workspace,
-  Position,
-  window,
-  Uri,
-  commands,
-} from 'vscode';
+import type { ExtensionContext } from 'vscode';
+import { workspace, Position, window, Uri, commands } from 'vscode';
 import * as jayson from 'jayson/promise';
 import { PORT_RANGE } from '../../library/remoteClient';
 import { getWorkspaceFile, getWorkspaceName } from './workspaceHistory';
@@ -29,7 +23,7 @@ export interface IdentifyResult {
 }
 
 const protocol = {
-  async identify(_: {}): Promise<IdentifyResult> {
+  async identify(_: Record<string, unknown>): Promise<IdentifyResult> {
     return Promise.resolve({
       workspaceFile: getWorkspaceFile(),
       workspaceName: getWorkspaceName(),
@@ -50,37 +44,32 @@ const protocol = {
             (arg.column ?? 1) - 1,
           ).asRange.asSelection()
         : undefined;
-    await Promise.all([
-      focusWindow(),
-      window.showTextDocument(Uri.file(arg.path), { selection }).ignoreResult(),
-    ]);
+    focusWindow();
+    await window
+      .showTextDocument(Uri.file(arg.path), { selection })
+      .ignoreResult();
   },
 
   async openSsh(arg: { path: string }): Promise<void> {
-    await Promise.all([focusWindow(), openRemoteFileViaSsh(arg.path)]);
+    focusWindow();
+    await openRemoteFileViaSsh(arg.path);
   },
 
   async executeCommand(args: { name: string }): Promise<void> {
     return commands.executeCommand(args.name);
   },
 
-  async reloadWindow(_: {}): Promise<void> {
-    setTimeout(
-      () =>
-        handleAsyncStd(
-          commands.executeCommand('workbench.action.reloadWindow'),
-        ),
-      1000,
-    );
+  async reloadWindow(_: Record<string, unknown>): Promise<void> {
+    setTimeout(() => {
+      handleAsyncStd(commands.executeCommand('workbench.action.reloadWindow'));
+    }, 1000);
     return Promise.resolve();
   },
 };
 
 type Handler = (arg: any) => Promise<any>;
 
-interface AbstractProtocol {
-  [name: string]: Handler;
-}
+type AbstractProtocol = Record<string, Handler>;
 
 function activate(_: ExtensionContext) {
   const loggedProtocol: AbstractProtocol = mapObjectValues(

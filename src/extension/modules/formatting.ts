@@ -1,12 +1,7 @@
 'use strict';
 
-import {
-  commands,
-  ExtensionContext,
-  SourceControlResourceState,
-  Uri,
-  window,
-} from 'vscode';
+import type { ExtensionContext, SourceControlResourceState, Uri } from 'vscode';
+import { commands, window } from 'vscode';
 import { log } from '../../library/logging';
 import { Modules } from './module';
 
@@ -16,13 +11,13 @@ async function formatUris(uris: Uri[]) {
   for (const uri of uris) {
     try {
       await window.showTextDocument(uri);
-    } catch (err) {
+    } catch (err: unknown) {
       log.error(`Could not open "${uri}": ${err}`);
       continue;
     }
     try {
       await commands.executeCommand('editor.action.formatDocument');
-    } catch (err) {
+    } catch (err: unknown) {
       log.error(`Could not format "${uri}": ${err}`);
     }
   }

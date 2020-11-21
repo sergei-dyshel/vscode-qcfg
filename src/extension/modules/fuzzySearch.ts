@@ -18,7 +18,6 @@ class Item implements vscode.QuickPickItem {
 let valueFromPreviousInvocation = '';
 let lastSelected: Item | undefined;
 
-// tslint:disable-next-line: max-func-body-length
 function showFuzzySearch() {
   log.info('called');
   // Build the entries we will show the user. One entry for each non-empty line,
@@ -90,7 +89,7 @@ function showFuzzySearch() {
   const previewValue = valueFromPreviousInvocation;
   let hasPreviewValue = previewValue.length > 0;
   pick.onDidChangeValue(
-    handleErrors((value) => {
+    handleErrors((value: string) => {
       if (!hasPreviewValue) {
         return;
       }
@@ -133,7 +132,9 @@ function showFuzzySearch() {
 
 function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
-    registerSyncCommandWrapped('qcfg.fuzzySearch', () => showFuzzySearch()),
+    registerSyncCommandWrapped('qcfg.fuzzySearch', () => {
+      showFuzzySearch();
+    }),
   );
 }
 

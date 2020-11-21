@@ -1,18 +1,20 @@
-import {
+import type {
   ExtensionContext,
-  languages,
   CallHierarchyProvider,
   TextDocument,
   Position,
   CancellationToken,
   ProviderResult,
-  CallHierarchyItem,
   CallHierarchyOutgoingCall,
-  CallHierarchyIncomingCall,
   DocumentSymbol,
   Uri,
-  Location,
   Range,
+} from 'vscode';
+import {
+  languages,
+  CallHierarchyItem,
+  CallHierarchyIncomingCall,
+  Location,
   workspace,
 } from 'vscode';
 import { Modules } from './module';

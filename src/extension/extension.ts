@@ -8,7 +8,7 @@ import './utils/rangePrototype';
 import './utils/locationPrototype';
 
 import { ALL_MODULES } from './modules/allModules';
-import { ExtensionContext } from 'vscode';
+import type { ExtensionContext } from 'vscode';
 import { Modules } from './modules/module';
 import { stringify as str } from '../library/stringify';
 import { log } from '../library/logging';

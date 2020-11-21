@@ -1,15 +1,11 @@
-import {
+import type {
   ExtensionContext,
   FileSystemProvider,
   FileChangeEvent,
-  Uri,
   Disposable,
-  EventEmitter,
   FileStat,
-  FileType,
-  workspace,
-  window,
 } from 'vscode';
+import { Uri, EventEmitter, FileType, workspace, window } from 'vscode';
 import { Modules } from './module';
 import { getTempFile } from './fileUtils';
 import { runSubprocessAndWait } from './subprocess';
@@ -73,6 +69,7 @@ const sshFsProvider: FileSystemProvider = {
       `/usr/bin/stat  --printf "%F\\n%W\\n%Y\\n%s" ${path}`,
     ]);
     const attrs = result.stdout.split('\\n');
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const type: FileType = ({
       'regular file': FileType.File,
       directory: FileType.Directory,

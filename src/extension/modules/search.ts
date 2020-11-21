@@ -1,26 +1,28 @@
 'use strict';
 
-import {
-  CompletionItem,
-  Location,
-  Range,
+import type {
   TextSearchQuery,
   FindTextInFilesOptions,
-  workspace,
   TextSearchResult,
   TextSearchMatch,
-  CompletionItemKind,
-  SnippetString,
   CompletionItemProvider,
   TextDocument,
   Position,
   CancellationToken,
   CompletionContext,
   ExtensionContext,
-  languages,
-  commands,
   Uri,
   LocationLink,
+} from 'vscode';
+import {
+  CompletionItem,
+  Location,
+  Range,
+  workspace,
+  CompletionItemKind,
+  SnippetString,
+  languages,
+  commands,
 } from 'vscode';
 import { selectMultiple } from './dialog';
 import { getCompletionPrefix } from './documentUtils';

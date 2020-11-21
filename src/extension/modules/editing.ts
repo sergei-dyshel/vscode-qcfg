@@ -1,19 +1,21 @@
 'use strict';
 
-import {
+import type {
   TextEditor,
+  TextEditorEdit,
+  ExtensionContext,
+  TextDocument,
+  CompletionList,
+} from 'vscode';
+import {
   window,
   commands,
-  TextEditorEdit,
   Selection,
-  ExtensionContext,
   workspace,
   ConfigurationTarget,
   Position,
-  TextDocument,
   Range,
   Uri,
-  CompletionList,
 } from 'vscode';
 
 import {
@@ -265,18 +267,18 @@ function activate(context: ExtensionContext) {
   context.subscriptions.push(
     registerSyncCommandWrapped('qcfg.gotoLineRelative', gotoLineRelative),
     registerAsyncCommandWrapped('qcfg.insertPath', insertPathFromDialog),
-    registerSyncCommandWrapped('qcfg.block.goUp', () =>
-      goToBlockStart(true /* up */, false /* jump */),
-    ),
-    registerSyncCommandWrapped('qcfg.block.goDown', () =>
-      goToBlockStart(false /* down */, false /* jump */),
-    ),
-    registerSyncCommandWrapped('qcfg.block.selectUp', () =>
-      goToBlockStart(true /* up */, true /* select */),
-    ),
-    registerSyncCommandWrapped('qcfg.block.selectDown', () =>
-      goToBlockStart(false /* up */, true /* select */),
-    ),
+    registerSyncCommandWrapped('qcfg.block.goUp', () => {
+      goToBlockStart(true /* up */, false /* jump */);
+    }),
+    registerSyncCommandWrapped('qcfg.block.goDown', () => {
+      goToBlockStart(false /* down */, false /* jump */);
+    }),
+    registerSyncCommandWrapped('qcfg.block.selectUp', () => {
+      goToBlockStart(true /* up */, true /* select */);
+    }),
+    registerSyncCommandWrapped('qcfg.block.selectDown', () => {
+      goToBlockStart(false /* up */, true /* select */);
+    }),
     registerSyncCommandWrapped('qcfg.selectLines', expandSelectionLinewise),
     registerAsyncCommandWrapped('qcfg.goToDefinition', goToDefinition),
     registerAsyncCommandWrapped('qcfg.peekReferences', peekReferences),

@@ -29,7 +29,7 @@ export class ExecResult extends Error {
 
 interface SubprocessOptions {
   cwd?: string;
-  env?: { [name: string]: string };
+  env?: Record<string, string>;
   maxBuffer?: number;
   allowedCodes?: number[];
   statusBarMessage?: string;
@@ -99,11 +99,10 @@ export class Subprocess {
       command,
       cwd,
     );
-    // tslint:disable-next-line: promise-must-complete
     this.promise = new Promise<ExecResult>((resolve, reject) => {
       this.waitingContext = { resolve, reject };
     });
-    if (this.options && this.options.statusBarMessage) {
+    if (this.options?.statusBarMessage) {
       this.status = vscode.window.createStatusBarItem();
       this.status.text = '$(tool) ' + this.options.statusBarMessage;
       this.status.show();

@@ -1,14 +1,11 @@
-import {
+import type {
   ExtensionContext,
   TextDocument,
-  commands,
   SymbolInformation,
   DocumentSymbol,
-  Range,
-  Location,
-  SymbolKind,
   Uri,
 } from 'vscode';
+import { commands, Range, Location, SymbolKind } from 'vscode';
 import { Modules } from './module';
 import { getActiveTextEditor } from './utils';
 import { peekLocations } from './fileUtils';

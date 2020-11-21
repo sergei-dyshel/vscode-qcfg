@@ -24,7 +24,8 @@ import {
 } from './exception';
 import { Modules } from './module';
 import { runTaskAndGetLocations } from './tasks/main';
-import { Params, TaskType, Flag, LocationFormat } from './tasks/params';
+import type { Params } from './tasks/params';
+import { TaskType, Flag, LocationFormat } from './tasks/params';
 
 import RE2 from 're2';
 import { assertNonNull, assert } from '../../library/exception';
@@ -57,8 +58,8 @@ async function onSaveAll(docs: saveAll.DocumentsInFolder) {
   const cmd = 'gtags-update.sh ' + docPaths.join(' ');
   try {
     await subprocess.executeSubprocess(cmd, { cwd: gtagsDir });
-  } catch (err) {
-    await vscode.window.showErrorMessage(`gtags update failed: ${err.message}`);
+  } catch (err: unknown) {
+    await vscode.window.showErrorMessage(`gtags update failed: ${err}`);
   }
 }
 
@@ -76,7 +77,7 @@ async function updateDB() {
       });
       if (res.code === 2)
         await vscode.window.showInformationMessage('gtags db regenerated');
-    } catch (err) {
+    } catch (err: unknown) {
       await vscode.window.showErrorMessage(
         `gtags db check failed: ${(err as Error).message}`,
       );
@@ -412,7 +413,9 @@ const gtagsHoverProvider: vscode.HoverProvider = {
 function activate(context: vscode.ExtensionContext) {
   const queue = new PromiseQueue('gtags');
   handleAsyncStd(queue.add(updateDB, 'gtags check'));
-  setInterval(() => handleAsyncStd(queue.add(updateDB, 'gtags check')), 30000);
+  setInterval(() => {
+    handleAsyncStd(queue.add(updateDB, 'gtags check'));
+  }, 30000);
   context.subscriptions.push(
     saveAll.onEvent(queue.queued(onSaveAll, 'save all')),
     vscode.languages.registerWorkspaceSymbolProvider(

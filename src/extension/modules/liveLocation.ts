@@ -1,20 +1,19 @@
 'use strict';
 
-import {
+import type {
   ExtensionContext,
   Position,
   Range,
   TextDocument,
   TextDocumentChangeEvent,
   TextDocumentContentChangeEvent,
-  workspace,
-  Location,
 } from 'vscode';
+import { workspace, Location } from 'vscode';
 import { NumRange, offsetToRange } from './documentUtils';
 import { listenWrapped } from './exception';
 import { Modules } from './module';
 import { DefaultMap } from '../../library/tsUtils';
-import { DisposableLike } from '../../library/types';
+import type { DisposableLike } from '../../library/types';
 
 export abstract class LiveLocation extends Location implements DisposableLike {
   private registered_ = false;
@@ -191,7 +190,7 @@ export class LiveLocationArray implements DisposableLike {
   private array: LiveLocation[] = [];
 
   add(document: TextDocument, range: Range, mergeOnReplace?: boolean) {
-    let liveLoc = createLiveLocation(document, range, {
+    const liveLoc = createLiveLocation(document, range, {
       mergeOnReplace,
       onInvalidated: () => {
         this.array.removeFirst(liveLoc);

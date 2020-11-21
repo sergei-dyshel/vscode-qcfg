@@ -1,5 +1,5 @@
 import { Modules } from './module';
-import { ExtensionContext, Location, Uri } from 'vscode';
+import type { ExtensionContext, Location, Uri } from 'vscode';
 import { peekLocations } from './fileUtils';
 import {
   registerAsyncCommandWrapped,
@@ -11,6 +11,7 @@ import { LiveLocationArray } from './liveLocation';
 import { DisposableHolder } from '../../library/types';
 import { checkNonNull, check } from '../../library/exception';
 import { getActiveTextEditor } from './utils';
+import { mapAsync } from './async';
 
 const MAX_SAVED_SEARCHES = 20;
 
@@ -49,9 +50,7 @@ export async function saveAndPeekSearch(
 
 async function setLastLocations(locations: Location[]) {
   const newLocs = new LiveLocationArray();
-  for (const loc of locations) {
-    newLocs.addAsync(loc);
-  }
+  await mapAsync(locations, async (loc) => newLocs.addAsync(loc));
   lastLocations.set(newLocs);
 }
 
@@ -62,7 +61,7 @@ function calcNumFiles(locations: Location[]): number {
 
 interface SavedSearch {
   name: string;
-  func(): Promise<Location[]>;
+  func: () => Promise<Location[]>;
   details: {
     numLocations: number;
     numFiles: number;
@@ -80,9 +79,7 @@ function selectLastLocationsInCurrentEditor() {
   const editor = getActiveTextEditor();
   const selections = checkNonNull(lastLocations.get(), 'No last locations')
     .locations()
-    .filter((loc) => {
-      return loc.uri.toString() === editor.document.uri.toString();
-    })
+    .filter((loc) => loc.uri.toString() === editor.document.uri.toString())
     .map((loc) => loc.range.asSelection());
   check(!selections.isEmpty, 'No results in current file');
   editor.selections = selections;

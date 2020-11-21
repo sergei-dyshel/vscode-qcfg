@@ -1,22 +1,16 @@
 'use strict';
 
 import { TextBuffer } from 'superstring';
-// eslint-disable-next-line import/no-duplicates
 import * as Parser from 'tree-sitter';
-// tslint:disable-next-line: no-duplicate-imports
-// eslint-disable-next-line import/no-duplicates
+// eslint-disable-next-line @typescript-eslint/no-duplicate-imports
 import { SyntaxNode, Tree as SyntaxTree } from 'tree-sitter';
-import {
+import type {
   Event,
-  EventEmitter,
   ExtensionContext,
-  Position,
-  Range,
   TextDocument,
   TextDocumentChangeEvent,
-  window,
-  workspace,
 } from 'vscode';
+import { EventEmitter, Position, Range, window, workspace } from 'vscode';
 import { PromiseContext } from './async';
 import { NumRange } from './documentUtils';
 import { listenWrapped, handleAsyncStd, handleStd } from './exception';
@@ -36,7 +30,7 @@ interface LanguageConfig {
   parser: unknown;
 }
 
-const languageConfig: { [language: string]: LanguageConfig | undefined } = {
+const languageConfig: Record<string, LanguageConfig | undefined> = {
   python: { parser: require('tree-sitter-python') },
   c: { parser: require('tree-sitter-c') },
   cpp: { parser: require('tree-sitter-cpp') },
@@ -47,7 +41,7 @@ const languageConfig: { [language: string]: LanguageConfig | undefined } = {
 };
 
 declare module 'tree-sitter' {
-  // eslint-disable-next-line no-shadow
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   class SyntaxNode {}
   interface SyntaxNode {
     readonly nodeType: SyntaxNode.Type;
@@ -213,10 +207,10 @@ class DocumentContext {
           }
           break;
         }
-      } catch (err) {
+      } catch (err: unknown) {
         this.log.error(err);
         this.tree = undefined;
-        if (this.promiseContext) this.promiseContext.reject(err);
+        if (this.promiseContext) this.promiseContext.reject(err as Error);
         this.promiseContext = undefined;
         break;
       }
@@ -243,7 +237,6 @@ class DocumentContext {
     }
     if (this.tree) return this.tree;
     this.promiseContext = new PromiseContext();
-    // tslint:disable-next-line: no-floating-promises
     handleStd(async () => this.update());
     return this.promiseContext.promise;
   }
@@ -273,13 +266,13 @@ function onDidChangeTextDocument(event: TextDocumentChangeEvent) {
 
 // parseTextBuffer is missing in tree-sitter definitions
 interface ParserWithAsync {
-  parseTextBuffer(
+  parseTextBuffer: (
     buf: TextBuffer,
     oldTree?: SyntaxTree,
     config?: {
       syncOperationCount: number;
     },
-  ): Promise<SyntaxTree>;
+  ) => Promise<SyntaxTree>;
 }
 
 function activate(context: ExtensionContext) {

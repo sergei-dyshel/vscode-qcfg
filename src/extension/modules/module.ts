@@ -2,7 +2,7 @@
 
 // Must not import any modules
 import { getCallsite } from '../../library/sourceMap';
-import { ExtensionContext } from 'vscode';
+import type { ExtensionContext } from 'vscode';
 import * as nodejs from '../../library/nodejs';
 
 export namespace Modules {

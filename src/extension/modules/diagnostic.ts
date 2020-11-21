@@ -1,17 +1,15 @@
 'use strict';
 
-import {
+import type {
   ExtensionContext,
   CompletionItemProvider,
   TextDocument,
   Position,
   ProviderResult,
-  CompletionItem,
   CompletionList,
-  languages,
   DiagnosticChangeEvent,
-  Range,
 } from 'vscode';
+import { CompletionItem, languages, Range } from 'vscode';
 import { Modules } from './module';
 import { listenWrapped } from './exception';
 import { getCompletionPrefix } from './documentUtils';

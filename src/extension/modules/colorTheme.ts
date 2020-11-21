@@ -1,14 +1,8 @@
 'use strict';
 
 import { log } from '../../library/logging';
-import {
-  workspace,
-  commands,
-  ExtensionContext,
-  ConfigurationTarget,
-  window,
-  Uri,
-} from 'vscode';
+import type { ExtensionContext } from 'vscode';
+import { workspace, commands, ConfigurationTarget, window, Uri } from 'vscode';
 import { colorThemeFiles } from './language';
 import { selectStringFromList } from './dialog';
 import {

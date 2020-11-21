@@ -1,12 +1,7 @@
 'use strict';
 
-import {
-  window,
-  workspace,
-  Uri,
-  RelativePattern,
-  ExtensionContext,
-} from 'vscode';
+import type { ExtensionContext } from 'vscode';
+import { window, workspace, Uri, RelativePattern } from 'vscode';
 import * as fileUtils from './fileUtils';
 import * as path from 'path';
 import { getActiveTextEditor } from './utils';
@@ -17,9 +12,7 @@ import { selectFromList } from './dialog';
 import * as nodejs from '../../library/nodejs';
 import { assertNonNull } from '../../library/exception';
 
-interface Mapping {
-  [ext: string]: string[];
-}
+type Mapping = Record<string, string[]>;
 
 async function switchToAlternate() {
   const editor = getActiveTextEditor();

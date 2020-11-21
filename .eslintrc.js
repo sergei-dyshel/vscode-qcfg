@@ -90,6 +90,12 @@ const config = {
     '@typescript-eslint/no-namespace': off,
     // see: https://github.com/typescript-eslint/typescript-eslint/issues/2077
     '@typescript-eslint/camelcase': off,
+    camelcase: [
+      warn,
+      {
+        allow: ['child_process'],
+      },
+    ],
     'no-inner-declarations': off,
     'no-underscore-dangle': off,
     '@typescript-eslint/no-explicit-any': [warn, { ignoreRestArgs: true }],

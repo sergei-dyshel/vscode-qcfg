@@ -1,14 +1,7 @@
 'use strict';
 
-import {
-  Uri,
-  Position,
-  Location,
-  WorkspaceFolder,
-  workspace,
-  Range,
-  TextDocument,
-} from 'vscode';
+import type { WorkspaceFolder, TextDocument } from 'vscode';
+import { Uri, Position, Location, workspace, Range } from 'vscode';
 import { filterNonNull, concatArrays } from '../../library/tsUtils';
 import * as nodejs from '../../library/nodejs';
 import { Subprocess } from './subprocess';

@@ -1,25 +1,23 @@
 'use strict';
 
 import { Dictionary } from 'typescript-collections';
-import {
+import type {
   Task,
-  tasks,
   TaskExecution,
   Terminal,
   StatusBarItem,
-  window,
   ExtensionContext,
   TaskProcessEndEvent,
   TaskProcessStartEvent,
-  TaskScope,
   TaskEndEvent,
   WorkspaceFolder,
 } from 'vscode';
+import { tasks, window, TaskScope } from 'vscode';
 import { listenWrapped, executeCommandHandled } from './exception';
 import { log, Logger } from '../../library/logging';
 import { Modules } from './module';
 import { registerTemporaryCommand } from './utils';
-import { DisposableLike } from '../../library/types';
+import type { DisposableLike } from '../../library/types';
 import { assert } from '../../library/exception';
 
 export enum State {
@@ -123,10 +121,10 @@ export class TaskRun {
     this.log.debug('Executing');
     try {
       this.execution = await tasks.executeTask(this.task);
-    } catch (err) {
-      this.log.debug('executeTask failed: ' + (err.message as string));
+    } catch (err: unknown) {
+      this.log.debug('executeTask failed: ', err);
       allRuns.remove(this.desc);
-      return err;
+      return;
     }
     this.state = State.RUNNING;
     this.log.debug('Started');
@@ -134,7 +132,6 @@ export class TaskRun {
 
   async wait(): Promise<void> {
     if (this.waitingPromise) return this.waitingPromise;
-    // tslint:disable-next-line: promise-must-complete
     this.waitingPromise = new Promise(
       (resolve: () => void, reject: (err: Error) => void) => {
         this.waitingContext = { resolve, reject };
@@ -153,7 +150,7 @@ export class TaskRun {
     this.execution!.terminate();
     try {
       await this.wait();
-    } catch (err) {
+    } catch (err: unknown) {
       if (err instanceof TaskCancelledError) return;
       throw err;
     }

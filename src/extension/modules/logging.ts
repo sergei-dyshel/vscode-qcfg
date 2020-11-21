@@ -1,19 +1,21 @@
 'use strict';
 
+import type {
+  TextEditor,
+  OutputChannel,
+  ExtensionContext,
+  TextDocument,
+  TextDocumentContentChangeEvent,
+} from 'vscode';
 import {
   workspace,
   window,
-  TextEditor,
-  OutputChannel,
   languages,
-  ExtensionContext,
   Uri,
-  TextDocument,
   Location,
   Position,
   Selection,
   Range,
-  TextDocumentContentChangeEvent,
 } from 'vscode';
 import * as nodejs from '../../library/nodejs';
 import { selectStringFromList } from './dialog';
@@ -33,7 +35,7 @@ import {
 } from '../../library/logging';
 import { FileHandler } from '../../library/loggingHandlers';
 import { stringify as str, registerStringifier } from '../../library/stringify';
-import * as treeSitter from 'tree-sitter';
+import type * as treeSitter from 'tree-sitter';
 
 const FIRST_LINE_ID = '{vscode-qcfg.log}';
 
@@ -46,6 +48,7 @@ function stringifyTextEditor(editor: TextEditor) {
   return `<${relpath}>`;
 }
 
+// eslint-disable-next-line @typescript-eslint/ban-types
 function stringifyVscode(x: object): string | undefined {
   if (x instanceof Uri) {
     if (x.scheme === 'file') return workspace.asRelativePath(x);
@@ -179,7 +182,9 @@ function activate(context: ExtensionContext) {
       window.onDidChangeVisibleTextEditors,
       onDidChangeVisibleTextEditors,
     ),
-    registerSyncCommandWrapped('qcfg.log.show', () => outputHandler.show()),
+    registerSyncCommandWrapped('qcfg.log.show', () => {
+      outputHandler.show();
+    }),
     registerAsyncCommandWrapped('qcfg.log.setHandlerLevel.output', async () =>
       promptForLevel(outputHandler),
     ),

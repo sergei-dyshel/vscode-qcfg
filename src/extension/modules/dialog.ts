@@ -1,13 +1,12 @@
 'use strict';
 
-import {
-  window,
-  Uri,
+import type {
   QuickPickItem,
   ExtensionContext,
   QuickInputButton,
   QuickPickOptions,
 } from 'vscode';
+import { window, Uri } from 'vscode';
 import { handleErrors, handleAsyncStd, handleErrorsAsync } from './exception';
 import { Modules } from './module';
 import * as lodash from 'lodash';
@@ -91,7 +90,7 @@ class Button implements QuickInputButton {
   iconPath: Uri;
 }
 
-const buttons: { [name: string]: Button } = {};
+const buttons: Record<string, Button> = {};
 
 export async function selectFromList<T>(
   items: T[],

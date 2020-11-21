@@ -6,9 +6,9 @@ import * as nodejs from '../../library/nodejs';
 import * as vscode from 'vscode';
 import { Modules } from './module';
 import { parseJsonFileSync } from './json';
-import { PackageJson } from '../../library/packageJson';
+import type { PackageJson } from '../../library/packageJson';
 
-export const colorThemeFiles: { [id: string]: string | undefined } = {};
+export const colorThemeFiles: Record<string, string | undefined> = {};
 
 export function getLanguageConfig(
   id: string,
@@ -48,7 +48,7 @@ function fetchLangConfigs() {
   }
 
   // for some reason """ is configured is block comment
-  if (langConfigs.python && langConfigs.python.comments) {
+  if (langConfigs.python?.comments) {
     langConfigs.python.comments.blockComment = undefined;
   }
 
@@ -57,9 +57,10 @@ function fetchLangConfigs() {
 }
 
 /* TODO: move extension parsing to separate file */
-const langConfigs: {
-  [id: string]: vscode.LanguageConfiguration | undefined;
-} = {};
+const langConfigs: Record<
+  string,
+  vscode.LanguageConfiguration | undefined
+> = {};
 
 function activate(_: vscode.ExtensionContext) {
   fetchLangConfigs();

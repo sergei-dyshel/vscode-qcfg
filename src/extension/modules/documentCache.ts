@@ -1,6 +1,7 @@
 'use strict';
 
-import { ExtensionContext, TextDocument, workspace, Uri } from 'vscode';
+import type { ExtensionContext, TextDocument, Uri } from 'vscode';
+import { workspace } from 'vscode';
 import { Modules } from './module';
 import { listenWrapped } from './exception';
 import { Dictionary } from 'typescript-collections';
