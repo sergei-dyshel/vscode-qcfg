@@ -73,6 +73,12 @@ declare module 'tree-sitter' {
       | 'object' // typescript
       | 'storage_class_specifier';
   }
+
+  // eslint-disable-next-line no-shadow
+  class Tree {}
+  interface Tree {
+    version: number;
+  }
 }
 
 export namespace SyntaxTrees {
@@ -82,11 +88,6 @@ export namespace SyntaxTrees {
   }
   export function isDocumentSupported(document: TextDocument) {
     return document.languageId in languageConfig;
-  }
-
-  export function documentGeneration(document: TextDocument) {
-    checkDocumentSupported(document);
-    return trees.get(document).generation;
   }
 
   export const supportedLanguages = Object.keys(languageConfig);
@@ -179,7 +180,6 @@ class DocumentContext {
   private tree?: SyntaxTree;
   private promiseContext?: PromiseContext<SyntaxTree>;
   private readonly timer: Timer = new Timer();
-  private generation_ = 0;
   private readonly log: Logger;
   private isUpdating = false;
 
@@ -187,19 +187,22 @@ class DocumentContext {
     if (this.isUpdating) return;
     const parser = Parsers.get(this.document.languageId);
     const parserAsync = (parser as unknown) as ParserWithAsync;
-    const buf = new TextBuffer(this.document.getText());
     this.isUpdating = true;
     for (;;) {
-      const generation = this.generation_;
       try {
+        const buf = new TextBuffer(this.document.getText());
+        const version = this.document.version;
         // TODO: make using previous tree configurable (may crash)
         const start = Date.now();
         this.tree = await parserAsync.parseTextBuffer(buf, undefined, {
           syncOperationCount: 1000,
         });
         const end = Date.now();
-        this.log.debug(`Parsing took ${(end - start) / 1000} seconds`);
-        if (generation === this.generation_) {
+        this.log.debug(
+          `Parsing took ${(end - start) / 1000} seconds (version ${version})`,
+        );
+        if (version === this.document.version) {
+          this.tree.version = version;
           emmiter.fire({ document: this.document, tree: this.tree });
           if (this.promiseContext) {
             this.promiseContext.resolve(this.tree);
@@ -219,15 +222,14 @@ class DocumentContext {
     this.isUpdating = false;
   }
 
-  get generation() {
-    return this.generation_;
-  }
-
   onDocumentUpdated() {
     this.timer.setTimeout(UPDATE_DELAY_MS, () => {
-      this.generation_ += 1;
       handleStd(async () => this.update());
     });
+  }
+
+  invalidate() {
+    this.tree = undefined;
   }
 
   async get(): Promise<SyntaxTree> {
