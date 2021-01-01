@@ -1,11 +1,12 @@
 import { Modules } from './module';
 import type { ExtensionContext, TextEditor } from 'vscode';
-import { commands, env, Range, window, workspace, ThemeColor } from 'vscode';
+import { commands, env, Range, workspace } from 'vscode';
 import { registerAsyncCommandWrapped, listenWrapped } from './exception';
 import { getActiveTextEditor } from './utils';
 import { trimWhitespace, swapRanges } from './textUtils';
 import { expandSelectionLinewise, replaceText } from './editing';
 import { check } from '../../library/exception';
+import { RangeDecorator } from '../utils/decoration';
 
 let mark:
   | undefined
@@ -15,8 +16,8 @@ let mark:
       text: string;
     };
 
-const DECORATION_TYPE = window.createTextEditorDecorationType({
-  backgroundColor: new ThemeColor('diffEditor.insertedTextBackground'),
+const decorator = new RangeDecorator({
+  border: '2px solid rgba(0, 255, 0, 0.50)',
 });
 
 async function normalCopy() {
@@ -24,8 +25,8 @@ async function normalCopy() {
 }
 
 async function markAndCopy(editor: TextEditor, range: Range) {
-  if (mark) mark.editor.setDecorations(DECORATION_TYPE, []);
-  editor.setDecorations(DECORATION_TYPE, [range]);
+  if (mark) decorator.clear(mark.editor);
+  decorator.decorate(editor, [range]);
   mark = {
     editor,
     range,
@@ -151,7 +152,7 @@ async function swapWithMark() {
 }
 
 function invalidateMark() {
-  if (mark) mark.editor.setDecorations(DECORATION_TYPE, []);
+  if (mark) decorator.clear(mark.editor);
   mark = undefined;
 }
 
