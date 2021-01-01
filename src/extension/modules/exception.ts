@@ -170,7 +170,10 @@ function simplifyErrorStack(stack: string) {
 }
 
 function handleErrorDuringCommand(command: string, error: any) {
-  stdErrorHandler(error, `Command "${command}": `);
+  try {
+    stdErrorHandler(error, `Command "${command}": `);
+    // eslint-disable-next-line no-empty
+  } catch (_: unknown) {}
 }
 
 function createStdErrorHandler(prefix?: string) {
