@@ -144,40 +144,84 @@
         "title": "qcfg: Switch to alternate file"
       },
       {
-        "command": "qcfg.selection.expand",
-        "title": "qcfg: Expand selection"
+        "command": "qcfg.treeMode.expand",
+        "title": "qcfg: Tree mode - expand"
       },
       {
-        "command": "qcfg.selection.shrink",
-        "title": "qcfg: Shrink selection"
+        "command": "qcfg.treeMode.shrink",
+        "title": "qcfg: Tree mode - shrink"
       },
       {
-        "command": "qcfg.selection.right",
-        "title": "qcfg: Move selection right"
+        "command": "qcfg.treeMode.expandFaster",
+        "title": "qcfg: Tree mode - expand faster"
       },
       {
-        "command": "qcfg.selection.left",
-        "title": "qcfg: Move selection left"
+        "command": "qcfg.treeMode.shrinkFaster",
+        "title": "qcfg: Tree mode - shrink faster"
       },
       {
-        "command": "qcfg.selection.swapRight",
-        "title": "qcfg: Swap selected node with right sibling"
+        "command": "qcfg.treeMode.expandToList",
+        "title": "qcfg: Tree mode - expand to list item"
       },
       {
-        "command": "qcfg.selection.swapLeft",
-        "title": "qcfg: Swap selected node with left sibling"
+        "command": "qcfg.treeMode.shrinkToList",
+        "title": "qcfg: Tree mode - shrink to list item"
       },
       {
-        "command": "qcfg.selection.extendRight",
-        "title": "qcfg: Extend selection right"
+        "command": "qcfg.treeMode.goRight",
+        "title": "qcfg: Tree mode - right sibling"
       },
       {
-        "command": "qcfg.selection.extendLeft",
-        "title": "qcfg: extend selection left"
+        "command": "qcfg.treeMode.goLeft",
+        "title": "qcfg: Tree mode - left sibling"
+      },
+      {
+        "command": "qcfg.treeMode.goStart",
+        "title": "qcfg: Tree mode - got to start sibling"
+      },
+      {
+        "command": "qcfg.treeMode.goEnd",
+        "title": "qcfg: Tree mode - got to end sibling"
+      },
+      {
+        "command": "qcfg.treeMode.swapRight",
+        "title": "qcfg: Tree mode - swap with right sibling"
+      },
+      {
+        "command": "qcfg.treeMode.swapLeft",
+        "title": "qcfg: Tree mode - swap with left sibling"
+      },
+      {
+        "command": "qcfg.treeMode.extendToRight",
+        "title": "qcfg: Tree mode - extend selection to right sibling"
+      },
+      {
+        "command": "qcfg.treeMode.extendToLeft",
+        "title": "qcfg: Tree mode - extend selection to left sibling"
+      },
+      {
+        "command": "qcfg.treeMode.extendToStart",
+        "title": "qcfg: Tree mode - extend selection to start sibling"
+      },
+      {
+        "command": "qcfg.treeMode.extendToEnd",
+        "title": "qcfg: Tree mode - extend selection to end sibling"
       },
       {
         "command": "qcfg.syntaxTree.show",
         "title": "qcfg: Show syntax tree in side panel"
+      },
+      {
+        "command": "qcfg.treeMode.enter",
+        "title": "qcfg: Tree mode - enter"
+      },
+      {
+        "command": "qcfg.treeMode.exit",
+        "title": "qcfg: Tree mode - exit"
+      },
+      {
+        "command": "qcfg.treeMode.reverseSelection",
+        "title": "qcfg: Tree mode - reverse selection"
       },
       {
         "command": "qcfg.autoSync.toggle",
@@ -475,55 +519,113 @@
       },
       {
         "key": "cmd+j",
-        "command": "qcfg.selection.expand",
-        "when": "editorTextFocus"
+        "command": "qcfg.treeMode.enter",
+        "when": "editorTextFocus && !qcfgTreeMode"
       },
       {
-        "key": "cmd+shift+j",
-        "command": "qcfg.selection.shrink",
-        "when": "editorTextFocus"
+        "key": "cmd+j",
+        "command": "qcfg.treeMode.expand",
+        "when": "editorTextFocus && qcfgTreeMode"
       },
       {
-        "key": "alt+pageup",
-        "command": "qcfg.selection.left",
-        "when": "editorTextFocus"
+        "key": "escape",
+        "command": "qcfg.treeMode.exit",
+        "when": "editorTextFocus && qcfgTreeMode"
       },
       {
-        "key": "alt+pagedown",
-        "command": "qcfg.selection.right",
-        "when": "editorTextFocus"
+        "key": "alt+enter",
+        "command": "qcfg.treeMode.reverseSelection",
+        "when": "editorTextFocus && qcfgTreeMode"
       },
       {
-        "key": "ctrl+alt+pageup",
-        "mac": "cmd+alt+pageup",
-        "command": "qcfg.selection.swapLeft",
-        "when": "editorTextFocus"
+        "key": "up",
+        "command": "qcfg.treeMode.expand",
+        "when": "editorTextFocus && qcfgTreeMode"
       },
       {
-        "key": "ctrl+alt+pagedown",
-        "mac": "cmd+alt+pagedown",
-        "command": "qcfg.selection.swapRight",
-        "when": "editorTextFocus"
+        "key": "down",
+        "command": "qcfg.treeMode.shrink",
+        "when": "editorTextFocus && qcfgTreeMode"
       },
       {
-        "key": "shift+alt+pageup",
-        "command": "qcfg.selection.extendLeft",
-        "when": "editorTextFocus"
+        "key": "cmd+up",
+        "command": "qcfg.treeMode.expandFaster",
+        "when": "editorTextFocus && qcfgTreeMode"
       },
       {
-        "key": "shift+alt+pagedown",
-        "command": "qcfg.selection.extendRight",
-        "when": "editorTextFocus"
+        "key": "cmd+down",
+        "command": "qcfg.treeMode.shrinkFaster",
+        "when": "editorTextFocus && qcfgTreeMode"
+      },
+      {
+        "key": "alt+up",
+        "command": "qcfg.treeMode.expandToList",
+        "when": "editorTextFocus && qcfgTreeMode"
+      },
+      {
+        "key": "alt+down",
+        "command": "qcfg.treeMode.shrinkTolist",
+        "when": "editorTextFocus && qcfgTreeMode"
+      },
+      {
+        "key": "left",
+        "command": "qcfg.treeMode.goLeft",
+        "when": "editorTextFocus && qcfgTreeMode"
+      },
+      {
+        "key": "right",
+        "command": "qcfg.treeMode.goRight",
+        "when": "editorTextFocus && qcfgTreeMode"
+      },
+      {
+        "key": "cmd+left",
+        "command": "qcfg.treeMode.goToStart",
+        "when": "editorTextFocus && qcfgTreeMode"
+      },
+      {
+        "key": "cmd+right",
+        "command": "qcfg.treeMode.goToEnd",
+        "when": "editorTextFocus && qcfgTreeMode"
+      },
+      {
+        "key": "cmd+alt+left",
+        "command": "qcfg.treeMode.swapLeft",
+        "when": "editorTextFocus && qcfgTreeMode"
+      },
+      {
+        "key": "cmd+alt+right",
+        "command": "qcfg.treeMode.swapRight",
+        "when": "editorTextFocus && qcfgTreeMode"
+      },
+      {
+        "key": "shift+left",
+        "command": "qcfg.treeMode.extendToLeft",
+        "when": "editorTextFocus && qcfgTreeMode"
+      },
+      {
+        "key": "shift+right",
+        "command": "qcfg.treeMode.extendToRight",
+        "when": "editorTextFocus && qcfgTreeMode"
+      },
+      {
+        "key": "shift+cmd+left",
+        "command": "qcfg.treeMode.extendToStart",
+        "when": "editorTextFocus && qcfgTreeMode"
+      },
+      {
+        "key": "shift+cmd+right",
+        "command": "qcfg.treeMode.extendToEnd",
+        "when": "editorTextFocus && qcfgTreeMode"
       },
       {
         "key": "alt+up",
         "command": "qcfg.block.goUp",
-        "when": "editorTextFocus"
+        "when": "editorTextFocus && !qcfgTreeMode"
       },
       {
         "key": "alt+down",
         "command": "qcfg.block.goDown",
-        "when": "editorTextFocus"
+        "when": "editorTextFocus && !qcfgTreeMode"
       },
       {
         "key": "alt+shift+up",
@@ -542,7 +644,7 @@
       {
         "key": "alt+enter",
         "command": "qcfg.swapCursorAndAnchor",
-        "when": "editorHasSelection && editorTextFocus"
+        "when": "editorHasSelection && editorTextFocus && !qcfgTreeMode"
       },
       {
         "key": "ctrl+b",

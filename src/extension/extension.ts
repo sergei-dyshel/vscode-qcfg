@@ -6,6 +6,7 @@ import '../library/stringPrototype';
 import './utils/positionPrototype';
 import './utils/rangePrototype';
 import './utils/locationPrototype';
+import './utils/selectionPrototype';
 
 import { ALL_MODULES } from './modules/allModules';
 import type { ExtensionContext } from 'vscode';

@@ -8,6 +8,13 @@ export function assert(
   if (!condition) abort(...args);
 }
 
+export function assertNotNull<T>(
+  val: T,
+  ...args: unknown[]
+): asserts val is NonNullable<T> {
+  if (val === undefined || val === null) abort(...args);
+}
+
 export function abort(...args: unknown[]): never {
   throw new Error(formatMessage(args, 'Assertion failed'));
 }

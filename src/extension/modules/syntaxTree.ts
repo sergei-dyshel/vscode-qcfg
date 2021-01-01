@@ -49,6 +49,8 @@ declare module 'tree-sitter' {
     readonly range: VsRange;
     readonly start: Position;
     readonly end: Position;
+    readonly nextNamedSiblingSafe: SyntaxNode;
+    readonly previousNamedSiblingSafe: SyntaxNode;
   }
   namespace SyntaxNode {
     export type Type =
@@ -148,6 +150,20 @@ Object.defineProperty(SyntaxNode.prototype, 'end', {
     if (!this.end_)
       this.end_ = new Position(this_.endPosition.row, this_.endPosition.column);
     return this.end_;
+  },
+});
+
+Object.defineProperty(SyntaxNode.prototype, 'nextNamedSiblingSafe', {
+  get(): SyntaxNode {
+    const this_ = this as SyntaxNode;
+    return this_.nextNamedSibling ?? this_;
+  },
+});
+
+Object.defineProperty(SyntaxNode.prototype, 'previousNamedSiblingSafe', {
+  get(): SyntaxNode {
+    const this_ = this as SyntaxNode;
+    return this_.previousNamedSibling ?? this_;
   },
 });
 

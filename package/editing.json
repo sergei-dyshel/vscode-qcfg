@@ -82,12 +82,12 @@
       {
         "key": "alt+up",
         "command": "qcfg.block.goUp",
-        "when": "editorTextFocus"
+        "when": "editorTextFocus && !qcfgTreeMode"
       },
       {
         "key": "alt+down",
         "command": "qcfg.block.goDown",
-        "when": "editorTextFocus"
+        "when": "editorTextFocus && !qcfgTreeMode"
       },
       {
         "key": "alt+shift+up",
@@ -106,7 +106,7 @@
       {
         "key": "alt+enter",
         "command": "qcfg.swapCursorAndAnchor",
-        "when": "editorHasSelection && editorTextFocus"
+        "when": "editorHasSelection && editorTextFocus && !qcfgTreeMode"
       },
       {
         "key": "ctrl+b",
