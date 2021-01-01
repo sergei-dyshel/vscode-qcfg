@@ -72,9 +72,7 @@ async function surroundWith(args: unknown[]) {
 }
 
 function swapCursorAndAnchor(editor: TextEditor) {
-  editor.selections = editor.selections.map(
-    (sel) => new Selection(sel.active, sel.anchor),
-  );
+  editor.selections = editor.selections.map(sel => sel.reverse());
 }
 
 async function navigateBackToPreviousFile() {
