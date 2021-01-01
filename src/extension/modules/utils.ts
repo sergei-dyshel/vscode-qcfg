@@ -7,7 +7,7 @@ import { getDocumentWorkspaceFolder } from './fileUtils';
 import { assertNonNull } from '../../library/exception';
 
 // XXX: currently unused
-export namespace Context {
+export namespace WhenContext {
   const contexts = new Set<string>();
 
   export function has(name: string): boolean {

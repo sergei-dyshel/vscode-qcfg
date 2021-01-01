@@ -12,7 +12,7 @@ import {
   registerSyncCommandWrapped,
   handleAsyncStd,
 } from './exception';
-import { getActiveTextEditor, Context } from './utils';
+import { getActiveTextEditor, WhenContext } from './utils';
 import { log } from '../../library/logging';
 
 const CONTEXT = 'qcfgMultipleSelectionsMarker';
@@ -25,7 +25,7 @@ const decorationType = window.createTextEditorDecorationType({
 function clearMark(editor: TextEditor) {
   selectionIndex.delete(editor);
   editor.setDecorations(decorationType, []);
-  handleAsyncStd(Context.clear(CONTEXT));
+  handleAsyncStd(WhenContext.clear(CONTEXT));
 }
 
 function updateMark(editor: TextEditor, index: number) {
@@ -37,7 +37,7 @@ function updateMark(editor: TextEditor, index: number) {
   editor.setDecorations(decorationType, []);
   editor.setDecorations(decorationType, [range]);
   editor.revealRange(range);
-  handleAsyncStd(Context.set(CONTEXT));
+  handleAsyncStd(WhenContext.set(CONTEXT));
   log.debugStr(
     '{}: marking selection #{} out of {}, range {}',
     editor,
