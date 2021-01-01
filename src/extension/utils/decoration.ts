@@ -1,17 +1,21 @@
-import type { TextEditor, TextEditorDecorationType } from 'vscode';
+import type {
+  TextEditor,
+  TextEditorDecorationType,
+  ThemableDecorationRenderOptions,
+} from 'vscode';
 import { Range, window } from 'vscode';
 import { offsetPosition } from '../modules/textUtils';
 
 export class RangeDecorator {
   left: TextEditorDecorationType;
   right: TextEditorDecorationType;
-  constructor(border: string) {
+  constructor(options: ThemableDecorationRenderOptions) {
     this.left = window.createTextEditorDecorationType({
-      border,
+      ...options,
       borderRadius: '5px 0px 0px 5px',
     });
     this.right = window.createTextEditorDecorationType({
-      border,
+      ...options,
       borderRadius: '0px 5px 5px 0px',
     });
   }
