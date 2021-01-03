@@ -26,7 +26,7 @@ import {
 import { log } from '../../library/logging';
 import { Modules } from './module';
 import { callIfNonNull } from '../../library/tsUtils';
-import { assertNonNull, assert } from '../../library/exception';
+import { assertNotNull, assert } from '../../library/exception';
 
 export const TREE_ITEM_REMOVABLE_CONTEXT = 'removable';
 
@@ -122,7 +122,8 @@ export namespace QcfgTreeView {
 
   export async function revealTree(node?: TreeNode, options?: RevealOptions) {
     if (!node) {
-      const nodes = await assertNonNull(currentProvider).getTrees();
+      assertNotNull(currentProvider);
+      const nodes = await currentProvider.getTrees();
       if (!nodes || nodes.length === 0) return;
       node = nodes[0];
     }
@@ -297,18 +298,20 @@ const treeDataProvider: TreeDataProvider<TreeNode> = {
 };
 
 function removeNode(...args: any[]) {
-  const node = assertNonNull(args[0]) as TreeNode;
-  const provider = assertNonNull(currentProvider);
+  const node = args[0] as TreeNode;
+  assertNotNull(node);
+  assertNotNull(currentProvider);
   // eslint-disable-next-line @typescript-eslint/unbound-method
-  if (!provider.removeNode)
+  if (!currentProvider.removeNode)
     throw new Error(
       'TreeProvider with removable nodes must provide removeNode method',
     );
-  provider.removeNode(node);
+  currentProvider.removeNode(node);
 }
 
 async function expandNode(...args: any[]) {
-  const node = assertNonNull(args[0]) as TreeNode;
+  const node = args[0] as TreeNode;
+  assertNotNull(args[0]);
   await treeView.reveal(node, { expand: 3 });
 }
 

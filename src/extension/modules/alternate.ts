@@ -10,7 +10,7 @@ import { Modules } from './module';
 import { baseName, stripExt } from '../../library/pathUtils';
 import { selectFromList } from './dialog';
 import * as nodejs from '../../library/nodejs';
-import { assertNonNull } from '../../library/exception';
+import { assertNotNull } from '../../library/exception';
 
 type Mapping = Record<string, string[]>;
 
@@ -23,10 +23,8 @@ async function switchToAlternate() {
   const mapping: Mapping = workspace
     .getConfiguration('qcfg.alternate')
     .get('mapping', {});
-  const altExts = assertNonNull(
-    mapping[ext],
-    `No alternate mapping configured for ${ext}`,
-  );
+  const altExts = mapping[ext];
+  assertNotNull(altExts, `No alternate mapping configured for ${ext}`);
   const altFiles = altExts.map((altExt) => stripExt(filePath) + altExt);
   for (const alt of altFiles) {
     const exists = await fileUtils.exists(alt);
@@ -38,9 +36,8 @@ async function switchToAlternate() {
   }
   for (const altExt of altExts) {
     const shortName = baseName(filePath) + altExt;
-    const folder = assertNonNull(
-      fileUtils.getDocumentWorkspaceFolder(filePath),
-    );
+    const folder = fileUtils.getDocumentWorkspaceFolder(filePath);
+    assertNotNull(folder);
     const pattern = new RelativePattern(folder, '**/' + shortName);
     const files = await workspace.findFiles(pattern);
     if (files.length === 0) {

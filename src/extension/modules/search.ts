@@ -47,8 +47,8 @@ import { TaskType, Flag } from './tasks/params';
 import { saveAndPeekSearch } from './savedSearch';
 import {
   CheckError,
-  checkNonNull,
-  assertNonNull,
+  assertNotNull,
+  checkNotNull,
 } from '../../library/exception';
 import { getGtagsDefinitionsInWorkspace } from './gtags';
 import { getDocumentSymbolsFromCtags } from './ctags';
@@ -109,7 +109,8 @@ export async function searchInFiles(
 }
 
 async function searchTodos() {
-  const folder = assertNonNull(currentWorkspaceFolder());
+  const folder = currentWorkspaceFolder();
+  assertNotNull(folder);
   const filterCategories = await selectMultiple(
     TODO_CATEGORIES,
     (label) => ({ label }),
@@ -180,7 +181,8 @@ async function searchWithCommand(
   type: string,
   searchFunc: (uri: Uri, location: Position) => Promise<Location[]>,
 ) {
-  const ctx = checkNonNull(getCursorWordContext(), 'The cursor is not on word');
+  const ctx = getCursorWordContext();
+  checkNotNull(ctx, 'The cursor is not on word');
   return saveAndPeekSearch(`${type} of "${ctx.word}"`, async () =>
     searchFunc(ctx.editor.document.uri, ctx.range.start),
   );

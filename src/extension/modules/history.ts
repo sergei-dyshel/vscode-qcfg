@@ -27,7 +27,7 @@ import {
   handleAsyncStd,
   listenAsyncWrapped,
 } from './exception';
-import { assert, assertNonNull } from '../../library/exception';
+import { assert, assertNotNull } from '../../library/exception';
 import { stringify as str } from '../../library/stringify';
 
 let extContext: ExtensionContext;
@@ -173,17 +173,15 @@ function getHistory(viewColumn: ViewColumn): History {
 
 async function goBackward() {
   const viewCol = getActiveTextEditor().viewColumn;
-  const history = getHistory(
-    assertNonNull(viewCol, 'Current text editor has no view column'),
-  );
+  assertNotNull(viewCol, 'Current text editor has no view column');
+  const history = getHistory(viewCol);
   await history.goBackward();
 }
 
 async function goForward() {
   const viewCol = getActiveTextEditor().viewColumn;
-  const history = getHistory(
-    assertNonNull(viewCol, 'Current text editor has no view column'),
-  );
+  assertNotNull(viewCol, 'Current text editor has no view column');
+  const history = getHistory(viewCol);
   await history.goForward();
 }
 
@@ -321,7 +319,8 @@ namespace History {
 
 class History {
   constructor(private readonly viewColumn: ViewColumn) {
-    const editor = assertNonNull(getVisibleEditor(viewColumn));
+    const editor = getVisibleEditor(viewColumn);
+    assertNotNull(editor);
     this.current = Point.fromEditor(editor);
     this.log = new Logger({
       name: 'viewColumnHistory',
@@ -356,7 +355,8 @@ class History {
     if (temporaryMode === TemporaryMode.FORCE_TEMPORARY) temporary = true;
     else if (temporaryMode === TemporaryMode.FORCE_NON_TEMPORARY)
       temporary = false;
-    const editor = assertNonNull(getVisibleEditor(this.viewColumn));
+    const editor = getVisibleEditor(this.viewColumn);
+    assertNotNull(editor);
     const point = Point.fromEditor(editor);
     if (point.equals(this.current)) return;
     if (temporary) {
@@ -379,7 +379,9 @@ class History {
   }
 
   top(): Point {
-    return assertNonNull(this.backward[this.backward.length - 1]);
+    const top = this.backward[this.backward.length - 1];
+    assertNotNull(top);
+    return top;
   }
 
   private pushCurrentIfNeeded() {

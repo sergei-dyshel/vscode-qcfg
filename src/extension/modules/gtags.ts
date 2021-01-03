@@ -28,7 +28,7 @@ import type { Params } from './tasks/params';
 import { TaskType, Flag, LocationFormat } from './tasks/params';
 
 import RE2 from 're2';
-import { assertNonNull, assert } from '../../library/exception';
+import { assertNotNull, assert } from '../../library/exception';
 
 async function findGtagsDir(dir: string) {
   for (;;) {
@@ -103,7 +103,9 @@ namespace WorkspaceGtags {
 
   export async function run() {
     const editor = getActiveTextEditor();
-    gtagsDir = assertNonNull(await findGtagsDir(editor.document.fileName));
+    const dir = await findGtagsDir(editor.document.fileName);
+    assertNotNull(dir);
+    gtagsDir = dir;
     quickPick = vscode.window.createQuickPick();
     quickPick.onDidHide(handleErrors(onHide));
     quickPick.onDidAccept(handleErrors(abortSearch));
@@ -279,9 +281,8 @@ const gtagsGlobalSymbolsProvider: vscode.WorkspaceSymbolProvider = {
       case 'typescript':
         throw new Error('Not used for typescript');
     }
-    const gtagsDir = assertNonNull(
-      await findGtagsDir(editor.document.fileName),
-    );
+    const gtagsDir = await findGtagsDir(editor.document.fileName);
+    assertNotNull(gtagsDir);
     const tags = await searchGtags(
       'globalSymbols',
       query,
@@ -336,15 +337,14 @@ async function searchDefinition(
 
 async function openDefinition() {
   const editor = getActiveTextEditor();
-  const gtagsDir = assertNonNull(
-    await findGtagsDir(editor.document.fileName),
-    'GTAGS not found',
-  );
+  const gtagsDir = await findGtagsDir(editor.document.fileName);
+  assertNotNull(gtagsDir, 'GTAGS not found');
   assert(editor.selection.isEmpty, 'Selection is not empty');
   const wordRange = editor.document.getWordRangeAtPosition(
     editor.selection.active,
   );
-  const range = assertNonNull(wordRange, 'Not on word');
+  const range = wordRange;
+  assertNotNull(range, 'Not on word');
   const word = editor.document.getText(range);
   const tags = await searchDefinition(word, gtagsDir);
   assert(tags.length > 0, `No definitions found for ${word}`);
@@ -394,12 +394,10 @@ const gtagsHoverProvider: vscode.HoverProvider = {
         return;
     }
     if (document.fileName.startsWith('extension-output')) return;
-    const gtagsDir = assertNonNull(
-      await findGtagsDir(document.fileName),
-      'GTAGS not found',
-    );
-    const word = document.getWordRangeAtPosition(position);
-    const range = assertNonNull(word, 'Not on word');
+    const gtagsDir = await findGtagsDir(document.fileName);
+    assertNotNull(gtagsDir, 'GTAGS not found');
+    const range = document.getWordRangeAtPosition(position);
+    assertNotNull(range, 'Not on word');
     const tag = document.getText(range);
     const tags = await searchGtags('hover', tag, tag, gtagsDir, token);
     if (tags.length === 0 || tags.length > 1) return;

@@ -18,7 +18,7 @@ import {
   Position,
   Selection,
 } from 'vscode';
-import { assertNonNull, assertNull } from '../../library/exception';
+import { assertNotNull, assertNull } from '../../library/exception';
 import { handleAsyncStd } from './exception';
 
 export const globSync = glob.sync;
@@ -50,10 +50,9 @@ export function getDocumentRoot(fileName: string) {
 }
 
 export function getDocumentRootThrowing(fileName: string) {
-  return assertNonNull(
-    getDocumentRoot(fileName),
-    `Could not get workspace folder of ${fileName}`,
-  );
+  const root = getDocumentRoot(fileName);
+  assertNotNull(root, `Could not get workspace folder of ${fileName}`);
+  return root;
 }
 
 export function getDocumentWorkspaceFolder(fileName: string) {
@@ -103,11 +102,12 @@ export async function openTagLocation(
   const mustOpenNewEditor = !editor || editor.document.uri.fsPath !== filePath;
   const document = mustOpenNewEditor
     ? await workspace.openTextDocument(filePath)
-    : assertNonNull(editor).document;
+    : // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
+      editor?.document!;
 
   if (options.tag) {
     assertNull(options.column, 'Can not specify tag and column together');
-    assertNonNull(options.line, 'Can not specify "tag" without "line"');
+    assertNotNull(options.line, 'Can not specify "tag" without "line"');
     const lineText = document.lineAt(line0);
     col0 = lineText.text.indexOf(options.tag);
     if (col0 === -1) {
