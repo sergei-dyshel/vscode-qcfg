@@ -9,7 +9,7 @@ import { setPanelLocations } from './locationTree';
 import { selectFromList } from './dialog';
 import { LiveLocationArray } from './liveLocation';
 import { DisposableHolder } from '../../library/types';
-import { checkNonNull, check } from '../../library/exception';
+import { check, checkNotNull } from '../../library/exception';
 import { getActiveTextEditor } from './utils';
 import { mapAsync } from './async';
 
@@ -77,7 +77,9 @@ async function showLastLocationsInPanel() {
 
 function selectLastLocationsInCurrentEditor() {
   const editor = getActiveTextEditor();
-  const selections = checkNonNull(lastLocations.get(), 'No last locations')
+  const lastLoc = lastLocations.get();
+  checkNotNull(lastLoc, 'No last locations');
+  const selections = lastLoc
     .locations()
     .filter((loc) => loc.uri.toString() === editor.document.uri.toString())
     .map((loc) => loc.range.asSelection());
@@ -97,7 +99,8 @@ async function rerunPreviousSearch() {
 }
 
 async function rerunLastSearch() {
-  const prevSearch = checkNonNull(savedSearches.top, 'No saved searches');
+  const prevSearch = savedSearches.top;
+  checkNotNull(prevSearch, 'No saved searches');
   savedSearches.removeFirst(prevSearch);
   await saveAndPeekSearch(prevSearch.name, async () => prevSearch.func());
 }

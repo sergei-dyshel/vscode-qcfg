@@ -4,7 +4,7 @@ import { Logger, log } from '../../library/logging';
 import { zipArrays, concatArrays, izip } from '../../library/tsUtils';
 import type { ExtensionContext } from 'vscode';
 import { Modules } from './module';
-import { assertNonNull } from '../../library/exception';
+import { assertNotNull } from '../../library/exception';
 
 type Callback = () => Promise<void>;
 type Resolve = () => void;
@@ -39,7 +39,8 @@ export class PromiseQueue {
 
   private runNext() {
     if (this.queue.isEmpty || this.busy) return;
-    const entry = assertNonNull(this.queue.shift());
+    const entry = this.queue.shift();
+    assertNotNull(entry);
     /// #if DEBUG
     this.log.trace(`starting "${entry.name}`);
     /// #endif

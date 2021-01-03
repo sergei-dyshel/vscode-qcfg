@@ -4,7 +4,7 @@ import type { TextEditor, WorkspaceFolder, Range } from 'vscode';
 import { commands, window } from 'vscode';
 import { registerAsyncCommandWrapped } from './exception';
 import { getDocumentWorkspaceFolder } from './fileUtils';
-import { assertNonNull } from '../../library/exception';
+import { assertNotNull } from '../../library/exception';
 
 // XXX: currently unused
 export namespace WhenContext {
@@ -43,7 +43,9 @@ export function registerTemporaryCommand(
 let tempCmdCounter = 0;
 
 export function getActiveTextEditor(): TextEditor {
-  return assertNonNull(window.activeTextEditor, 'No active text editor');
+  const editor = window.activeTextEditor;
+  assertNotNull(editor, 'No active text editor');
+  return editor;
 }
 
 export function currentWorkspaceFolder(): WorkspaceFolder | undefined {

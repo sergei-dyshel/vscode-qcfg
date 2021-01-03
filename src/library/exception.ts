@@ -8,16 +8,15 @@ export function assert(
   if (!condition) abort(...args);
 }
 
-export function abort(...args: unknown[]): never {
-  throw new Error(formatMessage(args, 'Assertion failed'));
+export function assertNotNull<T>(
+  val: T,
+  ...args: unknown[]
+): asserts val is NonNullable<T> {
+  if (val === undefined || val === null) abort(...args);
 }
 
-export function assertNonNull<T>(
-  val: T | undefined | null,
-  ...args: unknown[]
-): T {
-  assert(val !== undefined && val !== null, ...args);
-  return val;
+export function abort(...args: unknown[]): never {
+  throw new Error(formatMessage(args, 'Assertion failed'));
 }
 
 export function assertNull<T>(val: T | undefined | null, ...args: unknown[]) {
@@ -54,9 +53,11 @@ export function check(condition: boolean, message: string): asserts condition {
 /**
  * Throw non-critical exception if value is null/undefined
  */
-export function checkNonNull<T>(val: T | undefined | null, message: string): T {
-  check(val !== undefined && val !== null, message);
-  return val;
+export function checkNotNull<T>(
+  val: T,
+  message: string,
+): asserts val is NonNullable<T> {
+  if (val === undefined || val === null) throw new CheckError(message);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -14,7 +14,7 @@ import type { SyntaxNode, SyntaxTree } from './syntaxTree';
 import { SyntaxTrees } from './syntaxTree';
 import { selectRange, swapRanges, trimInner } from './textUtils';
 import { getActiveTextEditor } from './utils';
-import { assertNonNull } from '../../library/exception';
+import { assertNotNull } from '../../library/exception';
 import { stringify as str } from '../../library/stringify';
 
 const log = new Logger({ name: 'treeSitter' });
@@ -48,10 +48,8 @@ function findContainingNodeImpl(
 
 function findContainingNode(node: SyntaxNode, range: Range): SyntaxNode {
   const contNode = findContainingNodeImpl(node, range);
-  return assertNonNull<SyntaxNode>(
-    contNode,
-    `${str(node)} does not contain ${str(range)}`,
-  );
+  assertNotNull(contNode, `${str(node)} does not contain ${str(range)}`);
+  return contNode;
 }
 
 function findContainingChildren(root: SyntaxNode, range: Range) {
@@ -59,9 +57,13 @@ function findContainingChildren(root: SyntaxNode, range: Range) {
   let firstChild: SyntaxNode | undefined;
   let lastChild: SyntaxNode | undefined;
 
-  if (parent.range.isEqual(range)) parent = assertNonNull(parent.parent);
+  if (parent.range.isEqual(range)) {
+    assertNotNull(parent.parent);
+    parent = parent.parent;
+  }
   while (!isListNode(parent)) {
-    parent = assertNonNull(parent.parent);
+    assertNotNull(parent.parent);
+    parent = parent.parent;
   }
   for (let i = 0; i < parent.namedChildCount; ++i) {
     const child = parent.namedChild(i)!;
