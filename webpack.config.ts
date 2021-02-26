@@ -47,6 +47,8 @@ const generateConfig = (env: any): webpack.Configuration => ({
       // https://webpack.js.org/configuration/externals/
     },
     /Debug\/iconv\.node/,
+    /Debug\/nodegit.node/,
+    '../package',
     // add native modules which cause trouble with webpack
     'node-window-manager',
   ],
@@ -77,7 +79,11 @@ const generateConfig = (env: any): webpack.Configuration => ({
           { loader: 'ifdef-loader', options: { DEBUG: env?.DEBUG } },
         ],
       },
-      { test: /\.node$/, use: 'node-loader', exclude: '/Debug/iconv.node' },
+      {
+        test: /\.node$/,
+        use: 'node-loader',
+        exclude: ['/Debug/iconv.node', /.*build\/Debug.*/],
+      },
     ],
   },
   ignoreWarnings: [
