@@ -366,6 +366,14 @@
       {
         "command": "qcfg.langClient.refresh",
         "title": "qcfg: Refresh language clients"
+      },
+      {
+        "command": "qcfg.git.dump",
+        "title": "qcfg: Git - dump info"
+      },
+      {
+        "command": "qcfg.git.weblinks",
+        "title": "qcfg: Git - Web links"
       }
     ],
     "keybindings": [
@@ -1877,6 +1885,35 @@
           "type": "boolean",
           "default": false,
           "description": "C/C++ language clients are remote (over SSH)"
+        },
+        "qcfg.git.web": {
+          "type": "array",
+          "description": "List of rules to open current line in Web",
+          "items": {
+            "type": "object",
+            "properties": {
+              "remote": {
+                "type": "string",
+                "description": "Regexp to match against remote URL"
+              },
+              "links": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "title": {
+                      "type": "string",
+                      "description": "Description of Web link"
+                    },
+                    "url": {
+                      "type": "string",
+                      "description": "Web url"
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       }
     },
