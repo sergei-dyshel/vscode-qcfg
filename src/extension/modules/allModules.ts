@@ -39,6 +39,7 @@ import * as langClient from './langClient';
 import * as remoteServer from './remoteServer';
 import * as smartCopy from './smartCopy';
 import * as callHierarchy from './callHierarchy';
+import * as git from './git';
 
 export const ALL_MODULES = {
   language,
@@ -80,4 +81,5 @@ export const ALL_MODULES = {
   remoteServer,
   smartCopy,
   callHierarchy,
+  git,
 };
