@@ -65,6 +65,7 @@ const TODO_CATEGORIES = [
 ];
 
 export async function executeDefinitionProvider(uri: Uri, position: Position) {
+  // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
   const locationOrLinks = (await commands.executeCommand(
     'vscode.executeDefinitionProvider',
     uri,
@@ -81,6 +82,7 @@ export async function executeDefinitionProvider(uri: Uri, position: Position) {
 }
 
 export async function executeReferenceProvider(uri: Uri, position: Position) {
+  // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
   return (await commands.executeCommand(
     'vscode.executeReferenceProvider',
     uri,

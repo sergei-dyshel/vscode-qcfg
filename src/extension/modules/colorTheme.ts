@@ -29,6 +29,7 @@ async function setPersisted(value: boolean) {
 }
 
 function getPersistedTheme() {
+  // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
   return extContext.workspaceState.get(MEMENTO_THEME_KEY) as string;
 }
 

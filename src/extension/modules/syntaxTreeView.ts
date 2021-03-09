@@ -35,6 +35,7 @@ const treeProvider: TreeProvider = {
     const document = editor.document;
     const tree = await SyntaxTrees.get(document);
     if (!currentRoot || currentRoot.syntaxNode !== tree.rootNode) {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       if (rootCache.has(document)) currentRoot = rootCache.get(document)!;
       else {
         currentRoot = new SyntaxTreeViewNode(tree.rootNode, document);
