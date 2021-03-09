@@ -159,6 +159,12 @@ const config = {
       },
     ],
     '@typescript-eslint/prefer-enum-initializers': off,
+
+    // conflicts with prettier (bracket-spacing)
+    'object-curly-spacing': off,
+    '@typescript-eslint/object-curly-spacing': [warn, always],
+
+    '@typescript-eslint/sort-type-union-intersection-members': off,
   },
 };
 
