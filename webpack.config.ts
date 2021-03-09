@@ -59,7 +59,10 @@ const generateConfig = (env: any): webpack.Configuration => ({
   },
   module: {
     // becaues of `typescript-collections`
-    noParse: /.*umd\.js/,
+    noParse: [
+      /.*umd\.js/,
+      /.*\.md$/,
+    ],
 
     rules: [
       {
