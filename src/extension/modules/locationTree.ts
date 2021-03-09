@@ -2,12 +2,7 @@
 
 import * as path from 'path';
 import { MultiDictionary } from 'typescript-collections';
-import type {
-  TreeItemLabel,
-  ExtensionContext,
-  TextDocument,
-  Location,
-} from 'vscode';
+import type { ExtensionContext, TextDocument, Location } from 'vscode';
 import { Uri, ThemeIcon, workspace, window } from 'vscode';
 import { handleAsyncStd } from './exception';
 import type { TreeNode, TreeProvider } from './treeView';
