@@ -186,7 +186,21 @@ class LocationNode extends StaticTreeNode {
     const docLine = document.lineAt(start.line);
     const text = docLine.text;
     const trimOffset = docLine.firstNonWhitespaceCharacterIndex;
-    super(text.substr(trimOffset));
+    const label = text.substr(trimOffset);
+    if (start.isEqual(loc.range.end)) {
+      // empty range
+      super(label);
+    } else {
+      super({
+        label,
+        highlights: [
+          [
+            maxNumber(0, loc.range.start.character - trimOffset),
+            maxNumber(0, loc.range.end.character - trimOffset),
+          ],
+        ],
+      });
+    }
     /* TODO: use createLiveLocationAsync */
     this.location = createLiveLocation(document, loc.range, {
       mergeOnReplace: true,
@@ -197,15 +211,6 @@ class LocationNode extends StaticTreeNode {
     this.location.register();
     this.allowRemoval();
     this.treeItem.id = str(loc);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const label: TreeItemLabel = this.treeItem.label;
-    if (!start.isEqual(loc.range.end))
-      label.highlights = [
-        [
-          maxNumber(0, loc.range.start.character - trimOffset),
-          maxNumber(0, loc.range.end.character - trimOffset),
-        ],
-      ];
   }
 
   async show() {

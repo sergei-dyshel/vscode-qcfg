@@ -4,7 +4,6 @@ import type {
   ExtensionContext,
   ProviderResult,
   TreeDataProvider,
-  TreeItem,
   TreeItemLabel,
   TreeView,
   TreeViewExpansionEvent,
@@ -14,7 +13,7 @@ import type {
 } from 'vscode';
 import {
   EventEmitter,
-  TreeItem2,
+  TreeItem,
   TreeItemCollapsibleState,
   window,
 } from 'vscode';
@@ -143,13 +142,10 @@ export namespace QcfgTreeView {
 export class StaticTreeNode implements TreeNode {
   constructor(label?: TreeItemLabel | string) {
     if (label) {
-      if (typeof label === 'string') {
-        this.treeItem = new TreeItem2({ label });
-      } else {
-        this.treeItem = new TreeItem2(label);
-      }
+      this.treeItem = new TreeItem(label);
     } else {
-      this.treeItem = new TreeItem2({ label: '' });
+      // TreeItem constructor does not accept undefined label but the class it
+      this.treeItem = new TreeItem({ label: '' });
       this.treeItem.label = undefined;
     }
   }
@@ -207,7 +203,7 @@ export class StaticTreeNode implements TreeNode {
     else onChangeEmitter.fire(parent);
   }
 
-  readonly treeItem: TreeItem2;
+  readonly treeItem: TreeItem;
   get children(): StaticTreeNode[] {
     return this.children_;
   }
@@ -246,6 +242,12 @@ export class StaticTreeNode implements TreeNode {
   provider?: TreeProvider;
 }
 
+function treeItemLabelToString(item: TreeItem): string {
+  const label = item.label;
+  if (typeof label === 'string') return label;
+  return label?.label ?? '';
+}
+
 // eslint-disable-next-line import/export
 export namespace StaticTreeNode {
   export type Compare = (a: StaticTreeNode, b: StaticTreeNode) => number;
@@ -261,7 +263,9 @@ export namespace StaticTreeNode {
     nodes.sort(
       cmpFunc ??
         ((a, b) =>
-          (a.treeItem.label ?? '').localeCompare(b.treeItem.label ?? '')),
+          treeItemLabelToString(a.treeItem).localeCompare(
+            treeItemLabelToString(b.treeItem),
+          )),
     );
   }
 
