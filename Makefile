@@ -2,8 +2,7 @@ d := package
 include $(d)/Makefile
 
 npm_pre_install:
-	npm install -g vsce
-	npm install json-merger deepmerge ts-node typescript @types/node npm-check-updates
+	./npm-wrapper.sh install json-merger deepmerge ts-node typescript @types/node npm-check-updates
 
 npm_install: | package.json
 	./npm-wrapper.sh install
