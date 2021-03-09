@@ -38,7 +38,7 @@ function findContainingNodeImpl(
 ): SyntaxNode | undefined {
   if (node.range.isEqual(range)) return node;
   for (let i = 0; i < node.childCount; ++i) {
-    const child = node.child(i) as SyntaxNode;
+    const child = node.child(i)!;
     const foundInChild = findContainingNodeImpl(child, range);
     if (foundInChild) return foundInChild;
   }

@@ -26,7 +26,7 @@ function fetchLangConfigs() {
     // All vscode default extensions ids starts with "vscode."
     if (!json.contributes) continue;
     for (const themeData of json.contributes.themes ?? []) {
-      const label = themeData.label as string;
+      const label = themeData.label!;
       const fullPath = nodejs.path.join(ext.extensionPath, themeData.path);
       if (!nodejs.fs.existsSync(fullPath)) continue;
       colorThemeFiles[label] = fullPath;
