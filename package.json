@@ -374,6 +374,14 @@
       {
         "command": "qcfg.git.weblinks",
         "title": "qcfg: Git - Web links"
+      },
+      {
+        "command": "qcfg.openInExternalApp",
+        "title": "qcfg: Open in external application"
+      },
+      {
+        "command": "qcfg.showInFileManager",
+        "title": "qcfg: Show in OS file manager"
       }
     ],
     "keybindings": [

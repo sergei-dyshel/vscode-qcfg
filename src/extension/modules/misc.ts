@@ -12,6 +12,7 @@ import {
   registerSyncCommandWrapped,
 } from './exception';
 import { Modules } from './module';
+import { executeSubprocess } from './subprocess';
 
 function openOrCreateTerminal(name: string, cwd: string) {
   for (const term of window.terminals) {
@@ -45,6 +46,16 @@ async function runCommand() {
   if (cmd) await commands.executeCommand(cmd);
 }
 
+async function openInExternalApp() {
+  const curFile = getActiveTextEditor().document.fileName;
+  return executeSubprocess(['open', curFile]);
+}
+
+async function showInFileManager() {
+  const curFile = getActiveTextEditor().document.fileName;
+  return executeSubprocess(['open', '--reveal', curFile]);
+}
+
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
     registerSyncCommandWrapped(
@@ -56,6 +67,8 @@ function activate(context: ExtensionContext) {
       terminalInFileFolder,
     ),
     registerAsyncCommandWrapped('qcfg.runCommand', runCommand),
+    registerAsyncCommandWrapped('qcfg.openInExternalApp', openInExternalApp),
+    registerAsyncCommandWrapped('qcfg.showInFileManager', showInFileManager),
   );
 }
 
