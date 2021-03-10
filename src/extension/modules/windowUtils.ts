@@ -1,6 +1,6 @@
 'use strict';
 
-import type { StatusBarItem, ThemeColor } from 'vscode';
+import type { StatusBarItem, TextEditor, ThemeColor, ViewColumn } from 'vscode';
 import { window } from 'vscode';
 import { Timer } from '../../library/nodeUtils';
 
@@ -21,6 +21,14 @@ export function showStatusBarMessage(
 
 export function clearStatusBarMessage() {
   if (statusBarMsgItem) statusBarMsgItem.dispose();
+}
+
+export function getVisibleEditor(
+  viewColumn: ViewColumn,
+): TextEditor | undefined {
+  return window.visibleTextEditors.firstOf(
+    (editor) => editor.viewColumn === viewColumn,
+  );
 }
 
 /**

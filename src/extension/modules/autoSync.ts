@@ -8,7 +8,10 @@ import { registerSyncCommandWrapped } from './exception';
 import { Modules } from './module';
 import { sendDidSaveToLangClients } from './langClient';
 import type { ExtensionContext, StatusBarItem } from 'vscode';
-import { workspace, window } from 'vscode';
+import { ThemeColor, workspace, window } from 'vscode';
+
+import * as nodejs from '../../library/nodejs';
+import { exists } from './fileUtils';
 
 enum State {
   OFF,
@@ -54,10 +57,19 @@ async function onSaveAll(docs: saveAll.DocumentsInFolder) {
 
   if (!command) return;
 
+  let folder = docs.folder.uri.fsPath;
+  while (!(await exists(nodejs.path.join(folder, '.syg.json')))) {
+    folder = nodejs.path.dirname(folder);
+    if (folder === '/') {
+      log.debug(`${folder} is not under syg root`);
+      return;
+    }
+  }
+
   const docPaths = docs.documents.map((doc) =>
-    workspace.asRelativePath(doc.fileName, false),
+    nodejs.path.relative(folder, doc.fileName),
   );
-  log.info('Auto syncing ', docPaths, 'in', docs.folder.name);
+  log.info(`Auto syncing ${docPaths} in ${docs.folder.name} (under ${folder})`);
 
   const paths = docPaths.join(' ');
   const cmd = command.includes('{}')
