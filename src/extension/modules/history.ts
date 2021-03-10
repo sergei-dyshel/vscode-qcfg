@@ -29,6 +29,7 @@ import {
 } from './exception';
 import { assert, assertNotNull } from '../../library/exception';
 import { stringify as str } from '../../library/stringify';
+import { getVisibleEditor } from './windowUtils';
 
 let extContext: ExtensionContext;
 
@@ -422,12 +423,6 @@ class History {
 
   private current: Point;
   private currentIsTemporary = false;
-}
-
-function getVisibleEditor(viewColumn: ViewColumn): TextEditor | undefined {
-  return window.visibleTextEditors.firstOf(
-    (editor) => editor.viewColumn === viewColumn,
-  );
 }
 
 let numViewColumns = 0;
