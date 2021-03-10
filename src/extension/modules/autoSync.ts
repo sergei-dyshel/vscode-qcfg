@@ -40,6 +40,7 @@ function setStatusBar() {
       break;
   }
   status.text = 'AutoSync: ' + stateStr;
+  status.backgroundColor = undefined;
   status.show();
 }
 
@@ -77,10 +78,11 @@ async function onSaveAll(docs: saveAll.DocumentsInFolder) {
     : `${command} ${paths}`;
   log.debug('Running ', cmd);
   try {
-    await subprocess.executeSubprocess(cmd, { cwd: docs.folder.uri.fsPath });
+    status.backgroundColor = new ThemeColor('statusBarItem.errorBackground');
+    status.text += ' (syncing)';
+    await subprocess.executeSubprocess(cmd, { cwd: folder });
     if (state === State.ERROR) {
       state = State.ON;
-      setStatusBar();
     }
   } catch (err: unknown) {
     const error = err as subprocess.ExecResult;
@@ -89,9 +91,10 @@ async function onSaveAll(docs: saveAll.DocumentsInFolder) {
         `autoSync failed with ${error.code}, ${error.signal} stdout: ${error.stdout} stderr: ${error.stderr}`,
       );
       state = State.ERROR;
-      setStatusBar();
     }
     return;
+  } finally {
+    setStatusBar();
   }
   if (workspace.getConfiguration().get<boolean>('qcfg.langClient.remote')) {
     log.debug('Waiting before sending didSave to clients');
