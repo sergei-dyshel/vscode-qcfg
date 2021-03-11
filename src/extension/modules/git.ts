@@ -11,7 +11,7 @@ import * as nodejs from '../../library/nodejs';
 import { log } from '../../library/logging';
 import { assert, assertNotNull } from '../../library/exception';
 import { expandTemplate } from '../../library/stringUtils';
-import { selectFromList } from './dialog';
+import { selectFromListMru } from './dialog';
 import { isSubPath } from '../../library/pathUtils';
 
 const SHORT_SHA_LEN = 7;
@@ -35,14 +35,18 @@ interface Info {
   origin?: RemoteInfo;
 }
 
-interface Link {
+interface CfgLink {
   title: string;
   url: string;
 }
 
+interface Link extends CfgLink {
+  tag: string;
+}
+
 interface ConfigEntry {
-  remote: string;
-  links: Link[];
+  remotes: string[];
+  links: CfgLink[];
 }
 
 async function getRemoteInfo(repo: nodegit.Repository, name: string) {
@@ -51,6 +55,13 @@ async function getRemoteInfo(repo: nodegit.Repository, name: string) {
     name: remote.name(),
     url: remote.url(),
   };
+}
+
+function shortenRemoteBranch(branch: string, remote: string): string {
+  if (branch.startsWith(remote + '/')) {
+    return branch.replace(remote + '/', '');
+  }
+  return branch;
 }
 
 async function getInfo(document: TextDocument) {
@@ -72,13 +83,15 @@ async function getInfo(document: TextDocument) {
     info.branch = { name: branch.shorthand() };
     try {
       const upstream = await nodegit.Branch.upstream(branch);
-      info.branch.upstream = { name: upstream.shorthand() };
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
       const remoteName = await (nodegit.Branch as any).remoteName(
         repo,
         upstream.name(),
       );
-      info.branch.upstream.remote = await getRemoteInfo(repo, remoteName);
+      info.branch.upstream = {
+        name: shortenRemoteBranch(upstream.shorthand(), remoteName),
+        remote: await getRemoteInfo(repo, remoteName),
+      };
       // eslint-disable-next-line no-empty
     } catch (_: unknown) {}
     // eslint-disable-next-line no-empty
@@ -122,44 +135,52 @@ async function showWebLinks() {
     file: nodejs.path.relative(info.workdir, filename),
     line: (editor.selection.active.line + 1).toString(),
   };
+  const remoteUrl = remote.url;
   const links: Link[] = [];
   for (const cfgEntry of config) {
     try {
-      const regexp = new RegExp(cfgEntry.remote);
-      if (!regexp.exec(remote.url)) continue;
-      for (const linkCfg of cfgEntry.links) {
-        try {
-          links.push({
-            title: expandTemplate(
-              remote.url.replace(regexp, linkCfg.title),
+      for (const cfgRemote of cfgEntry.remotes) {
+        const regexp = new RegExp(cfgRemote);
+        if (!regexp.exec(remoteUrl)) continue;
+        for (const linkCfg of cfgEntry.links) {
+          try {
+            const title = expandTemplate(
+              remoteUrl.replace(regexp, linkCfg.title),
               subs,
               true /* throwWhenNotExist */,
-            ),
-            url: expandTemplate(
-              remote.url.replace(regexp, linkCfg.url),
+            );
+            const url = expandTemplate(
+              remoteUrl.replace(regexp, linkCfg.url),
               subs,
               true /* throwWhenNotExist */,
-            ),
-          });
-        } catch (err: unknown) {
-          log.debug(
-            `Error processing config Git web link config entry link ${linkCfg.title}: ${err}`,
-          );
+            );
+            const tag = linkCfg.title;
+            links.push({ title, url, tag });
+          } catch (err: unknown) {
+            log.debug(
+              `Error processing config Git web link config entry link ${linkCfg.title}: ${err}`,
+            );
+          }
         }
+        break;
       }
     } catch (err: unknown) {
-      log.debug(
-        `Error processing config Git web link config entry ${cfgEntry.remote}: ${err}`,
-      );
+      log.debug(`Error processing config Git web link config entry: ${err}`);
     }
   }
 
   assert(links.length > 0, `No Git web links found`);
 
-  const selectedLink = await selectFromList(links, (link: Link) => ({
-    label: link.title,
-    detail: link.url,
-  }));
+  const uniqLinks = links.uniq((x, y) => x.url === y.url);
+
+  const selectedLink = await selectFromListMru(
+    uniqLinks,
+    (link: Link) => ({
+      label: link.title,
+    }),
+    'web_links',
+    (link) => link.tag,
+  );
 
   if (!selectedLink) return;
   log.debug(`Opening Git web link: ${selectedLink.url}`);
