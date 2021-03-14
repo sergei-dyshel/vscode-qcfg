@@ -9,15 +9,13 @@ import { offsetPosition } from '../modules/textUtils';
 export class RangeDecorator {
   left: TextEditorDecorationType;
   right: TextEditorDecorationType;
-  constructor(options: ThemableDecorationRenderOptions) {
-    this.left = window.createTextEditorDecorationType({
-      ...options,
-      borderRadius: '5px 0px 0px 5px',
-    });
-    this.right = window.createTextEditorDecorationType({
-      ...options,
-      borderRadius: '0px 5px 5px 0px',
-    });
+  constructor(
+    left: ThemableDecorationRenderOptions,
+    right: ThemableDecorationRenderOptions,
+    common?: ThemableDecorationRenderOptions,
+  ) {
+    this.left = window.createTextEditorDecorationType({ ...common, ...left });
+    this.right = window.createTextEditorDecorationType({ ...common, ...right });
   }
 
   decorate(editor: TextEditor, ranges: Range[]) {
