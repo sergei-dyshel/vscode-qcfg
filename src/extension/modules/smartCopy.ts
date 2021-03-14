@@ -1,6 +1,7 @@
 import { Modules } from './module';
 import type { ExtensionContext, TextEditor } from 'vscode';
-import { commands, env, Range, workspace } from 'vscode';
+import { ThemeColor, commands, env, Range, workspace } from 'vscode';
+
 import { registerAsyncCommandWrapped, listenWrapped } from './exception';
 import { getActiveTextEditor } from './utils';
 import { trimWhitespace, swapRanges } from './textUtils';
@@ -16,9 +17,18 @@ let mark:
       text: string;
     };
 
-const decorator = new RangeDecorator({
-  border: '2px solid rgba(0, 255, 0, 0.50)',
-});
+const decorator = new RangeDecorator(
+  {
+    borderWidth: '0px 0px 0px 4px',
+  },
+  {
+    borderWidth: '0px 4px 0px 0px',
+  },
+  {
+    borderStyle: 'solid',
+    borderColor: new ThemeColor('editor.selectionBackground'),
+  },
+);
 
 async function normalCopy() {
   return commands.executeCommand('editor.action.clipboardCopyAction');
