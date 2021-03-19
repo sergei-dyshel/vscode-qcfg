@@ -59,14 +59,11 @@ class DocumentHistory {
       change.range.start,
       offsetPosition(this.document, change.range.start, change.text.length),
     );
-    const lrange = new LiveRange(this.document, range, {
-      mergeOnReplace: true,
-      onInvalidated: () => {
-        this.ranges.removeFirst(lrange);
-        this.resetIndex();
-      },
-    });
-    lrange.register();
+    const lrange = new LiveRange(this.document, range);
+    lrange.register(() => {
+      this.ranges.removeFirst(lrange);
+      this.resetIndex();
+    }, true /* mergeOnReplace */);
     this.ranges.push(lrange);
     if (this.ranges.length > HISTORY_SIZE) this.ranges.shift();
     this.resetIndex();

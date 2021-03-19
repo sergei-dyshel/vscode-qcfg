@@ -10,10 +10,9 @@ import { StaticTreeNode, QcfgTreeView } from './treeView';
 import { Modules } from './module';
 import { mapSomeAsyncAndZip } from './async';
 import { maxNumber } from '../../library/tsUtils';
-import type { LiveLocation } from './liveLocation';
-import { createLiveLocation } from './liveLocation';
 import { assertInstanceOf, assert } from '../../library/exception';
 import { stringify as str } from '../../library/stringify';
+import { LiveLocation } from './liveLocation';
 
 export async function setPanelLocations(
   message: string,
@@ -197,13 +196,10 @@ class LocationNode extends StaticTreeNode {
       });
     }
     /* TODO: use createLiveLocationAsync */
-    this.location = createLiveLocation(document, loc.range, {
-      mergeOnReplace: true,
-      onInvalidated: () => {
-        this.remove();
-      },
-    });
-    this.location.register();
+    this.location = LiveLocation.fromDocument(document, loc.range);
+    this.location.register(() => {
+      this.remove();
+    }, true /* mergeOnReplace */);
     this.allowRemoval();
     this.treeItem.id = str(loc);
   }

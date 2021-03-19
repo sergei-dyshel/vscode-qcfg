@@ -7,6 +7,7 @@ import type {
   TextDocument,
   TextDocumentChangeEvent,
   TextDocumentContentChangeEvent,
+  TextEditor,
 } from 'vscode';
 import { workspace, Location } from 'vscode';
 import { NumRange, offsetToRange } from './documentUtils';
@@ -14,37 +15,63 @@ import { listenWrapped } from './exception';
 import { Modules } from './module';
 import { DefaultMap } from '../../library/tsUtils';
 import type { DisposableLike } from '../../library/types';
+import { assert } from '../../library/exception';
+import { getActiveTextEditor } from './utils';
 
 export abstract class LiveLocation extends Location implements DisposableLike {
-  private registered_ = false;
-  private valid_ = true;
+  private registered = false;
+  private valid = true;
 
-  constructor(
-    document: TextDocument,
-    range: Range,
-    /** Called when location was (partially) overwritten
-     * by edit operation and is not longer valid
-     */
-    private readonly onInvalidated?: () => void,
-  ) {
+  private onInvalidated?: () => void;
+  protected mergeOnReplace = false;
+
+  constructor(document: TextDocument, range: Range) {
     super(document.uri, range);
   }
 
-  register() {
-    if (this.registered_) throw new Error('Already registered');
-    if (!this.valid_)
-      throw new Error('Can not register an invalid LiveLocation');
-    this.registered_ = true;
+  /** Create LiveRange/LivePosition depending on range emptiness */
+  static fromDocument(document: TextDocument, range: Range): LiveLocation {
+    if (range.isEmpty) return new LivePosition(document, range.start);
+    return new LiveRange(document, range);
+  }
+
+  static async fromLocation(location: Location) {
+    return LiveLocation.fromDocument(
+      await workspace.openTextDocument(location.uri),
+      location.range,
+    );
+  }
+
+  /**
+   * Register live location to be ajusted on text document changes.
+   *
+   * `onInvalidated` - caalled when location was (partially) overwritten
+   * by edit operation and is not longer valid.
+   *
+   * `mergeOnReplace` - when part of location range is replaced,
+   * merge replaced text in instead of cutting
+   */
+  register(onInvalidated: () => void, mergeOnReplace = false) {
+    assert(!this.registered, 'Already registered');
+    assert(this.valid, 'Can not register an invalid LiveLocation');
+    this.registered = true;
+    this.onInvalidated = onInvalidated;
+    this.mergeOnReplace = mergeOnReplace;
     allLocations.get(this.uri.fsPath).push(this);
   }
 
+  get asPosition(): LivePosition {
+    assert(this instanceof LivePosition);
+    return this as LivePosition;
+  }
+
   get isRegistered() {
-    return this.registered_;
+    return this.registered;
   }
 
   unregister() {
     if (!this.isRegistered) return;
-    this.registered_ = false;
+    this.registered = false;
     allLocations.get(this.uri.fsPath).removeFirst(this);
   }
 
@@ -53,15 +80,15 @@ export abstract class LiveLocation extends Location implements DisposableLike {
   }
 
   get isValid() {
-    return this.valid_;
+    return this.valid;
   }
 
   protected invalidate() {
-    if (!this.valid_)
+    if (!this.valid)
       throw new Error('Can not invalidate already invalid LiveLocation');
-    this.valid_ = false;
-    this.registered_ = false;
-    if (this.onInvalidated) this.onInvalidated();
+    this.valid = false;
+    this.registered = false;
+    this.onInvalidated!();
   }
 
   /**
@@ -77,13 +104,23 @@ export abstract class LiveLocation extends Location implements DisposableLike {
 export class LivePosition extends LiveLocation {
   private offset: number;
 
-  constructor(
-    document: TextDocument,
-    position: Position,
-    onInvalidated?: () => void,
-  ) {
-    super(document, position.asRange, onInvalidated);
+  constructor(document: TextDocument, position: Position) {
+    super(document, position.asRange);
     this.offset = document.offsetAt(position);
+  }
+
+  get position(): Position {
+    return this.range.start;
+  }
+
+  static fromEditor(editor: TextEditor): LivePosition {
+    const document = editor.document;
+    const pos = editor.selection.active.with();
+    return new LivePosition(document, pos);
+  }
+
+  static fromActiveEditor(): LivePosition {
+    return LivePosition.fromEditor(getActiveTextEditor());
   }
 
   adjust(
@@ -104,21 +141,12 @@ export class LivePosition extends LiveLocation {
 export class LiveRange extends LiveLocation {
   private start: number;
   private end: number;
-  private readonly mergeOnReplace: boolean;
 
-  constructor(
-    document: TextDocument,
-    range: Range,
-    opts: {
-      mergeOnReplace?: boolean;
-      onInvalidated?: () => void;
-    },
-  ) {
-    super(document, range, opts.onInvalidated);
+  constructor(document: TextDocument, range: Range) {
+    super(document, range);
     if (range.isEmpty) throw new Error('LiveRange range must be non-empty');
     this.start = document.offsetAt(range.start);
     this.end = document.offsetAt(range.end);
-    this.mergeOnReplace = opts.mergeOnReplace ?? false;
   }
 
   get startOffset(): number {
@@ -158,53 +186,41 @@ export class LiveRange extends LiveLocation {
   }
 }
 
-/** Create LiveRange/LivePosition depending on range emptiness */
-export function createLiveLocation(
-  document: TextDocument,
-  range: Range,
-  opts: {
-    mergeOnReplace?: boolean;
-    onInvalidated?: () => void;
-  },
-): LiveLocation {
-  if (range.isEmpty)
-    return new LivePosition(document, range.start, opts.onInvalidated);
-  return new LiveRange(document, range, opts);
-}
-
-export async function createLiveLocationAsync(
-  location: Location,
-  opts: {
-    mergeOnReplace?: boolean;
-    onInvalidated?: () => void;
-  },
-) {
-  return createLiveLocation(
-    await workspace.openTextDocument(location.uri),
-    location.range,
-    opts,
-  );
-}
-
 export class LiveLocationArray implements DisposableLike {
   private array: LiveLocation[] = [];
 
-  add(document: TextDocument, range: Range, mergeOnReplace?: boolean) {
-    const liveLoc = createLiveLocation(document, range, {
-      mergeOnReplace,
-      onInvalidated: () => {
-        this.array.removeFirst(liveLoc);
-      },
+  push(liveLoc: LiveLocation) {
+    liveLoc.register(() => {
+      this.array.removeFirst(liveLoc);
     });
     this.array.push(liveLoc);
   }
 
-  async addAsync(location: Location, mergeOnReplace?: boolean) {
-    this.add(
-      await workspace.openTextDocument(location.uri),
-      location.range,
-      mergeOnReplace,
-    );
+  pop(): LiveLocation | undefined {
+    const popped = this.array.pop();
+    if (popped) {
+      popped.unregister();
+    }
+    return popped;
+  }
+
+  get top(): LiveLocation | undefined {
+    return this.array.top;
+  }
+
+  unshift(liveLoc: LiveLocation) {
+    liveLoc.register(() => {
+      this.array.removeFirst(liveLoc);
+    });
+    this.array.unshift(liveLoc);
+  }
+
+  shift(): LiveLocation | undefined {
+    const shifted = this.array.shift();
+    if (shifted) {
+      shifted.unregister();
+    }
+    return shifted;
   }
 
   locations(): readonly Location[] {
@@ -220,6 +236,10 @@ export class LiveLocationArray implements DisposableLike {
 
   dispose() {
     this.clear();
+  }
+
+  get length() {
+    return this.locations.length;
   }
 }
 

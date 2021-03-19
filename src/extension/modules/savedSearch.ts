@@ -7,7 +7,7 @@ import {
 } from './exception';
 import { setPanelLocations } from './locationTree';
 import { selectFromList } from './dialog';
-import { LiveLocationArray } from './liveLocation';
+import { LiveLocation, LiveLocationArray } from './liveLocation';
 import { DisposableHolder } from '../../library/types';
 import { check, checkNotNull } from '../../library/exception';
 import { getActiveTextEditor } from './utils';
@@ -50,7 +50,9 @@ export async function saveAndPeekSearch(
 
 async function setLastLocations(locations: Location[]) {
   const newLocs = new LiveLocationArray();
-  await mapAsync(locations, async (loc) => newLocs.addAsync(loc));
+  await mapAsync(locations, async (loc) => {
+    newLocs.push(await LiveLocation.fromLocation(loc));
+  });
   lastLocations.set(newLocs);
 }
 
