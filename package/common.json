@@ -84,14 +84,6 @@
         "title": "qcfg: Show output panel with log"
       },
       {
-        "command": "qcfg.history.backward",
-        "title": "qcfg: Go backward in history"
-      },
-      {
-        "command": "qcfg.history.forward",
-        "title": "qcfg: Go forward in history"
-      },
-      {
         "command": "qcfg.fuzzySearch",
         "title": "qcfg: Fuzzy search lines"
       },
@@ -150,26 +142,6 @@
         "key": "ctrl+u",
         "mac": "cmd+u",
         "command": "qcfg.gtags.workspace"
-      },
-      {
-        "key": "ctrl+o",
-        "mac": "cmd+o",
-        "command": "workbench.action.navigateBack"
-      },
-      {
-        "key": "ctrl+shift+o",
-        "mac": "cmd+shift+o",
-        "command": "qcfg.history.backward"
-      },
-      {
-        "key": "ctrl+i",
-        "mac": "cmd+i",
-        "command": "workbench.action.navigateForward"
-      },
-      {
-        "key": "ctrl+shift+i",
-        "mac": "cmd+shift+i",
-        "command": "qcfg.history.forward"
       },
       {
         "key": "ctrl+l",

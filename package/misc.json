@@ -8,6 +8,36 @@
       {
         "command": "qcfg.showInFileManager",
         "title": "qcfg: Show in OS file manager"
+      },
+      {
+        "command": "qcfg.history.backward",
+        "title": "qcfg: Go backward in history"
+      },
+      {
+        "command": "qcfg.history.forward",
+        "title": "qcfg: Go forward in history"
+      }
+    ],
+    "keybindings": [
+      {
+        "key": "ctrl+i",
+        "mac": "cmd+i",
+        "command": "qcfg.history.forward"
+      },
+      {
+        "key": "ctrl+o",
+        "mac": "cmd+o",
+        "command": "qcfg.history.backward"
+      },
+      {
+        "key": "ctrl+shift+o",
+        "mac": "cmd+shift+o",
+        "command": "workbench.action.navigateBack"
+      },
+      {
+        "key": "ctrl+shift+i",
+        "mac": "cmd+shift+i",
+        "command": "workbench.action.navigateForward"
       }
     ]
   }

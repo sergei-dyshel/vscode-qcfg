@@ -12,6 +12,7 @@ import { DisposableHolder } from '../../library/types';
 import { check, checkNotNull } from '../../library/exception';
 import { getActiveTextEditor } from './utils';
 import { mapAsync } from './async';
+import { updateHistory } from './history';
 
 const MAX_SAVED_SEARCHES = 20;
 
@@ -41,7 +42,7 @@ export async function saveAndPeekSearch(
     });
     if (savedSearches.length > MAX_SAVED_SEARCHES) savedSearches.pop();
   }
-  await peekLocations(locations);
+  await updateHistory(peekLocations(locations));
 }
 
 //
