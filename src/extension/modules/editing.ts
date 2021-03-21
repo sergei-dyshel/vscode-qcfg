@@ -26,7 +26,6 @@ import {
 } from './textUtils';
 import { getActiveTextEditor, getCursorWordContext } from './utils';
 
-import { forceNonTemporary, resetTemporary } from './history';
 import {
   registerAsyncCommandWrapped,
   registerTextEditorCommandWrapped,
@@ -72,7 +71,7 @@ async function surroundWith(args: unknown[]) {
 }
 
 function swapCursorAndAnchor(editor: TextEditor) {
-  editor.selections = editor.selections.map(sel => sel.reverse());
+  editor.selections = editor.selections.map((sel) => sel.reverse());
 }
 
 async function navigateBackToPreviousFile() {
@@ -92,15 +91,11 @@ async function navigateBackToPreviousFile() {
 }
 
 async function goToDefinition() {
-  forceNonTemporary();
   await commands.executeCommand('editor.action.goToDeclaration');
-  resetTemporary();
 }
 
 async function peekReferences() {
-  forceNonTemporary();
   await commands.executeCommand('editor.action.referenceSearch.trigger');
-  resetTemporary();
 }
 
 function gotoLineRelative(delta: number) {

@@ -41,6 +41,7 @@ import * as smartCopy from './smartCopy';
 import * as callHierarchy from './callHierarchy';
 import * as git from './git';
 import * as notes from './notes';
+import * as history from './history';
 
 export const ALL_MODULES = {
   language,
@@ -84,4 +85,5 @@ export const ALL_MODULES = {
   callHierarchy,
   git,
   notes,
+  history,
 };

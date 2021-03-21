@@ -5,7 +5,6 @@
 import * as vscode from 'vscode';
 import { log } from '../../library/logging';
 import { getActiveTextEditor } from './utils';
-import * as history from './history';
 import { handleErrors, registerSyncCommandWrapped } from './exception';
 import { Modules } from './module';
 
@@ -65,7 +64,6 @@ function showFuzzySearch() {
     handleErrors(() => {
       lastSelected = pick.selectedItems[0];
       pick.hide();
-      history.resetTemporary();
     }),
   );
 
@@ -122,11 +120,8 @@ function showFuzzySearch() {
         );
         editor.selection = startingSelection;
       }
-      history.resetTemporary();
     }),
   );
-
-  history.forceTemporary();
   pick.show();
 }
 
