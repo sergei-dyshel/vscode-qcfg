@@ -8,6 +8,7 @@ declare module 'vscode' {
     strictlyContains: (that: Range) => boolean;
     asSelection: (reverse?: boolean) => Selection;
     expandLinewise: () => Range;
+    toString: () => string;
 
     isLinewise: boolean;
   }
@@ -54,6 +55,11 @@ Range.prototype.expandLinewise = function (this: Range) {
       0 /* character */,
     ),
   );
+};
+
+Range.prototype.toString = function (this: Range) {
+  if (this.isEmpty) return `${this.start}`;
+  return `${this.start}=${this.end}`;
 };
 
 Range.fromPosition = function (position: Position) {

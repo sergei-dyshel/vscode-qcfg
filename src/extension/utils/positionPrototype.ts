@@ -9,6 +9,7 @@ declare module 'vscode' {
     offset: (offs: { line?: number; character?: number }) => Position;
     withLine: (line: number) => Position;
     withCharacter: (characer: number) => Position;
+    toString: () => string;
   }
   // eslint-disable-next-line no-shadow
   export namespace Position {
@@ -48,4 +49,8 @@ Position.compare = function (pos1: Position, pos2: Position): number {
     defaultCompare(pos1.line, pos2.line) ||
     defaultCompare(pos1.character, pos2.character)
   );
+};
+
+Position.prototype.toString = function (this: Position) {
+  return `${this.line + 1}:${this.character + 1}`;
 };
