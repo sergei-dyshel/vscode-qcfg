@@ -57,8 +57,9 @@ export interface FetchInfo {
 
 export function isFolderTask(params: BaseTaskParams) {
   return (
-    (params.flags?.includes(Flag.FOLDER) ?? params.type === TaskType.SEARCH) ||
-    params.folders
+    params.type === TaskType.SEARCH ||
+    params.folders !== undefined ||
+    params.flags?.includes(Flag.FOLDER)
   );
 }
 
