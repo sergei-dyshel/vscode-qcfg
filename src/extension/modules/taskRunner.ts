@@ -16,7 +16,7 @@ import { tasks, window, TaskScope } from 'vscode';
 import { listenWrapped, executeCommandHandled } from './exception';
 import { log, Logger } from '../../library/logging';
 import { Modules } from './module';
-import { registerTemporaryCommand } from './utils';
+import { registerSyncTemporaryCommand } from './utils';
 import type { DisposableLike } from '../../library/types';
 import { assert } from '../../library/exception';
 
@@ -191,7 +191,8 @@ export class TaskRun {
     self.terminal = findTaskTerminal(self.task);
     if (!self.task.isBackground) {
       self.status = window.createStatusBarItem();
-      const { command, disposable } = registerTemporaryCommand(() => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const { command, disposable } = registerSyncTemporaryCommand(() => {
         if (self.terminal) self.terminal.show();
       });
       if (

@@ -74,6 +74,9 @@ export function wrapWithErrorHandler<T extends (...args: any[]) => any, R>(
   };
 }
 
+/**
+ * Wrap async function with exception handler (both sync and async)
+ */
 export function wrapWithErrorHandlerAsync<T extends AsyncFunction, R>(
   func: T,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
