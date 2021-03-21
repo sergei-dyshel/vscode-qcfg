@@ -53,7 +53,9 @@ export function handleErrors<T extends AnyFunction>(
 }
 
 /**
- * Takes async function and returns it where sync/async exceptions are handled
+ * Takes async function and returns it where sync/async exceptions are standardly handled.
+ *
+ * `error` - error message prefix
  */
 export function handleErrorsAsync<T extends AsyncFunction>(
   func: T,

@@ -2,9 +2,10 @@
 
 import type { TextEditor, WorkspaceFolder, Range } from 'vscode';
 import { commands, window } from 'vscode';
-import { registerAsyncCommandWrapped } from './exception';
+import { registerSyncCommandWrapped } from './exception';
 import { getDocumentWorkspaceFolder } from './fileUtils';
 import { assertNotNull } from '../../library/exception';
+import type { VoidFunction } from '../../library/templateTypes';
 
 // XXX: currently unused
 export namespace WhenContext {
@@ -29,14 +30,14 @@ export namespace WhenContext {
   }
 }
 
-export function registerTemporaryCommand(
+export function registerSyncTemporaryCommand(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  callback: (...args: any[]) => any,
+  callback: VoidFunction,
   thisArg?: unknown,
 ) {
   tempCmdCounter += 1;
   const command = `qcfg.temp.${tempCmdCounter}`;
-  const disposable = registerAsyncCommandWrapped(command, callback, thisArg);
+  const disposable = registerSyncCommandWrapped(command, callback, thisArg);
   return { command, disposable };
 }
 
