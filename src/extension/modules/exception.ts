@@ -8,7 +8,8 @@ import type {
   Event,
   ExtensionContext,
 } from 'vscode';
-import { commands, extensions } from 'vscode';
+import { window, commands, extensions } from 'vscode';
+
 import type { DisposableLike } from '../../library/types';
 import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
@@ -173,7 +174,20 @@ function simplifyErrorStack(stack: string) {
 }
 
 function handleErrorDuringCommand(command: string, error: any) {
-  stdErrorHandler(error, `Command "${command}": `);
+  try {
+    stdErrorHandler(error, `Command "${command}": `);
+  } catch (err: unknown) {
+    if (err instanceof CheckError) return;
+    const SHOW_OUTPUT = 'Show output panel';
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    window
+      .showErrorMessage(`*${command}*: ${err}`, SHOW_OUTPUT)
+      .then((item: string | undefined) => {
+        if (SHOW_OUTPUT === item) {
+          executeCommandHandled('qcfg.log.show');
+        }
+      });
+  }
 }
 
 function createStdErrorHandler(prefix?: string) {
