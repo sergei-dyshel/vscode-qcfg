@@ -1,11 +1,20 @@
 import type { ExtensionContext, TextEditor } from 'vscode';
-import { commands, ViewColumn, window } from 'vscode';
+import { workspace, commands, ViewColumn, window } from 'vscode';
+
 import { listenAsyncWrapped } from './exception';
 import { Modules } from './module';
 import { getVisibleEditor } from './windowUtils';
 
 async function onEditorChanged(editor: TextEditor | undefined) {
   if (!editor) return;
+
+  if (
+    !workspace
+      .getConfiguration(undefined, editor.document)
+      .get<boolean>('qcfg.autoMarkdownPreview', false)
+  )
+    return;
+
   if (editor.document.languageId !== 'markdown') return;
 
   // only act if changed editor in first column
