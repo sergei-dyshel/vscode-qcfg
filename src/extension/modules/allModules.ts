@@ -44,6 +44,7 @@ import * as notes from './notes';
 import * as history from './history';
 import * as treeSelectionRanges from './treeSelectionRanges';
 import * as expandSelection from './expandSelection';
+import * as commandUtils from './commandUtils';
 
 export const ALL_MODULES = {
   language,
@@ -90,4 +91,5 @@ export const ALL_MODULES = {
   history,
   treeSelectionRanges,
   expandSelection,
+  commandUtils,
 };
