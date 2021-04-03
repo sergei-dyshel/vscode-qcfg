@@ -49,6 +49,11 @@ declare module 'tree-sitter' {
     readonly range: VsRange;
     readonly start: Position;
     readonly end: Position;
+    readonly isLeaf: boolean;
+    /** For last sibling returns it */
+    readonly nextNamedSiblingSafe: SyntaxNode;
+    /** For first sibling returns first */
+    readonly previousNamedSiblingSafe: SyntaxNode;
   }
   namespace SyntaxNode {
     export type Type =
@@ -148,6 +153,27 @@ Object.defineProperty(SyntaxNode.prototype, 'end', {
     if (!this.end_)
       this.end_ = new Position(this_.endPosition.row, this_.endPosition.column);
     return this.end_;
+  },
+});
+
+Object.defineProperty(SyntaxNode.prototype, 'nextNamedSiblingSafe', {
+  get(): SyntaxNode {
+    const this_ = this as SyntaxNode;
+    return this_.nextNamedSibling ?? this_;
+  },
+});
+
+Object.defineProperty(SyntaxNode.prototype, 'previousNamedSiblingSafe', {
+  get(): SyntaxNode {
+    const this_ = this as SyntaxNode;
+    return this_.previousNamedSibling ?? this_;
+  },
+});
+
+Object.defineProperty(SyntaxNode.prototype, 'isLeaf', {
+  get(): boolean {
+    const this_ = this as SyntaxNode;
+    return this_.childCount === 0;
   },
 });
 
