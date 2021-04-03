@@ -1,5 +1,5 @@
 import type { TextEditor, ViewColumn, ExtensionContext } from 'vscode';
-
+import { commands } from 'vscode';
 import { Logger, log } from '../../library/logging';
 import { getActiveTextEditor } from './utils';
 import { DefaultMap } from '../../library/tsUtils';
@@ -98,8 +98,13 @@ const histories = new DefaultMap<ViewColumn, History>(
   (col) => new History(col),
 );
 
+async function updateHistoryOnCommand(cmd: string) {
+  await updateHistory(commands.executeCommand(cmd));
+}
+
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
+    registerAsyncCommandWrapped('qcfg.history.wrapCmd', updateHistoryOnCommand),
     registerAsyncCommandWrapped('qcfg.history.backward', goBackward),
     registerAsyncCommandWrapped('qcfg.history.forward', goForward),
   );
