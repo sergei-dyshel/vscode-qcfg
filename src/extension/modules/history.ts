@@ -1,9 +1,15 @@
-import type { TextEditor, ViewColumn, ExtensionContext } from 'vscode';
-import { commands } from 'vscode';
+import type {
+  TextEditor,
+  ViewColumn,
+  ExtensionContext,
+  TextDocumentChangeEvent,
+} from 'vscode';
+import { workspace, commands } from 'vscode';
+
 import { Logger, log } from '../../library/logging';
 import { getActiveTextEditor } from './utils';
 import { DefaultMap } from '../../library/tsUtils';
-import { registerAsyncCommandWrapped } from './exception';
+import { listenWrapped, registerAsyncCommandWrapped } from './exception';
 import { assert, assertNotNull, check } from '../../library/exception';
 import { getVisibleEditor } from './windowUtils';
 import { LiveLocationArray, LivePosition } from './liveLocation';
@@ -82,11 +88,31 @@ class History {
     await this.show(next.asPosition);
   }
 
+  get top(): LivePosition | undefined {
+    return this.backward.top?.asPosition;
+  }
+
   push(pos: LivePosition) {
     this.backward.push(pos);
     this.forward.clear();
-    this.log.info(`Pushed ${pos}`);
+    this.log.debug(`Pushed ${pos}`);
     while (this.backward.length > MAX_HISTORY_SIZE) this.backward.shift();
+  }
+
+  pushOrReplace(pos: LivePosition) {
+    const { top } = this;
+    if (top) {
+      if (Math.abs(top.position.line - pos.position.line) > 4) {
+        this.push(pos);
+      } else {
+        this.backward.pop();
+        this.forward.clear();
+        this.backward.push(pos);
+        this.log.debug(`Replaced top with ${pos}`);
+      }
+    } else {
+      this.push(pos);
+    }
   }
 
   private readonly log: Logger;
@@ -102,8 +128,19 @@ async function updateHistoryOnCommand(cmd: string) {
   await updateHistory(commands.executeCommand(cmd));
 }
 
+function onDidChangeTextDocument(event: TextDocumentChangeEvent) {
+  const editor = getActiveTextEditor();
+  if (editor.document !== event.document) return;
+  const column = getActiveColumn();
+  const history = histories.get(column);
+  const pos = LivePosition.fromActiveEditor();
+  history.pushOrReplace(pos);
+}
+
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
+    listenWrapped(workspace.onDidChangeTextDocument, onDidChangeTextDocument),
+
     registerAsyncCommandWrapped('qcfg.history.wrapCmd', updateHistoryOnCommand),
     registerAsyncCommandWrapped('qcfg.history.backward', goBackward),
     registerAsyncCommandWrapped('qcfg.history.forward', goForward),
