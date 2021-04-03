@@ -1,0 +1,36 @@
+{
+  "contributes": {
+    "commands": [
+      {
+        "command": "qcfg.expandSelectionFaster",
+        "title": "qcfg: Expand selection faster"
+      },
+      {
+        "command": "qcfg.shrinkSelectionFaster",
+        "title": "qcfg: Shrink selection faster"
+      }
+    ],
+    "keybindings": [
+      {
+        "key": "cmd+j",
+        "command": "editor.action.smartSelect.expand",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "cmd+shift+j",
+        "command": "editor.action.smartSelect.shrink",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "cmd+alt+j",
+        "command": "qcfg.expandSelectionFaster",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "cmd+alt+shift+j",
+        "command": "qcfg.shrinkSelectionFaster",
+        "when": "editorTextFocus"
+      }
+    ]
+  }
+}

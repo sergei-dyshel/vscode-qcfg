@@ -42,6 +42,8 @@ import * as callHierarchy from './callHierarchy';
 import * as git from './git';
 import * as notes from './notes';
 import * as history from './history';
+import * as treeSelectionRanges from './treeSelectionRanges';
+import * as expandSelection from './expandSelection';
 
 export const ALL_MODULES = {
   language,
@@ -86,4 +88,6 @@ export const ALL_MODULES = {
   git,
   notes,
   history,
+  treeSelectionRanges,
+  expandSelection,
 };
