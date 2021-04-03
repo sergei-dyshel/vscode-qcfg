@@ -207,6 +207,9 @@ declare global {
     isAnyTrue: () => boolean;
     areAllTrue: () => boolean;
 
+    /** Remove all elements */
+    clear: () => void;
+
     /** Array of unique elements */
     uniq: (equals: (x: T, y: T) => boolean) => T[];
 
@@ -349,6 +352,10 @@ Array.prototype.max = function <T>(
 ) {
   if (!this.length) return;
   return this.reduce((x, y) => (cmp(x, y) === -1 ? y : x));
+};
+
+Array.prototype.clear = function <T>(this: T[]) {
+  this.splice(0, this.length);
 };
 
 Object.defineProperty(Array.prototype, 'top', {
