@@ -4,7 +4,7 @@ import type {
   ExtensionContext,
   TextDocumentChangeEvent,
 } from 'vscode';
-import { workspace, commands } from 'vscode';
+import { window, workspace, commands } from 'vscode';
 
 import { Logger, log } from '../../library/logging';
 import { getActiveTextEditor } from './utils';
@@ -129,9 +129,11 @@ async function updateHistoryOnCommand(cmd: string) {
 }
 
 function onDidChangeTextDocument(event: TextDocumentChangeEvent) {
-  const editor = getActiveTextEditor();
+  const editor = window.activeTextEditor;
+  if (!editor) return;
   if (editor.document !== event.document) return;
-  const column = getActiveColumn();
+  const column = editor.viewColumn;
+  if (!column) return;
   const history = histories.get(column);
   const pos = LivePosition.fromActiveEditor();
   history.pushOrReplace(pos);
