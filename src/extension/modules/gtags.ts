@@ -54,7 +54,7 @@ async function onSaveAll(docs: saveAll.DocumentsInFolder) {
     nodejs.path.relative(gtagsDir, doc.uri.fsPath),
   );
 
-  log.info(`Gtags on ${docPaths} in "${docs.folder.name}"`);
+  log.debug(`Gtags on ${docPaths} in "${docs.folder.name}"`);
   const cmd = 'gtags-update.sh ' + docPaths.join(' ');
   try {
     await subprocess.executeSubprocess(cmd, { cwd: gtagsDir });

@@ -70,7 +70,9 @@ async function onSaveAll(docs: saveAll.DocumentsInFolder) {
   const docPaths = docs.documents.map((doc) =>
     nodejs.path.relative(folder, doc.fileName),
   );
-  log.info(`Auto syncing ${docPaths} in ${docs.folder.name} (under ${folder})`);
+  log.debug(
+    `Auto syncing ${docPaths} in ${docs.folder.name} (under ${folder})`,
+  );
 
   const paths = docPaths.join(' ');
   const cmd = command.includes('{}')

@@ -7,12 +7,6 @@
   cause assertion errors becaus tree element wasn't delete.
 - Log commands execution (executeCommand)
 - "Couldn't focus window with 'node-window-manager'." - something doesn't work
-- Set INFO=>DEBUG for:
-
-```
-20:03:03.045 INFO modules/autoSync.ts:73:2 onSaveAll() Auto syncing src/ebs_managed_stages_gameday/meta/yaml/input_templates/sled_events_input.yml in EbsManagedStagesGameday (under /Users/sergei/amazon/repos/EbsManagedStagesGameday)
-20:03:03.054 INFO modules/gtags.ts:57:2 onSaveAll() Gtags on src/ebs_managed_stages_gameday/meta/yaml/input_templates/sled_events_input.yml in "EbsManagedStagesGameday"
-```
 
 # Notes functionality
 
