@@ -1,9 +1,6 @@
 'use strict';
 
-import { TextBuffer } from 'superstring';
-import * as Parser from 'tree-sitter';
 // eslint-disable-next-line @typescript-eslint/no-duplicate-imports
-import { SyntaxNode, Tree as SyntaxTree } from 'tree-sitter';
 import type {
   Event,
   ExtensionContext,
@@ -19,70 +16,24 @@ import { Modules } from './module';
 import * as nodejs from '../../library/nodejs';
 import { Timer } from '../../library/nodeUtils';
 import { DefaultMap } from '../../library/tsUtils';
+import type { SyntaxTree, SyntaxParser } from '../../library/treeSitter';
+import {
+  newSyntaxParser,
+  syntaxLanguages,
+  SyntaxNode,
+  TextBuffer,
+} from '../../library/treeSitter';
 
 type VsRange = Range;
 
 const UPDATE_DELAY_MS = 100;
 
-export { SyntaxNode, SyntaxTree };
-
-interface LanguageConfig {
-  parser: unknown;
-}
-
-const languageConfig: Record<string, LanguageConfig | undefined> = {
-  python: { parser: require('tree-sitter-python') },
-  c: { parser: require('tree-sitter-c') },
-  cpp: { parser: require('tree-sitter-cpp') },
-  typescript: { parser: require('tree-sitter-typescript/typescript') },
-  shellscript: { parser: require('tree-sitter-bash') },
-  go: { parser: require('tree-sitter-go') },
-  lua: { parser: require('tree-sitter-lua') },
-};
-
 declare module 'tree-sitter' {
-  // eslint-disable-next-line @typescript-eslint/no-shadow
-  class SyntaxNode {}
   interface SyntaxNode {
-    readonly nodeType: SyntaxNode.Type;
     readonly offsetRange: NumRange;
     readonly range: VsRange;
     readonly start: Position;
     readonly end: Position;
-    readonly isLeaf: boolean;
-    /** For last sibling returns it */
-    readonly nextNamedSiblingSafe: SyntaxNode;
-    /** For first sibling returns first */
-    readonly previousNamedSiblingSafe: SyntaxNode;
-  }
-  namespace SyntaxNode {
-    export type Type =
-      | 'identifier'
-      | 'declaration'
-      | 'function_definition'
-      | 'decorated_definition'
-      | 'class_definition'
-      | 'preproc_include'
-      | 'system_lib_string'
-      | 'string_literal'
-      | 'scoped_identifier'
-      | 'namespace_identifier'
-      | 'function_declarator'
-      | 'number_literal'
-      | 'type_qualifier'
-      | 'primitive_type'
-      | 'type_identifier'
-      | 'template_type'
-      | 'scoped_type_identifier'
-      | 'type_descriptor'
-      | 'object' // typescript
-      | 'storage_class_specifier';
-  }
-
-  // eslint-disable-next-line no-shadow
-  class Tree {}
-  interface Tree {
-    version: number;
   }
 }
 
@@ -92,10 +43,10 @@ export namespace SyntaxTrees {
     return trees.get(document).get();
   }
   export function isDocumentSupported(document: TextDocument) {
-    return document.languageId in languageConfig;
+    return document.languageId in syntaxLanguages;
   }
 
-  export const supportedLanguages = Object.keys(languageConfig);
+  export const supportedLanguages = Object.keys(syntaxLanguages);
 }
 
 export interface SyntaxTreeUpdatedEvent {
@@ -109,13 +60,6 @@ export const onSyntaxTreeUpdated: Event<SyntaxTreeUpdatedEvent> = emmiter.event;
 //
 // Private
 //
-
-Object.defineProperty(SyntaxNode.prototype, 'nodeType', {
-  get(): SyntaxNode.Type {
-    const this_ = this as SyntaxNode;
-    return this_.type as SyntaxNode.Type;
-  },
-});
 
 Object.defineProperty(SyntaxNode.prototype, 'offsetRange', {
   get(): NumRange {
@@ -156,42 +100,21 @@ Object.defineProperty(SyntaxNode.prototype, 'end', {
   },
 });
 
-Object.defineProperty(SyntaxNode.prototype, 'nextNamedSiblingSafe', {
-  get(): SyntaxNode {
-    const this_ = this as SyntaxNode;
-    return this_.nextNamedSibling ?? this_;
-  },
-});
-
-Object.defineProperty(SyntaxNode.prototype, 'previousNamedSiblingSafe', {
-  get(): SyntaxNode {
-    const this_ = this as SyntaxNode;
-    return this_.previousNamedSibling ?? this_;
-  },
-});
-
-Object.defineProperty(SyntaxNode.prototype, 'isLeaf', {
-  get(): boolean {
-    const this_ = this as SyntaxNode;
-    return this_.childCount === 0;
-  },
-});
-
 namespace Parsers {
-  const parserPool = new DefaultMap<string, Parser[]>(() => []);
+  const parserPool = new DefaultMap<string, SyntaxParser[]>(() => []);
 
-  export function get(language: string): Parser {
-    if (!(language in languageConfig))
+  export function get(language: string): SyntaxParser {
+    if (!(language in syntaxLanguages))
       throw new Error(`Syntax tree not available for language "${language}"`);
     const parsers = parserPool.get(language);
     if (!parsers.isEmpty) return parsers.pop()!;
     // eslint-disable-next-line new-cap
-    const parser = new Parser.default();
-    parser.setLanguage(languageConfig[language]!.parser);
+    const parser = newSyntaxParser();
+    parser.setLanguage(syntaxLanguages[language]!.parser);
     return parser;
   }
 
-  export function put(language: string, parser: Parser) {
+  export function put(language: string, parser: SyntaxParser) {
     parserPool.get(language).push(parser);
   }
 }

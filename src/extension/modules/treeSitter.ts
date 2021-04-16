@@ -15,7 +15,6 @@ import {
   registerSyncCommandWrapped,
 } from './exception';
 import { Modules } from './module';
-import type { SyntaxNode, SyntaxTree } from './syntaxTree';
 import { SyntaxTrees } from './syntaxTree';
 import { revealSelection, swapRanges } from './textUtils';
 import { getActiveTextEditor, WhenContext } from './utils';
@@ -26,6 +25,7 @@ import {
   checkNotNull,
 } from '../../library/exception';
 import { RangeDecorator } from '../utils/decoration';
+import type { SyntaxNode, SyntaxTree } from '../../library/treeSitter';
 
 const WHEN_CLAUSE = 'qcfgTreeMode';
 

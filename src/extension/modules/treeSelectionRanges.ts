@@ -1,13 +1,13 @@
 import { Modules } from './module';
 import type { TextDocument, Position, Range, ExtensionContext } from 'vscode';
 import { SelectionRange, languages } from 'vscode';
-import type { SyntaxTree, SyntaxNode } from './syntaxTree';
 import { SyntaxTrees } from './syntaxTree';
 import { trimInner } from './textUtils';
 import { handleErrorsAsync } from './exception';
 import { findContainingNode } from './treeSitter';
 import { log } from '../../library/logging';
 import { assertNotNull } from '../../library/exception';
+import type { SyntaxNode, SyntaxTree } from '../../library/treeSitter';
 
 function computeSelectionRange(
   document: TextDocument,
