@@ -1,12 +1,17 @@
 'use strict';
 
 import { log } from '../../library/logging';
-import { listenWrapped, registerSyncCommandWrapped } from './exception';
+import {
+  handleAsyncStd,
+  listenWrapped,
+  registerSyncCommandWrapped,
+} from './exception';
 import { Modules } from './module';
 import { windowManager, Window } from 'node-window-manager';
 import type { WindowState, ExtensionContext } from 'vscode';
 import { window } from 'vscode';
 import { runSubprocessSync } from './subprocess';
+import { asyncWait } from '../../library/nodeUtils';
 
 function callHammerspoon(funcName: string, ...args: Array<number | string>) {
   const params = args
@@ -20,7 +25,8 @@ function callHammerspoon(funcName: string, ...args: Array<number | string>) {
   return runSubprocessSync(['hs', '-c', callExpr]);
 }
 
-export function focusWindow() {
+/* XXX: unused */
+export function focusWindowHammerspoon() {
   if (!windowId) {
     return;
   }
@@ -29,12 +35,23 @@ export function focusWindow() {
   if (windowId === tryGetActiveWindowId()) {
     log.warn("Couldn't focus window with Hammerspoon");
   }
+}
+
+export function focusWindow() {
+  if (!windowId) {
+    return;
+  }
   const win = new Window(windowId);
   win.show();
   win.bringToTop();
-  if (windowId === tryGetActiveWindowId()) return;
-
-  log.warn("Couldn't focus window with 'node-window-manager'");
+  handleAsyncStd(
+    asyncWait(
+      `window ${windowId} to be focused`,
+      100, // intervalMs
+      3000, // timeoutMs
+      () => windowId === tryGetActiveWindowId(),
+    ),
+  );
 }
 
 export function shouldSplitVertically(): boolean {

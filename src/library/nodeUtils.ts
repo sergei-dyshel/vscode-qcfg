@@ -38,6 +38,24 @@ export class Timer {
   private type?: TimerType;
 }
 
+export async function asyncWait(
+  waitingFor: string,
+  intervalMs: number,
+  timeoutMs: number,
+  predicate: () => boolean | Promise<boolean>,
+) {
+  const start = Date.now();
+  for (;;) {
+    const result = predicate();
+    const value = result instanceof Promise ? await result : result;
+    if (value) return;
+    const now = Date.now();
+    if (now - start > timeoutMs)
+      throw new Error(`Timeout waiting for ${waitingFor}`);
+    await setTimeoutPromise(intervalMs);
+  }
+}
+
 // private
 
 enum TimerType {
