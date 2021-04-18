@@ -12,7 +12,10 @@ declare module 'tree-sitter' {
     readonly nextNamedSiblingSafe: SyntaxNode;
     /** For first sibling returns first */
     readonly previousNamedSiblingSafe: SyntaxNode;
+
+    toObject: () => Record<string, unknown>;
   }
+
   namespace SyntaxNode {
     export type Type =
       | 'identifier'
@@ -65,3 +68,12 @@ Object.defineProperty(SyntaxNode.prototype, 'isLeaf', {
     return this_.childCount === 0;
   },
 });
+
+SyntaxNode.prototype.toObject = function (this: SyntaxNode) {
+  const range = `[${this.startPosition.row}, ${this.startPosition.column}] - [${this.endPosition.row}, ${this.endPosition.column}]`;
+  return {
+    type: this.type,
+    range,
+    children: this.namedChildren.map((child) => child.toObject()),
+  };
+};

@@ -32,7 +32,8 @@ install: | package.json
 	vsce package
 	code-oss --install-extension=`ls *.vsix`
 
-check_cli:
+check_tools:
 	bin/q-vscode-cli -h >/dev/null
+	bin/q-vscode-syntax-dump -h >/dev/null
 
-check: check_cli
+check: check_tools

@@ -15,6 +15,7 @@ const generateConfig = (env: any): webpack.Configuration => ({
   entry: {
     extension: './src/extension/extension.ts',
     remoteCli: './src/tools/remoteCli.ts',
+    syntaxDump: './src/tools/syntaxDump.ts',
   },
   output: {
     // the bundle is stored in the 'dist' folder (check package.json), 📖 ->
@@ -59,10 +60,7 @@ const generateConfig = (env: any): webpack.Configuration => ({
   },
   module: {
     // becaues of `typescript-collections`
-    noParse: [
-      /.*umd\.js/,
-      /.*\.md$/,
-    ],
+    noParse: [/.*umd\.js/, /.*\.md$/],
 
     rules: [
       {
