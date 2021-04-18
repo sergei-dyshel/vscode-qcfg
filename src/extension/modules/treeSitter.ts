@@ -25,7 +25,7 @@ import {
   checkNotNull,
 } from '../../library/exception';
 import { RangeDecorator } from '../utils/decoration';
-import type { SyntaxNode, SyntaxTree } from '../../library/treeSitter';
+import type { SyntaxNode, SyntaxTree } from '../../library/syntax';
 
 const WHEN_CLAUSE = 'qcfgTreeMode';
 

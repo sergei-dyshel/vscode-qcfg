@@ -165,6 +165,7 @@ const config = {
     '@typescript-eslint/object-curly-spacing': [warn, always],
 
     '@typescript-eslint/sort-type-union-intersection-members': off,
+    'import/no-duplicates': off,
   },
 };
 

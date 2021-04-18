@@ -7,7 +7,8 @@ import { handleErrorsAsync } from './exception';
 import { findContainingNode } from './treeSitter';
 import { log } from '../../library/logging';
 import { assertNotNull } from '../../library/exception';
-import type { SyntaxNode, SyntaxTree } from '../../library/treeSitter';
+import type { SyntaxNode, SyntaxTree } from '../../library/syntax';
+import { SyntaxLanguage } from '../../library/syntax';
 
 function computeSelectionRange(
   document: TextDocument,
@@ -53,7 +54,7 @@ async function provideSelectionRanges(
 
 function activate(extContext: ExtensionContext) {
   extContext.subscriptions.push(
-    languages.registerSelectionRangeProvider(SyntaxTrees.supportedLanguages, {
+    languages.registerSelectionRangeProvider(SyntaxLanguage.allSupported(), {
       provideSelectionRanges: handleErrorsAsync(provideSelectionRanges),
     }),
   );

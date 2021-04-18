@@ -1,30 +1,6 @@
-'use strict';
+import { SyntaxNode } from 'tree-sitter';
 
-import { TextBuffer } from 'superstring';
-import { SyntaxNode, Tree as SyntaxTree } from 'tree-sitter';
-// eslint-disable-next-line @typescript-eslint/no-duplicate-imports
-import * as SyntaxParser from 'tree-sitter';
-
-export { SyntaxNode, SyntaxTree, TextBuffer, SyntaxParser };
-
-interface SyntaxConfig {
-  parser: unknown;
-}
-
-/** Workaround about not being able to export default import */
-export function newSyntaxParser() {
-  return new SyntaxParser.default();
-}
-
-export const syntaxLanguages: Record<string, SyntaxConfig | undefined> = {
-  python: { parser: require('tree-sitter-python') },
-  c: { parser: require('tree-sitter-c') },
-  cpp: { parser: require('tree-sitter-cpp') },
-  typescript: { parser: require('tree-sitter-typescript/typescript') },
-  shellscript: { parser: require('tree-sitter-bash') },
-  go: { parser: require('tree-sitter-go') },
-  lua: { parser: require('tree-sitter-lua') },
-};
+export { SyntaxNode };
 
 declare module 'tree-sitter' {
   // eslint-disable-next-line @typescript-eslint/no-shadow
@@ -59,12 +35,6 @@ declare module 'tree-sitter' {
       | 'type_descriptor'
       | 'object' // typescript
       | 'storage_class_specifier';
-  }
-
-  // eslint-disable-next-line no-shadow
-  class Tree {}
-  interface Tree {
-    version: number;
   }
 }
 
