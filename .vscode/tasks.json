@@ -1,59 +1,59 @@
 // See https://go.microsoft.com/fwlink/?LinkId=733558
 // for the documentation about the tasks.json format
 {
-	"version": "2.0.0",
-	"tasks": [
-		{
-			"type": "npm",
-			"script": "tsc-watch",
-			"problemMatcher": "$tsc-watch",
-			"isBackground": true,
-			"presentation": {
-				"reveal": "never"
-			},
-			"group": {
-				"kind": "build",
-				"isDefault": true
-            },
-            "runOptions": {
-				"runOn": "folderOpen",
-            }
-		},
-		{
-			"label": "tslint",
-			"type": "shell",
-			"command": "npx tslint --project tsconfig.json --config tslint.json --format stylish",
-		},
-		{
-			"label": "ts-prune",
-			"type": "shell",
-			"command": "npx ts-prune",
-		},
-		{
-			"label": "ts-unused-exports",
-			"type": "shell",
-			"command": "npx ts-unused-exports tsconfig.json --showLineNumber",
-		},
-		{
-			"label": "eslint",
-			"type": "shell",
-			"command": "npx eslint --color --format unix --ext .ts src",
-			"presentation": {
-				"clear": true
-			}
-		},
-		{
-			"label": "generate",
-			"type": "shell",
-			"command": "make generate",
-			"presentation": {
-				"echo": true,
-				"reveal": "silent",
-				"focus": false,
-				"panel": "shared",
-				"showReuseMessage": true,
-				"clear": false
-			}
-		}
-	],
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "tsc-watch",
+      "problemMatcher": "$tsc-watch",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "never"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "runOptions": {
+        "runOn": "folderOpen"
+      }
+    },
+    {
+      "label": "tslint",
+      "type": "shell",
+      "command": "npx tslint --project tsconfig.json --config tslint.json --format stylish"
+    },
+    {
+      "label": "ts-prune",
+      "type": "shell",
+      "command": "npx ts-prune"
+    },
+    {
+      "label": "ts-unused-exports",
+      "type": "shell",
+      "command": "npx ts-unused-exports tsconfig.json --showLineNumber"
+    },
+    {
+      "label": "eslint",
+      "type": "shell",
+      "command": "npx eslint --color --format unix --ext .ts src",
+      "presentation": {
+        "clear": true
+      }
+    },
+    {
+      "label": "generate",
+      "type": "shell",
+      "command": "make generate",
+      "presentation": {
+        "echo": true,
+        "reveal": "silent",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    }
+  ]
 }
