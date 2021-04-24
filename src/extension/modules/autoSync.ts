@@ -118,7 +118,7 @@ function activate(context: ExtensionContext) {
   context.subscriptions.push(
     registerSyncCommandWrapped('qcfg.autoSync.toggle', toggle),
   );
-  context.subscriptions.push(saveAll.onEvent(onSaveAll));
+  context.subscriptions.push(saveAll.onSaveAllEvent(onSaveAll));
 }
 
 Modules.register(activate);

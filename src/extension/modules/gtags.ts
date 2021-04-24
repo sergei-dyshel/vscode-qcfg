@@ -415,7 +415,7 @@ function activate(context: vscode.ExtensionContext) {
     handleAsyncStd(queue.add(updateDB, 'gtags check'));
   }, 30000);
   context.subscriptions.push(
-    saveAll.onEvent(queue.queued(onSaveAll, 'save all')),
+    saveAll.onSaveAllEvent(queue.queued(onSaveAll, 'save all')),
     vscode.languages.registerWorkspaceSymbolProvider(
       gtagsGlobalSymbolsProvider,
     ),

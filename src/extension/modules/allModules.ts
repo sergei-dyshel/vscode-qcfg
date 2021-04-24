@@ -45,6 +45,7 @@ import * as history from './history';
 import * as treeSelectionRanges from './treeSelectionRanges';
 import * as expandSelection from './expandSelection';
 import * as commandUtils from './commandUtils';
+import * as runOnSave from './pipeOnSave';
 
 export const ALL_MODULES = {
   language,
@@ -92,4 +93,5 @@ export const ALL_MODULES = {
   treeSelectionRanges,
   expandSelection,
   commandUtils,
+  runOnSave,
 };

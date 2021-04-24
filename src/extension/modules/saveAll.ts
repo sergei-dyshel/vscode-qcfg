@@ -14,7 +14,7 @@ export interface DocumentsInFolder {
 const savedFiles = new Map<vscode.WorkspaceFolder, vscode.TextDocument[]>();
 
 const emmiter = new vscode.EventEmitter<DocumentsInFolder>();
-export const onEvent: vscode.Event<DocumentsInFolder> = emmiter.event;
+export const onSaveAllEvent: vscode.Event<DocumentsInFolder> = emmiter.event;
 
 function emit() {
   savedFiles.forEach((documents, folder, _map) => {

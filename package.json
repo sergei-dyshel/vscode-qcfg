@@ -2037,6 +2037,49 @@
               }
             }
           }
+        },
+        "qcfg.configRules": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "definitions": {},
+          "description": "Array of configuration rules per file type, filename etc.",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "glob": {
+                "description": "Glob pattern to match against file name.",
+                "type": "string"
+              },
+              "language": {
+                "description": "Language ID of file",
+                "type": "string"
+              },
+              "pipeOnSave": {
+                "additionalProperties": false,
+                "description": "Transform document contents on save by running through pipe command",
+                "properties": {
+                  "command": {
+                    "description": "Shell command to run",
+                    "type": "string"
+                  },
+                  "label": {
+                    "description": "Command label, to be shown in statusbar, logs, messages etc.",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "label",
+                  "command"
+                ],
+                "type": "object"
+              }
+            },
+            "required": [
+              "glob",
+              "language"
+            ],
+            "type": "object"
+          },
+          "type": "array"
         }
       }
     },
