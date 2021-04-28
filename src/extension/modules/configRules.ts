@@ -1,20 +1,27 @@
-import type { TextDocument } from 'vscode';
+import { TextDocument, Uri } from 'vscode';
 import { workspace } from 'vscode';
 import { fileMatch } from '../../library/glob';
+import { mapNonNull } from '../../library/tsUtils';
 import type { Condition, Rule, RuleConfig } from './configRules.model';
 
 export class ConfigRules {
-  constructor(document: TextDocument) {
-    this.rules = gatherRules(document).filter((rule) =>
-      ruleMatches(rule, document),
+  constructor(documentOrUri: TextDocument | Uri) {
+    this.rules = gatherRules(documentOrUri).filter((rule) =>
+      ruleMatches(rule, documentOrUri),
     );
   }
 
   firstDefined<K extends keyof RuleConfig>(key: K): RuleConfig[K] | undefined {
-    for (const rule of this.rules) {
+    const defined = this.allDefined(key);
+    if (defined.isEmpty) return undefined;
+    return defined[0];
+  }
+
+  allDefined<K extends keyof RuleConfig>(key: K): Array<RuleConfig[K]> {
+    return mapNonNull(this.rules, (rule) => {
       if (rule[key] !== undefined) return rule[key];
-    }
-    return undefined;
+      return undefined;
+    });
   }
 
   get all(): RuleConfig[] {
@@ -26,10 +33,11 @@ export class ConfigRules {
 
 // Private
 
-function gatherRules(document: TextDocument) {
-  const folder = workspace.getWorkspaceFolder(document.uri);
+function gatherRules(documentOrUri: TextDocument | Uri) {
+  const uri = documentOrUri instanceof Uri ? documentOrUri : documentOrUri.uri;
+  const folder = workspace.getWorkspaceFolder(uri);
   const config = workspace.getConfiguration(undefined, folder);
-  const allConfigs = config.inspect('qcfg.runOnSave');
+  const allConfigs = config.inspect('qcfg.configRules');
   const rules: Rule[] = [];
 
   for (const scope of [
@@ -44,13 +52,19 @@ function gatherRules(document: TextDocument) {
   return rules;
 }
 
-function ruleMatches(cond: Condition, document: TextDocument) {
+function ruleMatches(cond: Condition, documentOrUri: TextDocument | Uri) {
+  const uri = documentOrUri instanceof Uri ? documentOrUri : documentOrUri.uri;
   const path = workspace.asRelativePath(
-    document.uri,
+    uri,
     false /* includeWorkspaceFolder */,
   );
 
   if (cond.glob && !fileMatch(path, cond.glob)) return false;
-  if (cond.language && cond.language !== document.languageId) return false;
+  if (
+    cond.language &&
+    !(documentOrUri instanceof Uri) &&
+    cond.language !== documentOrUri.languageId
+  )
+    return false;
   return true;
 }
