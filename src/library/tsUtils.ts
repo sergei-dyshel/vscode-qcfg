@@ -210,11 +210,13 @@ declare global {
     /** Remove all elements */
     clear: () => void;
 
-    /** Array of unique elements */
+    /** Array of unique elements (works on unsorted too) */
     uniq: (equals: (x: T, y: T) => boolean) => T[];
 
     /** Group (sorted) array by binary predicate, return array of groups */
     group: (func: (x: T, y: T) => boolean) => T[][];
+
+    sorted: (cmp?: (x: T, y: T) => number) => T[];
   }
 
   interface ReadonlyArray<T> {
@@ -263,6 +265,13 @@ Array.prototype.group = function <T>(this: T[], func: (x: T, y: T) => boolean) {
     }
     return prev;
   }, []);
+};
+
+Array.prototype.sorted = function <T>(
+  this: T[],
+  cmp?: (x: T, y: T) => number,
+): T[] {
+  return this.slice().sort(cmp);
 };
 
 Array.prototype.forEachRight = function <T>(
