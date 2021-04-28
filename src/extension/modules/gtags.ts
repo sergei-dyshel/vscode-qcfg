@@ -29,6 +29,7 @@ import { TaskType, Flag, LocationFormat } from './tasks/params';
 
 import RE2 from 're2';
 import { assertNotNull, assert } from '../../library/exception';
+import { wrapWithHistoryUpdate } from './history';
 
 async function findGtagsDir(dir: string) {
   for (;;) {
@@ -421,7 +422,10 @@ function activate(context: vscode.ExtensionContext) {
     ),
     registerAsyncCommandWrapped('qcfg.gtags.definition', openDefinition),
     vscode.languages.registerHoverProvider('*', gtagsHoverProvider),
-    registerAsyncCommandWrapped('qcfg.gtags.workspace', WorkspaceGtags.run),
+    registerAsyncCommandWrapped(
+      'qcfg.gtags.workspace',
+      wrapWithHistoryUpdate(WorkspaceGtags.run),
+    ),
   );
 }
 

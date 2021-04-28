@@ -7,6 +7,8 @@
   cause assertion errors becaus tree element wasn't delete.
 - Log commands execution (executeCommand)
 - "Couldn't focus window with 'node-window-manager'." - something doesn't work
+- Commands augmented with `qcfg.history.wrapCmd` with show title of latter in
+  shortcuts window, this is inconvenient.
 
 # Notes functionality
 

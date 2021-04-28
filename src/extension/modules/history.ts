@@ -14,19 +14,36 @@ import { assert, assertNotNull, check } from '../../library/exception';
 import { getVisibleEditor } from './windowUtils';
 import { LiveLocationArray, LivePosition } from './liveLocation';
 import { Modules } from './module';
+import type { AsyncFunction, PromiseType } from '../../library/templateTypes';
 
 const MAX_HISTORY_SIZE = 20;
 
-export async function updateHistory(jump: Promise<unknown>) {
+/**
+ * if after promise resolved current editor location changes,
+ * add both previous and current point to history
+ */
+export async function updateHistory<T>(jump: Promise<T>): Promise<T> {
   const column = getActiveColumn();
   const before = LivePosition.fromActiveEditor();
-  await jump;
-  const after = LivePosition.fromActiveEditor();
-  if (column !== getActiveColumn()) {
-    return;
+  try {
+    return await jump;
+  } finally {
+    const after = LivePosition.fromActiveEditor();
+    if (column === getActiveColumn()) {
+      histories.get(column).push(before);
+      histories.get(column).push(after);
+    }
   }
-  histories.get(column).push(before);
-  histories.get(column).push(after);
+}
+
+/**
+ * Wrap async function with exception handler (both sync and async)
+ */
+export function wrapWithHistoryUpdate<T extends AsyncFunction>(
+  func: T,
+): (...funcArgs: Parameters<T>) => Promise<PromiseType<ReturnType<T>>> {
+  return async (...args: Parameters<T>): Promise<PromiseType<ReturnType<T>>> =>
+    updateHistory(func(...args));
 }
 
 // Private
