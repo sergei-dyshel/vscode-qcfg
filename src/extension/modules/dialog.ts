@@ -92,14 +92,53 @@ class Button implements QuickInputButton {
 
 const buttons: Record<string, Button> = {};
 
+export interface BaseQuickPickOptions {
+  matchOnDescription?: boolean;
+  matchOnDetail?: boolean;
+  placeHolder?: string;
+  ignoreFocusOut?: boolean;
+}
+
 export async function selectFromList<T>(
   items: T[],
   toQuickPickItem: (x: T) => QuickPickItem,
-  options?: QuickPickOptions,
+  options?: BaseQuickPickOptions,
+  onItemSelected?: (item: T) => void,
 ): Promise<T | undefined> {
   const qpItems = items.map((item) => ({ item, ...toQuickPickItem(item) }));
-  const selected = await window.showQuickPick(qpItems, options);
+  const onDidSelectItem = onItemSelected
+    ? (qpItem: QuickPickItem) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        onItemSelected((qpItem as any).item);
+      }
+    : undefined;
+  const selected = await window.showQuickPick(qpItems, {
+    ...options,
+    onDidSelectItem,
+  });
   if (selected) return selected.item;
+  return;
+}
+
+export async function selectMultipleFromList<T>(
+  items: T[],
+  toQuickPickItem: (x: T) => QuickPickItem,
+  options?: BaseQuickPickOptions,
+  onItemSelected?: (item: T) => void,
+): Promise<T[] | undefined> {
+  const qpItems = items.map((item) => ({ item, ...toQuickPickItem(item) }));
+  const onDidSelectItem = onItemSelected
+    ? (qpItem: QuickPickItem) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        onItemSelected((qpItem as any).item);
+      }
+    : undefined;
+  const selected = await window.showQuickPick(qpItems, {
+    ...options,
+    onDidSelectItem,
+    canPickMany: true,
+  });
+  if (selected) return selected.map((qpItem) => qpItem.item);
   return;
 }
 
