@@ -102,9 +102,9 @@ async function rerunPreviousSearch() {
 }
 
 async function rerunLastSearch() {
-  const prevSearch = savedSearches.top;
+  const prevSearch = savedSearches[0];
   checkNotNull(prevSearch, 'No saved searches');
-  savedSearches.removeFirst(prevSearch);
+  savedSearches.shift();
   await saveAndPeekSearch(prevSearch.name, async () => prevSearch.func());
 }
 
