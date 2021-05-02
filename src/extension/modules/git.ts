@@ -1,4 +1,4 @@
-import type { ExtensionContext, TextDocument } from 'vscode';
+import type { ExtensionContext, TextEditor } from 'vscode';
 import { workspace, env, Uri, window } from 'vscode';
 
 import { Modules } from './module';
@@ -24,7 +24,10 @@ interface RemoteInfo {
 interface Info {
   hash: string;
   shortHash: string;
+  file: string;
+  line: number;
   workdir: string;
+  blameCommit?: string;
   branch?: {
     name: string;
     upstream?: {
@@ -64,7 +67,9 @@ function shortenRemoteBranch(branch: string, remote: string): string {
   return branch;
 }
 
-async function getInfo(document: TextDocument) {
+async function getInfo(editor: TextEditor) {
+  const document = editor.document;
+  const line = editor.selection.active.line + 1;
   const repo = await nodegit.Repository.openExt(
     nodejs.path.dirname(document.fileName),
     0,
@@ -72,12 +77,19 @@ async function getInfo(document: TextDocument) {
   );
 
   const hash = (await repo.getHeadCommit()).sha();
+  const file = nodejs.path.relative(repo.workdir(), document.fileName);
+  const blame = await nodegit.Blame.file(repo, file);
+  // getHunkByLine may return undefined if no hunk found
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  const blameCommit = blame.getHunkByLine(line)?.finalCommitId().tostrS();
   const info: Info = {
     workdir: repo.workdir(),
+    file,
+    line,
     hash,
+    blameCommit,
     shortHash: hash.substr(0, SHORT_SHA_LEN),
   };
-
   try {
     const branch = await repo.getCurrentBranch();
     info.branch = { name: branch.shorthand() };
@@ -105,7 +117,7 @@ async function getInfo(document: TextDocument) {
 
 async function dump() {
   const editor = getActiveTextEditor();
-  const info = await getInfo(editor.document);
+  const info = await getInfo(editor);
   const infoStr = JSON.stringify(info, null /* replacer */, 4 /* space */);
   log.info(infoStr);
   await window.showInformationMessage(infoStr);
@@ -120,7 +132,7 @@ async function showWebLinks() {
   const editor = getActiveTextEditor();
   const document = editor.document;
   const filename = document.fileName;
-  const info = await getInfo(editor.document);
+  const info = await getInfo(editor);
   const remote = info.branch?.upstream?.remote ?? info.origin;
   assertNotNull(remote, 'No tracking branch and no "origin" remote found');
 
@@ -132,8 +144,9 @@ async function showWebLinks() {
     hash: info.hash,
     shortHash: info.shortHash,
     branch: info.branch?.upstream?.name ?? info.branch?.name,
-    file: nodejs.path.relative(info.workdir, filename),
-    line: (editor.selection.active.line + 1).toString(),
+    file: info.file,
+    line: info.line.toString(),
+    blameHash: info.blameCommit,
   };
   const remoteUrl = remote.url;
   const links: Link[] = [];
