@@ -69,6 +69,11 @@ export function concatArrays<T>(...arrays: T[][]): T[] {
   return arrays[0].concat(...arrays.slice(1));
 }
 
+export function concatNonNullArrays<T>(...arrays: Array<T[] | undefined>): T[] {
+  const nonNullArrays = arrays.filter((x) => x !== undefined) as T[][];
+  return concatArrays(...nonNullArrays);
+}
+
 export function upcastReadonlyArray<B, T extends B>(
   arr: readonly B[],
 ): readonly T[] {
@@ -194,6 +199,7 @@ declare global {
     reverseIter: () => Iterable<T>;
     iter: (start?: number, end?: number, step?: number) => Iterable<T>;
     pairIter: () => Iterable<[T, T]>;
+    /** Last element of array (consistent with stack-like push()/pop() ). */
     readonly top: T | undefined;
     readonly isEmpty: boolean;
     min: (cmp?: (x: T, y: T) => number) => T | undefined;

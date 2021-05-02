@@ -1,6 +1,7 @@
+export type QuickFixCodeActionsConfig = Array<string | [string, number]>;
+
 export interface RuleConfig {
-  /* to prevent various warning, remove after adding real properties */
-  dummyProperty?: string;
+  quickFixCodeActions?: QuickFixCodeActionsConfig;
 }
 
 export interface Rule extends Condition, RuleConfig {}

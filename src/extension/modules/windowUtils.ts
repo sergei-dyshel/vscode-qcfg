@@ -4,6 +4,7 @@ import type { StatusBarItem, TextEditor, ViewColumn } from 'vscode';
 import { ThemeColor, window } from 'vscode';
 
 import { Timer } from '../../library/nodeUtils';
+import { handleAsyncStd } from './exception';
 
 const DEFAULT_TIMEOUT_MS = 3000;
 
@@ -39,6 +40,36 @@ export function getVisibleEditor(
   return window.visibleTextEditors.firstOf(
     (editor) => editor.viewColumn === viewColumn,
   );
+}
+
+/**
+ * Save and restore editor and selection
+ *
+ * Useful when running interactive commands that may "preview" other locations
+ */
+export async function preserveActiveLocation<T>(
+  promise: Promise<T>,
+): Promise<T> {
+  const prevEditor = window.activeTextEditor;
+  const prevSelection = prevEditor?.selection;
+  try {
+    return await promise;
+  } finally {
+    if (prevEditor) {
+      const newEditor = window.activeTextEditor;
+      if (
+        newEditor &&
+        (newEditor !== prevEditor ||
+          !prevSelection!.isEqual(newEditor.selection))
+      ) {
+        handleAsyncStd(
+          window.showTextDocument(prevEditor.document, {
+            selection: prevSelection,
+          }),
+        );
+      }
+    }
+  }
 }
 
 /**

@@ -8,8 +8,25 @@
       {
         "command": "qcfg.showInFileManager",
         "title": "qcfg: Show in OS file manager"
+      },
+      {
+        "command": "qcfg.quickFixFile",
+        "title": "qcfg: Choose and apply quick fixes for current file"
+      },
+      {
+        "command": "qcfg.quickFixWorkspace",
+        "title": "qcfg: Choose and apply quick fixes for entire workspace"
       }
     ],
-    "keybindings": []
+    "keybindings": [
+      {
+        "key": "alt+.",
+        "command": "qcfg.quickFixFile"
+      },
+      {
+        "key": "shift+alt+.",
+        "command": "qcfg.quickFixWorkspace"
+      }
+    ]
   }
 }
