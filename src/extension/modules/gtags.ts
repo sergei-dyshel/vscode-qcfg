@@ -7,6 +7,7 @@ import { log, Logger } from '../../library/logging';
 import * as subprocess from './subprocess';
 import * as nodejs from '../../library/nodejs';
 import { PromiseQueue } from './async';
+import * as shellQuote from 'shell-quote';
 
 import * as readline from 'readline';
 import { isAnyLangClientRunning } from './langClient';
@@ -54,13 +55,14 @@ async function onSaveAll(docs: saveAll.DocumentsInFolder) {
   const docPaths = docs.documents.map((doc) =>
     nodejs.path.relative(gtagsDir, doc.uri.fsPath),
   );
+  const docPathsStr = shellQuote.quote(docPaths);
 
-  log.debug(`Gtags on ${docPaths} in "${docs.folder.name}"`);
-  const cmd = 'gtags-update.sh ' + docPaths.join(' ');
+  log.debug(`Gtags on ${docPathsStr} in "${docs.folder.name}"`);
+  const cmd = 'gtags-update.sh ' + docPathsStr;
   try {
     await subprocess.executeSubprocess(cmd, { cwd: gtagsDir });
   } catch (err: unknown) {
-    await vscode.window.showErrorMessage(`gtags update failed: ${err}`);
+    log.error(`gtags update failed: ${err}`);
   }
 }
 
