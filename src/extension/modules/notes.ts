@@ -1,9 +1,13 @@
 import type { ExtensionContext, TextEditor } from 'vscode';
-import { workspace, commands, ViewColumn, window } from 'vscode';
+import { Uri, workspace, commands, ViewColumn, window } from 'vscode';
+import { assertNotNull } from '../../library/exception';
+import * as nodejs from '../../library/nodejs';
 
-import { listenAsyncWrapped } from './exception';
+import { listenAsyncWrapped, registerAsyncCommandWrapped } from './exception';
+import { getWorkspaceFolderByName } from './fileUtils';
 import { Modules } from './module';
 import { getVisibleEditor } from './windowUtils';
+import * as luxon from 'luxon';
 
 async function onEditorChanged(editor: TextEditor | undefined) {
   if (!editor) return;
@@ -27,9 +31,39 @@ async function onEditorChanged(editor: TextEditor | undefined) {
   editor.show(editor.viewColumn);
 }
 
+async function newNote() {
+  const config = workspace.getConfiguration();
+
+  let rootPath = workspace.rootPath;
+  assertNotNull(rootPath, 'No workspace folder is opened');
+  if ((workspace.workspaceFolders?.length ?? 1) > 1) {
+    // multiple workspace folders
+    const folderName = config.get<string>('qcfg.newNote.folder');
+    assertNotNull(
+      folderName,
+      `"qcfg.newNote.folder" not defined for multi-folder workspace`,
+    );
+    const folder = getWorkspaceFolderByName(folderName);
+    assertNotNull(folder, `There is no workspace folder "${folderName}"`);
+    rootPath = folder.uri.fsPath;
+  }
+
+  const path = config.get<string>('qcfg.newNote.path');
+  assertNotNull(path, `"qcfg.newNote.path" not defined`);
+  const fileName = luxon.DateTime.now().toFormat('yyyy-MM-dd HH-mm');
+  const newFile = Uri.parse(
+    'untitled:' + nodejs.path.join(rootPath, path, fileName + '.md'),
+  );
+  const document = await workspace.openTextDocument(newFile);
+  await window.showTextDocument(document);
+  await commands.executeCommand('workbench.action.files.save');
+  await commands.executeCommand('fileutils.renameFile');
+}
+
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
     listenAsyncWrapped(window.onDidChangeActiveTextEditor, onEditorChanged),
+    registerAsyncCommandWrapped('qcfg.newNote', newNote),
   );
 }
 

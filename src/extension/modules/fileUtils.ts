@@ -60,6 +60,16 @@ export function getDocumentWorkspaceFolder(fileName: string) {
   return docRoot ? docRoot.workspaceFolder : undefined;
 }
 
+export function getWorkspaceFolderByName(
+  name: string,
+): WorkspaceFolder | undefined {
+  assertNotNull(workspace.workspaceFolders, 'No workspace folders');
+  for (const folder of workspace.workspaceFolders) {
+    if (folder.name === name) return folder;
+  }
+  return undefined;
+}
+
 export const exists = nodejs.util.promisify(nodejs.fs.exists);
 export const realPath = nodejs.util.promisify(nodejs.fs.realpath);
 
