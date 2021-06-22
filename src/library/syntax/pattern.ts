@@ -3,14 +3,14 @@ import { assert, assertNotNull } from '../exception';
 import { izip } from '../tsUtils';
 
 export interface SymbolRule {
-  type: SymbolType;
+  type: string;
   pattern: NodePattern;
 }
 
-interface NodePattern {
-  type: SyntaxType;
+export interface NodePattern {
+  type: string;
   isSymbolName?: boolean;
-  searchInside?: boolean;
+  isCompound?: boolean;
 
   children?: NodePattern[];
   // fromEnd?: boolean;
@@ -24,6 +24,9 @@ function matchSymbol(
   const searchNodes: SyntaxNode[] = [];
 
   if (node.type !== pattern.type) return;
+  if (pattern.isSymbolName) {
+    nameNode = node;
+  }
 
   if (pattern.children) {
     if (pattern.children.length > node.namedChildren.length) return;
@@ -34,11 +37,10 @@ function matchSymbol(
     )) {
       const childMatch = matchSymbol(child, childPat);
       if (!childMatch) return;
-      assert(
-        !(childMatch.nameNode && nameNode),
-        'Multiple nodes define symbol name',
-      );
-      nameNode = childMatch.nameNode;
+      if (childMatch.nameNode) {
+        assert(!nameNode, 'Multiple nodes define symbol name');
+        nameNode = childMatch.nameNode;
+      }
       searchNodes.push(...childMatch.searchNodes);
     }
   }
@@ -46,7 +48,7 @@ function matchSymbol(
   return { nameNode, searchNodes };
 }
 
-function findSymbols(
+export function findSymbols(
   node: SyntaxNode,
   rules: SymbolRule[],
   symbols: SyntaxSymbol[],
@@ -57,7 +59,7 @@ function findSymbols(
     assertNotNull(match.nameNode, 'Did not find name node');
 
     const nameNode = match.nameNode;
-    const sym = {
+    const sym: SyntaxSymbol = {
       type: rule.type,
       name: nameNode.text,
       nameRange: { start: nameNode.startPosition, end: nameNode.endPosition },

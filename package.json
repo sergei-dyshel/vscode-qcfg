@@ -406,6 +406,10 @@
       {
         "command": "qcfg.shrinkSelectionFaster",
         "title": "qcfg: Shrink selection faster"
+      },
+      {
+        "command": "qcfg.symbolDb.create",
+        "title": "qcfg: Create symbol DB"
       }
     ],
     "keybindings": [

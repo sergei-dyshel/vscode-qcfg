@@ -6,12 +6,16 @@ export type SyntaxType =
   | 'class_definition'
   | 'declaration'
   | 'decorated_definition'
+  | 'field_identifier'
+  | 'function_declaration'
   | 'function_declarator'
   | 'function_definition'
   | 'identifier'
+  | 'method_declaration'
   | 'namespace_identifier'
   | 'number_literal'
   | 'object'
+  | 'parameter_list'
   | 'preproc_include'
   | 'primitive_type'
   | 'scoped_identifier'
@@ -25,7 +29,9 @@ export type SyntaxType =
   | 'type_declaration'
   | 'type_descriptor'
   | 'type_qualifier'
-  | 'type_spec';
+  | 'type_spec'
+  | 'var_declaration'
+  | 'var_spec';
 
 declare module 'tree-sitter' {
   // eslint-disable-next-line @typescript-eslint/no-shadow

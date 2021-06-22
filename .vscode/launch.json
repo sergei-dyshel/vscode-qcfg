@@ -3,23 +3,41 @@
 // Hover to view descriptions of existing attributes.
 // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
 {
-	"version": "0.2.0",
-	"configurations": [{
-			"name": "Run Extension",
-			"type": "extensionHost",
-			"request": "launch",
-			"runtimeExecutable": "${execPath}",
-			"args": [
-				"--extensionDevelopmentPath=${workspaceFolder}"
-			],
-			"outFiles": [
-				"${workspaceFolder}/dist/extension.js"
-			],
-			"preLaunchTask": "npm: compile",
-			"skipFiles": [
-					"<node_internals>/**/*.js",
-					"${workspaceFolder}/node_modules/**/*.js",
-			]
-		}
-	]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "protocol": "inspector",
+      "name": "Launch Program",
+      "program": "${workspaceFolder}/dist/syntaxDump.js",
+      "sourceMaps": true,
+      //   "console": "integratedTerminal",
+      "args": [
+        "-l",
+        "go",
+        "-f",
+        "/local/home/sergei/workplace/cor/src/bxtest/bxtest.go",
+        "symbols"
+      ],
+      //   "runtimeExecutable": "/Applications/Code - OSS.app/Contents/MacOS/Electron",
+      "runtimeExecutable": "${workspaceFolder}/electron-node.sh",
+      "runtimeArgs": ["--no-deprecation"],
+      "skipFiles": ["<node_internals>/**"],
+      "preLaunchTask": "npm: compile"
+    },
+    {
+      "name": "Run Extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
+      "outFiles": ["${workspaceFolder}/dist/extension.js"],
+      "preLaunchTask": "npm: compile",
+      "skipFiles": [
+        "<node_internals>/**/*.js",
+        "${workspaceFolder}/node_modules/**/*.js"
+      ]
+    }
+  ]
 }

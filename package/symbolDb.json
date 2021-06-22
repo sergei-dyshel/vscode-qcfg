@@ -1,0 +1,10 @@
+{
+  "contributes": {
+    "commands": [
+      {
+        "command": "qcfg.symbolDb.create",
+        "title": "qcfg: Create symbol DB"
+      }
+    ]
+  }
+}
