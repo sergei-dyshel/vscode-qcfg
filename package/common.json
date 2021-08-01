@@ -96,6 +96,10 @@
         "title": "qcfg: Select next text edit"
       },
       {
+        "command": "qcfg.edit.lastLocation",
+        "title": "qcfg: Go to last edit location"
+      },
+      {
         "command": "qcfg.openRecent.sameWindow",
         "title": "qcfg: Open recent workspace (SAME window)"
       },
@@ -117,6 +121,11 @@
       {
         "key": "alt+i",
         "command": "qcfg.edit.next",
+        "when": "editorFocus"
+      },
+      {
+        "key": "cmd+m",
+        "command": "qcfg.edit.lastLocation",
         "when": "editorFocus"
       },
       {

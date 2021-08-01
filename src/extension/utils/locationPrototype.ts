@@ -13,6 +13,7 @@ declare module 'vscode' {
       preserveFocus?: boolean;
       preview?: boolean;
     }) => Promise<TextEditor>;
+    startLocation: Location;
 
     equals: (other: Location) => boolean;
     toString: () => string;
@@ -46,3 +47,10 @@ Location.prototype.equals = function (this: Location, other: Location) {
 Location.prototype.toString = function (this: Location) {
   return `${this.uri}:${this.range}`;
 };
+
+Object.defineProperty(Location.prototype, 'startLocation', {
+  get() {
+    const this_ = this as Location;
+    return new Location(this_.uri, this_.range.start);
+  },
+});

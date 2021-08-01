@@ -2,7 +2,6 @@
 
 import type {
   ExtensionContext,
-  Selection,
   TextDocument,
   TextDocumentChangeEvent,
   TextDocumentContentChangeEvent,
@@ -10,7 +9,14 @@ import type {
   StatusBarItem,
   TextEditor,
 } from 'vscode';
-import { Range, workspace, window, StatusBarAlignment } from 'vscode';
+import {
+  Range,
+  workspace,
+  window,
+  StatusBarAlignment,
+  Location,
+  Selection,
+} from 'vscode';
 import { listenWrapped, registerSyncCommandWrapped } from './exception';
 import { Logger } from '../../library/logging';
 import { DefaultMap } from '../../library/tsUtils';
@@ -21,7 +27,7 @@ import { LiveRange } from './liveLocation';
 import { offsetPosition } from './textUtils';
 import { NumRange } from './documentUtils';
 import { formatString } from '../../library/stringUtils';
-import { CheckError } from '../../library/exception';
+import { CheckError, checkNotNull } from '../../library/exception';
 
 const HISTORY_SIZE = 20;
 
@@ -36,6 +42,7 @@ class DocumentHistory {
   private readonly ranges: LiveRange[] = [];
   private index = 0;
   private savedSelection?: Selection;
+  private lastEdit?: Location;
 
   constructor(private readonly document: TextDocument) {
     const base = nodejs.path.parse(document.fileName).base;
@@ -50,7 +57,12 @@ class DocumentHistory {
     return this.index;
   }
 
+  get lastEditLocation() {
+    return this.lastEdit;
+  }
+
   processTextChange(change: TextDocumentContentChangeEvent) {
+    this.lastEdit = new Location(this.document.uri, change.range.start);
     if (change.text.length === 0) return;
     this.log.trace(change);
     const top = this.ranges.top;
@@ -177,6 +189,16 @@ function goForward() {
   startHistoryNavigation(docHistory);
 }
 
+function goLastEdit() {
+  const editor = getActiveTextEditor();
+  const document = editor.document;
+  const docHistory = history.get(document);
+  const lastEdit = docHistory.lastEditLocation;
+  checkNotNull(lastEdit, 'No edits were done yet');
+  editor.selection = new Selection(lastEdit.range.start, lastEdit.range.start);
+  editor.revealRange(lastEdit.range);
+}
+
 function activate(context: ExtensionContext) {
   status = window.createStatusBarItem(StatusBarAlignment.Right);
   status.color = 'yellow';
@@ -193,6 +215,7 @@ function activate(context: ExtensionContext) {
     ),
     registerSyncCommandWrapped('qcfg.edit.previous', goBackward),
     registerSyncCommandWrapped('qcfg.edit.next', goForward),
+    registerSyncCommandWrapped('qcfg.edit.lastLocation', goLastEdit),
   );
 }
 
