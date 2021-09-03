@@ -397,10 +397,8 @@ function reverseSelection() {
 let status: StatusBarItem | undefined;
 
 function activate(extContext: ExtensionContext) {
-  status = window.createStatusBarItem({
-    id: 'qcfgTreeMode',
-    name: 'qcfg: Tree mode',
-  });
+  status = window.createStatusBarItem('qcfgTreeMode');
+  status.name = 'qcfg: Tree mode';
   status.text = 'Tree mode';
   status.backgroundColor = new ThemeColor('statusBarItem.errorBackground');
 
