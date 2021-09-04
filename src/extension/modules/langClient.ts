@@ -106,12 +106,12 @@ class CclsWrapper extends LanguageClientWrapper {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  async runRefreshCmd() {
+  override async runRefreshCmd() {
     return commands.executeCommand('ccls.reload').ignoreResult();
   }
 
   // eslint-disable-next-line class-methods-use-this
-  async runRestartCmd() {
+  override async runRestartCmd() {
     return commands.executeCommand('ccls.restart').ignoreResult();
   }
 }
@@ -122,7 +122,7 @@ class ClangdWrapper extends LanguageClientWrapper {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  async runRestartCmd() {
+  override async runRestartCmd() {
     return commands.executeCommand('clangd-vscode.restart').ignoreResult();
   }
 }

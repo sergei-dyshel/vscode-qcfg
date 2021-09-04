@@ -391,7 +391,7 @@ export class DefaultMap<K, V> extends Map<K, V> {
     super();
   }
 
-  get(key: K): V {
+  override get(key: K): V {
     let val = super.get(key);
     if (val) return val;
     val = this.factory(key);

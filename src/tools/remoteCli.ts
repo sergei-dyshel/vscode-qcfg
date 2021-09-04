@@ -72,7 +72,7 @@ class IdentifyAction extends CliAction {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   onDefineParameters() {}
 
-  async onExecute() {
+  override async onExecute() {
     await super.onExecute();
     console.log(this.cli.multiClient.clients);
   }
@@ -98,7 +98,7 @@ class ReloadAction extends CliAction {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   onDefineParameters() {}
 
-  async onExecute() {
+  override async onExecute() {
     await super.onExecute();
     if (this.cli.instance === Instance.ALL)
       await this.cli.multiClient.sendNoResult('reloadWindow', {});
@@ -127,7 +127,7 @@ class CommandAction extends CliAction {
     });
   }
 
-  async onExecute() {
+  override async onExecute() {
     await super.onExecute();
     if (this.cli.instance === Instance.ALL)
       await this.cli.multiClient.sendNoResult('executeCommand', {
@@ -182,7 +182,7 @@ class OpenAction extends CliAction {
     });
   }
 
-  async onExecute() {
+  override async onExecute() {
     await super.onExecute();
     const absfile = nodejs.path.resolve(this.cli.folder, this.fileParam.value!);
     assert(
@@ -226,7 +226,7 @@ class OpenSshAction extends CliAction {
     });
   }
 
-  async onExecute() {
+  override async onExecute() {
     await super.onExecute();
     assert(
       this.cli.instance !== Instance.ALL,
@@ -299,7 +299,7 @@ class Cli extends CommandLineParser {
     }
   }
 
-  protected async onExecute() {
+  protected override async onExecute() {
     const handler = new StreamHandler('stderr', process.stderr);
     handler.level = LogLevel.NOTICE - this.verbose.value!;
     handler.formatOptions = { preset: 'short' };

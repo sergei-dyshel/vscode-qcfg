@@ -256,7 +256,7 @@ export class TaskCancelledError extends Error {
     super(`Task ${taskName} was cancelled`);
   }
 
-  name = 'TaskCancelledError';
+  override name = 'TaskCancelledError';
 }
 
 function activate(context: ExtensionContext) {

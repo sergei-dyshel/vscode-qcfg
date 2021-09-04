@@ -87,7 +87,7 @@ class Cli extends CommandLineParser {
     });
   }
 
-  protected async onExecute() {
+  protected override async onExecute() {
     const handler = new StreamHandler('stderr', process.stderr);
     handler.level = LogLevel.NOTICE - this.verbose.value!;
     handler.formatOptions = { preset: 'short' };

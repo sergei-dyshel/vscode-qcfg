@@ -288,7 +288,7 @@ export class TerminalTask extends BaseQcfgTask {
   protected taskRun?: TaskRun;
 
   constructor(
-    protected params: TerminalTaskParams,
+    protected override params: TerminalTaskParams,
     info: FetchInfo,
     context: TaskContext,
   ) {
@@ -418,7 +418,7 @@ export class ProcessTask extends BaseQcfgTask {
   private readonly parseTag?: RegExp;
 
   constructor(
-    protected params: ProcessTaskParams,
+    protected override params: ProcessTaskParams,
     info: FetchInfo,
     context: TaskContext,
   ) {

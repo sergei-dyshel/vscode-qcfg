@@ -68,7 +68,7 @@ export class IdentifiedClient extends RemoteClient {
     super(tcpPort);
   }
 
-  toString() {
+  override toString() {
     return `RemoteClient(port=${this.port})`;
   }
 

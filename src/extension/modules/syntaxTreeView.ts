@@ -183,7 +183,7 @@ class SyntaxTreeViewNode extends StaticTreeNode {
     return str(obj);
   }
 
-  get children(): SyntaxTreeViewNode[] {
+  override get children(): SyntaxTreeViewNode[] {
     if (this.syntaxNode.namedChildCount > 0 && super.children.length === 0) {
       for (let i = 0; i < this.syntaxNode.namedChildCount; ++i)
         this.addChild(
