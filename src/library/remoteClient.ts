@@ -42,7 +42,7 @@ export class RemoteClient {
         .then((res: any) => {
           if ('error' in res) {
             this.log.debug('Received error', res.error);
-            throw new Error(res.error);
+            throw new Error(res.error as string);
           }
           if ('result' in res) {
             this.log.debug('Received result', res.result);
