@@ -1,5 +1,5 @@
-import { TextDocument, Uri } from 'vscode';
-import { workspace } from 'vscode';
+import type { TextDocument } from 'vscode';
+import { Uri, workspace } from 'vscode';
 import { fileMatch } from '../../library/glob';
 import { mapNonNull } from '../../library/tsUtils';
 import type { Condition, Rule, RuleConfig } from './configRules.model';

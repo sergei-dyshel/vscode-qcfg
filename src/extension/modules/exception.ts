@@ -160,6 +160,7 @@ export function handleStd(func: () => Promise<void>): void {
  * Execute command and handle errors with standardly
  */
 export function executeCommandHandled(command: string, ...rest: any[]) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   handleAsyncStd(commands.executeCommand(command, ...rest));
 }
 

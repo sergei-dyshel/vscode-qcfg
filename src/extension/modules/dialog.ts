@@ -109,7 +109,7 @@ export async function selectFromList<T>(
   const onDidSelectItem = onItemSelected
     ? (qpItem: QuickPickItem) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        onItemSelected((qpItem as any).item);
+        onItemSelected((qpItem as any).item as T);
       }
     : undefined;
   const selected = await window.showQuickPick(qpItems, {
@@ -130,7 +130,7 @@ export async function selectMultipleFromList<T>(
   const onDidSelectItem = onItemSelected
     ? (qpItem: QuickPickItem) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        onItemSelected((qpItem as any).item);
+        onItemSelected((qpItem as any).item as T);
       }
     : undefined;
   const selected = await window.showQuickPick(qpItems, {

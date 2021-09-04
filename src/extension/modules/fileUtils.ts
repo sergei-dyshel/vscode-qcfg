@@ -25,6 +25,7 @@ export const globSync = glob.sync;
 export const globAsync: (
   pattern: string,
   options?: glob.IOptions,
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 ) => Promise<string[]> = nodejs.util.promisify(require('glob'));
 
 export function getTempFile() {
@@ -112,8 +113,7 @@ export async function openTagLocation(
   const mustOpenNewEditor = !editor || editor.document.uri.fsPath !== filePath;
   const document = mustOpenNewEditor
     ? await workspace.openTextDocument(filePath)
-    : // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
-      editor?.document!;
+    : editor.document;
 
   if (options.tag) {
     assertNull(options.column, 'Can not specify tag and column together');
@@ -139,8 +139,8 @@ export async function openTagLocation(
     });
     return;
   }
-  editor!.selection = selection;
-  editor!.revealRange(editor!.selection);
+  editor.selection = selection;
+  editor.revealRange(editor.selection);
 }
 
 export enum FileWatcherEvent {

@@ -198,6 +198,7 @@ function formatMessageStr(fmt: string, args: unknown[]) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     typeof arg === 'object' ? str(arg) : (arg as any),
   );
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   return formatString(fmt, ...normalizedArgs);
 }
 

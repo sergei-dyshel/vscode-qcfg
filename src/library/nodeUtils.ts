@@ -14,6 +14,7 @@ export class Timer {
     this.timer = setTimeout(() => {
       this.timer = undefined;
       this.type = undefined;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       callback(...args);
     }, ms);
   }

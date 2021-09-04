@@ -96,10 +96,10 @@ async function getInfo(editor: TextEditor) {
     try {
       const upstream = await nodegit.Branch.upstream(branch);
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-      const remoteName = await (nodegit.Branch as any).remoteName(
+      const remoteName = (await (nodegit.Branch as any).remoteName(
         repo,
         upstream.name(),
-      );
+      )) as string;
       info.branch.upstream = {
         name: shortenRemoteBranch(upstream.shorthand(), remoteName),
         remote: await getRemoteInfo(repo, remoteName),

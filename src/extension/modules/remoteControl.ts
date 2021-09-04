@@ -93,7 +93,7 @@ function activate(_context: ExtensionContext) {
   const server = net.createServer((socket) => {
     socket.on('data', () => {
       handleErrors((data) => {
-        handleCmd(data.toString());
+        handleCmd(data.toString() as string);
       });
     });
   });

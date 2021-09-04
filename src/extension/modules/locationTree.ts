@@ -114,7 +114,7 @@ namespace TreeBuilder {
       const [subcomp, subtree] = tree.entries().next().value;
       if (!(subtree instanceof Map)) continue;
       forest.delete(comp);
-      forest.set(path.join(comp, subcomp), subtree);
+      forest.set(path.join(comp, subcomp as string), subtree);
     }
   }
 

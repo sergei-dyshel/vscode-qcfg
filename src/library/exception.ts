@@ -27,7 +27,7 @@ export function assertInstanceOf<T extends B, B>(
   value: B,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   cls: new (..._: any[]) => T,
-  ...args: any[]
+  ...args: unknown[]
 ): T {
   assert(value instanceof cls, ...args);
   return value;

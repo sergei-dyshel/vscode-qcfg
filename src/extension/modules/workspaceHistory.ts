@@ -86,7 +86,7 @@ async function getWorkspaceConfig(root: string): Promise<string> {
           return expandTitle(
             root,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (settings as any)['window.title'] ?? getDefaultTitle(),
+            ((settings as any)['window.title'] ?? getDefaultTitle()) as string,
           );
         } catch (err: unknown) {
           log.debug(`Error parsing ${filePath}: ${err}`);
@@ -98,8 +98,11 @@ async function getWorkspaceConfig(root: string): Promise<string> {
     case FileType.SymbolicLink:
       try {
         const settings = await parseJsonFileAsync(root);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return expandTitle(root, (settings as any).settings['window.title']);
+        return expandTitle(
+          root,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (settings as any).settings['window.title'] as string,
+        );
       } catch (err: unknown) {
         log.debug(`Error parsing ${root}: ${err}`);
         return nodejs.path.basename(nodejs.path.dirname(root));

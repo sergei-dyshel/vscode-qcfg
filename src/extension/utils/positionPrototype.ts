@@ -40,7 +40,8 @@ Position.prototype.withCharacter = function (
 
 Object.defineProperty(Position.prototype, 'asRange', {
   get() {
-    return new Range(this, this);
+    const this_ = this as Position;
+    return new Range(this_, this_);
   },
 });
 
