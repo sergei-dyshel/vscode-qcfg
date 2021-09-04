@@ -48,8 +48,8 @@ function fetchLangConfigs() {
   }
 
   // for some reason """ is configured is block comment
-  if (langConfigs.python?.comments) {
-    langConfigs.python.comments.blockComment = undefined;
+  if (langConfigs['python']?.comments) {
+    langConfigs['python'].comments.blockComment = undefined;
   }
 
   log.info('Got language configs for', Object.keys(langConfigs));
@@ -57,10 +57,8 @@ function fetchLangConfigs() {
 }
 
 /* TODO: move extension parsing to separate file */
-const langConfigs: Record<
-  string,
-  vscode.LanguageConfiguration | undefined
-> = {};
+const langConfigs: Record<string, vscode.LanguageConfiguration | undefined> =
+  {};
 
 function activate(_: vscode.ExtensionContext) {
   fetchLangConfigs();

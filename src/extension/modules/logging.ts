@@ -122,7 +122,7 @@ class OutputChannelHandler extends TextLogHandler {
   constructor() {
     super('OutputPanel');
     const envLevel = LogLevels.fromString(
-      process.env.VSCODE_QCFG_LOGLEVEL ?? 'info',
+      process.env['VSCODE_QCFG_LOGLEVEL'] ?? 'info',
     );
     this.level = envLevel !== undefined ? envLevel : LogLevel.INFO;
     /// #if DEBUG

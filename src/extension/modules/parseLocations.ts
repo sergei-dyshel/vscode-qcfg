@@ -8,10 +8,12 @@ import { Subprocess } from './subprocess';
 import { mapAsync } from './async';
 import { offsetPosition } from './textUtils';
 
-const VIMGREP_PARSE_REGEX = /^(?<file>.+?):(?<line>\d+)(:(?<column>\d+))?(: (?<text>.*))?$/;
+const VIMGREP_PARSE_REGEX =
+  /^(?<file>.+?):(?<line>\d+)(:(?<column>\d+))?(: (?<text>.*))?$/;
 
 /* gtags line has whitespace-trimmed text so we can't use to for tag searching */
-const GTAGS_PARSE_REGEX = /(?<tag>\S+)\s+(?<line>[0-9]+)\s+(?<file>\S+) (?<text>.*)/;
+const GTAGS_PARSE_REGEX =
+  /(?<tag>\S+)\s+(?<line>[0-9]+)\s+(?<file>\S+) (?<text>.*)/;
 
 export enum ParseLocationFormat {
   VIMGREP,
@@ -46,16 +48,16 @@ export function parseLocation(
   const match = regex.exec(line);
   if (!match) return;
   const groups = match.groups!;
-  if (!groups.file) return;
+  if (!groups['file']) return;
   let column = 1;
-  if (!groups.column) {
+  if (!groups['column']) {
     column = 1;
   } else {
-    column = Number(groups.column);
+    column = Number(groups['column']);
   }
   return new Location(
-    Uri.file(nodejs.path.resolve(base, groups.file)),
-    new Position(Number(groups.line) - 1, column - 1),
+    Uri.file(nodejs.path.resolve(base, groups['file'])),
+    new Position(Number(groups['line']) - 1, column - 1),
   );
 }
 

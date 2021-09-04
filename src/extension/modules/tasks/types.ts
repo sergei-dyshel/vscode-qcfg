@@ -84,33 +84,33 @@ export class TaskContext {
     this.workspaceFolder = folder ?? currentWorkspaceFolder();
     if (editor) {
       const document = editor.document;
-      this.vars.absoluteFile = document.fileName;
+      this.vars['absoluteFile'] = document.fileName;
       if (!editor.selection.isEmpty)
-        this.vars.selectedText = document.getText(editor.selection);
+        this.vars['selectedText'] = document.getText(editor.selection);
       if (editor.selection.isEmpty)
-        this.vars.lineNumber = String(editor.selection.active.line + 1);
+        this.vars['lineNumber'] = String(editor.selection.active.line + 1);
       if (!editor.selection.isEmpty) {
-        this.vars.cursorWord = document.getText(editor.selection);
+        this.vars['cursorWord'] = document.getText(editor.selection);
       } else {
         const wordCtx = getCursorWordContext();
         if (wordCtx) {
-          this.vars.cursorWord = wordCtx.word;
+          this.vars['cursorWord'] = wordCtx.word;
         }
       }
       if (this.workspaceFolder) {
-        this.vars.workspaceFolder = this.workspaceFolder.uri.fsPath;
-        this.vars.relativeFile = nodejs.path.relative(
-          this.vars.workspaceFolder,
+        this.vars['workspaceFolder'] = this.workspaceFolder.uri.fsPath;
+        this.vars['relativeFile'] = nodejs.path.relative(
+          this.vars['workspaceFolder'],
           document.fileName,
         );
-        this.vars.relativeFileNoExt = this.vars.relativeFile.replace(
+        this.vars['relativeFileNoExt'] = this.vars['relativeFile'].replace(
           /\.[^/.]+$/,
           '',
         );
       }
     }
     if (workspace.workspaceFolders)
-      this.vars.allWorkspaceFolders = workspace.workspaceFolders
+      this.vars['allWorkspaceFolders'] = workspace.workspaceFolders
         .map((wf) => wf.uri.fsPath)
         .join(' ');
   }

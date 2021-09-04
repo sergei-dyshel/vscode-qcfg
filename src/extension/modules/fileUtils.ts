@@ -33,7 +33,7 @@ export function getTempFile() {
 
 export function expandHome(path: string): string {
   if (path.startsWith('~/')) {
-    return nodejs.path.join(process.env.HOME!, path.slice(2));
+    return nodejs.path.join(process.env['HOME']!, path.slice(2));
   }
   return path;
 }

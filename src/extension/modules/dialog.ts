@@ -22,13 +22,13 @@ export async function inputWithHistory(
   const items: string[] = extContext.globalState.get(persistentKey, []);
   const quickPick = window.createQuickPick();
   quickPick.items = items.map((x) => ({ label: x }));
-  quickPick.buttons = [buttons.REMOVE];
+  quickPick.buttons = [buttons['REMOVE']];
 
   const selected = await new Promise<string | undefined>((resolve) => {
     const qp = window.createQuickPick();
     const qpItems: QuickPickItem[] = items.map((x) => ({ label: x }));
     qp.items = qpItems;
-    qp.buttons = [buttons.REMOVE];
+    qp.buttons = [buttons['REMOVE']];
     const onDidHideDisposer = qp.onDidHide(
       handleErrors(() => {
         resolve(undefined);
@@ -46,7 +46,7 @@ export async function inputWithHistory(
     qp.onDidTriggerButton(
       handleErrorsAsync(async (quickInputButton: QuickInputButton) => {
         const button = quickInputButton as Button;
-        if (button !== buttons.REMOVE) {
+        if (button !== buttons['REMOVE']) {
           return;
         }
         const active = qp.activeItems[0];
@@ -242,7 +242,7 @@ export async function selectStringFromListMru(
 
 function activate(context: ExtensionContext) {
   extContext = context;
-  buttons.REMOVE = new Button('icons/remove-dark.svg', 'Remove');
+  buttons['REMOVE'] = new Button('icons/remove-dark.svg', 'Remove');
 }
 
 Modules.register(activate);
