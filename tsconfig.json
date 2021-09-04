@@ -14,7 +14,8 @@
     "allowSyntheticDefaultImports": true, // needed for webpack
     "strict": true,
     "noImplicitReturns": true,
-    "noImplicitOverride": true
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true
   },
   "exclude": ["webpack.config.js", "node_modules", "server"]
 }
