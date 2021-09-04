@@ -11,12 +11,13 @@ const config = {
   plugins: ['@typescript-eslint', 'import', 'only-warn'],
   extends: [
     'airbnb',
+    'eslint:recommended',
     'plugin:import/recommended',
     'plugin:@typescript-eslint/eslint-recommended',
     'plugin:@typescript-eslint/recommended-requiring-type-checking',
     'plugin:@typescript-eslint/recommended',
     'plugin:@typescript-eslint/all',
-    'prettier/@typescript-eslint',
+    'prettier',
   ],
   env: {
     es6: true,
