@@ -1,16 +1,21 @@
 'use strict';
 
-import type { ExtensionContext, QuickPickItem } from 'vscode';
-import { workspace, commands, Uri, FileType } from 'vscode';
+import type {
+  ExtensionContext,
+  QuickInputButton,
+  QuickPickItem,
+  QuickPickItemButtonEvent,
+} from 'vscode';
+import { ThemeIcon, window, workspace, commands, Uri, FileType } from 'vscode';
 import { Modules } from './module';
 import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
-import { selectFromList } from './dialog';
 import { registerAsyncCommandWrapped, handleStd } from './exception';
 import { expandTemplate } from '../../library/stringUtils';
-import { mapAsyncNoThrowAndZip } from './async';
+import { mapAsyncNoThrow } from './async';
 import { parseJsonFileAsync } from './json';
 import { assert } from '../../library/exception';
+import { showQuickPick } from '../utils/quickPick';
 
 let extContext: ExtensionContext;
 const PERSISTENT_KEY = 'workspaceHistory';
@@ -74,64 +79,104 @@ function getDefaultTitle() {
   return (data.globalValue ?? data.defaultValue) as string;
 }
 
-async function getWorkspaceConfig(root: string): Promise<string> {
-  const stat = await workspace.fs.stat(Uri.file(root));
+async function parseFolderTitle(root: string) {
+  const filePath = nodejs.path.join(root, '.vscode', 'settings.json');
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const settings = await parseJsonFileAsync(filePath);
+    return expandTitle(
+      root,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ((settings as any)['window.title'] ?? getDefaultTitle()) as string,
+    );
+  } catch (err: unknown) {
+    log.debug(`Error parsing ${filePath}: ${err}`);
+    return nodejs.path.basename(root);
+  }
+}
+
+async function parseWorkspaceTitle(root: string) {
+  try {
+    const settings = await parseJsonFileAsync(root);
+    return expandTitle(
+      root,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (settings as any).settings['window.title'] as string,
+    );
+  } catch (err: unknown) {
+    log.debug(`Error parsing ${root}: ${err}`);
+    return nodejs.path.basename(nodejs.path.dirname(root));
+  }
+}
+
+interface Item extends QuickPickItem {
+  path: string;
+}
+
+async function parseTitle(path: string) {
+  const stat = await workspace.fs.stat(Uri.file(path));
   switch (stat.type) {
     case FileType.Directory:
-      {
-        const filePath = nodejs.path.join(root, '.vscode', 'settings.json');
-        try {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          const settings = await parseJsonFileAsync(filePath);
-          return expandTitle(
-            root,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ((settings as any)['window.title'] ?? getDefaultTitle()) as string,
-          );
-        } catch (err: unknown) {
-          log.debug(`Error parsing ${filePath}: ${err}`);
-          return nodejs.path.basename(root);
-        }
-      }
-      break;
+      return {
+        title: await parseFolderTitle(path),
+        isWorkspace: false,
+      };
     case FileType.File:
     case FileType.SymbolicLink:
-      try {
-        const settings = await parseJsonFileAsync(root);
-        return expandTitle(
-          root,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (settings as any).settings['window.title'] as string,
-        );
-      } catch (err: unknown) {
-        log.debug(`Error parsing ${root}: ${err}`);
-        return nodejs.path.basename(nodejs.path.dirname(root));
-      }
-      break;
+      return { title: await parseWorkspaceTitle(path), isWorkspace: true };
     default:
       throw new Error('Workspace is not workspace folder nor .code-workspace');
   }
 }
 
-function toQuickPickItem(rootAndTitle: [string, string]): QuickPickItem {
-  const [root, title] = rootAndTitle;
-  return { label: title, description: root };
+async function toItem(path: string): Promise<Item> {
+  const { title, isWorkspace } = await parseTitle(path);
+  const icon = isWorkspace ? 'folder-library' : 'folder';
+  const label = `$(${icon}) ${title}`;
+  const button: QuickInputButton = {
+    iconPath: new ThemeIcon('close'),
+    tooltip: 'Remove from history',
+  };
+  return { path, label, description: path, buttons: [button] };
 }
 
 async function openFromHistory(newWindow: boolean) {
   const history: string[] = extContext.globalState.get(PERSISTENT_KEY, []);
+  const removedItems: string[] = [];
   const current = getWorkspaceFile();
-  const histWithTitles = await mapAsyncNoThrowAndZip(
+  const qp = window.createQuickPick<Item>();
+  qp.items = await mapAsyncNoThrow(
     history.filter((file) => file !== current),
-    getWorkspaceConfig,
+    toItem,
   );
-  const rootAndTitle = await selectFromList(histWithTitles, toQuickPickItem, {
-    matchOnDescription: true,
-    placeHolder: newWindow ? 'Open in NEW window' : 'Open in SAME window',
+  qp.matchOnDescription = true;
+  qp.placeholder = newWindow ? 'Open in NEW window' : 'Open in SAME window';
+  qp.onDidTriggerItemButton((event: QuickPickItemButtonEvent<Item>) => {
+    const path = event.item.path;
+    log.debug(`Removing ${path} from folders/workspaces history`);
+    history.removeFirst(path);
+    removedItems.push(path);
+    qp.items = qp.items.filter((item) => item !== event.item);
   });
-  if (!rootAndTitle) return;
-  const [root] = rootAndTitle;
-  await commands.executeCommand('vscode.openFolder', Uri.file(root), newWindow);
+  const selected = await showQuickPick(qp);
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (!removedItems.isEmpty) {
+    const ok = await window.showWarningMessage(
+      'Do you really want to remove from history?',
+      { modal: true, detail: removedItems.join('\n') },
+      'Ok',
+    );
+    if (ok) {
+      await extContext.globalState.update(PERSISTENT_KEY, history);
+    }
+  }
+  if (selected) {
+    await commands.executeCommand(
+      'vscode.openFolder',
+      Uri.file(qp.selectedItems[0].path),
+      newWindow,
+    );
+  }
 }
 
 function activate(context: ExtensionContext) {
