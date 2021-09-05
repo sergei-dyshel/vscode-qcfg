@@ -148,7 +148,7 @@ class OutputChannelHandler extends TextLogHandler {
 function getLogFileName() {
   const EXT = 'vscode-qcfg.log';
   const wsFile = workspace.workspaceFile;
-  if (wsFile) {
+  if (wsFile && nodejs.fs.existsSync(wsFile.fsPath)) {
     const data = nodejs.path.parse(wsFile.fsPath);
     return `${data.dir}/.${data.name}.${EXT}`;
   }
