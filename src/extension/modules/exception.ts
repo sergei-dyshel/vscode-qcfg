@@ -36,10 +36,22 @@ export function stdErrorHandler(error: any, prefix?: string): never {
       ''.padStart(10, ' ') + error.message + ''.padEnd(10, ' '),
       { errorBackground: true },
     );
-  } else if (error instanceof Error) {
-    const stack = simplifyErrorStack(error.stack ?? '');
-    log.error(`${prefix}${stack}`);
-  } else log.error(`${prefix}${String(error)}`);
+  } else {
+    log.error(`${prefix}${String(error)}`);
+    if (error instanceof Error) {
+      const stack = simplifyErrorStack(error.stack ?? '');
+      log.error(stack);
+    }
+    const SHOW_OUTPUT = 'Show output panel';
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    window
+      .showErrorMessage(`${prefix}${error}`, SHOW_OUTPUT)
+      .then((item: string | undefined) => {
+        if (SHOW_OUTPUT === item) {
+          executeCommandHandled('qcfg.log.show');
+        }
+      });
+  }
   throw error;
 }
 
@@ -180,16 +192,7 @@ function handleErrorDuringCommand(command: string, error: any) {
   try {
     stdErrorHandler(error, `Command "${command}": `);
   } catch (err: unknown) {
-    if (err instanceof CheckError) return;
-    const SHOW_OUTPUT = 'Show output panel';
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    window
-      .showErrorMessage(`*${command}*: ${err}`, SHOW_OUTPUT)
-      .then((item: string | undefined) => {
-        if (SHOW_OUTPUT === item) {
-          executeCommandHandled('qcfg.log.show');
-        }
-      });
+    // prevent vscode showing error popup again
   }
 }
 
