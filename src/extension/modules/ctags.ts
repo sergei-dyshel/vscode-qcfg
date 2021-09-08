@@ -127,11 +127,16 @@ export async function getDocumentSymbolsFromCtags(
 }
 
 function tag2Symbol(tag: TagInfo, document: TextDocument): DocumentSymbol {
-  const regexp = new RegExp('\\b' + tag.name + '\\b');
+  let pattern: RegExp | string = tag.name;
+  try {
+    pattern = new RegExp('\\b' + tag.name + '\\b');
+  } catch (err: unknown) {
+    // tag.name is not alhpa-numberic literal
+  }
   const range = adjustRangeInParsedPosition(
     document,
     document.lineAt(tag.line - 1).range.start,
-    regexp,
+    pattern,
   );
   const kind = ctagsToVscodeKind[tag.kind] ?? SymbolKind.File;
   return new DocumentSymbol(tag.name, tag.scope ?? '', kind, range, range);

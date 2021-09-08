@@ -10,9 +10,9 @@ interface String {
 String.prototype.searchFirst = function (
   this: string,
   pattern: string | RegExp,
-): [number, number] | undefined {
+): [start: number, length: number] | undefined {
   if (typeof pattern === 'string') {
-    const start = this.search(pattern);
+    const start = this.indexOf(pattern);
     if (start === -1) return;
     return [start, pattern.length];
   }
