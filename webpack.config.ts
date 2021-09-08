@@ -50,6 +50,9 @@ const generateConfig = (env: any): webpack.Configuration => ({
     /Debug\/iconv\.node/,
     /Debug\/nodegit.node/,
     '../package',
+    // these 2 trigger "Module not found" warning in webpack (deps of "ws")
+    'bufferutil',
+    'utf-8-validate',
     // add native modules which cause trouble with webpack
     'node-window-manager',
   ],
