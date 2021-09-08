@@ -28,7 +28,18 @@ import {
   CheckError,
 } from '../../library/exception';
 
-export function stdErrorHandler(error: any, prefix?: string): never {
+let errorMessagesEnabled = true;
+
+export interface StdErrorHandlerOptions {
+  /** Show error message despite being temporarily disabled */
+  alwaysShowMessage: boolean;
+}
+
+export function stdErrorHandler(
+  error: any,
+  prefix?: string,
+  options?: StdErrorHandlerOptions,
+): never {
   prefix = prefix ?? '';
   if (error instanceof CheckError) {
     log.info(`${prefix}Check failed: ${error.message}`);
@@ -42,15 +53,17 @@ export function stdErrorHandler(error: any, prefix?: string): never {
       const stack = simplifyErrorStack(error.stack ?? '');
       log.error(stack);
     }
-    const SHOW_OUTPUT = 'Show output panel';
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    window
-      .showErrorMessage(`${prefix}${error}`, SHOW_OUTPUT)
-      .then((item: string | undefined) => {
-        if (SHOW_OUTPUT === item) {
-          executeCommandHandled('qcfg.log.show');
-        }
-      });
+    if (errorMessagesEnabled || options?.alwaysShowMessage) {
+      const SHOW_OUTPUT = 'Show output panel';
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      window
+        .showErrorMessage(`${prefix}${error}`, SHOW_OUTPUT)
+        .then((item: string | undefined) => {
+          if (SHOW_OUTPUT === item) {
+            executeCommandHandled('qcfg.log.show');
+          }
+        });
+    }
   }
   throw error;
 }
@@ -190,7 +203,9 @@ function simplifyErrorStack(stack: string) {
 
 function handleErrorDuringCommand(command: string, error: any) {
   try {
-    stdErrorHandler(error, `Command "${command}": `);
+    stdErrorHandler(error, `Command "${command}": `, {
+      alwaysShowMessage: true,
+    });
   } catch (err: unknown) {
     // prevent vscode showing error popup again
   }
@@ -203,8 +218,21 @@ function createStdErrorHandler(prefix?: string) {
 function handleErrorDuringEvent(error: any) {
   stdErrorHandler(error, 'Event: ');
 }
-function activate(_: ExtensionContext) {
+
+async function toggleErrorMessages() {
+  errorMessagesEnabled = !errorMessagesEnabled;
+  const text = errorMessagesEnabled ? 'ENABLED' : 'DISABLED';
+  return window.showInformationMessage('qcfg: Error messages ' + text);
+}
+
+function activate(context: ExtensionContext) {
   console.info('Extension path: ' + extensionPath);
+  context.subscriptions.push(
+    registerAsyncCommandWrapped(
+      'qcfg.errors.toggleMessages',
+      toggleErrorMessages,
+    ),
+  );
 }
 
 Modules.register(activate);

@@ -84,6 +84,10 @@
         "title": "qcfg: Show output panel with log"
       },
       {
+        "command": "qcfg.errors.toggleMessages",
+        "title": "qcfg: Toggle displaying qcfg errors as messages"
+      },
+      {
         "command": "qcfg.fuzzySearch",
         "title": "qcfg: Fuzzy search lines"
       },
