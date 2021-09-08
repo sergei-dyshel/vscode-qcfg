@@ -46,6 +46,7 @@ import * as treeSelectionRanges from './treeSelectionRanges';
 import * as expandSelection from './expandSelection';
 import * as commandUtils from './commandUtils';
 import * as codeActions from './codeActions';
+import * as updateChecker from './updateChecker';
 
 export const ALL_MODULES = {
   language,
@@ -94,4 +95,5 @@ export const ALL_MODULES = {
   expandSelection,
   commandUtils,
   codeActions,
+  updateChecker,
 };

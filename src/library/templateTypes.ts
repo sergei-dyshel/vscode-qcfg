@@ -14,6 +14,13 @@ export type PromiseType<T extends Promise<unknown>> = T extends Promise<infer R>
   ? R
   : unknown;
 
-export type FirstParameter<
-  T extends (arg1: any, ...args: any) => any
-> = T extends (arg1: infer P, ...args: any) => any ? P : never;
+export type FirstParameter<T extends (arg1: any, ...args: any) => any> =
+  T extends (arg1: infer P, ...args: any) => any ? P : never;
+
+export function discardReturn<T extends AnyFunction>(
+  func: T,
+): (...args: Parameters<T>) => void {
+  return (...args: Parameters<T>) => {
+    func(...args);
+  };
+}
