@@ -38,6 +38,8 @@ const configs: Record<string, SyntaxConfig | undefined> = {
   python: { parser: require('tree-sitter-python') },
   c: { parser: require('tree-sitter-c') },
   cpp: { parser: require('tree-sitter-cpp') },
+  javascript: { parser: require('tree-sitter-javascript') },
+  json: { parser: require('tree-sitter-json') },
   typescript: { parser: require('tree-sitter-typescript/typescript') },
   shellscript: { parser: require('tree-sitter-bash') },
   go: { parser: require('tree-sitter-go') },
