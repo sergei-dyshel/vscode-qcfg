@@ -75,7 +75,7 @@ function windowStateChanged(state: WindowState) {
     const newWindowId = tryGetActiveWindowId();
     if (newWindowId !== windowId) {
       if (!windowId) {
-        log.info(`Current window id: ${windowId}`);
+        log.info(`Current window id: ${newWindowId}`);
       } else {
         log.info(`Current window id changed ${windowId} => ${newWindowId}`);
       }
@@ -87,7 +87,7 @@ function windowStateChanged(state: WindowState) {
 function activate(context: ExtensionContext) {
   if (window.state.focused) {
     windowId = tryGetActiveWindowId();
-    log.info(`Current window id: ${windowId}`);
+    if (windowId) log.info(`Current window id: ${windowId}`);
   }
 
   context.subscriptions.push(
