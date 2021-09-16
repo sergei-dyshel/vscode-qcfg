@@ -10,6 +10,7 @@ import { Modules } from './module';
 import { getTempFile } from './fileUtils';
 import { runSubprocessAndWait } from './subprocess';
 import { assert } from '../../library/exception';
+import { handleErrorsAsync } from './exception';
 
 const SCHEME = 'qsshfs';
 
@@ -30,15 +31,18 @@ class WatchedFile {
 const watchedFiles: WatchedFile[] = [];
 
 function encodeUri(host: string, path: string) {
-  return Uri.parse('').with({ scheme: SCHEME, path: `/${host}/${path}` });
+  return Uri.parse('').with({
+    scheme: SCHEME,
+    authority: host,
+    path: '/' + path,
+    query: !path.startsWith('/') ? 'home' : undefined,
+  });
 }
 
 function decodeUri(uri: Uri) {
   assert(uri.scheme === SCHEME);
-  const parts = uri.path.split('/');
-  assert(parts[0] === '');
-  const path = parts.slice(2).join('/');
-  return [parts[1], path];
+  const path = uri.query === 'home' ? uri.path.substr(1) : uri.path;
+  return [uri.authority, path];
 }
 
 function uriToArg(uri: Uri) {
@@ -70,16 +74,18 @@ const sshFsProvider: FileSystemProvider = {
     ]);
     const attrs = result.stdout.split('\\n');
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const type: FileType = ({
-      'regular file': FileType.File,
-      directory: FileType.Directory,
-      'symbolik link': FileType.SymbolicLink,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any)[attrs[0]]!;
-    const ctime = attrs[1] === '?' ? 0 : ((attrs[1] as unknown) as number);
-    const mtime = attrs[2] === '?' ? 0 : ((attrs[1] as unknown) as number);
+    const type: FileType = (
+      {
+        'regular file': FileType.File,
+        directory: FileType.Directory,
+        'symbolik link': FileType.SymbolicLink,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any
+    )[attrs[0]]!;
+    const ctime = attrs[1] === '?' ? 0 : (attrs[1] as unknown as number);
+    const mtime = attrs[2] === '?' ? 0 : (attrs[1] as unknown as number);
     const size =
-      type === FileType.Directory ? 0 : ((attrs[3] as unknown) as number);
+      type === FileType.Directory ? 0 : (attrs[3] as unknown as number);
 
     return { type, ctime, mtime, size };
   },
@@ -94,11 +100,11 @@ const sshFsProvider: FileSystemProvider = {
     throw new Error('unimplemented');
   },
 
-  async readFile(uri: Uri): Promise<Uint8Array> {
+  readFile: handleErrorsAsync(async (uri: Uri): Promise<Uint8Array> => {
     const temp = getTempFile();
     await runSubprocessAndWait(['scp', uriToArg(uri), temp]);
     return workspace.fs.readFile(Uri.file(temp));
-  },
+  }),
 
   async writeFile(
     uri: Uri,
