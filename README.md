@@ -197,6 +197,16 @@ custom error handlers which show popup notification. Some errors are not
 critical (like command precondition) and are shown in a less intrusive in status
 bar.
 
+# Troubleshooting
+
+## Requesting Accessibility on MacOS
+
+The dialog box asks to request accessibility for
+`Code - OSS Helper (Renderer).app`. The app is not in `/Applications` but in
+`/Applications/Code - OSS.app/Contents/Frameworks/Code - OSS Helper (Renderer).app`.
+
+One way to select it is to use "Go to location" by pressing `Cmd+Shift+G`.
+
 # Future plans
 
 - More features!

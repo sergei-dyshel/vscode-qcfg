@@ -42,6 +42,7 @@ export function focusWindow() {
     return;
   }
   const win = new Window(windowId);
+  windowManager.requestAccessibility();
   win.show();
   win.bringToTop();
   handleAsyncStd(
