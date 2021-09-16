@@ -135,7 +135,8 @@ class DocumentContext {
         this.tree = undefined;
         if (this.promiseContext) this.promiseContext.reject(err as Error);
         this.promiseContext = undefined;
-        break;
+        this.isUpdating = false;
+        throw err;
       }
     }
     this.isUpdating = false;
