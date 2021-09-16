@@ -63,12 +63,12 @@
       },
       {
         "key": "alt+r",
-        "command": "qcfg.search.word",
+        "command": "qcfg.search.word.allFolders",
         "when": "editorTextFocus && !editorHasSelection"
       },
       {
         "key": "alt+shift+r",
-        "command": "qcfg.search.word.allFolders",
+        "command": "qcfg.search.word",
         "when": "editorTextFocus && !editorHasSelection"
       },
       {
