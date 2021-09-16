@@ -110,11 +110,11 @@ export function groupBy<K, T>(
 }
 
 export function maxNumber<T>(...args: T[]): T {
-  return (args.map((x) => (x as unknown) as number).max() as unknown) as T;
+  return args.map((x) => x as unknown as number).max() as unknown as T;
 }
 
 export function minNumber<T>(...args: T[]): T {
-  return (args.map((x) => (x as unknown) as number).min() as unknown) as T;
+  return args.map((x) => x as unknown as number).min() as unknown as T;
 }
 
 export class NumberIterator implements IterableIterator<number> {
@@ -202,7 +202,17 @@ declare global {
     /** Last element of array (consistent with stack-like push()/pop() ). */
     readonly top: T | undefined;
     readonly isEmpty: boolean;
+    /**
+     * Minimum element of array.
+     *
+     * @param cmd see {@linkcode max}
+     */
     min: (cmp?: (x: T, y: T) => number) => T | undefined;
+    /**
+     * Maximum element of array.
+     *
+     * @param cmd returns negative if `x < y`, 0 if `x === y` and positive if `x > y`
+     */
     max: (cmp?: (x: T, y: T) => number) => T | undefined;
     equals: (that: T[], eq?: (x: T, y: T) => boolean) => boolean;
     removeFirst: (val: T) => boolean;
@@ -323,8 +333,8 @@ Array.prototype.removeFirst = function <T>(this: T[], val: T): boolean {
 };
 
 function numberCompare<T>(x: T, y: T): number {
-  const xNum = (x as unknown) as number;
-  const yNum = (y as unknown) as number;
+  const xNum = x as unknown as number;
+  const yNum = y as unknown as number;
   if (xNum < yNum) return -1;
   if (xNum === yNum) return 0;
   return 1;
@@ -358,7 +368,7 @@ Array.prototype.min = function <T>(
   cmp: (x: T, y: T) => number = numberCompare,
 ) {
   if (!this.length) return;
-  return this.reduce((x, y) => (cmp(x, y) === -1 ? x : y));
+  return this.reduce((x, y) => (cmp(x, y) < 0 ? x : y));
 };
 
 Array.prototype.max = function <T>(
@@ -366,7 +376,7 @@ Array.prototype.max = function <T>(
   cmp: (x: T, y: T) => number = numberCompare,
 ) {
   if (!this.length) return;
-  return this.reduce((x, y) => (cmp(x, y) === -1 ? y : x));
+  return this.reduce((x, y) => (cmp(x, y) < 0 ? y : x));
 };
 
 Array.prototype.clear = function <T>(this: T[]) {
