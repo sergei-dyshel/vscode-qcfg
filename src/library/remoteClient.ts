@@ -8,6 +8,7 @@ import type { FirstParameter } from './templateTypes';
 import { Logger, log } from './logging';
 import * as nodejs from './nodejs';
 import { filterNonNull } from './tsUtils';
+import { stringify } from './stringify';
 
 const START_PORT = 7890;
 
@@ -41,8 +42,8 @@ export class RemoteClient {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .then((res: any) => {
           if ('error' in res) {
-            this.log.debug('Received error', res.error);
-            throw new Error(res.error as string);
+            this.log.error('Received error', res.error);
+            throw new Error(stringify(res.error));
           }
           if ('result' in res) {
             this.log.debug('Received result', res.result);

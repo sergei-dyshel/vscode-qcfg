@@ -9,7 +9,11 @@ import { Modules } from './module';
 import { log } from '../../library/logging';
 import { focusWindow } from './windowState';
 import { stringify } from '../../library/stringify';
-import { handleAsyncStd, registerSyncCommandWrapped } from './exception';
+import {
+  handleAsyncStd,
+  handleErrorsAsync,
+  registerSyncCommandWrapped,
+} from './exception';
 import { openRemoteFileViaSsh } from './sshFs';
 
 export type RemoteProtocol = typeof protocol;
@@ -83,10 +87,10 @@ function activate(context: ExtensionContext) {
   const loggedProtocol: AbstractProtocol = mapObjectValues(
     protocol as AbstractProtocol,
     (name, handler) =>
-      async (arg: any): Promise<any> => {
+      handleErrorsAsync(async (arg: any): Promise<any> => {
         log.info(`Received request "${name}" with arguments ${stringify(arg)}`);
         return handler(arg);
-      },
+      }),
   );
   const server = new jayson.Server(loggedProtocol);
   const tcpServer = server.tcp();
