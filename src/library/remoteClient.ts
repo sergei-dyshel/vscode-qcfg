@@ -111,6 +111,18 @@ export class MultiClient {
   }
 
   /**
+   * Get default client
+   */
+  getDefault(): IdentifiedClient | undefined {
+    const client = this.clients.max(
+      (x, y) => x.info.setDefaultTimestamp - y.info.setDefaultTimestamp,
+    );
+    if (!client) return undefined;
+    if (client.info.setDefaultTimestamp === 0) return undefined;
+    return client;
+  }
+
+  /**
    * Try connecting to all ports and return set of working clients
    */
   static async connect(): Promise<MultiClient> {

@@ -12,17 +12,26 @@ import {
 import { StreamHandler } from '../library/loggingHandlers';
 import { LogLevel, registerLogHandler } from '../library/logging';
 import * as nodejs from '../library/nodejs';
-import type { RemoteClient, IdentifiedClient } from '../library/remoteClient';
+import type { IdentifiedClient } from '../library/remoteClient';
 import { MultiClient } from '../library/remoteClient';
 import { abort, assert } from '../library/exception';
 import { parseNumber } from '../library/stringUtils';
 
+/** Logic to select server for running command */
 enum Instance {
-  AUTO = 'auto',
+  /** Not specified, will cause exception if not overriden */
+  UNDEFINED = 'undefined',
+  /** Choose server with workspace folder matching provided or current folder */
   FOLDER = 'folder',
+  /** Like {@linkcode FOLDER} but otherwise like {@linkcode DEFAULT} */
+  FOLDER_OR_DEFAULT = 'folder_or_default',
+  /** Choose default server */
+  DEFAULT = 'default',
+  /** Run on all servers */
   ALL = 'all',
 }
 
+/** Base class for all subcommands */
 abstract class CliAction extends CommandLineAction {
   protected client?: IdentifiedClient;
 
@@ -30,7 +39,9 @@ abstract class CliAction extends CommandLineAction {
     protected cli: Cli,
     private readonly options: ICommandLineActionOptions,
     private readonly opts?: {
-      autoInstance?: Instance;
+      /** How to choose instance if not specified on command line */
+      autoInstance?: Exclude<Instance, Instance.UNDEFINED>;
+      /** Command can run on all instances (simultanously) */
       allAllowed?: boolean;
     },
   ) {
@@ -38,17 +49,21 @@ abstract class CliAction extends CommandLineAction {
   }
 
   async onExecute() {
-    if (this.cli.instance === Instance.ALL) {
-      assert(
-        this.opts?.allAllowed,
-        `Can not use ${this.options.actionName} with multiple instances`,
-      );
-    } else if (this.cli.instance === Instance.AUTO)
-      this.client = this.cli.getClient(
-        this.opts?.autoInstance ??
-          abort(`Must specify instance for ${this.options.actionName} command`),
-      );
-    else this.client = this.cli.getClient(this.cli.instance);
+    if (this.cli.instance === Instance.UNDEFINED)
+      this.cli.instance = this.opts?.autoInstance ?? Instance.UNDEFINED;
+    switch (this.cli.instance) {
+      case Instance.ALL:
+        assert(
+          this.opts?.allAllowed,
+          `Can not use ${this.options.actionName} with multiple instances`,
+        );
+        break;
+      case Instance.UNDEFINED:
+        abort('Must specify instance for this command');
+        break;
+      default:
+        this.client = this.cli.getClient(this.cli.instance);
+    }
     return Promise.resolve();
   }
 }
@@ -65,6 +80,7 @@ class IdentifyAction extends CliAction {
       },
       {
         autoInstance: Instance.ALL,
+        allAllowed: true,
       },
     );
   }
@@ -75,6 +91,13 @@ class IdentifyAction extends CliAction {
   override async onExecute() {
     await super.onExecute();
     console.log(this.cli.multiClient.clients);
+
+    if (this.client) console.log('Selected client:', this.client.info);
+    else console.log('No client selected');
+
+    const defaultClient = this.cli.multiClient.getDefault();
+    if (defaultClient) console.log('Default client:', defaultClient.info);
+    else console.log('No default client');
   }
 }
 
@@ -211,7 +234,7 @@ class OpenSshAction extends CliAction {
         documentation: 'Open file via SSH in given instance',
       },
       {
-        autoInstance: Instance.FOLDER,
+        autoInstance: Instance.FOLDER_OR_DEFAULT,
       },
     );
   }
@@ -242,7 +265,6 @@ class Cli extends CommandLineParser {
   folder!: string;
   instance!: Instance;
   multiClient!: MultiClient;
-  client?: RemoteClient;
 
   private verbose!: CommandLineIntegerParameter;
   private instanceParam!: CommandLineChoiceParameter;
@@ -272,30 +294,39 @@ class Cli extends CommandLineParser {
       parameterLongName: '--instance',
       parameterShortName: '-i',
       description: 'Choose instance to send command to',
-      alternatives: Object.keys(Instance).map((x) => x.toLowerCase()),
-      defaultValue: Instance.AUTO,
+      alternatives: [Instance.FOLDER, Instance.DEFAULT].map((x) =>
+        x.toLowerCase(),
+      ),
     });
     this.folderParam = this.defineStringParameter({
       parameterLongName: '--folder',
-      parameterShortName: '-f',
+      parameterShortName: '-F',
       description: 'Find instance by workspace folder',
       argumentName: 'FOLDER',
     });
   }
 
-  getClient(instance: Instance): IdentifiedClient {
+  getClient(
+    instance: Exclude<Instance, Instance.UNDEFINED | Instance.ALL>,
+  ): IdentifiedClient {
     switch (instance) {
       case Instance.FOLDER:
         return (
           this.multiClient.findByFolder(this.folder) ??
           abort('Could not find server with workspace folder', this.folder)
         );
-      case Instance.AUTO:
-        abort('Must specify client selection other than AUTO');
-        break;
-      case Instance.ALL:
-        abort('Should not select client with instance value of ALL');
-        break;
+      case Instance.DEFAULT:
+        return (
+          this.multiClient.getDefault() ?? abort('No server was set as default')
+        );
+      case Instance.FOLDER_OR_DEFAULT:
+        return (
+          this.multiClient.findByFolder(this.folder) ??
+          this.multiClient.getDefault() ??
+          abort(
+            `Could not find server with workspace folder "${this.folder}" and no server was set as default`,
+          )
+        );
     }
   }
 
@@ -307,9 +338,10 @@ class Cli extends CommandLineParser {
 
     this.multiClient = await MultiClient.connect();
 
-    this.instance = this.instanceParam.value! as Instance;
+    this.instance = (this.instanceParam.value ??
+      Instance.UNDEFINED) as Instance;
     this.folder = this.folderParam.value ?? process.cwd();
-    if (this.instance === Instance.AUTO) {
+    if (this.instance === Instance.UNDEFINED) {
       if (this.folderParam.value) this.instance = Instance.FOLDER;
     }
     return super.onExecute();

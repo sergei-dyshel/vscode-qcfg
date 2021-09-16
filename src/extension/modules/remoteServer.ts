@@ -9,7 +9,7 @@ import { Modules } from './module';
 import { log } from '../../library/logging';
 import { focusWindow } from './windowState';
 import { stringify } from '../../library/stringify';
-import { handleAsyncStd } from './exception';
+import { handleAsyncStd, registerSyncCommandWrapped } from './exception';
 import { openRemoteFileViaSsh } from './sshFs';
 
 export type RemoteProtocol = typeof protocol;
@@ -20,6 +20,7 @@ export interface IdentifyResult {
   workspaceFile: string | undefined;
   workspaceName: string | undefined;
   workspaceFolders: string[] | undefined;
+  setDefaultTimestamp: number;
 }
 
 const protocol = {
@@ -30,6 +31,7 @@ const protocol = {
       workspaceFolders: workspace.workspaceFolders?.map(
         (folder) => folder.uri.fsPath,
       ),
+      setDefaultTimestamp: lastSetDefaultTimestamp,
     });
   },
   async openFile(arg: {
@@ -71,13 +73,20 @@ type Handler = (arg: any) => Promise<any>;
 
 type AbstractProtocol = Record<string, Handler>;
 
-function activate(_: ExtensionContext) {
+let lastSetDefaultTimestamp = 0;
+
+function setDefaultServer() {
+  lastSetDefaultTimestamp = Date.now();
+}
+
+function activate(context: ExtensionContext) {
   const loggedProtocol: AbstractProtocol = mapObjectValues(
     protocol as AbstractProtocol,
-    (name, handler) => async (arg: any): Promise<any> => {
-      log.info(`Received request "${name}" with arguments ${stringify(arg)}`);
-      return handler(arg);
-    },
+    (name, handler) =>
+      async (arg: any): Promise<any> => {
+        log.info(`Received request "${name}" with arguments ${stringify(arg)}`);
+        return handler(arg);
+      },
   );
   const server = new jayson.Server(loggedProtocol);
   const tcpServer = server.tcp();
@@ -100,6 +109,16 @@ function activate(_: ExtensionContext) {
       log.info(`Error listening on port ${port}: ${error.message}`);
     }
   });
+
+  context.subscriptions.push(
+    registerSyncCommandWrapped('qcfg.remote.setDefault', setDefaultServer),
+  );
+
+  if (
+    workspace.getConfiguration().get<boolean>('qcfg.remote.setDefault', false)
+  ) {
+    setDefaultServer();
+  }
 }
 
 Modules.register(activate);

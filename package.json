@@ -120,6 +120,10 @@
         "title": "qcfg: Focus window"
       },
       {
+        "command": "qcfg.remote.setDefault",
+        "title": "qcfg: Set as default remote server"
+      },
+      {
         "command": "qcfg.tasks.show",
         "title": "qcfg: Show list of tasks"
       },
@@ -2013,6 +2017,10 @@
           "type": "string",
           "description": "Workspace configuration direcotry for vsdode-qcfg specific features, relative to workspace file's directory or the only folder by default",
           "default": "."
+        },
+        "qcfg.remote.setDefault": {
+          "type": "boolean",
+          "description": "Per-workspace/folder setting to set it as default remote server"
         },
         "qcfg.alternate.mapping": {
           "type": "object",
