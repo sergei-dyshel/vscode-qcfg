@@ -1,9 +1,10 @@
 'use strict';
 
-import type { StatusBarItem, TextEditor, ViewColumn } from 'vscode';
-import { ThemeColor, window } from 'vscode';
+import type { StatusBarItem, TextEditor, ViewColumn, ThemeColor } from 'vscode';
+import { window } from 'vscode';
 
 import { Timer } from '../../library/nodeUtils';
+import { setStatusBarErrorBackground } from '../utils/statusBar';
 import { handleAsyncStd } from './exception';
 
 const DEFAULT_TIMEOUT_MS = 3000;
@@ -20,10 +21,7 @@ export function showStatusBarMessage(
   statusBarMsgItem = window.createStatusBarItem();
   statusBarMsgItem.text = text;
   statusBarMsgItem.color = options?.color;
-  if (options?.errorBackground)
-    statusBarMsgItem.backgroundColor = new ThemeColor(
-      'statusBarItem.errorBackground',
-    );
+  if (options?.errorBackground) setStatusBarErrorBackground(statusBarMsgItem);
 
   const timeoutMs = options?.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   timer.setTimeout(timeoutMs, clearStatusBarMessage);

@@ -8,7 +8,7 @@ import type {
   Selection,
   StatusBarItem,
 } from 'vscode';
-import { Range, window, workspace, ThemeColor } from 'vscode';
+import { Range, window, workspace } from 'vscode';
 import {
   registerAsyncCommandWrapped,
   listenAsyncWrapped,
@@ -26,6 +26,7 @@ import {
 } from '../../library/exception';
 import { RangeDecorator } from '../utils/decoration';
 import type { SyntaxNode, SyntaxTree } from '../../library/syntax';
+import { setStatusBarErrorBackground } from '../utils/statusBar';
 
 const WHEN_CLAUSE = 'qcfgTreeMode';
 
@@ -153,9 +154,10 @@ function inferSelectedNodes(
   return new SelectedNodes(firstItem, lastItem, selection.isReversed);
 }
 
-function parseDirection(
-  direction: string,
-): { reversed: boolean; terminal: boolean } {
+function parseDirection(direction: string): {
+  reversed: boolean;
+  terminal: boolean;
+} {
   switch (direction) {
     case 'first':
       return { reversed: true, terminal: true };
@@ -400,7 +402,7 @@ function activate(extContext: ExtensionContext) {
   status = window.createStatusBarItem('qcfgTreeMode');
   status.name = 'qcfg: Tree mode';
   status.text = 'Tree mode';
-  status.backgroundColor = new ThemeColor('statusBarItem.errorBackground');
+  setStatusBarErrorBackground(status);
 
   extContext.subscriptions.push(
     listenAsyncWrapped(

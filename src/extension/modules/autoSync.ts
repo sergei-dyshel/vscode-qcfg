@@ -8,10 +8,11 @@ import { registerSyncCommandWrapped } from './exception';
 import { Modules } from './module';
 import { sendDidSaveToLangClients } from './langClient';
 import type { ExtensionContext, StatusBarItem } from 'vscode';
-import { ThemeColor, workspace, window } from 'vscode';
+import { workspace, window } from 'vscode';
 
 import * as nodejs from '../../library/nodejs';
 import { exists } from './fileUtils';
+import { setStatusBarErrorBackground } from '../utils/statusBar';
 
 enum State {
   OFF,
@@ -80,7 +81,7 @@ async function onSaveAll(docs: saveAll.DocumentsInFolder) {
     : `${command} ${paths}`;
   log.debug('Running ', cmd);
   try {
-    status.backgroundColor = new ThemeColor('statusBarItem.errorBackground');
+    setStatusBarErrorBackground(status);
     status.text += ' (syncing)';
     await subprocess.executeSubprocess(cmd, { cwd: folder });
     if (state === State.ERROR) {
