@@ -2,6 +2,12 @@
 
 import { MultiDictionary } from 'typescript-collections';
 
+const emptyRegExp = new RegExp('');
+
+export function isEmptyRegExp(re: RegExp) {
+  return re.source === emptyRegExp.source;
+}
+
 export function mapObjectValues<V, R>(
   obj: Record<string, V>,
   func: (k: string, v: V) => R,
@@ -244,6 +250,7 @@ declare global {
 
   interface Map<K, V> {
     keySet: () => Set<K>;
+    modify: (key: K, fn: (value: V | undefined) => V) => void;
   }
 
   interface Promise<T> {
@@ -436,6 +443,7 @@ Map.prototype.modify = function <K, V>(
 ) {
   this.set(key, fn(this.get(key)));
 };
+
 Promise.prototype.ignoreResult = async function <T>(
   this: Promise<T>,
 ): Promise<void> {

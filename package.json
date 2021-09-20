@@ -2133,6 +2133,37 @@
         "qcfg.newNote.path": {
           "type": "string",
           "description": "Path of notes directory relative to workspace folder root"
+        },
+        "qcfg.fileDiagnostics.show": {
+          "type": "boolean",
+          "scope": "language-overridable",
+          "description": "Whether do show per-file diagnostic counts in statusbar",
+          "default": true
+        },
+        "qcfg.fileDiagnostics.excludeMessage": {
+          "type": "string",
+          "scope": "language-overridable",
+          "description": "Exclude diagnostics whose message matches this pattern"
+        },
+        "qcfg.fileDiagnostics.excludeSource": {
+          "type": "string",
+          "scope": "language-overridable",
+          "description": "Exclude diagnostics whose source matches this pattern"
+        },
+        "qcfg.fileDiagnostics.excludeCodes": {
+          "type": "array",
+          "scope": "language-overridable",
+          "items": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "description": "Exclude diagnostics whose code matches any of these"
         }
       }
     },

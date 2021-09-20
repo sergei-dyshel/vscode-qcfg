@@ -30,6 +30,7 @@ import * as liveLocation from './liveLocation';
 import * as documentCache from './documentCache';
 import * as formatting from './formatting';
 import * as eslintDiagnostic from './eslintDiagnostic';
+import * as diagnostics from './diagnostics';
 import * as exception from './exception';
 import * as savedSearch from './savedSearch';
 import * as peekOutline from './peekOutline';
@@ -79,6 +80,7 @@ export const ALL_MODULES = {
   documentCache,
   formatting,
   eslintDiagnostic,
+  diagnostics,
   exception,
   savedSearch,
   peekOutline,

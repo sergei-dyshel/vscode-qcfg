@@ -7,9 +7,15 @@ import { listenWrapped } from './exception';
 import { Dictionary } from 'typescript-collections';
 import { log } from '../../library/logging';
 
+export function registerDocumentUriDict<V>(dict: Dictionary<Uri, V>) {
+  uriDicts.push(dict as Dictionary<Uri, unknown>);
+}
+
 // Private
 
 const openDocuments = new Dictionary<Uri, TextDocument>();
+
+const uriDicts: Array<Dictionary<Uri, unknown>> = [];
 
 function filterUri(uri: Uri) {
   const SCHEMES = ['git', 'gitfs', 'output'];
@@ -30,6 +36,7 @@ function onDidCloseTextDocument(document: TextDocument) {
   if (filterUri(document.uri)) return;
   log.debug('Closed text document ', document);
   openDocuments.remove(document.uri);
+  for (const map of uriDicts) map.remove(document.uri);
 }
 
 function activate(context: ExtensionContext) {
