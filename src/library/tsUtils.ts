@@ -396,18 +396,27 @@ Object.defineProperty(Array.prototype, 'isEmpty', {
   },
 });
 
+/** Mapping with default values */
 export class DefaultMap<K, V> extends Map<K, V> {
-  constructor(private readonly factory: (key: K) => V) {
+  /** `factory` - either default value and function that receives key and returns a value */
+  constructor(protected readonly factory: V | ((key: K) => V)) {
     super();
   }
 
   override get(key: K): V {
     let val = super.get(key);
     if (val) return val;
-    val = this.factory(key);
+    if (this.factory instanceof Function) val = this.factory(key);
+    else val = this.factory;
     this.set(key, val);
     return val;
   }
+
+  override modify: (
+    this: DefaultMap<K, V>,
+    key: K,
+    fn: (value: V) => V,
+  ) => void = Map.prototype.modify;
 }
 
 export function zipArrays<T1, T2>(a: T1[], b: T2[]): Array<[T1, T2]> {
@@ -420,6 +429,13 @@ Map.prototype.keySet = function <K, V>(this: Map<K, V>): Set<K> {
   return keys;
 };
 
+Map.prototype.modify = function <K, V>(
+  this: Map<K, V>,
+  key: K,
+  fn: (value: V | undefined) => V,
+) {
+  this.set(key, fn(this.get(key)));
+};
 Promise.prototype.ignoreResult = async function <T>(
   this: Promise<T>,
 ): Promise<void> {
