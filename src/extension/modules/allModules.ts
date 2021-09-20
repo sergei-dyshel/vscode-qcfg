@@ -29,7 +29,7 @@ import * as tasksMain from './tasks/main';
 import * as liveLocation from './liveLocation';
 import * as documentCache from './documentCache';
 import * as formatting from './formatting';
-import * as diagnostic from './diagnostic';
+import * as eslintDiagnostic from './eslintDiagnostic';
 import * as exception from './exception';
 import * as savedSearch from './savedSearch';
 import * as peekOutline from './peekOutline';
@@ -78,7 +78,7 @@ export const ALL_MODULES = {
   liveLocation,
   documentCache,
   formatting,
-  diagnostic,
+  eslintDiagnostic,
   exception,
   savedSearch,
   peekOutline,
