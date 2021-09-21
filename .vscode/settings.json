@@ -2,7 +2,10 @@
   "tabnine.trigger": "off",
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "[typescript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": true
+    }
   },
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
@@ -22,11 +25,5 @@
       "url": "vscode://schemas/vscode-extensions"
     }
   ],
-  "qcfg.tasks.workspace": {
-    "build": {
-      "command": "make install",
-      "flags": ["build"]
-    }
-  },
   "typescript.tsdk": "node_modules/typescript/lib"
 }
