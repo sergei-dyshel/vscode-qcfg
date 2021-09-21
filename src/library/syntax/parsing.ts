@@ -1,7 +1,7 @@
 import { TextBuffer } from 'superstring';
-import { Tree as SyntaxTree } from 'tree-sitter';
 // eslint-disable-next-line @typescript-eslint/no-duplicate-imports
 import * as SyntaxParser from 'tree-sitter';
+import { Tree as SyntaxTree } from 'tree-sitter';
 
 export { SyntaxTree };
 
@@ -12,7 +12,7 @@ export async function parseSyntax(
   const buf = new TextBuffer(text);
   const parser = getParser();
   parser.setLanguage(langParser);
-  const parserAsync = (parser as unknown) as ParserWithAsync;
+  const parserAsync = parser as unknown as ParserWithAsync;
   try {
     return await parserAsync.parseTextBuffer(buf, undefined, {
       syncOperationCount: 1000,

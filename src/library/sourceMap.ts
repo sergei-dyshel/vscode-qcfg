@@ -1,6 +1,6 @@
-import * as sourceMapSupport from 'source-map-support';
 import * as callsites from 'callsites';
 import * as path from 'path';
+import * as sourceMapSupport from 'source-map-support';
 
 sourceMapSupport.install();
 

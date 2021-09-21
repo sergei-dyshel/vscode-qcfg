@@ -1,18 +1,15 @@
-import type { ExtensionContext, TextEditor } from 'vscode';
-import { workspace, env, Uri, window } from 'vscode';
-
-import { Modules } from './module';
-
 import * as nodegit from 'nodegit';
-import { registerAsyncCommandWrapped } from './exception';
-import { getActiveTextEditor } from './utils';
-
-import * as nodejs from '../../library/nodejs';
-import { log } from '../../library/logging';
+import type { ExtensionContext, TextEditor } from 'vscode';
+import { env, Uri, window, workspace } from 'vscode';
 import { assert, assertNotNull } from '../../library/exception';
+import { log } from '../../library/logging';
+import * as nodejs from '../../library/nodejs';
+import { isSubPath } from '../../library/pathUtils';
 import { expandTemplate } from '../../library/stringUtils';
 import { selectFromListMru } from './dialog';
-import { isSubPath } from '../../library/pathUtils';
+import { registerAsyncCommandWrapped } from './exception';
+import { Modules } from './module';
+import { getActiveTextEditor } from './utils';
 
 const SHORT_SHA_LEN = 7;
 

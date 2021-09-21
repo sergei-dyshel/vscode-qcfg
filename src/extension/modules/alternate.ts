@@ -1,16 +1,16 @@
 'use strict';
 
-import type { ExtensionContext } from 'vscode';
-import { window, workspace, Uri, RelativePattern } from 'vscode';
-import * as fileUtils from './fileUtils';
 import * as path from 'path';
-import { getActiveTextEditor } from './utils';
-import { registerAsyncCommandWrapped } from './exception';
-import { Modules } from './module';
+import type { ExtensionContext } from 'vscode';
+import { RelativePattern, Uri, window, workspace } from 'vscode';
+import { assertNotNull } from '../../library/exception';
+import * as nodejs from '../../library/nodejs';
 import { baseName, stripExt } from '../../library/pathUtils';
 import { selectFromList } from './dialog';
-import * as nodejs from '../../library/nodejs';
-import { assertNotNull } from '../../library/exception';
+import { registerAsyncCommandWrapped } from './exception';
+import * as fileUtils from './fileUtils';
+import { Modules } from './module';
+import { getActiveTextEditor } from './utils';
 
 type Mapping = Record<string, string[]>;
 

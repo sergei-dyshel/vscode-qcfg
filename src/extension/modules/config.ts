@@ -1,14 +1,14 @@
 'use strict';
 
 import type { ConfigurationChangeEvent, ExtensionContext } from 'vscode';
-import { workspace, Disposable } from 'vscode';
-import { listenWrapped } from './exception';
-import { watchFile } from './fileUtils';
+import { Disposable, workspace } from 'vscode';
 import { log } from '../../library/logging';
-import { Modules } from './module';
 import * as nodejs from '../../library/nodejs';
 import { expandPath } from '../../library/pathUtils';
 import type { DisposableLike } from '../../library/types';
+import { listenWrapped } from './exception';
+import { watchFile } from './fileUtils';
+import { Modules } from './module';
 
 /**
  * Subscribe to configuration updates on section

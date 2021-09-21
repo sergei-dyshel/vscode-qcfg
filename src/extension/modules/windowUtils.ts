@@ -1,8 +1,7 @@
 'use strict';
 
-import type { StatusBarItem, TextEditor, ViewColumn, ThemeColor } from 'vscode';
+import type { StatusBarItem, TextEditor, ThemeColor, ViewColumn } from 'vscode';
 import { window } from 'vscode';
-
 import { Timer } from '../../library/nodeUtils';
 import { setStatusBarErrorBackground } from '../utils/statusBar';
 import { handleAsyncStd } from './exception';

@@ -1,36 +1,34 @@
 'use strict';
 
-import * as vscode from 'vscode';
-import * as fileUtils from './fileUtils';
-import * as saveAll from './saveAll';
-import { log, Logger } from '../../library/logging';
-import * as subprocess from './subprocess';
-import * as nodejs from '../../library/nodejs';
-import { PromiseQueue } from './async';
-import * as shellQuote from 'shell-quote';
-
+import RE2 from 're2';
 import * as readline from 'readline';
-import { isAnyLangClientRunning } from './langClient';
-import { getActiveTextEditor } from './utils';
+import * as shellQuote from 'shell-quote';
+import * as vscode from 'vscode';
+import { assert, assertNotNull } from '../../library/exception';
+import { log, Logger } from '../../library/logging';
+import * as nodejs from '../../library/nodejs';
 import {
-  parseNumber,
-  buildFuzzyPattern,
-  splitWithRemainder,
   buildAbbrevPattern,
+  buildFuzzyPattern,
+  parseNumber,
+  splitWithRemainder,
 } from '../../library/stringUtils';
+import { PromiseQueue } from './async';
 import {
-  registerAsyncCommandWrapped,
-  handleErrors,
   handleAsyncStd,
+  handleErrors,
+  registerAsyncCommandWrapped,
 } from './exception';
+import * as fileUtils from './fileUtils';
+import { wrapWithHistoryUpdate } from './history';
+import { isAnyLangClientRunning } from './langClient';
 import { Modules } from './module';
+import * as saveAll from './saveAll';
+import * as subprocess from './subprocess';
 import { runTaskAndGetLocations } from './tasks/main';
 import type { Params } from './tasks/params';
-import { TaskType, Flag, LocationFormat } from './tasks/params';
-
-import RE2 from 're2';
-import { assertNotNull, assert } from '../../library/exception';
-import { wrapWithHistoryUpdate } from './history';
+import { Flag, LocationFormat, TaskType } from './tasks/params';
+import { getActiveTextEditor } from './utils';
 
 async function findGtagsDir(dir: string) {
   for (;;) {

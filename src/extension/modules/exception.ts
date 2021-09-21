@@ -3,30 +3,29 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import type {
-  TextEditor,
-  TextEditorEdit,
   Event,
   ExtensionContext,
+  TextEditor,
+  TextEditorEdit,
 } from 'vscode';
-import { window, commands, extensions } from 'vscode';
-
-import type { DisposableLike } from '../../library/types';
+import { commands, extensions, window } from 'vscode';
+import {
+  CheckError,
+  wrapWithErrorHandler,
+  wrapWithErrorHandlerAsync,
+} from '../../library/exception';
 import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
 import { replaceAll } from '../../library/stringUtils';
-import { showStatusBarMessage } from './windowUtils';
 import type {
-  PromiseType,
-  AsyncFunction,
   AnyFunction,
+  AsyncFunction,
+  PromiseType,
   VoidFunction,
 } from '../../library/templateTypes';
+import type { DisposableLike } from '../../library/types';
 import { Modules } from './module';
-import {
-  wrapWithErrorHandler,
-  wrapWithErrorHandlerAsync,
-  CheckError,
-} from '../../library/exception';
+import { showStatusBarMessage } from './windowUtils';
 
 let errorMessagesEnabled = true;
 

@@ -1,27 +1,27 @@
 import type {
-  ExtensionContext,
-  CallHierarchyProvider,
-  TextDocument,
-  Position,
-  CancellationToken,
-  ProviderResult,
   CallHierarchyOutgoingCall,
+  CallHierarchyProvider,
+  CancellationToken,
   DocumentSymbol,
-  Uri,
+  ExtensionContext,
+  Position,
+  ProviderResult,
   Range,
+  TextDocument,
+  Uri,
 } from 'vscode';
 import {
-  languages,
-  CallHierarchyItem,
   CallHierarchyIncomingCall,
+  CallHierarchyItem,
+  languages,
   Location,
   workspace,
 } from 'vscode';
+import { concatArrays, filterNonNull } from '../../library/tsUtils';
+import { mapAsync } from './async';
 import { Modules } from './module';
 import { executeDocumentSymbolProvider } from './peekOutline';
 import { executeDefinitionProvider, executeReferenceProvider } from './search';
-import { mapAsync } from './async';
-import { filterNonNull, concatArrays } from '../../library/tsUtils';
 
 function symbolToCall(uri: Uri, symbol: DocumentSymbol): CallHierarchyItem {
   const relpath = workspace.asRelativePath(uri);

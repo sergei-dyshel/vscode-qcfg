@@ -1,9 +1,9 @@
 'use strict';
 
 import type { TextDocument, TextDocumentContentChangeEvent } from 'vscode';
-import { Range, Position } from 'vscode';
-import { maxNumber, minNumber } from '../../library/tsUtils';
+import { Position, Range } from 'vscode';
 import { assert } from '../../library/exception';
+import { maxNumber, minNumber } from '../../library/tsUtils';
 
 export class NumRange {
   constructor(readonly start: number, readonly end: number) {

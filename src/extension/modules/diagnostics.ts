@@ -1,25 +1,25 @@
-import { Modules } from './module';
+import { Dictionary } from 'typescript-collections';
 import type {
-  ExtensionContext,
-  DiagnosticChangeEvent,
-  StatusBarItem,
-  TextEditor,
   ConfigurationChangeEvent,
-  Uri,
+  DiagnosticChangeEvent,
+  ExtensionContext,
+  StatusBarItem,
   TextDocument,
+  TextEditor,
+  Uri,
 } from 'vscode';
 import {
-  workspace,
-  languages,
-  window,
-  StatusBarAlignment,
   DiagnosticSeverity,
+  languages,
+  StatusBarAlignment,
+  window,
+  workspace,
 } from 'vscode';
-import { listenWrapped } from './exception';
 import { DefaultMap, isEmptyRegExp } from '../../library/tsUtils';
 import { setStatusBarBackground } from '../utils/statusBar';
 import { registerDocumentUriDict } from './documentCache';
-import { Dictionary } from 'typescript-collections';
+import { listenWrapped } from './exception';
+import { Modules } from './module';
 
 let status!: StatusBarItem;
 const cache = new Dictionary<

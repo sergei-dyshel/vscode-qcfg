@@ -2,8 +2,8 @@
 
 import * as vscode from 'vscode';
 import { log } from '../../library/logging';
-import * as remoteControl from './remoteControl';
 import { parseNumber } from '../../library/stringUtils';
+import * as remoteControl from './remoteControl';
 
 let nextId = 0;
 

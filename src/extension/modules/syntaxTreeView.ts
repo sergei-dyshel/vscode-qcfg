@@ -3,25 +3,25 @@
 import type { SyntaxNode } from 'tree-sitter';
 import type {
   ExtensionContext,
+  Range,
   TextDocument,
   TextEditorSelectionChangeEvent,
   TreeItemLabel,
-  Range,
 } from 'vscode';
 import { window } from 'vscode';
+import { assert } from '../../library/exception';
+import { stringify as str } from '../../library/stringify';
+import { ellipsize } from '../../library/stringUtils';
 import {
+  listenAsyncWrapped,
   listenWrapped,
   registerAsyncCommandWrapped,
-  listenAsyncWrapped,
 } from './exception';
 import { Modules } from './module';
-import { ellipsize } from '../../library/stringUtils';
 import type { SyntaxTreeUpdatedEvent } from './syntaxTree';
 import { onSyntaxTreeUpdated, SyntaxTrees } from './syntaxTree';
 import type { TreeNode, TreeProvider } from './treeView';
 import { QcfgTreeView, StaticTreeNode } from './treeView';
-import { assert } from '../../library/exception';
-import { stringify as str } from '../../library/stringify';
 
 const ELLIPSIZE_LEN = 20;
 

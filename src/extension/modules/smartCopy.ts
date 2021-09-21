@@ -1,13 +1,12 @@
-import { Modules } from './module';
 import type { ExtensionContext, TextEditor } from 'vscode';
-import { ThemeColor, commands, env, Range, workspace } from 'vscode';
-
-import { registerAsyncCommandWrapped, listenWrapped } from './exception';
-import { getActiveTextEditor } from './utils';
-import { trimWhitespace, swapRanges } from './textUtils';
-import { expandSelectionLinewise, replaceText } from './editing';
+import { commands, env, Range, ThemeColor, workspace } from 'vscode';
 import { check } from '../../library/exception';
 import { RangeDecorator } from '../utils/decoration';
+import { expandSelectionLinewise, replaceText } from './editing';
+import { listenWrapped, registerAsyncCommandWrapped } from './exception';
+import { Modules } from './module';
+import { swapRanges, trimWhitespace } from './textUtils';
+import { getActiveTextEditor } from './utils';
 
 let mark:
   | undefined

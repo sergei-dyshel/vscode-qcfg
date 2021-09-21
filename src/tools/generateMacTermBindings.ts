@@ -1,6 +1,6 @@
 'use strict';
 
-import type { PackageJson, KeyBinding } from '../library/packageJson';
+import type { KeyBinding, PackageJson } from '../library/packageJson';
 
 const mapping = {
   'cmd+a': '\x01',

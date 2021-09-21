@@ -1,14 +1,14 @@
 import * as jayson from 'jayson/promise';
 /* TODO: use import type with TS 3.8 */
 import type {
-  RemoteProtocol,
   IdentifyResult,
+  RemoteProtocol,
 } from '../extension/modules/remoteServer';
-import type { FirstParameter } from './templateTypes';
-import { Logger, log } from './logging';
+import { log, Logger } from './logging';
 import * as nodejs from './nodejs';
-import { filterNonNull } from './tsUtils';
 import { stringify } from './stringify';
+import type { FirstParameter } from './templateTypes';
+import { filterNonNull } from './tsUtils';
 
 const START_PORT = 7890;
 

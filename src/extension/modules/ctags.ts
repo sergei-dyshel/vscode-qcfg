@@ -1,20 +1,19 @@
 'use strict';
 
 import type {
-  TextDocument,
   CancellationToken,
-  ExtensionContext,
   DocumentSymbolProvider,
+  ExtensionContext,
+  TextDocument,
 } from 'vscode';
-import { SymbolKind, languages, DocumentSymbol } from 'vscode';
+import { DocumentSymbol, languages, SymbolKind } from 'vscode';
 import { Logger } from '../../library/logging';
-import * as subprocess from './subprocess';
-
+import { stdErrorHandler } from './exception';
 import { getDocumentRoot } from './fileUtils';
 import { isAnyLangClientRunning } from './langClient';
 import { Modules } from './module';
-import { stdErrorHandler } from './exception';
 import { adjustRangeInParsedPosition } from './parseLocations';
+import * as subprocess from './subprocess';
 
 const C_KINDS =
   'm' /* struct members  */ +

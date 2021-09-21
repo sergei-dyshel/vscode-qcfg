@@ -1,11 +1,11 @@
 'use strict';
 
-import type { WorkspaceFolder, TextDocument } from 'vscode';
-import { Uri, Position, Location, workspace, Range } from 'vscode';
-import { filterNonNull, concatArrays } from '../../library/tsUtils';
+import type { TextDocument, WorkspaceFolder } from 'vscode';
+import { Location, Position, Range, Uri, workspace } from 'vscode';
 import * as nodejs from '../../library/nodejs';
-import { Subprocess } from './subprocess';
+import { concatArrays, filterNonNull } from '../../library/tsUtils';
 import { mapAsync } from './async';
+import { Subprocess } from './subprocess';
 import { offsetPosition } from './textUtils';
 
 const VIMGREP_PARSE_REGEX =

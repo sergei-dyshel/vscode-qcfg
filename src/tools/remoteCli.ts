@@ -1,20 +1,20 @@
 /* eslint-disable class-methods-use-this */
 import type {
   CommandLineChoiceParameter,
-  CommandLineStringParameter,
   CommandLineIntegerParameter,
+  CommandLineStringParameter,
   ICommandLineActionOptions,
 } from '@rushstack/ts-command-line';
 import {
-  CommandLineParser,
   CommandLineAction,
+  CommandLineParser,
 } from '@rushstack/ts-command-line';
-import { StreamHandler } from '../library/loggingHandlers';
+import { abort, assert } from '../library/exception';
 import { LogLevel, registerLogHandler } from '../library/logging';
+import { StreamHandler } from '../library/loggingHandlers';
 import * as nodejs from '../library/nodejs';
 import type { IdentifiedClient } from '../library/remoteClient';
 import { MultiClient } from '../library/remoteClient';
-import { abort, assert } from '../library/exception';
 import { parseNumber } from '../library/stringUtils';
 
 /** Logic to select server for running command */

@@ -1,18 +1,18 @@
-import { Modules } from './module';
 import type { ExtensionContext, Location, Uri } from 'vscode';
-import { peekLocations } from './fileUtils';
+import { check, checkNotNull } from '../../library/exception';
+import { DisposableHolder } from '../../library/types';
+import { mapAsync } from './async';
+import { selectFromList } from './dialog';
 import {
   registerAsyncCommandWrapped,
   registerSyncCommandWrapped,
 } from './exception';
-import { setPanelLocations } from './locationTree';
-import { selectFromList } from './dialog';
-import { LiveLocation, LiveLocationArray } from './liveLocation';
-import { DisposableHolder } from '../../library/types';
-import { check, checkNotNull } from '../../library/exception';
-import { getActiveTextEditor } from './utils';
-import { mapAsync } from './async';
+import { peekLocations } from './fileUtils';
 import { updateHistory } from './history';
+import { LiveLocation, LiveLocationArray } from './liveLocation';
+import { setPanelLocations } from './locationTree';
+import { Modules } from './module';
+import { getActiveTextEditor } from './utils';
 
 const MAX_SAVED_SEARCHES = 20;
 

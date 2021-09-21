@@ -1,25 +1,23 @@
 'use strict';
 
-import * as nodejs from '../../library/nodejs';
-
-import * as glob from 'glob';
 import * as chokidar from 'chokidar';
+import * as glob from 'glob';
 import * as tempy from 'tempy';
-
-import { log } from '../../library/logging';
-import { getActiveTextEditor } from './utils';
-import type { DisposableLike } from '../../library/types';
-import type { WorkspaceFolder, Location, ViewColumn } from 'vscode';
+import type { Location, ViewColumn, WorkspaceFolder } from 'vscode';
 import {
-  workspace,
-  Range,
-  window,
   commands,
   Position,
+  Range,
   Selection,
+  window,
+  workspace,
 } from 'vscode';
 import { assertNotNull, assertNull } from '../../library/exception';
+import { log } from '../../library/logging';
+import * as nodejs from '../../library/nodejs';
+import type { DisposableLike } from '../../library/types';
 import { handleAsyncStd } from './exception';
+import { getActiveTextEditor } from './utils';
 
 export const globSync = glob.sync;
 export const globAsync: (

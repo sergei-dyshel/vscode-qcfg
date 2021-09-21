@@ -3,16 +3,16 @@
 import * as net from 'net';
 import * as path from 'path';
 import * as shlex from 'shlex';
-import type { WorkspaceFolder, ExtensionContext } from 'vscode';
-import { window, workspace, Position, Selection, Uri } from 'vscode';
+import type { ExtensionContext, WorkspaceFolder } from 'vscode';
+import { Position, Selection, Uri, window, workspace } from 'vscode';
+import { assert } from '../../library/exception';
+import { log } from '../../library/logging';
+import { parseNumber } from '../../library/stringUtils';
 import { handleAsyncStd, handleErrors } from './exception';
 import * as fileUtils from './fileUtils';
-import { log } from '../../library/logging';
 import { Modules } from './module';
-import { parseNumber } from '../../library/stringUtils';
-import { focusWindow } from './windowState';
 import { openRemoteFileViaSsh } from './sshFs';
-import { assert } from '../../library/exception';
+import { focusWindow } from './windowState';
 
 // eslint-disable-next-line import/no-mutable-exports
 export let port = 48123;

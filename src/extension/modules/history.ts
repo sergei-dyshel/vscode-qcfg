@@ -1,20 +1,19 @@
 import type {
-  TextEditor,
-  ViewColumn,
   ExtensionContext,
   TextDocumentChangeEvent,
+  TextEditor,
+  ViewColumn,
 } from 'vscode';
-import { window, workspace, commands } from 'vscode';
-
-import { Logger, log } from '../../library/logging';
-import { getActiveTextEditor } from './utils';
+import { commands, window, workspace } from 'vscode';
+import { assert, assertNotNull, check } from '../../library/exception';
+import { log, Logger } from '../../library/logging';
+import type { AsyncFunction, PromiseType } from '../../library/templateTypes';
 import { DefaultMap } from '../../library/tsUtils';
 import { listenWrapped, registerAsyncCommandWrapped } from './exception';
-import { assert, assertNotNull, check } from '../../library/exception';
-import { getVisibleEditor } from './windowUtils';
 import { LiveLocationArray, LivePosition } from './liveLocation';
 import { Modules } from './module';
-import type { AsyncFunction, PromiseType } from '../../library/templateTypes';
+import { getActiveTextEditor } from './utils';
+import { getVisibleEditor } from './windowUtils';
 
 const MAX_HISTORY_SIZE = 20;
 

@@ -1,11 +1,11 @@
 'use strict';
 
+import { Dictionary } from 'typescript-collections';
 import type { ExtensionContext, TextDocument, Uri } from 'vscode';
 import { workspace } from 'vscode';
-import { Modules } from './module';
-import { listenWrapped } from './exception';
-import { Dictionary } from 'typescript-collections';
 import { log } from '../../library/logging';
+import { listenWrapped } from './exception';
+import { Modules } from './module';
 
 export function registerDocumentUriDict<V>(dict: Dictionary<Uri, V>) {
   uriDicts.push(dict as Dictionary<Uri, unknown>);

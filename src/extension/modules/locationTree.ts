@@ -2,17 +2,17 @@
 
 import * as path from 'path';
 import { MultiDictionary } from 'typescript-collections';
-import type { ExtensionContext, TextDocument, Location } from 'vscode';
-import { Uri, ThemeIcon, workspace, window } from 'vscode';
-import { handleAsyncStd } from './exception';
-import type { TreeNode, TreeProvider } from './treeView';
-import { StaticTreeNode, QcfgTreeView } from './treeView';
-import { Modules } from './module';
-import { mapSomeAsyncAndZip } from './async';
-import { maxNumber } from '../../library/tsUtils';
-import { assertInstanceOf, assert } from '../../library/exception';
+import type { ExtensionContext, Location, TextDocument } from 'vscode';
+import { ThemeIcon, Uri, window, workspace } from 'vscode';
+import { assert, assertInstanceOf } from '../../library/exception';
 import { stringify as str } from '../../library/stringify';
+import { maxNumber } from '../../library/tsUtils';
+import { mapSomeAsyncAndZip } from './async';
+import { handleAsyncStd } from './exception';
 import { LiveLocation } from './liveLocation';
+import { Modules } from './module';
+import type { TreeNode, TreeProvider } from './treeView';
+import { QcfgTreeView, StaticTreeNode } from './treeView';
 
 export async function setPanelLocations(
   message: string,

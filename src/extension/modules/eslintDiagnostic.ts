@@ -1,19 +1,19 @@
 'use strict';
 
 import type {
-  ExtensionContext,
   CompletionItemProvider,
-  TextDocument,
-  Position,
-  ProviderResult,
   CompletionList,
   DiagnosticChangeEvent,
+  ExtensionContext,
+  Position,
+  ProviderResult,
+  TextDocument,
 } from 'vscode';
 import { CompletionItem, languages, Range } from 'vscode';
-import { Modules } from './module';
-import { listenWrapped } from './exception';
-import { getCompletionPrefix } from './documentUtils';
 import { abbrevMatch } from '../../library/stringUtils';
+import { getCompletionPrefix } from './documentUtils';
+import { listenWrapped } from './exception';
+import { Modules } from './module';
 import { offsetPosition } from './textUtils';
 
 const eslintRules = new Set<string>();

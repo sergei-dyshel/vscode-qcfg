@@ -6,16 +6,16 @@ import type {
   QuickPickItem,
   QuickPickItemButtonEvent,
 } from 'vscode';
-import { ThemeIcon, window, workspace, commands, Uri, FileType } from 'vscode';
-import { Modules } from './module';
+import { commands, FileType, ThemeIcon, Uri, window, workspace } from 'vscode';
+import { assert } from '../../library/exception';
 import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
-import { registerAsyncCommandWrapped, handleStd } from './exception';
 import { expandTemplate } from '../../library/stringUtils';
-import { mapAsyncNoThrow } from './async';
-import { parseJsonFileAsync } from './json';
-import { assert } from '../../library/exception';
 import { showQuickPick } from '../utils/quickPick';
+import { mapAsyncNoThrow } from './async';
+import { handleStd, registerAsyncCommandWrapped } from './exception';
+import { parseJsonFileAsync } from './json';
+import { Modules } from './module';
 
 let extContext: ExtensionContext;
 const PERSISTENT_KEY = 'workspaceHistory';

@@ -1,18 +1,17 @@
 'use strict';
 
 import * as path from 'path';
-import { selectStringFromListMru } from './dialog';
-
-import * as fileUtils from './fileUtils';
-import { getActiveTextEditor } from './utils';
 import type { ExtensionContext } from 'vscode';
-import { window, workspace, commands } from 'vscode';
+import { commands, window, workspace } from 'vscode';
+import { selectStringFromListMru } from './dialog';
 import {
   registerAsyncCommandWrapped,
   registerSyncCommandWrapped,
 } from './exception';
+import * as fileUtils from './fileUtils';
 import { Modules } from './module';
 import { executeSubprocess } from './subprocess';
+import { getActiveTextEditor } from './utils';
 
 function openOrCreateTerminal(name: string, cwd: string) {
   for (const term of window.terminals) {

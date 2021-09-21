@@ -1,41 +1,41 @@
 'use strict';
 
+import type * as treeSitter from 'tree-sitter';
 import type {
-  TextEditor,
-  OutputChannel,
   ExtensionContext,
+  OutputChannel,
   TextDocument,
   TextDocumentContentChangeEvent,
+  TextEditor,
 } from 'vscode';
 import {
-  workspace,
-  window,
   languages,
-  Uri,
   Location,
   Position,
-  Selection,
   Range,
+  Selection,
+  Uri,
+  window,
+  workspace,
 } from 'vscode';
-import * as nodejs from '../../library/nodejs';
-import { selectStringFromList } from './dialog';
 import {
-  registerAsyncCommandWrapped,
-  listenWrapped,
-  registerSyncCommandWrapped,
-  handleAsyncStd,
-} from './exception';
-import { Modules } from './module';
-import {
-  TextLogHandler,
   log,
   LogLevel,
   LogLevels,
   registerLogHandler,
+  TextLogHandler,
 } from '../../library/logging';
 import { FileHandler } from '../../library/loggingHandlers';
-import { stringify as str, registerStringifier } from '../../library/stringify';
-import type * as treeSitter from 'tree-sitter';
+import * as nodejs from '../../library/nodejs';
+import { registerStringifier, stringify as str } from '../../library/stringify';
+import { selectStringFromList } from './dialog';
+import {
+  handleAsyncStd,
+  listenWrapped,
+  registerAsyncCommandWrapped,
+  registerSyncCommandWrapped,
+} from './exception';
+import { Modules } from './module';
 
 const FIRST_LINE_ID = '{vscode-qcfg.log}';
 

@@ -1,17 +1,17 @@
 'use strict';
 
-import { log } from '../../library/logging';
 import type { ExtensionContext } from 'vscode';
-import { workspace, commands, ConfigurationTarget, window, Uri } from 'vscode';
-import { colorThemeFiles } from './language';
+import { commands, ConfigurationTarget, Uri, window, workspace } from 'vscode';
+import { assert } from '../../library/exception';
+import { log } from '../../library/logging';
 import { selectStringFromList } from './dialog';
 import {
-  registerAsyncCommandWrapped,
   handleAsyncStd,
   listenAsyncWrapped,
+  registerAsyncCommandWrapped,
 } from './exception';
+import { colorThemeFiles } from './language';
 import { Modules } from './module';
-import { assert } from '../../library/exception';
 
 const SECTION = 'workbench.colorTheme';
 const MEMENTO_PERSIST_KEY = 'qcfg.colors.persistent';

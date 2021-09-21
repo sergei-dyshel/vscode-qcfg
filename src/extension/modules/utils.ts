@@ -1,11 +1,11 @@
 'use strict';
 
-import type { TextEditor, WorkspaceFolder, Range } from 'vscode';
+import type { Range, TextEditor, WorkspaceFolder } from 'vscode';
 import { commands, window } from 'vscode';
-import { registerSyncCommandWrapped } from './exception';
-import { getDocumentWorkspaceFolder } from './fileUtils';
 import { assertNotNull } from '../../library/exception';
 import type { VoidFunction } from '../../library/templateTypes';
+import { registerSyncCommandWrapped } from './exception';
+import { getDocumentWorkspaceFolder } from './fileUtils';
 
 // XXX: currently unused
 export namespace WhenContext {

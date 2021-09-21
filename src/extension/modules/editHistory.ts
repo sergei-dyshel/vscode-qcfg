@@ -2,32 +2,32 @@
 
 import type {
   ExtensionContext,
+  StatusBarItem,
   TextDocument,
   TextDocumentChangeEvent,
   TextDocumentContentChangeEvent,
-  TextEditorSelectionChangeEvent,
-  StatusBarItem,
   TextEditor,
+  TextEditorSelectionChangeEvent,
 } from 'vscode';
 import {
-  Range,
-  workspace,
-  window,
-  StatusBarAlignment,
   Location,
+  Range,
   Selection,
+  StatusBarAlignment,
+  window,
+  workspace,
 } from 'vscode';
-import { listenWrapped, registerSyncCommandWrapped } from './exception';
-import { Logger } from '../../library/logging';
-import { DefaultMap } from '../../library/tsUtils';
-import { getActiveTextEditor } from './utils';
-import { Modules } from './module';
-import * as nodejs from '../../library/nodejs';
-import { LiveRange } from './liveLocation';
-import { offsetPosition } from './textUtils';
-import { NumRange } from './documentUtils';
-import { formatString } from '../../library/stringUtils';
 import { CheckError, checkNotNull } from '../../library/exception';
+import { Logger } from '../../library/logging';
+import * as nodejs from '../../library/nodejs';
+import { formatString } from '../../library/stringUtils';
+import { DefaultMap } from '../../library/tsUtils';
+import { NumRange } from './documentUtils';
+import { listenWrapped, registerSyncCommandWrapped } from './exception';
+import { LiveRange } from './liveLocation';
+import { Modules } from './module';
+import { offsetPosition } from './textUtils';
+import { getActiveTextEditor } from './utils';
 
 const HISTORY_SIZE = 20;
 

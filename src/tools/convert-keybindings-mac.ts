@@ -1,7 +1,7 @@
 'use strict';
 
-import * as jsonc from 'jsonc-parser';
 import * as fs from 'fs';
+import * as jsonc from 'jsonc-parser';
 
 const path = process.argv[2];
 

@@ -1,7 +1,7 @@
 'use strict';
 
-import * as vscode from 'vscode';
 import * as child_process from 'child_process';
+import * as vscode from 'vscode';
 import { log, Logger, LogLevel } from '../../library/logging';
 
 const DEFAULT_LOG_LEVEL = LogLevel.TRACE;
@@ -122,7 +122,7 @@ export class Subprocess {
     if (this.status) this.status.dispose();
     this.result = new ExecResult(this.process.pid, stdout, stderr);
     if (error) {
-      const err = (error as unknown) as { code?: number; signal?: string };
+      const err = error as unknown as { code?: number; signal?: string };
       this.result.code = err.code ?? 0;
       this.result.signal = err.signal ?? '';
       this.log.log(

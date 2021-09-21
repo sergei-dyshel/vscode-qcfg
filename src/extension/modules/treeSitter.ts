@@ -2,31 +2,31 @@
 
 import type {
   ExtensionContext,
-  TextEditor,
-  TextDocumentChangeEvent,
-  TextEditorSelectionChangeEvent,
   Selection,
   StatusBarItem,
+  TextDocumentChangeEvent,
+  TextEditor,
+  TextEditorSelectionChangeEvent,
 } from 'vscode';
 import { Range, window, workspace } from 'vscode';
 import {
-  registerAsyncCommandWrapped,
+  assert,
+  assertNotNull,
+  check,
+  checkNotNull,
+} from '../../library/exception';
+import type { SyntaxNode, SyntaxTree } from '../../library/syntax';
+import { RangeDecorator } from '../utils/decoration';
+import { setStatusBarErrorBackground } from '../utils/statusBar';
+import {
   listenAsyncWrapped,
+  registerAsyncCommandWrapped,
   registerSyncCommandWrapped,
 } from './exception';
 import { Modules } from './module';
 import { SyntaxTrees } from './syntaxTree';
 import { revealSelection, swapRanges } from './textUtils';
 import { getActiveTextEditor, WhenContext } from './utils';
-import {
-  check,
-  assert,
-  assertNotNull,
-  checkNotNull,
-} from '../../library/exception';
-import { RangeDecorator } from '../utils/decoration';
-import type { SyntaxNode, SyntaxTree } from '../../library/syntax';
-import { setStatusBarErrorBackground } from '../utils/statusBar';
 
 const WHEN_CLAUSE = 'qcfgTreeMode';
 

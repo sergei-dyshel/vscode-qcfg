@@ -2,8 +2,8 @@
 
 import type { ExtensionContext } from 'vscode';
 import { workspace } from 'vscode';
-import { Modules } from './module';
 import { registerAsyncCommandWrapped } from './exception';
+import { Modules } from './module';
 
 async function createDb() {
   return workspace.findFiles('**');

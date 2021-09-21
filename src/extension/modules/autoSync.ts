@@ -1,18 +1,17 @@
 'use strict';
 
-import * as saveAll from './saveAll';
-import { log } from '../../library/logging';
-import * as subprocess from './subprocess';
-import { setTimeoutPromise } from '../../library/nodeUtils';
-import { registerSyncCommandWrapped } from './exception';
-import { Modules } from './module';
-import { sendDidSaveToLangClients } from './langClient';
 import type { ExtensionContext, StatusBarItem } from 'vscode';
-import { workspace, window } from 'vscode';
-
+import { window, workspace } from 'vscode';
+import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
-import { exists } from './fileUtils';
+import { setTimeoutPromise } from '../../library/nodeUtils';
 import { setStatusBarErrorBackground } from '../utils/statusBar';
+import { registerSyncCommandWrapped } from './exception';
+import { exists } from './fileUtils';
+import { sendDidSaveToLangClients } from './langClient';
+import { Modules } from './module';
+import * as saveAll from './saveAll';
+import * as subprocess from './subprocess';
 
 enum State {
   OFF,

@@ -1,4 +1,3 @@
-import * as nodejs from '../library/nodejs';
 import type {
   CommandLineChoiceParameter,
   CommandLineIntegerParameter,
@@ -11,6 +10,7 @@ import {
 } from '@rushstack/ts-command-line';
 import { LogLevel, registerLogHandler } from '../library/logging';
 import { StreamHandler } from '../library/loggingHandlers';
+import * as nodejs from '../library/nodejs';
 import type { SyntaxTree } from '../library/syntax';
 import { SyntaxLanguage } from '../library/syntax';
 

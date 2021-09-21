@@ -1,13 +1,13 @@
-import type { TextDocument, ExtensionContext } from 'vscode';
-import { extensions, commands } from 'vscode';
-import { Logger, log } from '../../library/logging';
+import type { ExtensionContext, TextDocument } from 'vscode';
+import { commands, extensions } from 'vscode';
 import type {
-  LanguageClient,
   DidSaveTextDocumentParams,
+  LanguageClient,
 } from 'vscode-languageclient';
-import { Modules } from './module';
-import { registerAsyncCommandWrapped } from './exception';
+import { log, Logger } from '../../library/logging';
 import { mapAsync } from './async';
+import { registerAsyncCommandWrapped } from './exception';
+import { Modules } from './module';
 
 export function isAnyLangClientRunning(): boolean {
   return ALL_CLIENTS.map((wrapper) => wrapper.isClientRunning).isAnyTrue();

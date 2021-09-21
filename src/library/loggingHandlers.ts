@@ -1,4 +1,4 @@
-import { TextLogHandler, log } from './logging';
+import { log, TextLogHandler } from './logging';
 import * as nodejs from './nodejs';
 
 export class StreamHandler extends TextLogHandler {

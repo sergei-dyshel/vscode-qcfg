@@ -1,7 +1,7 @@
-import { filterNonNull } from './tsUtils';
 import { getCallsite } from './sourceMap';
+import { formatMessage, stringify as str } from './stringify';
 import { formatString } from './stringUtils';
-import { stringify as str, formatMessage } from './stringify';
+import { filterNonNull } from './tsUtils';
 
 export enum LogLevel {
   TRACE = 1,

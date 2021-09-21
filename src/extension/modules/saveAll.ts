@@ -1,10 +1,10 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import * as fileUtils from './fileUtils';
-import { log } from '../../library/logging';
-import { Modules } from './module';
 import { assertNotNull } from '../../library/exception';
+import { log } from '../../library/logging';
+import * as fileUtils from './fileUtils';
+import { Modules } from './module';
 
 export interface DocumentsInFolder {
   folder: vscode.WorkspaceFolder;

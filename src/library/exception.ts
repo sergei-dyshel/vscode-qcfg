@@ -1,5 +1,5 @@
-import type { AsyncFunction, PromiseType } from './templateTypes';
 import { formatMessage } from './stringify';
+import type { AsyncFunction, PromiseType } from './templateTypes';
 
 export function assert(
   condition: boolean | undefined | null,

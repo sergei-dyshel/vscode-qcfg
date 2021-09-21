@@ -1,16 +1,16 @@
 import type {
-  ExtensionContext,
-  TextDocument,
-  SymbolInformation,
   DocumentSymbol,
+  ExtensionContext,
+  SymbolInformation,
+  TextDocument,
   Uri,
 } from 'vscode';
-import { commands, Range, Location, SymbolKind } from 'vscode';
-import { Modules } from './module';
-import { getActiveTextEditor } from './utils';
-import { peekLocations } from './fileUtils';
+import { commands, Location, Range, SymbolKind } from 'vscode';
 import { registerAsyncCommandWrapped } from './exception';
+import { peekLocations } from './fileUtils';
+import { Modules } from './module';
 import { offsetPosition } from './textUtils';
+import { getActiveTextEditor } from './utils';
 
 export type OutlineSymbol = SymbolInformation | DocumentSymbol;
 export type Outline = OutlineSymbol[];

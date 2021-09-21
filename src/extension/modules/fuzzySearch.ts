@@ -4,9 +4,9 @@
 
 import * as vscode from 'vscode';
 import { log } from '../../library/logging';
-import { getActiveTextEditor } from './utils';
 import { handleErrors, registerSyncCommandWrapped } from './exception';
 import { Modules } from './module';
+import { getActiveTextEditor } from './utils';
 
 class Item implements vscode.QuickPickItem {
   constructor(public label: string, public line: number) {

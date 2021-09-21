@@ -1,6 +1,6 @@
 'use strict';
 
-import type { TextDocument, Position, TextEditor } from 'vscode';
+import type { Position, TextDocument, TextEditor } from 'vscode';
 import { Range } from 'vscode';
 
 // TODO: add as property to position class

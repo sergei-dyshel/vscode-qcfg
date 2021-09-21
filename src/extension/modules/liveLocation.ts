@@ -9,13 +9,13 @@ import type {
   TextDocumentContentChangeEvent,
   TextEditor,
 } from 'vscode';
-import { workspace, Location } from 'vscode';
+import { Location, workspace } from 'vscode';
+import { assert } from '../../library/exception';
+import { DefaultMap } from '../../library/tsUtils';
+import type { DisposableLike } from '../../library/types';
 import { NumRange, offsetToRange } from './documentUtils';
 import { listenWrapped } from './exception';
 import { Modules } from './module';
-import { DefaultMap } from '../../library/tsUtils';
-import type { DisposableLike } from '../../library/types';
-import { assert } from '../../library/exception';
 import { getActiveTextEditor } from './utils';
 
 export abstract class LiveLocation extends Location implements DisposableLike {

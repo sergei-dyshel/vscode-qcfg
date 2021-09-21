@@ -1,20 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { ExtensionContext } from 'vscode';
-import { workspace, Position, window, Uri, commands } from 'vscode';
 import * as jayson from 'jayson/promise';
-import { PORT_RANGE } from '../../library/remoteClient';
-import { getWorkspaceFile, getWorkspaceName } from './workspaceHistory';
-import { mapObjectValues } from '../../library/tsUtils';
-import { Modules } from './module';
+import type { ExtensionContext } from 'vscode';
+import { commands, Position, Uri, window, workspace } from 'vscode';
 import { log } from '../../library/logging';
-import { focusWindow } from './windowState';
+import { PORT_RANGE } from '../../library/remoteClient';
 import { stringify } from '../../library/stringify';
+import { mapObjectValues } from '../../library/tsUtils';
 import {
   handleAsyncStd,
   handleErrorsAsync,
   registerSyncCommandWrapped,
 } from './exception';
+import { Modules } from './module';
 import { openRemoteFileViaSsh } from './sshFs';
+import { focusWindow } from './windowState';
+import { getWorkspaceFile, getWorkspaceName } from './workspaceHistory';
 
 export type RemoteProtocol = typeof protocol;
 

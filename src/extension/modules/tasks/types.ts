@@ -19,16 +19,21 @@ import {
   window,
   workspace,
 } from 'vscode';
+import { log, LogLevel } from '../../../library/logging';
+import * as nodejs from '../../../library/nodejs';
+import { concatArrays } from '../../../library/tsUtils';
 import { mapAsync, mapAsyncSequential } from '../async';
 import type { ListSelectable } from '../dialog';
+import { handleAsyncStd } from '../exception';
 import { getDocumentWorkspaceFolder, peekLocations } from '../fileUtils';
-import * as nodejs from '../../../library/nodejs';
+import { refreshOrRestartLangClients } from '../langClient';
 import {
+  findPatternInParsedLocations,
   ParseLocationFormat,
   parseLocations,
-  findPatternInParsedLocations,
 } from '../parseLocations';
 import * as remoteControl from '../remoteControl';
+import { saveAndPeekSearch } from '../savedSearch';
 import { searchInFiles } from '../search';
 import { ExecResult, Subprocess } from '../subprocess';
 import {
@@ -36,7 +41,6 @@ import {
   TaskConfilictPolicy,
   TaskRun,
 } from '../taskRunner';
-import { concatArrays } from '../../../library/tsUtils';
 import { currentWorkspaceFolder, getCursorWordContext } from '../utils';
 import type {
   BaseTaskParams,
@@ -45,10 +49,6 @@ import type {
   TerminalTaskParams,
 } from './params';
 import { EndAction, Flag, LocationFormat, Reveal, TaskType } from './params';
-import { handleAsyncStd } from '../exception';
-import { saveAndPeekSearch } from '../savedSearch';
-import { refreshOrRestartLangClients } from '../langClient';
-import { LogLevel, log } from '../../../library/logging';
 
 export interface FetchInfo {
   label: string;

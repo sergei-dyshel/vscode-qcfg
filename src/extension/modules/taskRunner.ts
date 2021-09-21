@@ -2,23 +2,23 @@
 
 import { Dictionary } from 'typescript-collections';
 import type {
-  Task,
-  TaskExecution,
-  Terminal,
-  StatusBarItem,
   ExtensionContext,
+  StatusBarItem,
+  Task,
+  TaskEndEvent,
+  TaskExecution,
   TaskProcessEndEvent,
   TaskProcessStartEvent,
-  TaskEndEvent,
+  Terminal,
   WorkspaceFolder,
 } from 'vscode';
-import { tasks, window, TaskScope } from 'vscode';
-import { listenWrapped, executeCommandHandled } from './exception';
+import { tasks, TaskScope, window } from 'vscode';
+import { assert } from '../../library/exception';
 import { log, Logger } from '../../library/logging';
+import type { DisposableLike } from '../../library/types';
+import { executeCommandHandled, listenWrapped } from './exception';
 import { Modules } from './module';
 import { registerSyncTemporaryCommand } from './utils';
-import type { DisposableLike } from '../../library/types';
-import { assert } from '../../library/exception';
 
 export enum State {
   INITIALIZED,

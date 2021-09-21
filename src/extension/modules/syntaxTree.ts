@@ -8,16 +8,16 @@ import type {
   TextDocumentChangeEvent,
 } from 'vscode';
 import { EventEmitter, Position, Range, window, workspace } from 'vscode';
-import { PromiseContext } from './async';
-import { NumRange } from './documentUtils';
-import { listenWrapped, handleAsyncStd, handleStd } from './exception';
 import { Logger } from '../../library/logging';
-import { Modules } from './module';
 import * as nodejs from '../../library/nodejs';
 import { Timer } from '../../library/nodeUtils';
-import { DefaultMap } from '../../library/tsUtils';
 import type { SyntaxTree } from '../../library/syntax';
 import { SyntaxLanguage, SyntaxNode } from '../../library/syntax';
+import { DefaultMap } from '../../library/tsUtils';
+import { PromiseContext } from './async';
+import { NumRange } from './documentUtils';
+import { handleAsyncStd, handleStd, listenWrapped } from './exception';
+import { Modules } from './module';
 
 type VsRange = Range;
 

@@ -1,57 +1,57 @@
 'use strict';
 
 import type {
-  TextSearchQuery,
-  FindTextInFilesOptions,
-  TextSearchResult,
-  TextSearchMatch,
-  CompletionItemProvider,
-  TextDocument,
-  Position,
   CancellationToken,
   CompletionContext,
+  CompletionItemProvider,
   ExtensionContext,
-  Uri,
+  FindTextInFilesOptions,
   LocationLink,
+  Position,
+  TextDocument,
+  TextSearchMatch,
+  TextSearchQuery,
+  TextSearchResult,
+  Uri,
 } from 'vscode';
 import {
+  commands,
   CompletionItem,
+  CompletionItemKind,
+  languages,
   Location,
   Range,
-  workspace,
-  CompletionItemKind,
   SnippetString,
-  languages,
-  commands,
+  workspace,
 } from 'vscode';
-import { selectMultiple } from './dialog';
-import { getCompletionPrefix } from './documentUtils';
-import { availableLanguageConfigs, getLanguageConfig } from './language';
-import { log } from '../../library/logging';
-import { abbrevMatch } from '../../library/stringUtils';
-import { Subprocess } from './subprocess';
 import {
-  currentWorkspaceFolder,
-  getCursorWordContext,
-  getActiveTextEditor,
-} from './utils';
-import { registerAsyncCommandWrapped } from './exception';
-import { Modules } from './module';
-import {
-  parseLocations,
-  ParseLocationFormat,
-  findPatternInParsedLocations,
-} from './parseLocations';
-import { runTask } from './tasks/main';
-import { TaskType, Flag } from './tasks/params';
-import { saveAndPeekSearch } from './savedSearch';
-import {
-  CheckError,
   assertNotNull,
+  CheckError,
   checkNotNull,
 } from '../../library/exception';
-import { getGtagsDefinitionsInWorkspace } from './gtags';
+import { log } from '../../library/logging';
+import { abbrevMatch } from '../../library/stringUtils';
 import { getDocumentSymbolsFromCtags } from './ctags';
+import { selectMultiple } from './dialog';
+import { getCompletionPrefix } from './documentUtils';
+import { registerAsyncCommandWrapped } from './exception';
+import { getGtagsDefinitionsInWorkspace } from './gtags';
+import { availableLanguageConfigs, getLanguageConfig } from './language';
+import { Modules } from './module';
+import {
+  findPatternInParsedLocations,
+  ParseLocationFormat,
+  parseLocations,
+} from './parseLocations';
+import { saveAndPeekSearch } from './savedSearch';
+import { Subprocess } from './subprocess';
+import { runTask } from './tasks/main';
+import { Flag, TaskType } from './tasks/params';
+import {
+  currentWorkspaceFolder,
+  getActiveTextEditor,
+  getCursorWordContext,
+} from './utils';
 
 const TODO_CATEGORIES = [
   'TODO',

@@ -1,15 +1,15 @@
 'use strict';
 
+import * as lodash from 'lodash';
 import type {
-  QuickPickItem,
   ExtensionContext,
   QuickInputButton,
+  QuickPickItem,
   QuickPickOptions,
 } from 'vscode';
-import { window, Uri } from 'vscode';
-import { handleErrors, handleAsyncStd, handleErrorsAsync } from './exception';
+import { Uri, window } from 'vscode';
+import { handleAsyncStd, handleErrors, handleErrorsAsync } from './exception';
 import { Modules } from './module';
-import * as lodash from 'lodash';
 
 // export function selectFromList<T extends QuickPickItem>(
 //     items: T[], options?: QuickPickOptions): Thenable<T|undefined> {

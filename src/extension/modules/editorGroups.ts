@@ -1,17 +1,15 @@
 import type { ExtensionContext } from 'vscode';
 import {
-  window,
-  ViewColumn,
+  commands,
   Selection,
   TextEditorRevealType,
-  commands,
+  ViewColumn,
+  window,
 } from 'vscode';
-
-import { shouldSplitVertically } from './windowState';
-
-import { Modules } from './module';
 import { registerAsyncCommandWrapped } from './exception';
+import { Modules } from './module';
 import { getActiveTextEditor } from './utils';
+import { shouldSplitVertically } from './windowState';
 
 async function focusEditorBeside(syncPosition: boolean) {
   const editor = getActiveTextEditor();

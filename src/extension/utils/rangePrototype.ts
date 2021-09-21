@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-import { Range, Selection, Position } from 'vscode';
+import { Position, Range, Selection } from 'vscode';
 
 declare module 'vscode' {
   // eslint-disable-next-line @typescript-eslint/no-shadow

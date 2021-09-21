@@ -1,15 +1,15 @@
 'use strict';
 
 import type {
-  TextDocumentChangeEvent,
-  StatusBarItem,
   ExtensionContext,
+  StatusBarItem,
+  TextDocumentChangeEvent,
 } from 'vscode';
 import { window, workspace } from 'vscode';
 import {
+  handleAsyncStd,
   listenWrapped,
   registerAsyncCommandWrapped,
-  handleAsyncStd,
 } from './exception';
 import { Modules } from './module';
 

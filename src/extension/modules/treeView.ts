@@ -17,15 +17,15 @@ import {
   TreeItemCollapsibleState,
   window,
 } from 'vscode';
+import { assert, assertNotNull } from '../../library/exception';
+import { log } from '../../library/logging';
+import { callIfNonNull } from '../../library/tsUtils';
 import {
   listenWrapped,
-  registerSyncCommandWrapped,
   registerAsyncCommandWrapped,
+  registerSyncCommandWrapped,
 } from './exception';
-import { log } from '../../library/logging';
 import { Modules } from './module';
-import { callIfNonNull } from '../../library/tsUtils';
-import { assertNotNull, assert } from '../../library/exception';
 
 export const TREE_ITEM_REMOVABLE_CONTEXT = 'removable';
 

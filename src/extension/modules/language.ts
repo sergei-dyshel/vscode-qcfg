@@ -1,12 +1,11 @@
 'use strict';
 
+import * as vscode from 'vscode';
 import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
-
-import * as vscode from 'vscode';
-import { Modules } from './module';
-import { parseJsonFileSync } from './json';
 import type { PackageJson } from '../../library/packageJson';
+import { parseJsonFileSync } from './json';
+import { Modules } from './module';
 
 export const colorThemeFiles: Record<string, string | undefined> = {};
 

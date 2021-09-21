@@ -1,19 +1,19 @@
 'use strict';
 
 import type {
-  TextEditor,
   ExtensionContext,
+  TextEditor,
   TextEditorSelectionChangeEvent,
 } from 'vscode';
 import { window } from 'vscode';
-import { Modules } from './module';
+import { log } from '../../library/logging';
 import {
+  handleAsyncStd,
   listenWrapped,
   registerSyncCommandWrapped,
-  handleAsyncStd,
 } from './exception';
+import { Modules } from './module';
 import { getActiveTextEditor, WhenContext } from './utils';
-import { log } from '../../library/logging';
 
 const CONTEXT = 'qcfgMultipleSelectionsMarker';
 

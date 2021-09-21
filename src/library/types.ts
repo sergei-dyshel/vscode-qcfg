@@ -3,7 +3,8 @@ export interface DisposableLike {
 }
 
 export class DisposableHolder<T extends DisposableLike>
-  implements DisposableLike {
+  implements DisposableLike
+{
   private value?: T;
 
   constructor(value?: T) {

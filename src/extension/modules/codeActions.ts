@@ -1,24 +1,24 @@
 import type {
-  Uri,
+  CodeAction,
+  ExtensionContext,
   Range,
   Selection,
-  CodeAction,
   TextEdit,
-  ExtensionContext,
+  Uri,
 } from 'vscode';
 import {
   CodeActionKind,
   commands,
-  WorkspaceEdit,
   languages,
   window,
   workspace,
+  WorkspaceEdit,
 } from 'vscode';
 import {
-  concatNonNullArrays,
-  mapNonNull,
   concatArrays,
+  concatNonNullArrays,
   DefaultMap,
+  mapNonNull,
 } from '../../library/tsUtils';
 import { mapAsync } from './async';
 import { ConfigRules } from './configRules';

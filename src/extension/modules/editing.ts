@@ -1,40 +1,38 @@
 'use strict';
 
 import type {
-  TextEditor,
-  TextEditorEdit,
+  CompletionList,
   ExtensionContext,
   TextDocument,
-  CompletionList,
+  TextEditor,
+  TextEditorEdit,
 } from 'vscode';
 import {
-  window,
   commands,
-  Selection,
-  workspace,
   ConfigurationTarget,
   Position,
   Range,
+  Selection,
   Uri,
+  window,
+  workspace,
 } from 'vscode';
-
-import {
-  offsetPosition,
-  trimWhitespace,
-  selectRange,
-  trimBrackets,
-} from './textUtils';
-import { getActiveTextEditor, getCursorWordContext } from './utils';
-
+import { NumberIterator } from '../../library/tsUtils';
+import { lineIndentation } from './documentUtils';
 import {
   registerAsyncCommandWrapped,
-  registerTextEditorCommandWrapped,
   registerSyncCommandWrapped,
+  registerTextEditorCommandWrapped,
 } from './exception';
+import { exists, expandHome } from './fileUtils';
 import { Modules } from './module';
-import { lineIndentation } from './documentUtils';
-import { NumberIterator } from '../../library/tsUtils';
-import { expandHome, exists } from './fileUtils';
+import {
+  offsetPosition,
+  selectRange,
+  trimBrackets,
+  trimWhitespace,
+} from './textUtils';
+import { getActiveTextEditor, getCursorWordContext } from './utils';
 
 export function expandSelectionLinewise() {
   const editor = getActiveTextEditor();
