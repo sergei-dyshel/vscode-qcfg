@@ -3,11 +3,12 @@
 import type { ExtensionContext, SourceControlResourceState, Uri } from 'vscode';
 import { commands, window } from 'vscode';
 import { log } from '../../library/logging';
+import { registerAsyncCommandWrapped } from './exception';
 import { Modules } from './module';
 
 // inspired by https://github.com/lacroixdavid1/vscode-format-context-menu
 
-async function formatUris(uris: Uri[]) {
+async function execCommandOnDocuments(command: string, uris: Uri[]) {
   for (const uri of uris) {
     try {
       await window.showTextDocument(uri);
@@ -16,30 +17,41 @@ async function formatUris(uris: Uri[]) {
       continue;
     }
     try {
-      await commands.executeCommand('editor.action.formatDocument');
+      await commands.executeCommand(command);
     } catch (err: unknown) {
       log.error(`Could not format "${uri}": ${err}`);
     }
   }
 }
 
-async function formatFilesInExplorer(clickedFile: Uri, selectedFiles: Uri[]) {
-  return formatUris(selectedFiles.isEmpty ? [clickedFile] : selectedFiles);
+function execCommandOnSelectedInExplorer(command: string) {
+  return async (clickedFile: Uri, selectedFiles: Uri[]) =>
+    execCommandOnDocuments(
+      command,
+      selectedFiles.isEmpty ? [clickedFile] : selectedFiles,
+    );
 }
 
 async function formatFilesInScm(
   ...selectedFiles: SourceControlResourceState[]
 ) {
-  return formatUris(selectedFiles.map((x) => x.resourceUri));
+  return execCommandOnDocuments(
+    'editor.action.formatDocument',
+    selectedFiles.map((x) => x.resourceUri),
+  );
 }
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
-    commands.registerCommand(
-      'qcfg.formatSelectedFilesInExplorer',
-      formatFilesInExplorer,
+    registerAsyncCommandWrapped(
+      'qcfg.explorer.format',
+      execCommandOnSelectedInExplorer('editor.action.formatDocument'),
     ),
-    commands.registerCommand('qcfg.formatSelectedFilesInSCM', formatFilesInScm),
+    registerAsyncCommandWrapped(
+      'qcfg.explorer.organizeImports',
+      execCommandOnSelectedInExplorer('editor.action.organizeImports'),
+    ),
+    registerAsyncCommandWrapped('qcfg.scm.format', formatFilesInScm),
   );
 }
 

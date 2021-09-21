@@ -324,11 +324,17 @@
         "title": "qcfg: Multiple selections - reset selection to mark"
       },
       {
-        "command": "qcfg.formatSelectedFilesInExplorer",
-        "title": "Format selected files"
+        "command": "qcfg.explorer.format",
+        "title": "Format",
+        "when": "explorerViewletVisible && filesExplorerFocus && !explorerResourceReadonly && !inputFocus"
       },
       {
-        "command": "qcfg.formatSelectedFilesInSCM",
+        "command": "qcfg.explorer.organizeImports",
+        "title": "Organize imports",
+        "when": "explorerViewletVisible && filesExplorerFocus && !explorerResourceReadonly && !inputFocus"
+      },
+      {
+        "command": "qcfg.scm.format",
         "title": "Format selected files"
       },
       {
@@ -2303,12 +2309,15 @@
       ],
       "explorer/context": [
         {
-          "command": "qcfg.formatSelectedFilesInExplorer"
+          "command": "qcfg.explorer.format"
+        },
+        {
+          "command": "qcfg.explorer.organizeImports"
         }
       ],
       "scm/resourceState/context": [
         {
-          "command": "qcfg.formatSelectedFilesInSCM"
+          "command": "qcfg.scm.format"
         }
       ]
     }
