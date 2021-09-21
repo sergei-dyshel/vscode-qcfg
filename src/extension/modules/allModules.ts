@@ -48,6 +48,7 @@ import * as expandSelection from './expandSelection';
 import * as commandUtils from './commandUtils';
 import * as codeActions from './codeActions';
 import * as updateChecker from './updateChecker';
+import * as renameReferences from './renameReferences';
 
 export const ALL_MODULES = {
   language,
@@ -98,4 +99,5 @@ export const ALL_MODULES = {
   commandUtils,
   codeActions,
   updateChecker,
+  renameReferences,
 };

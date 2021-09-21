@@ -268,6 +268,18 @@
         "title": "qcfg: Resolve completions (and dump to console)"
       },
       {
+        "command": "qcfg.renameReferences",
+        "title": "qcfg: Rename all references of current symbol"
+      },
+      {
+        "command": "qcfg.renameReferences.withConfirmation",
+        "title": "qcfg: Rename all references of current symbol (with confirmation)"
+      },
+      {
+        "command": "qcfg.selectReferences",
+        "title": "qcfg: Select references in current document"
+      },
+      {
         "command": "qcfg.treeView.removeNode",
         "title": "qcfg: Remove tree view entry",
         "icon": {
@@ -705,6 +717,21 @@
           "]",
           "right"
         ]
+      },
+      {
+        "key": "cmd+f2",
+        "command": "qcfg.renameReferences",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "cmd+shift+f2",
+        "command": "qcfg.renameReferences.withConfirmation",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "alt+f2",
+        "command": "qcfg.selectReferences",
+        "when": "editorTextFocus"
       },
       {
         "key": "ctrl+5",
