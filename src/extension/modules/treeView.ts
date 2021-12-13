@@ -87,7 +87,7 @@ export interface TreeProvider {
   getTrees: () => ProviderResult<TreeNode[]>;
   getMessage?: () => string | undefined;
   removeNode?: (node: TreeNode) => void;
-  onDidChangeSelection?: (nodes: TreeNode[]) => void;
+  onDidChangeSelection?: (nodes: readonly TreeNode[]) => void;
   onDidChangeVisibility?: (visible: boolean) => void;
   /** Called when provider becomes inactive, e.g. other provider is set */
   onUnset?: () => void;

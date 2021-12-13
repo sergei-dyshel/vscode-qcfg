@@ -159,7 +159,7 @@ function getLogFileName() {
   return '/tmp/' + EXT;
 }
 
-function onDidChangeVisibleTextEditors(editors: TextEditor[]) {
+function onDidChangeVisibleTextEditors(editors: readonly TextEditor[]) {
   for (const editor of editors) {
     if (!editor.document.fileName.startsWith('extension-output')) continue;
     if (editor.document.lineAt(0).text.includes(FIRST_LINE_ID))

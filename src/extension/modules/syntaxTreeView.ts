@@ -52,7 +52,7 @@ const treeProvider: TreeProvider = {
       return `Language ${document.languageId} is not supported`;
     return '';
   },
-  onDidChangeSelection(nodes_: TreeNode[]) {
+  onDidChangeSelection(nodes_: readonly TreeNode[]) {
     const nodes = nodes_ as SyntaxTreeViewNode[];
     const editor = window.activeTextEditor;
     if (!editor) return;

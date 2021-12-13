@@ -9,11 +9,18 @@
     "url": "https://github.com/sergei-dyshel/qyron-config.git"
   },
   "engines": {
-    "vscode": "^1.60.0"
+    "vscode": "^1.63.0"
   },
-  "enableProposedApi": true,
-  "categories": ["Other"],
-  "activationEvents": ["*"],
+  "enabledApiProposals": [
+    "textSearchProvider",
+    "findTextInFiles"
+  ],
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "*"
+  ],
   "main": "./dist/extension",
   "contributes": {
     "jsonValidation": [

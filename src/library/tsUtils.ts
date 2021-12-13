@@ -246,6 +246,7 @@ declare global {
     iter: (start: number, end: number, step?: number) => Iterable<T>;
     pairIter: () => Iterable<[T, T]>;
     readonly isEmpty: boolean;
+    firstOf: (cond: (val: T) => boolean) => T | undefined;
   }
 
   interface Map<K, V> {

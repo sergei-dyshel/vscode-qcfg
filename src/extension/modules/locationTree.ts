@@ -233,7 +233,7 @@ const locationTreeProvider: TreeProvider = {
     }
     node.remove();
   },
-  onDidChangeSelection(nodes_: TreeNode[]) {
+  onDidChangeSelection(nodes_: readonly TreeNode[]) {
     const nodes = nodes_ as StaticTreeNode[];
     if (nodes.length !== 1) return;
     const node = nodes[0];
