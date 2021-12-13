@@ -10,6 +10,8 @@
 - Commands augmented with `qcfg.history.wrapCmd` with show title of latter in
   shortcuts window, this is inconvenient.
 
+- Add rules to parse first line of file and change file type accordingly.
+
 # Notes functionality
 
 - Add new document in current folder.
@@ -28,6 +30,8 @@
 - Remove specialized commands which are currently handled by tasks:
   - grep word (first needs handling of peek -> panel results transfer)
 - Rename Params -> TaskParams etc.
+- For q-parse-loc run, multi folder-task, gather locations and present them in
+  location dialog
 
 # Refactoring
 
