@@ -7,7 +7,6 @@ import * as nodejs from '../../library/nodejs';
 import { setTimeoutPromise } from '../../library/nodeUtils';
 import { setStatusBarErrorBackground } from '../utils/statusBar';
 import { registerSyncCommandWrapped } from './exception';
-import { exists } from './fileUtils';
 import { sendDidSaveToLangClients } from './langClient';
 import { Modules } from './module';
 import * as saveAll from './saveAll';
@@ -58,14 +57,7 @@ async function onSaveAll(docs: saveAll.DocumentsInFolder) {
 
   if (!command) return;
 
-  let folder = docs.folder.uri.fsPath;
-  while (!(await exists(nodejs.path.join(folder, '.syg.json')))) {
-    folder = nodejs.path.dirname(folder);
-    if (folder === '/') {
-      log.debug(`${folder} is not under syg root`);
-      return;
-    }
-  }
+  const folder = docs.folder.uri.fsPath;
 
   const docPaths = docs.documents.map((doc) =>
     nodejs.path.relative(folder, doc.fileName),
