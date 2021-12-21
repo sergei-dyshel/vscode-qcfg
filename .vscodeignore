@@ -6,6 +6,7 @@
 !plistOld.language-configuration.json
 !tasks.schema.json
 !syntaxes
+!LICENSE
 
 # All modules excluded in webpack "externals" and their dependencies
 !node_modules/node-window-manager
