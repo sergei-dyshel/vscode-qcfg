@@ -102,7 +102,7 @@ export class PromiseContext<T> {
 }
 
 export async function mapAsync<V, R>(
-  arr: V[],
+  arr: readonly V[],
   func: (v: V) => Thenable<R>,
 ): Promise<R[]> {
   return (sequentialAsyncByDefault ? mapAsyncSequential : mapAsyncParallel)(
@@ -112,14 +112,14 @@ export async function mapAsync<V, R>(
 }
 
 export async function mapAsyncParallel<V, R>(
-  arr: V[],
+  arr: readonly V[],
   func: (v: V) => Thenable<R>,
 ): Promise<R[]> {
   return Promise.all(arr.map(func));
 }
 
 export async function mapAsyncSequential<V, R>(
-  arr: V[],
+  arr: readonly V[],
   func: (v: V) => Thenable<R>,
 ): Promise<R[]> {
   const result: R[] = [];
@@ -161,7 +161,7 @@ export const MAP_UNDEFINED = new MapUndefined();
  * Return array of [value, <mapped value>] pairs.
  */
 export async function mapSomeAsyncAndZip<V, R>(
-  arr: V[],
+  arr: readonly V[],
   func: (v: V) => Thenable<R | MapUndefined>,
 ): Promise<Array<[V, R]>> {
   const results: Array<R | MapUndefined> = await mapAsync(arr, func);
@@ -175,7 +175,7 @@ export async function mapSomeAsyncAndZip<V, R>(
  * Return array of mapped values.
  */
 export async function mapSomeAsync<V, R>(
-  arr: V[],
+  arr: readonly V[],
   func: (v: V) => Promise<R | MapUndefined>,
 ): Promise<R[]> {
   return (await mapSomeAsyncAndZip(arr, func)).map((pair) => pair[1]);
@@ -185,7 +185,7 @@ export async function mapSomeAsync<V, R>(
  * Filter array through asynchronous predicate.
  */
 export async function filterAsync<T>(
-  arr: T[],
+  arr: readonly T[],
   predicate: (v: T) => Promise<boolean>,
 ): Promise<T[]> {
   return mapSomeAsync<T, T>(arr, async (v: T) =>

@@ -427,7 +427,10 @@ export class DefaultMap<K, V> extends Map<K, V> {
   ) => void = Map.prototype.modify;
 }
 
-export function zipArrays<T1, T2>(a: T1[], b: T2[]): Array<[T1, T2]> {
+export function zipArrays<T1, T2>(
+  a: readonly T1[],
+  b: readonly T2[],
+): Array<[T1, T2]> {
   return a.map((k, i) => [k, b[i]]);
 }
 
