@@ -1,2 +1,2 @@
-vscode.proposed.d.ts
+vscode.proposed.*.d.ts
 .eslintrc.js
