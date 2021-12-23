@@ -1,51 +1,51 @@
 'use strict';
 
-import type { ExtensionContext, WorkspaceFolder, Task } from 'vscode';
+import type { ExtensionContext, Task, WorkspaceFolder } from 'vscode';
 import {
   commands,
   TaskGroup,
   tasks as vstasks,
-  workspace,
-  window,
   Uri,
+  window,
+  workspace,
 } from 'vscode';
-import { mapSomeAsync, MAP_UNDEFINED, filterAsync } from '../async';
+import { log } from '../../../library/logging';
+import * as nodejs from '../../../library/nodejs';
+import { concatArrays, mapObjectToArray } from '../../../library/tsUtils';
 import { getValidWorkspaceFolders } from '../../utils/workspace';
+import { filterAsync, mapSomeAsync, MAP_UNDEFINED } from '../async';
 import type { ConfigFilePair } from '../config';
-import { watchConfigFile, getConfigFileNames } from '../config';
+import { getConfigFileNames, watchConfigFile } from '../config';
 import * as dialog from '../dialog';
 import { registerAsyncCommandWrapped } from '../exception';
 import { globAsync } from '../fileUtils';
 import { parseJsonFileSync } from '../json';
 import { Modules } from '../module';
-import { concatArrays, mapObjectToArray } from '../../../library/tsUtils';
 import { currentWorkspaceFolder } from '../utils';
 import type {
+  BaseTaskParams,
   ConfParamsSet,
   Params,
-  TerminalTaskParams,
   ProcessTaskParams,
   SearchTaskParams,
-  BaseTaskParams,
+  TerminalTaskParams,
 } from './params';
-import { TaskType, Flag } from './params';
+import { Flag, TaskType } from './params';
 import type { BaseQcfgTask, BaseTask, FetchInfo } from './types';
 import {
-  TaskContext,
   ConditionError,
-  ParamsError,
-  TerminalTask,
-  TerminalMultiTask,
-  VscodeTask,
-  ValidationError,
-  ProcessTask,
-  ProcessMultiTask,
-  SearchTask,
-  SearchMultiTask,
   isFolderTask,
+  ParamsError,
+  ProcessMultiTask,
+  ProcessTask,
+  SearchMultiTask,
+  SearchTask,
+  TaskContext,
+  TerminalMultiTask,
+  TerminalTask,
+  ValidationError,
+  VscodeTask,
 } from './types';
-import * as nodejs from '../../../library/nodejs';
-import { log } from '../../../library/logging';
 
 const CONFIG_FILE = 'vscode-qcfg.tasks.json';
 
@@ -340,7 +340,7 @@ async function createTask(
   if (options?.folder) {
     if (options.folder === 'all') {
       if (isFolderTask(params)) {
-        const folders = workspace.workspaceFolders ?? [];
+        const folders = (await getValidWorkspaceFolders()) ?? [];
         if (folders.isEmpty)
           throw new Error(`Task "${label}" can only run in workspace folder`);
         const folderContexts = folders.map((folder) => new TaskContext(folder));
