@@ -19,7 +19,8 @@
     "Other"
   ],
   "activationEvents": [
-    "*"
+    "workspaceContains:**",
+    "onStartupFinished"
   ],
   "license": "MIT",
   "main": "./dist/extension",
