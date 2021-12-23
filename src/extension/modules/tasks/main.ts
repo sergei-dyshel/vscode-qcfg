@@ -10,6 +10,7 @@ import {
   Uri,
 } from 'vscode';
 import { mapSomeAsync, MAP_UNDEFINED, filterAsync } from '../async';
+import { getValidWorkspaceFolders } from '../../utils/workspace';
 import type { ConfigFilePair } from '../config';
 import { watchConfigFile, getConfigFileNames } from '../config';
 import * as dialog from '../dialog';
