@@ -9,6 +9,7 @@ import {
   Position,
   Range,
   Selection,
+  Uri,
   window,
   workspace,
 } from 'vscode';
@@ -38,14 +39,10 @@ export function expandHome(path: string): string {
 }
 
 export function getDocumentRoot(fileName: string) {
-  const wsPath = workspace.asRelativePath(fileName, true);
+  const workspaceFolder = workspace.getWorkspaceFolder(Uri.file(fileName));
+  if (!workspaceFolder) return;
   const relativePath = workspace.asRelativePath(fileName, false);
-  const [wsDir] = wsPath.split(nodejs.path.sep, 1);
-  for (const workspaceFolder of workspace.workspaceFolders ?? []) {
-    if (workspaceFolder.name === wsDir)
-      return { workspaceFolder, relativePath };
-  }
-  return;
+  return { workspaceFolder, relativePath };
 }
 
 export function getDocumentRootThrowing(fileName: string) {
