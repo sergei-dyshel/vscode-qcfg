@@ -1,6 +1,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
+import { Uri } from 'vscode';
 import { assertNotNull } from '../../library/exception';
 import { log } from '../../library/logging';
 import * as fileUtils from './fileUtils';
@@ -25,11 +26,18 @@ function emit() {
 }
 
 function onDidSaveTextDocument(document: vscode.TextDocument) {
-  const { workspaceFolder: wsFolder } = fileUtils.getDocumentRootThrowing(
-    document.fileName,
+  const uri = document.uri;
+  const realUri =
+    uri.scheme === 'file' ? Uri.file(fileUtils.realPathSync(uri.fsPath)) : uri;
+  const wsFolder = vscode.workspace.getWorkspaceFolder(realUri);
+  if (!wsFolder) {
+    log.debug(`Saved file ${realUri} is not in workspace`);
+    return;
+  }
+  log.debug(
+    `onDidSaveTextDocument:`,
+    vscode.workspace.asRelativePath(realUri, true),
   );
-  const docPath = vscode.workspace.asRelativePath(document.fileName);
-  log.debug('onDidSaveTextDocument:', docPath);
 
   if (savedFiles.has(wsFolder)) {
     const docs = savedFiles.get(wsFolder);

@@ -427,6 +427,10 @@
         "title": "qcfg: Show in OS file manager"
       },
       {
+        "command": "qcfg.openRealPath",
+        "title": "qcfg: Open current file with its real path"
+      },
+      {
         "command": "qcfg.quickFixFile",
         "title": "qcfg: Choose and apply quick fixes for current file"
       },

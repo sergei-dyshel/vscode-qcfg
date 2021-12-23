@@ -1,10 +1,17 @@
 'use strict';
 
 import * as path from 'path';
-import type { ExtensionContext } from 'vscode';
-import { commands, window, workspace } from 'vscode';
+import {
+  commands,
+  ExtensionContext,
+  TextEditor,
+  Uri,
+  window,
+  workspace,
+} from 'vscode';
 import { selectStringFromListMru } from './dialog';
 import {
+  listenAsyncWrapped,
   registerAsyncCommandWrapped,
   registerSyncCommandWrapped,
 } from './exception';
@@ -55,6 +62,25 @@ async function showInFileManager() {
   return executeSubprocess(['open', '--reveal', curFile]);
 }
 
+async function openRealPath() {
+  const editor = getActiveTextEditor();
+  const realPath = await fileUtils.realPath(editor.document.fileName);
+  await window.showTextDocument(Uri.file(realPath), {
+    selection: editor.selection,
+  });
+}
+
+async function autoOpenRealPath(editor: TextEditor | undefined) {
+  if (!editor) return;
+  const uri = editor.document.uri;
+  if (uri.scheme !== 'file') return;
+  const realPath = await fileUtils.realPath(uri.fsPath);
+  if (realPath === uri.fsPath) return;
+  await window.showTextDocument(Uri.file(realPath), {
+    selection: getActiveTextEditor().selection,
+  });
+}
+
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
     registerSyncCommandWrapped(
@@ -65,9 +91,11 @@ function activate(context: ExtensionContext) {
       'qcfg.terminal.inFileFolder',
       terminalInFileFolder,
     ),
+    listenAsyncWrapped(window.onDidChangeActiveTextEditor, autoOpenRealPath),
     registerAsyncCommandWrapped('qcfg.runCommand', runCommand),
     registerAsyncCommandWrapped('qcfg.openInExternalApp', openInExternalApp),
     registerAsyncCommandWrapped('qcfg.showInFileManager', showInFileManager),
+    registerAsyncCommandWrapped('qcfg.openRealPath', openRealPath),
   );
 }
 

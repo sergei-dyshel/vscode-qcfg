@@ -72,6 +72,10 @@ export function getWorkspaceFolderByName(
 export const exists = nodejs.util.promisify(nodejs.fs.exists);
 export const realPath = nodejs.util.promisify(nodejs.fs.realpath);
 
+export function realPathSync(path: string): string {
+  return nodejs.fs.realpathSync(path);
+}
+
 export async function existsInRoot(
   wsFolder: WorkspaceFolder,
   fileName: string,
