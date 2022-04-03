@@ -48,8 +48,12 @@ export function stdErrorHandler(
     );
   } else {
     log.error(`${prefix}${String(error)}`);
+    console.error(error);
     if (error instanceof Error) {
       const stack = simplifyErrorStack(error.stack ?? '');
+      log.error(stack);
+    } else if (typeof error === 'object' && 'stack' in error) {
+      const stack = simplifyErrorStack(String(error.stack ?? ''));
       log.error(stack);
     }
     if (errorMessagesEnabled || options?.alwaysShowMessage) {

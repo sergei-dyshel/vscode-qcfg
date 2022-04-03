@@ -6,6 +6,7 @@ import { log } from '../../library/logging';
 import { PORT_RANGE } from '../../library/remoteClient';
 import { stringify } from '../../library/stringify';
 import { mapObjectValues } from '../../library/tsUtils';
+import { openFolder } from '../utils/window';
 import {
   handleAsyncStd,
   handleErrorsAsync,
@@ -63,6 +64,10 @@ const protocol = {
 
   async executeCommand(args: { name: string }): Promise<void> {
     return commands.executeCommand(args.name);
+  },
+
+  async openFolder(args: { path: string }): Promise<void> {
+    return openFolder(args.path, true /* newWindow */).ignoreResult();
   },
 
   async reloadWindow(_: Record<string, unknown>): Promise<void> {

@@ -30,7 +30,7 @@ generate: package.json $(TASKS_SCHEMA)
 install: | package.json
 	rm -rf *.vsix >/dev/null
 	vsce package
-	code-oss --install-extension=`ls *.vsix`
+	code --install-extension=`ls *.vsix`
 
 check_tools:
 	bin/q-vscode-cli -h >/dev/null

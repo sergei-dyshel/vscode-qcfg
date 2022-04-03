@@ -6,12 +6,13 @@ import type {
   QuickPickItem,
   QuickPickItemButtonEvent,
 } from 'vscode';
-import { commands, FileType, ThemeIcon, Uri, window, workspace } from 'vscode';
+import { FileType, ThemeIcon, Uri, window, workspace } from 'vscode';
 import { assert } from '../../library/exception';
 import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
 import { expandTemplate } from '../../library/stringUtils';
 import { showQuickPick } from '../utils/quickPick';
+import { openFolder } from '../utils/window';
 import { mapAsyncNoThrow } from './async';
 import { handleStd, registerAsyncCommandWrapped } from './exception';
 import { parseJsonFileAsync } from './json';
@@ -171,11 +172,7 @@ async function openFromHistory(newWindow: boolean) {
     }
   }
   if (selected) {
-    await commands.executeCommand(
-      'vscode.openFolder',
-      Uri.file(qp.selectedItems[0].path),
-      newWindow,
-    );
+    await openFolder(qp.selectedItems[0].path, newWindow);
   }
 }
 

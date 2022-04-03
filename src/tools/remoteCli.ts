@@ -27,6 +27,8 @@ enum Instance {
   FOLDER_OR_DEFAULT = 'folder_or_default',
   /** Choose default server */
   DEFAULT = 'default',
+  /** Any server */
+  ANY = 'any',
   /** Run on all servers */
   ALL = 'all',
 }
@@ -163,7 +165,7 @@ class CommandAction extends CliAction {
   }
 }
 
-class OpenAction extends CliAction {
+class OpenFileAction extends CliAction {
   private fileParam!: CommandLineStringParameter;
   private lineParam!: CommandLineIntegerParameter;
   private columnParam!: CommandLineIntegerParameter;
@@ -222,6 +224,42 @@ class OpenAction extends CliAction {
   }
 }
 
+class OpenFolderAction extends CliAction {
+  private pathParam!: CommandLineStringParameter;
+
+  constructor(cli: Cli) {
+    super(
+      cli,
+      {
+        actionName: 'open-folder',
+        summary: 'Open folder',
+        documentation: 'Open folder or workspace',
+      },
+      {
+        autoInstance: Instance.ANY,
+      },
+    );
+  }
+
+  onDefineParameters() {
+    this.pathParam = this.defineStringParameter({
+      parameterLongName: '--path',
+      parameterShortName: '-p',
+      description: 'Folder of workspace path',
+      argumentName: 'PATH',
+      required: true,
+    });
+  }
+
+  override async onExecute() {
+    await super.onExecute();
+    const absPath = nodejs.path.resolve(process.cwd(), this.pathParam.value!);
+    return this.client!.send('openFolder', {
+      path: absPath,
+    });
+  }
+}
+
 class OpenSshAction extends CliAction {
   private fileParam!: CommandLineStringParameter;
 
@@ -275,7 +313,8 @@ class Cli extends CommandLineParser {
       toolFilename: 'remoteCli',
       toolDescription: 'Control vscode remotely',
     });
-    this.addAction(new OpenAction(this));
+    this.addAction(new OpenFileAction(this));
+    this.addAction(new OpenFolderAction(this));
     this.addAction(new IdentifyAction(this));
     this.addAction(new CommandAction(this));
     this.addAction(new ReloadAction(this));
@@ -327,6 +366,8 @@ class Cli extends CommandLineParser {
             `Could not find server with workspace folder "${this.folder}" and no server was set as default`,
           )
         );
+      case Instance.ANY:
+        return this.multiClient.clients[0];
     }
   }
 
@@ -337,6 +378,9 @@ class Cli extends CommandLineParser {
     registerLogHandler(handler);
 
     this.multiClient = await MultiClient.connect();
+    if (this.multiClient.clients.isEmpty) {
+      throw new Error('No servers found (vscode not running');
+    }
 
     this.instance = (this.instanceParam.value ??
       Instance.UNDEFINED) as Instance;
@@ -349,7 +393,7 @@ class Cli extends CommandLineParser {
 }
 
 async function main() {
-  await new Cli().executeWithoutErrorHandling();
+  return new Cli().execute();
 }
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
