@@ -2,7 +2,7 @@ d := package
 include $(d)/Makefile
 
 npm_pre_install:
-	./npm-wrapper.sh install json-merger deepmerge ts-node typescript @types/node npm-check-updates
+	./npm-wrapper.sh install prettier json-merger deepmerge ts-node typescript @types/node npm-check-updates
 
 npm_install: | package.json
 	./npm-wrapper.sh install
@@ -17,6 +17,7 @@ npm_update_major: | package.json
 npm_full_reinstall:
 	rm -rf package.json node_modules
 	$(MAKE) npm_pre_install
+	rm -rf package.json
 	$(MAKE) package.json
 	$(MAKE) npm_install
 
@@ -35,5 +36,8 @@ install: | package.json
 check_tools:
 	bin/q-vscode-cli -h >/dev/null
 	bin/q-vscode-syntax-dump -h >/dev/null
+
+update_proposed:
+	npx vscode-dts dev
 
 check: check_tools

@@ -55,6 +55,8 @@ const generateConfig = (env: any): webpack.Configuration => ({
     'utf-8-validate',
     // add native modules which cause trouble with webpack
     'node-window-manager',
+    // otherwise webpack inlines lib/README.md from nodegit
+    /.*\.md$/,
   ],
   resolve: {
     // support reading TypeScript and JavaScript files, 📖 ->
@@ -93,6 +95,10 @@ const generateConfig = (env: any): webpack.Configuration => ({
   ignoreWarnings: [
     {
       message: /Can't resolve 'spawn-sync'/,
+    },
+    {
+      // nodegit
+      message: /Can't resolve '\.\/deprecated/,
     },
     {
       message: /build\/Debug/,

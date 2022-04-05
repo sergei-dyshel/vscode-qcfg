@@ -9,19 +9,11 @@
     "url": "https://github.com/sergei-dyshel/qyron-config.git"
   },
   "engines": {
-    "vscode": "^1.63.0"
+    "vscode": "^1.66.0"
   },
-  "enabledApiProposals": [
-    "textSearchProvider",
-    "findTextInFiles"
-  ],
-  "categories": [
-    "Other"
-  ],
-  "activationEvents": [
-    "workspaceContains:**",
-    "onStartupFinished"
-  ],
+  "enabledApiProposals": ["textSearchProvider", "findTextInFiles"],
+  "categories": ["Other"],
+  "activationEvents": ["workspaceContains:**", "onStartupFinished"],
   "license": "MIT",
   "main": "./dist/extension",
   "contributes": {
@@ -291,8 +283,8 @@
     "minimatch": "^3.0.4",
     "node-loader": "^1.0.2",
     "node-window-manager": "^2.2.4",
-    "nodegit": "github:sergei-dyshel/nodegit#master-next",
-    "re2": "github:sergei-dyshel/node-re2",
+    "nodegit": "file:local/nodegit.tgz",
+    "re2": "^1.17.3",
     "shell-quote": "^1.7.2",
     "shlex": "^2.0.2",
     "source-map-support": "^0.5.19",
@@ -300,7 +292,7 @@
     "string-format": "^2.0.0",
     "superstring": "github:sergei-dyshel/superstring#master-next",
     "tempy": "^1.0.0",
-    "tree-sitter": "github:sergei-dyshel/node-tree-sitter#master-next",
+    "tree-sitter": "file:local/tree-sitter.tgz",
     "tree-sitter-bash": "^0.19.0",
     "tree-sitter-c": "^0.19.0",
     "tree-sitter-cpp": "^0.19.0",
@@ -326,7 +318,7 @@
     "@types/source-map-support": "^0.5.3",
     "@types/sprintf-js": "^1.1.2",
     "@types/string-format": "^2.0.0",
-    "@types/vscode": "^1.60.0",
+    "@types/vscode": "^1.66.0",
     "@typescript-eslint/eslint-plugin": "^4.30.0",
     "@typescript-eslint/parser": "^4.30.0",
     "deepmerge": "^4.2.2",
