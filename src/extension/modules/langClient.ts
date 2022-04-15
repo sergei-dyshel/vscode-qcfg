@@ -22,7 +22,7 @@ export function sendDidSaveToLangClients(document: TextDocument) {
 }
 
 interface LanguageClientAPI {
-  languageClient: LanguageClient;
+  languageClient: () => LanguageClient;
   isRunning: () => boolean;
 }
 
@@ -59,7 +59,7 @@ class LanguageClientWrapper {
     if (!extension.isActive) return undefined;
     const exports = extension.exports;
     if (!exports.isRunning()) return undefined;
-    return exports.languageClient;
+    return exports.languageClient();
   }
 
   sendDidSave(document: TextDocument) {
@@ -121,16 +121,20 @@ class ClangdWrapper extends LanguageClientWrapper {
     super('clangd', 'llvm-vs-code-extensions.vscode-clangd-qcfg');
   }
 
+  override async refreshOrRestart() {
+    return this.restart();
+  }
+
   // eslint-disable-next-line class-methods-use-this
   override async runRestartCmd() {
-    return commands.executeCommand('clangd-vscode.restart').ignoreResult();
+    return commands.executeCommand('clangd.restart').ignoreResult();
   }
 }
 
 const ALL_CLIENTS = [new CclsWrapper(), new ClangdWrapper()];
 
 async function refreshLangClients() {
-  return mapAsync(ALL_CLIENTS, async (wrapper) => wrapper.refresh());
+  return mapAsync(ALL_CLIENTS, async (wrapper) => wrapper.refreshOrRestart());
 }
 
 async function restartLangClients() {
