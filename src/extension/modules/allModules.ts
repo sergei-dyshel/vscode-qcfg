@@ -15,6 +15,7 @@ import * as documentCache from './documentCache';
 import * as editHistory from './editHistory';
 import * as editing from './editing';
 import * as editorGroups from './editorGroups';
+import * as ensureQcfg from './ensureQcfg';
 import * as eslintDiagnostic from './eslintDiagnostic';
 import * as exception from './exception';
 import * as expandSelection from './expandSelection';
@@ -100,4 +101,5 @@ export const ALL_MODULES = {
   codeActions,
   updateChecker,
   renameReferences,
+  ensureQcfg,
 };
