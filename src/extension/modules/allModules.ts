@@ -1,4 +1,6 @@
 // must be first
+import * as logging from './logging';
+
 import * as alternate from './alternate';
 import * as autoSync from './autoSync';
 import * as callHierarchy from './callHierarchy';
@@ -25,7 +27,6 @@ import * as langClient from './langClient';
 import * as language from './language';
 import * as liveLocation from './liveLocation';
 import * as locationTree from './locationTree';
-import * as logging from './logging';
 import * as misc from './misc';
 import * as multipleSelection from './multipleSelection';
 import * as notes from './notes';

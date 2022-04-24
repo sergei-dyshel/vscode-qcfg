@@ -1,19 +1,18 @@
-'use strict';
-
 // these modify prototypes of objects, must be imported first
-import type { ExtensionContext } from 'vscode';
-import { log } from '../library/logging';
-import { stringify as str } from '../library/stringify';
 import '../library/stringPrototype';
 import '../library/syntax';
 import '../library/tsUtils';
-import { ALL_MODULES } from './modules/allModules';
-import { Modules } from './modules/module';
 import './utils/locationPrototype';
 import './utils/positionPrototype';
 import './utils/rangePrototype';
 import './utils/selectionPrototype';
 import './utils/uriPrototype';
+
+import type { ExtensionContext } from 'vscode';
+import { log } from '../library/logging';
+import { stringify as str } from '../library/stringify';
+import { ALL_MODULES } from './modules/allModules';
+import { Modules } from './modules/module';
 
 export function activate(context: ExtensionContext) {
   console.log('Extension active');
