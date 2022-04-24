@@ -24,6 +24,9 @@ const config = {
   },
   settings: {
     'import/resolver': {
+      typescript: {
+        alwaysTryTypes: true,
+      },
       node: {
         extensions: ['.ts', '.tsx'],
       },
@@ -46,6 +49,7 @@ const config = {
     'import/prefer-default-export': off,
     'nonblock-statement-body-position': off,
     'import/no-unresolved': off,
+    'import/no-extraneous-dependencies': [warn, { devDependencies: true }],
     'import/extensions': [
       'error',
       'ignorePackages',
@@ -62,6 +66,14 @@ const config = {
     '@typescript-eslint/no-useless-constructor': 'error',
     'no-continue': off,
     'no-console': off,
+    // disable when using organizeImiports
+    // 'import/order': [
+    //   warn,
+    //   {
+    //     alphabetize: { order: 'asc' },
+    //     'newlines-between': 'always',
+    //   },
+    // ],
     'import/order': off,
     'prefer-destructuring': off,
     'no-await-in-loop': off,
