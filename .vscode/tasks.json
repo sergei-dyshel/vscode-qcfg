@@ -37,7 +37,8 @@
     {
       "label": "eslint",
       "type": "shell",
-      "command": "npx eslint --color --format unix --ext .ts src",
+      "problemMatcher": ["$eslint-stylish"],
+      "command": "npx eslint --color --ext .ts src",
       "presentation": {
         "clear": true
       }
