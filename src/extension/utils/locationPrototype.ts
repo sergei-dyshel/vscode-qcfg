@@ -6,6 +6,7 @@ declare module 'vscode' {
   // eslint-disable-next-line @typescript-eslint/no-shadow
   export namespace Location {
     function compare(loc1: Location, loc2: Location): number;
+    function equal(loc1: Location, loc2: Location): boolean;
   }
   export interface Location {
     show: (options?: {
@@ -24,6 +25,10 @@ Location.compare = function (loc1: Location, loc2: Location): number {
     defaultCompare(loc1.uri.fsPath, loc2.uri.fsPath) ||
     Range.compare(loc1.range, loc2.range)
   );
+};
+
+Location.equal = function (loc1: Location, loc2: Location): boolean {
+  return loc1.equals(loc2);
 };
 
 Location.prototype.show = async function (

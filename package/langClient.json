@@ -12,6 +12,10 @@
             {
                 "command": "qcfg.langClient.refresh",
                 "title": "qcfg: Refresh language clients"
+            },
+            {
+                "command": "qcfg.langClient.compare",
+                "title": "qcfg: Compare language clients on current symbol"
             }
         ],
         "configuration": {

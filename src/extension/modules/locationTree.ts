@@ -1,10 +1,10 @@
 'use strict';
 
-import * as path from 'path';
 import { MultiDictionary } from 'typescript-collections';
 import type { ExtensionContext, Location, TextDocument } from 'vscode';
 import { ThemeIcon, Uri, window, workspace } from 'vscode';
 import { assert, assertInstanceOf } from '../../library/exception';
+import * as nodejs from '../../library/nodejs';
 import { stringify as str } from '../../library/stringify';
 import { maxNumber } from '../../library/tsUtils';
 import { mapSomeAsyncAndZip } from './async';
@@ -14,10 +14,56 @@ import { Modules } from './module';
 import type { TreeNode, TreeProvider } from './treeView';
 import { QcfgTreeView, StaticTreeNode } from './treeView';
 
+/** Populate location side panel with given locations */
 export async function setPanelLocations(
   message: string,
   locations: readonly Location[],
   reveal = true,
+) {
+  currentTrees = await nodesFromLocations(locations, { setId: true });
+  currentMessage = message;
+  QcfgTreeView.setProvider(locationTreeProvider);
+  if (reveal)
+    await QcfgTreeView.revealTree(undefined, { select: false, focus: false });
+}
+
+export type LocationGroup = [label: string, locations: Location[]];
+
+/** Populate location side panel with named groups of locations */
+export async function setPanelLocationGroups(
+  message: string,
+  groups: LocationGroup[],
+  reveal = true,
+) {
+  const nodes: StaticTreeNode[] = [];
+  for (const group of groups) {
+    const node = new StaticTreeNode(group[0]);
+    node.addChildren(await nodesFromLocations(group[1], { setId: false }));
+    nodes.push(node);
+  }
+  currentTrees = nodes;
+  currentMessage = message;
+  QcfgTreeView.setProvider(locationTreeProvider);
+  if (reveal)
+    await QcfgTreeView.revealTree(undefined, { select: false, focus: false });
+}
+
+// private
+
+/** Options for creating location tree nodes */
+interface LocationTreeOptions {
+  /**
+   * Set file/directory/location node ID.
+   *
+   * Should be false there is going to be multiple nodes for same file/dir/loc,
+   * e.g. multiple location groups.
+   */
+  setId?: boolean;
+}
+
+async function nodesFromLocations(
+  locations: readonly Location[],
+  options: LocationTreeOptions,
 ) {
   const dict = new MultiDictionary<Uri, Location>();
   const fileNodes: FileNode[] = [];
@@ -28,14 +74,14 @@ export async function setPanelLocations(
     ),
   );
   for (const uri of dict.keys()) {
-    const fileNode = new FileNode(uri);
+    const fileNode = new FileNode(uri, options);
     fileNodes.push(fileNode);
     for (const loc of dict.getValue(uri)) {
-      const locNode = new LocationNode(loc, documents.get(uri)!);
+      const locNode = new LocationNode(loc, documents.get(uri)!, options);
       fileNode.addChild(locNode);
     }
   }
-  const nodes = TreeBuilder.buildDirHierarchy(fileNodes);
+  const nodes = TreeBuilder.buildDirHierarchy(fileNodes, options);
   StaticTreeNode.sortNodesRecursively(nodes, (a, b) => {
     if (a instanceof LocationNode && b instanceof LocationNode)
       return a.line - b.line;
@@ -45,20 +91,12 @@ export async function setPanelLocations(
       assertInstanceOf(b, UriNode).fsPath,
     );
   });
-  currentTrees = nodes;
-  currentMessage = message;
-  QcfgTreeView.setProvider(locationTreeProvider);
-  if (reveal)
-    await QcfgTreeView.revealTree(undefined, { select: false, focus: false });
+  return nodes;
 }
-
-// private
 
 namespace TreeBuilder {
   type Tree = FileNode | Forest;
-  // use interface to prevent circular reference
-  // eslint-disable-next-line @typescript-eslint/no-empty-interface
-  interface Forest extends Map<string, Tree> {}
+  type Forest = Map<string, Tree>;
 
   function createForest() {
     return new Map<string, Tree>();
@@ -84,10 +122,13 @@ namespace TreeBuilder {
     throw Error();
   }
 
-  export function buildDirHierarchy(files: FileNode[]): StaticTreeNode[] {
+  export function buildDirHierarchy(
+    files: FileNode[],
+    options: LocationTreeOptions,
+  ): StaticTreeNode[] {
     const forest = build(files);
     compress(forest);
-    return convertToHierarchy(forest, '').map((root) => {
+    return convertToHierarchy(forest, '', options).map((root) => {
       root.provider = locationTreeProvider;
       return root;
     });
@@ -97,7 +138,7 @@ namespace TreeBuilder {
     const forest = createForest();
     for (const file of files) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const components = file.fsPath.split(path.sep);
+      const components = file.fsPath.split(nodejs.path.sep);
       if (components[0] === '') components.shift();
       insert(forest, components, file);
     }
@@ -114,22 +155,23 @@ namespace TreeBuilder {
       const [subcomp, subtree] = tree.entries().next().value;
       if (!(subtree instanceof Map)) continue;
       forest.delete(comp);
-      forest.set(path.join(comp, subcomp as string), subtree);
+      forest.set(nodejs.path.join(comp, subcomp as string), subtree);
     }
   }
 
   function convertToHierarchy(
     forest: Forest,
     prefix: string,
+    options: LocationTreeOptions,
   ): StaticTreeNode[] {
     const nodes: StaticTreeNode[] = [];
     for (const [subpath, tree] of forest) {
       if (tree instanceof FileNode) nodes.push(tree);
       else if (tree instanceof Map) {
-        const absSubpath = prefix === '' ? path.sep + subpath : subpath;
-        const newPrefix = path.join(prefix, absSubpath);
-        const dirNode = new DirNode(newPrefix, absSubpath);
-        dirNode.addChildren(convertToHierarchy(tree, newPrefix));
+        const absSubpath = prefix === '' ? nodejs.path.sep + subpath : subpath;
+        const newPrefix = nodejs.path.join(prefix, absSubpath);
+        const dirNode = new DirNode(newPrefix, absSubpath, options);
+        dirNode.addChildren(convertToHierarchy(tree, newPrefix, options));
         nodes.push(dirNode);
       } else {
         throw Error();
@@ -140,10 +182,10 @@ namespace TreeBuilder {
 }
 
 class UriNode extends StaticTreeNode {
-  constructor(uri: Uri, label: string) {
+  constructor(uri: Uri, label: string, options: LocationTreeOptions) {
     super(label);
     this.treeItem.resourceUri = uri;
-    this.treeItem.id = uri.fsPath;
+    if (options.setId) this.treeItem.id = uri.fsPath;
     this.allowRemoval();
   }
 
@@ -157,9 +199,9 @@ class UriNode extends StaticTreeNode {
 }
 
 class DirNode extends UriNode {
-  constructor(dir: string, label: string) {
+  constructor(dir: string, label: string, options: LocationTreeOptions) {
     const uri = Uri.file(dir);
-    super(uri, label);
+    super(uri, label, options);
     this.treeItem.iconPath = ThemeIcon.Folder;
     this.treeItem.label = label;
     this.setExpanded();
@@ -167,15 +209,19 @@ class DirNode extends UriNode {
 }
 
 class FileNode extends UriNode {
-  constructor(uri: Uri) {
-    super(uri, '');
+  constructor(uri: Uri, options: LocationTreeOptions) {
+    super(uri, '', options);
     this.treeItem.iconPath = ThemeIcon.File;
     this.setExpanded();
   }
 }
 
 class LocationNode extends StaticTreeNode {
-  constructor(loc: Location, document: TextDocument) {
+  constructor(
+    loc: Location,
+    document: TextDocument,
+    options: LocationTreeOptions,
+  ) {
     const start = loc.range.start;
     const docLine = document.lineAt(start.line);
     const text = docLine.text;
@@ -201,7 +247,7 @@ class LocationNode extends StaticTreeNode {
       this.remove();
     }, true /* mergeOnReplace */);
     this.allowRemoval();
-    this.treeItem.id = str(loc);
+    if (options.setId) this.treeItem.id = str(loc);
   }
 
   async show() {

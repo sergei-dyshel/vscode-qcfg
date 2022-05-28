@@ -157,8 +157,8 @@ export class MapUndefined {}
 export const MAP_UNDEFINED = new MapUndefined();
 
 /**
- * Map array through function and filter out those returned MAP_UNDEFINED.
- * Return array of [value, <mapped value>] pairs.
+ * Map array through function and filter out those returned {@link MAP_UNDEFINED}.
+ * Return array of [value, mapped value] pairs.
  */
 export async function mapSomeAsyncAndZip<V, R>(
   arr: readonly V[],
