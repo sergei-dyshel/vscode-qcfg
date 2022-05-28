@@ -18,7 +18,7 @@ const openDocuments = new Dictionary<Uri, TextDocument>();
 const uriDicts: Array<Dictionary<Uri, unknown>> = [];
 
 function filterUri(uri: Uri) {
-  const SCHEMES = ['git', 'gitfs', 'output'];
+  const SCHEMES = ['git', 'gitfs', 'output', 'vscode'];
   if (SCHEMES.includes(uri.scheme)) return true;
   return false;
 }
