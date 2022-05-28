@@ -4,6 +4,62 @@ import { MultiDictionary } from 'typescript-collections';
 
 const emptyRegExp = new RegExp('');
 
+// see https://stackoverflow.com/questions/61148466/typescript-type-that-matches-any-object-but-not-arrays
+// TODO: currently not used
+export type NotArray = (
+  | Record<string, unknown>
+  | string
+  | bigint
+  | number
+  | boolean
+) & {
+  length?: never;
+};
+
+/** Convert scalar to array if needed */
+export function normalizeArray<T>(x: T | T[]): T[] {
+  if (Array.isArray(x)) return x;
+  return [x];
+}
+
+/** Convert union of arrays into array of unions */
+export function unionizeArrays<T, Q>(x: T[] | Q[]): Array<T | Q> {
+  return x;
+}
+
+export type CompareFunc<T> = (x: T, y: T) => boolean;
+
+export function diffArrays<T>(
+  a: T[],
+  b: T[],
+  equal: CompareFunc<T>,
+): [onlyA: T[], onlyB: T[], common: T[]] {
+  const onlyA: T[] = [];
+  const onlyB: T[] = [];
+  const common: T[] = [];
+
+  for (const x of a) {
+    if (b.filter((y) => equal(x, y)).isEmpty) onlyA.push(x);
+    else common.push(x);
+  }
+  for (const y of b) {
+    if (a.filter((x) => equal(x, y)).isEmpty) onlyB.push(y);
+  }
+  return [onlyA, onlyB, common];
+}
+
+/** Takes function that does not accept undefined argument and returns
+ * function that accepts it and returns undefined in that case
+ */
+export function propagateUndefined<T, Q>(
+  f: (x: T) => Q,
+): (x: T | undefined) => Q | undefined {
+  return (x: T | undefined): Q | undefined => {
+    if (x !== undefined) return f(x);
+    return x as undefined;
+  };
+}
+
 export function isEmptyRegExp(re: RegExp) {
   return re.source === emptyRegExp.source;
 }

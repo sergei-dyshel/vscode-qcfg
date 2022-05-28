@@ -31,6 +31,7 @@ import {
 } from '../../library/exception';
 import { log } from '../../library/logging';
 import { abbrevMatch } from '../../library/stringUtils';
+import { locationOrLink } from '../utils/document';
 import { getDocumentSymbolsFromCtags } from './ctags';
 import { selectMultiple } from './dialog';
 import { getCompletionPrefix } from './documentUtils';
@@ -65,29 +66,19 @@ const TODO_CATEGORIES = [
 ];
 
 export async function executeDefinitionProvider(uri: Uri, position: Position) {
-  // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
-  const locationOrLinks = (await commands.executeCommand(
-    'vscode.executeDefinitionProvider',
-    uri,
-    position,
-  )) as Array<Location | LocationLink>;
+  const locationOrLinks = await commands.executeCommand<
+    Array<Location | LocationLink>
+  >('vscode.executeDefinitionProvider', uri, position);
 
-  return locationOrLinks.map((locOrLink) => {
-    if ('targetRange' in locOrLink) {
-      const range = locOrLink.targetSelectionRange ?? locOrLink.targetRange;
-      return new Location(locOrLink.targetUri, range);
-    }
-    return locOrLink;
-  });
+  return locationOrLinks.map(locationOrLink);
 }
 
 export async function executeReferenceProvider(uri: Uri, position: Position) {
-  // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
-  return (await commands.executeCommand(
+  return commands.executeCommand<Location[]>(
     'vscode.executeReferenceProvider',
     uri,
     position,
-  )) as Location[];
+  );
 }
 
 export async function searchInFiles(

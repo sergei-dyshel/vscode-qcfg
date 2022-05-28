@@ -17,10 +17,10 @@ export type Outline = OutlineSymbol[];
 
 export async function executeDocumentSymbolProvider(uri: Uri) {
   // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
-  return (await commands.executeCommand(
+  return commands.executeCommand<DocumentSymbol[]>(
     'vscode.executeDocumentSymbolProvider',
     uri,
-  )) as DocumentSymbol[];
+  );
 }
 
 function findTextInRange(

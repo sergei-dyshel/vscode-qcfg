@@ -411,6 +411,10 @@
         "title": "qcfg: Refresh language clients"
       },
       {
+        "command": "qcfg.langClient.compare",
+        "title": "qcfg: Compare language clients on current symbol"
+      },
+      {
         "command": "qcfg.git.dump",
         "title": "qcfg: Git - dump info"
       },

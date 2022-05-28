@@ -44,13 +44,13 @@ async function executeCodeActionProvider(
   itemResolveCount?: number,
 ): Promise<CodeAction[]> {
   // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
-  return (await commands.executeCommand(
+  return commands.executeCommand<CodeAction[]>(
     'vscode.executeCodeActionProvider',
     uri,
     range,
     kind,
     itemResolveCount,
-  )) as CodeAction[];
+  );
 }
 
 /** filter through config rules, sort by priority */
