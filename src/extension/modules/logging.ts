@@ -9,7 +9,6 @@ import type {
   TextEditor,
 } from 'vscode';
 import {
-  languages,
   Location,
   Position,
   Range,
@@ -30,14 +29,11 @@ import * as nodejs from '../../library/nodejs';
 import { registerStringifier, stringify as str } from '../../library/stringify';
 import { selectStringFromList } from './dialog';
 import {
-  handleAsyncStd,
   listenWrapped,
   registerAsyncCommandWrapped,
   registerSyncCommandWrapped,
 } from './exception';
 import { Modules } from './module';
-
-const FIRST_LINE_ID = '{vscode-qcfg.log}';
 
 function stringifyTextEditor(editor: TextEditor) {
   const doc = editor.document;
@@ -128,7 +124,7 @@ class OutputChannelHandler extends TextLogHandler {
     /// #if DEBUG
     this.level = LogLevel.DEBUG;
     /// #endif
-    this.outputChannel = window.createOutputChannel('qcfg');
+    this.outputChannel = window.createOutputChannel('qcfg', 'qcfg-log');
     for (const editor of window.visibleTextEditors) {
       if (editor.document.fileName.startsWith('extension-output')) this.show();
     }
@@ -159,18 +155,6 @@ function getLogFileName() {
   return '/tmp/' + EXT;
 }
 
-function onDidChangeVisibleTextEditors(editors: readonly TextEditor[]) {
-  for (const editor of editors) {
-    if (!editor.document.fileName.startsWith('extension-output')) continue;
-    if (editor.document.lineAt(0).text.includes(FIRST_LINE_ID))
-      handleAsyncStd(
-        languages.setTextDocumentLanguage(editor.document, 'qcfg-log'),
-      );
-    else
-      handleAsyncStd(languages.setTextDocumentLanguage(editor.document, 'Log'));
-  }
-}
-
 function activate(context: ExtensionContext) {
   const outputHandler = new OutputChannelHandler();
   const fileHandler = new FileHandler(getLogFileName());
@@ -178,10 +162,6 @@ function activate(context: ExtensionContext) {
   registerLogHandler(fileHandler);
 
   context.subscriptions.push(
-    listenWrapped(
-      window.onDidChangeVisibleTextEditors,
-      onDidChangeVisibleTextEditors,
-    ),
     registerSyncCommandWrapped('qcfg.log.show', () => {
       outputHandler.show();
     }),
@@ -193,7 +173,6 @@ function activate(context: ExtensionContext) {
     ),
   );
 
-  log.info(FIRST_LINE_ID);
   /// #if DEBUG
   log.info('DEBUG mode');
   /// #else
@@ -205,7 +184,6 @@ function activate(context: ExtensionContext) {
     )} level`,
   );
   log.info('Logging to file', fileHandler.fileName);
-  onDidChangeVisibleTextEditors(window.visibleTextEditors);
 }
 
 Modules.register(activate);
