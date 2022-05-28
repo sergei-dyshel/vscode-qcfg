@@ -1,14 +1,10 @@
 'use strict';
 
 import * as path from 'path';
-import {
-  commands,
-  ExtensionContext,
-  TextEditor,
-  Uri,
-  window,
-  workspace,
-} from 'vscode';
+import type { ExtensionContext, TextEditor } from 'vscode';
+import { commands, Uri, window, workspace } from 'vscode';
+import { log } from '../../library/logging';
+import * as nodejs from '../../library/nodejs';
 import { selectStringFromListMru } from './dialog';
 import {
   listenAsyncWrapped,
@@ -81,7 +77,14 @@ async function autoOpenRealPath(editor: TextEditor | undefined) {
   });
 }
 
+function checkSpawnTime() {
+  const start = Date.now();
+  nodejs.child_process.spawn('ls', ['.']);
+  log.info(`spawn sync time: ${Date.now() - start}`);
+}
+
 function activate(context: ExtensionContext) {
+  checkSpawnTime();
   context.subscriptions.push(
     registerSyncCommandWrapped(
       'qcfg.terminal.inWorkspaceFolder',
