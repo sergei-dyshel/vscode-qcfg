@@ -86,7 +86,7 @@ class History {
       check(prev !== undefined, 'No backward history');
     }
     this.forward.push(cur);
-    this.log.info(`Going backward to ${prev}`);
+    this.log.debug(`Going backward to ${prev}`);
     await this.show(prev.asPosition);
   }
 
@@ -100,7 +100,7 @@ class History {
     const next = this.forward.pop();
     check(next !== undefined, 'No forward history');
     this.backward.push(cur);
-    this.log.info(`Going forward to ${next}`);
+    this.log.debug(`Going forward to ${next}`);
     await this.show(next.asPosition);
   }
 
