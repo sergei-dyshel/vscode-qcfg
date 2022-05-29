@@ -155,12 +155,6 @@ function getLogFileName() {
   return '/tmp/' + EXT;
 }
 
-function onDidChangeVisibleTextEditors(editors: readonly TextEditor[]) {
-  for (const editor of editors) {
-    if (!editor.document.fileName.startsWith('extension-output')) continue;
-  }
-}
-
 function activate(context: ExtensionContext) {
   const outputHandler = new OutputChannelHandler();
   const fileHandler = new FileHandler(getLogFileName());
@@ -168,10 +162,6 @@ function activate(context: ExtensionContext) {
   registerLogHandler(fileHandler);
 
   context.subscriptions.push(
-    listenWrapped(
-      window.onDidChangeVisibleTextEditors,
-      onDidChangeVisibleTextEditors,
-    ),
     registerSyncCommandWrapped('qcfg.log.show', () => {
       outputHandler.show();
     }),
@@ -194,7 +184,6 @@ function activate(context: ExtensionContext) {
     )} level`,
   );
   log.info('Logging to file', fileHandler.fileName);
-  onDidChangeVisibleTextEditors(window.visibleTextEditors);
 }
 
 Modules.register(activate);
