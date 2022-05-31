@@ -415,6 +415,10 @@
         "title": "qcfg: Compare language clients on current symbol"
       },
       {
+        "command": "qcfg.clangd.dumpAST",
+        "title": "qcfg: Clangd - dump AST"
+      },
+      {
         "command": "qcfg.git.dump",
         "title": "qcfg: Git - dump info"
       },

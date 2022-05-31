@@ -1,4 +1,4 @@
-import type { ExtensionContext, Position, TextDocument } from 'vscode';
+import type { ExtensionContext, Position, Range, TextDocument } from 'vscode';
 import { commands, extensions, Location, Uri } from 'vscode';
 import * as client from 'vscode-languageclient';
 import { assertNotNull } from '../../library/exception';
@@ -8,11 +8,25 @@ import { log, Logger } from '../../library/logging';
 import { diffArrays } from '../../library/tsUtils';
 import { FromClient, ToClient } from '../utils/langClientConv';
 import { mapAsync } from './async';
-import { registerAsyncCommandWrapped } from './exception';
+import {
+  executeCommandHandled,
+  registerAsyncCommandWrapped,
+} from './exception';
 import type { LocationGroup } from './locationTree';
 import { setPanelLocationGroups } from './locationTree';
 import { Modules } from './module';
 import { getActiveTextEditor } from './utils';
+
+export namespace Clangd {
+  export interface ASTNode {
+    role: string;
+    kind: string;
+    detail?: string;
+    arcana?: string;
+    range: client.Range;
+    children?: ASTNode[];
+  }
+}
 
 export function isAnyLangClientRunning(): boolean {
   return ALL_CLIENTS.map((wrapper) => wrapper.isClientRunning).isAnyTrue();
@@ -174,9 +188,19 @@ class ClangdWrapper extends LanguageClientWrapper {
   override async runRestartCmd() {
     return commands.executeCommand('clangd.restart').ignoreResult();
   }
+
+  async getAST(uri: Uri, range: Range) {
+    return this.client?.sendRequest<Clangd.ASTNode>('textDocument/ast', {
+      textDocument: ToClient.makeTextDocument(uri),
+      range: ToClient.convRange(range),
+    });
+  }
 }
 
-const ALL_CLIENTS = [new CclsWrapper(), new ClangdWrapper()];
+const cclsWrapper = new CclsWrapper();
+const clangdWrapper = new ClangdWrapper();
+
+const ALL_CLIENTS = [cclsWrapper, clangdWrapper];
 
 async function refreshLangClients() {
   return mapAsync(ALL_CLIENTS, async (wrapper) => wrapper.refreshOrRestart());
@@ -293,12 +317,27 @@ async function compareLangClients() {
   await setPanelLocationGroups('Language client result diff', groups);
 }
 
+async function clangdShowAST() {
+  const edit = getActiveTextEditor();
+  const ast = await clangdWrapper.getAST(edit.document.uri, edit.selection);
+  log.info(
+    JSON.stringify(
+      ast,
+      ['arcana', 'kind', 'role', 'detail', 'children'],
+      '  ' /* space*/,
+    ),
+  );
+  console.log(ast);
+  executeCommandHandled('qcfg.log.show');
+}
+
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
     registerAsyncCommandWrapped('qcfg.langClient.restart', restartLangClients),
     registerAsyncCommandWrapped('qcfg.langClient.refresh', refreshLangClients),
     registerAsyncCommandWrapped('qcfg.langClient.stop', stopLangClients),
     registerAsyncCommandWrapped('qcfg.langClient.compare', compareLangClients),
+    registerAsyncCommandWrapped('qcfg.clangd.dumpAST', clangdShowAST),
   );
 }
 
