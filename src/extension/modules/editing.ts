@@ -1,3 +1,5 @@
+// noinspection JSUnusedAssignment
+
 'use strict';
 
 import type {

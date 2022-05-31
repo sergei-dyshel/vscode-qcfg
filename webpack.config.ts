@@ -4,7 +4,9 @@
 
 'use strict';
 
+// eslint-disable-next-line import/no-import-module-exports
 import path from 'path';
+// eslint-disable-next-line import/no-import-module-exports
 import type webpack from 'webpack';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -60,11 +60,9 @@ function ruleMatches(cond: Condition, documentOrUri: TextDocument | Uri) {
   );
 
   if (cond.glob && !fileMatch(path, cond.glob)) return false;
-  if (
+  return !(
     cond.language &&
     !(documentOrUri instanceof Uri) &&
     cond.language !== documentOrUri.languageId
-  )
-    return false;
-  return true;
+  );
 }

@@ -156,7 +156,6 @@ function buildNodeName(
     default:
       return undefined;
   }
-  return undefined;
 }
 
 class SyntaxTreeViewNode extends StaticTreeNode {

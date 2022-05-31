@@ -39,7 +39,6 @@ export function stdErrorHandler(
   prefix?: string,
   options?: StdErrorHandlerOptions,
 ): never {
-  prefix = prefix ?? '';
   if (error instanceof CheckError) {
     log.info(`${prefix}Check failed: ${error.message}`);
     showStatusBarMessage(
@@ -200,7 +199,7 @@ const extensionPath = nodejs.fs.realpathSync(
 
 function simplifyErrorStack(stack: string) {
   const idx = stack.search(/\n\s+at.*extensionHostProcess.js/);
-  if (idx !== -1) stack = stack.substr(0, idx);
+  if (idx !== -1) stack = stack.substring(0, idx);
   return replaceAll(stack, extensionPath + '/', '');
 }
 

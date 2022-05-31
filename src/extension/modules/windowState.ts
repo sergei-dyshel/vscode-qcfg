@@ -17,8 +17,7 @@ function callHammerspoon(funcName: string, ...args: Array<number | string>) {
   const params = args
     .map((x) => {
       if (typeof x === 'number') return x.toString();
-      if (typeof x === 'string') return JSON.stringify(x);
-      return '';
+      return JSON.stringify(x);
     })
     .join(', ');
   const callExpr = `${funcName}(${params})`;

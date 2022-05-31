@@ -7,6 +7,7 @@ import { listenAsyncWrapped, registerAsyncCommandWrapped } from './exception';
 import { getWorkspaceFolderByName } from './fileUtils';
 import { Modules } from './module';
 import { getVisibleEditor } from './windowUtils';
+import { getWorkspaceRoot } from '../utils/workspace';
 
 async function onEditorChanged(editor: TextEditor | undefined) {
   if (!editor) return;
@@ -27,13 +28,13 @@ async function onEditorChanged(editor: TextEditor | undefined) {
   if (!getVisibleEditor(ViewColumn.Two)) return;
 
   await commands.executeCommand('markdown.showPreviewToSide');
-  editor.show(editor.viewColumn);
+  await window.showTextDocument(editor.document, editor.viewColumn);
 }
 
 async function newNote() {
   const config = workspace.getConfiguration();
 
-  let rootPath = workspace.rootPath;
+  let rootPath = getWorkspaceRoot();
   assertNotNull(rootPath, 'No workspace folder is opened');
   if ((workspace.workspaceFolders?.length ?? 1) > 1) {
     // multiple workspace folders

@@ -100,7 +100,7 @@ export function expandTemplate(
   substitute: Record<string, string | undefined>,
   throwWhenNotExist = false,
 ): string {
-  return text.replace(/\$\{([a-zA-Z0-9]+)\}/g, (_, varname: string) => {
+  return text.replace(/\$\{([a-zA-Z\d]+)}/g, (_, varname: string) => {
     const sub = substitute[varname];
     if (!sub) {
       if (throwWhenNotExist)

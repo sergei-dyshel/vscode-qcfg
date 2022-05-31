@@ -167,14 +167,12 @@ namespace TreeBuilder {
     const nodes: StaticTreeNode[] = [];
     for (const [subpath, tree] of forest) {
       if (tree instanceof FileNode) nodes.push(tree);
-      else if (tree instanceof Map) {
+      else {
         const absSubpath = prefix === '' ? nodejs.path.sep + subpath : subpath;
         const newPrefix = nodejs.path.join(prefix, absSubpath);
         const dirNode = new DirNode(newPrefix, absSubpath, options);
         dirNode.addChildren(convertToHierarchy(tree, newPrefix, options));
         nodes.push(dirNode);
-      } else {
-        throw Error();
       }
     }
     return nodes;
@@ -226,7 +224,7 @@ class LocationNode extends StaticTreeNode {
     const docLine = document.lineAt(start.line);
     const text = docLine.text;
     const trimOffset = docLine.firstNonWhitespaceCharacterIndex;
-    const label = text.substr(trimOffset);
+    const label = text.substring(trimOffset);
     if (start.isEqual(loc.range.end)) {
       // empty range
       super(label);
