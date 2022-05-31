@@ -116,7 +116,7 @@ export class TaskContext {
   }
 
   substitute(text: string): string {
-    return text.replace(/\$\{([a-zA-Z]+)\}/g, (_, varname: string) => {
+    return text.replace(/\$\{([a-zA-Z]+)}/g, (_, varname: string) => {
       if (!this.SUBSTITUTE_VARS.includes(varname))
         throw new ParamsError(`Unexpected variable "${varname}"`);
       const sub = this.vars[varname] as string | undefined;

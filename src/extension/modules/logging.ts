@@ -29,7 +29,6 @@ import * as nodejs from '../../library/nodejs';
 import { registerStringifier, stringify as str } from '../../library/stringify';
 import { selectStringFromList } from './dialog';
 import {
-  listenWrapped,
   registerAsyncCommandWrapped,
   registerSyncCommandWrapped,
 } from './exception';

@@ -72,6 +72,7 @@ export interface BaseProcessTaskParams extends BaseTaskParams {
   exitCodes?: number[];
 }
 
+// only to add auto-complete suggestions to schema
 type KnownProblemMatcher = 'gcc-relative' | 'gcc-absolute';
 
 export interface TerminalTaskParams extends BaseProcessTaskParams {
@@ -98,7 +99,9 @@ export interface TerminalTaskParams extends BaseProcessTaskParams {
    */
   problemMatchers?:
     | string
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     | KnownProblemMatcher
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     | Array<string | KnownProblemMatcher>;
 
   flags?: Array<

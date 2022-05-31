@@ -13,7 +13,7 @@ const VIMGREP_PARSE_REGEX =
 
 /* gtags line has whitespace-trimmed text so we can't use to for tag searching */
 const GTAGS_PARSE_REGEX =
-  /(?<tag>\S+)\s+(?<line>[0-9]+)\s+(?<file>\S+) (?<text>.*)/;
+  /(?<tag>\S+)\s+(?<line>\d+)\s+(?<file>\S+) (?<text>.*)/;
 
 export enum ParseLocationFormat {
   VIMGREP,
@@ -49,7 +49,7 @@ export function parseLocation(
   if (!match) return;
   const groups = match.groups!;
   if (!groups['file']) return;
-  let column = 1;
+  let column;
   if (!groups['column']) {
     column = 1;
   } else {

@@ -257,9 +257,7 @@ async function fetchQcfgTasks(options?: FetchOptions): Promise<BaseQcfgTask[]> {
   const filteredParams = configuredParams.filter((fetchedParams) => {
     const { params } = fetchedParams;
     if (!params.flags) params.flags = [];
-    if (params.flags.includes(Flag.HIDDEN) && !(options ?? {}).showHidden)
-      return false;
-    return true;
+    return !(params.flags.includes(Flag.HIDDEN) && !options?.showHidden);
   });
 
   const tasks = await mapSomeAsync<FetchedParams, BaseQcfgTask[]>(

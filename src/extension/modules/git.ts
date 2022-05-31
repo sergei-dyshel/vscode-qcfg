@@ -85,7 +85,7 @@ async function getInfo(editor: TextEditor) {
     line,
     hash,
     blameCommit,
-    shortHash: hash.substr(0, SHORT_SHA_LEN),
+    shortHash: hash.substring(0, SHORT_SHA_LEN),
   };
   try {
     const branch = await repo.getCurrentBranch();

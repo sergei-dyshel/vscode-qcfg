@@ -22,3 +22,9 @@ export async function getValidWorkspaceFolders(): Promise<
     async (folder: WorkspaceFolder) => uriExists(folder.uri),
   );
 }
+
+export function getWorkspaceRoot(): string | undefined {
+  const folders = workspace.workspaceFolders;
+  if (!folders || folders.isEmpty) return undefined;
+  return folders[0].uri.fsPath;
+}

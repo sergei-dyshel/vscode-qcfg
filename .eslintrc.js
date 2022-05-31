@@ -148,6 +148,7 @@ const config = {
     '@typescript-eslint/no-untyped-public-signature': off,
     '@typescript-eslint/no-require-imports': off,
     '@typescript-eslint/no-parameter-properties': off,
+    '@typescript-eslint/parameter-properties': off,
     'max-len': off,
     '@typescript-eslint/explicit-module-boundary-types': off,
     '@typescript-eslint/prefer-readonly-parameter-types': off,
