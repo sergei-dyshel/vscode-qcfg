@@ -1,32 +1,31 @@
-import type { ExtensionContext, Position, Range, TextDocument } from 'vscode';
-import { commands, extensions, Location, Uri } from 'vscode';
+import {
+  commands,
+  ExtensionContext,
+  extensions,
+  languages,
+  Location,
+  Position,
+  Range,
+  TextDocument,
+  Uri
+} from 'vscode';
 import * as client from 'vscode-languageclient';
 import { assertNotNull } from '../../library/exception';
 import * as nodejs from '../../library/nodejs';
 
 import { log, Logger } from '../../library/logging';
 import { diffArrays } from '../../library/tsUtils';
+import { Clangd, ClangdTypeHierarchyProvider } from '../utils/clangd';
 import { FromClient, ToClient } from '../utils/langClientConv';
 import { mapAsync } from './async';
 import {
   executeCommandHandled,
-  registerAsyncCommandWrapped,
+  registerAsyncCommandWrapped
 } from './exception';
 import type { LocationGroup } from './locationTree';
 import { setPanelLocationGroups } from './locationTree';
 import { Modules } from './module';
 import { getActiveTextEditor } from './utils';
-
-export namespace Clangd {
-  export interface ASTNode {
-    role: string;
-    kind: string;
-    detail?: string;
-    arcana?: string;
-    range: client.Range;
-    children?: ASTNode[];
-  }
-}
 
 export function isAnyLangClientRunning(): boolean {
   return ALL_CLIENTS.map((wrapper) => wrapper.isClientRunning).isAnyTrue();
@@ -338,6 +337,11 @@ function activate(context: ExtensionContext) {
     registerAsyncCommandWrapped('qcfg.langClient.stop', stopLangClients),
     registerAsyncCommandWrapped('qcfg.langClient.compare', compareLangClients),
     registerAsyncCommandWrapped('qcfg.clangd.dumpAST', clangdShowAST),
+
+    languages.registerTypeHierarchyProvider(
+      { language: 'cpp' },
+      new ClangdTypeHierarchyProvider(() => clangdWrapper.client),
+    ),
   );
 }
 

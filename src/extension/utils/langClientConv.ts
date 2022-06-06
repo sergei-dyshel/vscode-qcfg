@@ -1,5 +1,5 @@
 import type { LocationLink } from 'vscode';
-import { Location, Position, Range, Uri } from 'vscode';
+import { Location, Position, Range, SymbolKind, Uri } from 'vscode';
 import * as client from 'vscode-languageclient';
 import { propagateUndefined, unionizeArrays } from '../../library/tsUtils';
 import { locationOrLink } from './document';
@@ -49,6 +49,10 @@ export namespace FromClient {
 
     return [convLocation(rsp)];
   }
+
+  export function convSymbolKind(kind: client.SymbolKind): SymbolKind {
+    return kind - 1;
+  }
 }
 
 export namespace ToClient {
@@ -83,5 +87,9 @@ export namespace ToClient {
       textDocument: makeTextDocument(uri),
       position: convPosition(pos),
     };
+  }
+
+  export function convSymbolKind(kind: SymbolKind): client.SymbolKind {
+    return (kind + 1) as client.SymbolKind;
   }
 }
