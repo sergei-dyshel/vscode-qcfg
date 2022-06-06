@@ -9,7 +9,7 @@
     "url": "https://github.com/sergei-dyshel/qyron-config.git"
   },
   "engines": {
-    "vscode": "^1.66.0"
+    "vscode": "^1.67.0"
   },
   "enabledApiProposals": ["textSearchProvider", "findTextInFiles"],
   "categories": ["Other"],
@@ -318,7 +318,7 @@
     "@types/source-map-support": "^0.5.3",
     "@types/sprintf-js": "^1.1.2",
     "@types/string-format": "^2.0.0",
-    "@types/vscode": "^1.66.0",
+    "@types/vscode": "^1.67.0",
     "@typescript-eslint/eslint-plugin": "^5.26.0",
     "@typescript-eslint/parser": "^5.26.0",
     "deepmerge": "^4.2.2",
