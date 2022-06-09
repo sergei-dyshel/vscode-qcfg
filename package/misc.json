@@ -20,6 +20,10 @@
       {
         "command": "qcfg.quickFixWorkspace",
         "title": "qcfg: Choose and apply quick fixes for entire workspace"
+      },
+      {
+        "command": "qcfg.semanticHighlight.dump",
+        "title": "qcfg: Dump semantic tokens on selection"
       }
     ],
     "keybindings": [

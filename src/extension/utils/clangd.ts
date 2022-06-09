@@ -2,7 +2,7 @@ import type {
   CancellationToken,
   Position,
   TextDocument,
-  TypeHierarchyProvider
+  TypeHierarchyProvider,
 } from 'vscode';
 import { TypeHierarchyItem } from 'vscode';
 import * as vsclc from 'vscode-languageclient';
@@ -20,6 +20,8 @@ export namespace Clangd {
     range: vsclc.Range;
     children?: ASTNode[];
   }
+
+  // type hierarchy stuff copied from clangd's extension code
 
   export namespace TypeHierarchyDirection {
     export const Children = 0;
@@ -101,7 +103,7 @@ class ClangdTypeHierarchyItem extends TypeHierarchyItem {
 export class ClangdTypeHierarchyProvider implements TypeHierarchyProvider {
   private getNonNullClient() {
     const cl = this.getClient();
-    assertNotNull(cl, "Clangd not running");
+    assertNotNull(cl, 'Clangd not running');
     return cl;
   }
 
