@@ -39,6 +39,7 @@ import * as renameReferences from './renameReferences';
 import * as saveAll from './saveAll';
 import * as savedSearch from './savedSearch';
 import * as search from './search';
+import * as semanticHighlight from './semanticHighlight';
 import * as smartCopy from './smartCopy';
 import * as sshFs from './sshFs';
 import * as syntaxTreeView from './syntaxTreeView';
@@ -102,4 +103,5 @@ export const ALL_MODULES = {
   updateChecker,
   renameReferences,
   ensureQcfg,
+  semanticHighlight,
 };

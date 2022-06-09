@@ -2,7 +2,7 @@
 
 import { MultiDictionary } from 'typescript-collections';
 
-const emptyRegExp = new RegExp('');
+const emptyRegExp = /(?:)/;
 
 // see https://stackoverflow.com/questions/61148466/typescript-type-that-matches-any-object-but-not-arrays
 // TODO: currently not used
@@ -48,7 +48,40 @@ export function diffArrays<T>(
   return [onlyA, onlyB, common];
 }
 
-/** Takes function that does not accept undefined argument and returns
+/**
+ * Extract subarray [start, end) of any array-like object.
+ */
+export function arraySlice<T>(
+  array: Record<number, T>,
+  start: number,
+  end: number,
+): T[] {
+  const result: T[] = [];
+  for (let i = start; i < end; i++) {
+    result.push(array[i]);
+  }
+  return result;
+}
+
+/**
+ * Convert integer to array of bits starting with LSB
+ */
+export function numberToBitArray(x: number): Array<0 | 1> {
+  return x
+    .toString(2)
+    .split('')
+    .reverse()
+    .map((bit) => {
+      if (bit === '0') return 0;
+      if (bit === '1') return 1;
+      throw new Error(
+        `Invalid character in binary representation of ${x}: ${bit}`,
+      );
+    });
+}
+
+/**
+ * Takes function that does not accept undefined argument and returns
  * function that accepts it and returns undefined in that case
  */
 export function propagateUndefined<T, Q>(
@@ -279,6 +312,9 @@ declare global {
     equals: (that: T[], eq?: (x: T, y: T) => boolean) => boolean;
     removeFirst: (val: T) => boolean;
     firstOf: (cond: (val: T) => boolean) => T | undefined;
+
+    /** Indexes of all elements equal to given one */
+    allIndexesOf: (searchElement: T, fromIndex?: number) => number[];
     forEachRight: (
       callbackfn: (value: T, index: number, array: T[]) => void,
     ) => void;
@@ -303,6 +339,9 @@ declare global {
     pairIter: () => Iterable<[T, T]>;
     readonly isEmpty: boolean;
     firstOf: (cond: (val: T) => boolean) => T | undefined;
+
+    /** Indexes of all elements equal to given one */
+    allIndexesOf: (searchElement: T, fromIndex?: number) => number[];
   }
 
   interface Map<K, V> {
@@ -407,6 +446,22 @@ function numberCompare<T>(x: T, y: T): number {
 function defaultEquals<T>(a: T, b: T) {
   return a === b;
 }
+
+Array.prototype.allIndexesOf = function <T>(
+  this: T[],
+  searchElement: T,
+  fromIndex?: number,
+): number[] {
+  const inds: number[] = [];
+  for (;;) {
+    const ind = this.indexOf(searchElement, fromIndex);
+    if (ind !== -1) {
+      inds.push(ind);
+      fromIndex = ind + 1;
+    } else break;
+  }
+  return inds;
+};
 
 Array.prototype.firstOf = function <T>(
   this: T[],

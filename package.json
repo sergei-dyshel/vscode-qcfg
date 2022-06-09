@@ -447,6 +447,10 @@
         "title": "qcfg: Choose and apply quick fixes for entire workspace"
       },
       {
+        "command": "qcfg.semanticHighlight.dump",
+        "title": "qcfg: Dump semantic tokens on selection"
+      },
+      {
         "command": "qcfg.expandSelectionFaster",
         "title": "qcfg: Expand selection faster"
       },
