@@ -1,30 +1,24 @@
-import {
-  commands,
-  ExtensionContext,
-  extensions,
-  languages,
-  Location,
-  Position,
-  Range,
-  TextDocument,
-  Uri
-} from 'vscode';
+import type { ExtensionContext, Position, Range, TextDocument } from 'vscode';
+import { commands, extensions, languages, Location, Uri } from 'vscode';
 import * as client from 'vscode-languageclient';
 import { assertNotNull } from '../../library/exception';
 import * as nodejs from '../../library/nodejs';
 
 import { log, Logger } from '../../library/logging';
 import { diffArrays } from '../../library/tsUtils';
-import { Clangd, ClangdTypeHierarchyProvider } from '../utils/clangd';
+import { Ccls } from '../utils/ccls';
+import type { Clangd } from '../utils/clangd';
+import { ClangdTypeHierarchyProvider } from '../utils/clangd';
 import { FromClient, ToClient } from '../utils/langClientConv';
 import { mapAsync } from './async';
 import {
   executeCommandHandled,
-  registerAsyncCommandWrapped
+  registerAsyncCommandWrapped,
 } from './exception';
 import type { LocationGroup } from './locationTree';
 import { setPanelLocationGroups } from './locationTree';
 import { Modules } from './module';
+import { searchWithCommand } from './search';
 import { getActiveTextEditor } from './utils';
 
 export function isAnyLangClientRunning(): boolean {
@@ -96,13 +90,18 @@ class LanguageClientWrapper {
     this.log.debug('Sent didSave', document);
   }
 
-  async getReferences(uri: Uri, pos: Position): Promise<Location[]> {
+  async getReferences(
+    uri: Uri,
+    pos: Position,
+    extra?: object,
+  ): Promise<Location[]> {
     return (
       (await this.client?.sendRequest(client.ReferencesRequest.type, {
         context: {
           includeDeclaration: false,
         },
         ...ToClient.makeTextDocumentPosition(uri, pos),
+        ...extra,
       })) ?? []
     ).map(FromClient.convLocation);
   }
@@ -171,6 +170,10 @@ class CclsWrapper extends LanguageClientWrapper {
   // eslint-disable-next-line class-methods-use-this
   override async runRestartCmd() {
     return commands.executeCommand('ccls.restart').ignoreResult();
+  }
+
+  async searchAssignments(uri: Uri, position: Position) {
+    return this.getReferences(uri, position, { role: Ccls.RefRole.ASSIGNMENT });
   }
 }
 
@@ -337,6 +340,12 @@ function activate(context: ExtensionContext) {
     registerAsyncCommandWrapped('qcfg.langClient.stop', stopLangClients),
     registerAsyncCommandWrapped('qcfg.langClient.compare', compareLangClients),
     registerAsyncCommandWrapped('qcfg.clangd.dumpAST', clangdShowAST),
+    registerAsyncCommandWrapped('qcfg.ccls.assignments', async () =>
+      searchWithCommand(
+        'Assignments',
+        cclsWrapper.searchAssignments.bind(cclsWrapper),
+      ),
+    ),
 
     languages.registerTypeHierarchyProvider(
       { language: 'cpp' },
