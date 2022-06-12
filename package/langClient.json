@@ -1,39 +1,39 @@
 {
-    "contributes": {
-        "commands": [
-            {
-                "command": "qcfg.langClient.restart",
-                "title": "qcfg: Restart language clients"
-            },
-            {
-                "command": "qcfg.langClient.stop",
-                "title": "qcfg: Stop language clients"
-            },
-            {
-                "command": "qcfg.langClient.refresh",
-                "title": "qcfg: Refresh language clients"
-            },
-            {
-                "command": "qcfg.langClient.compare",
-                "title": "qcfg: Compare language clients on current symbol"
-            },
-            {
-                "command": "qcfg.clangd.dumpAST",
-                "title": "qcfg: Clangd - dump AST"
-            },
-            {
-                "command": "qcfg.ccls.assignments",
-                "title": "qcfg: ccls - find assignments"
-            }
-        ],
-        "configuration": {
-            "properties": {
-                "qcfg.langClient.remote": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "C/C++ language clients are remote (over SSH)"
-                }
-            }
+  "contributes": {
+    "commands": [
+      {
+        "command": "qcfg.langClient.restart",
+        "title": "qcfg: Restart language clients"
+      },
+      {
+        "command": "qcfg.langClient.stop",
+        "title": "qcfg: Stop language clients"
+      },
+      {
+        "command": "qcfg.langClient.refresh",
+        "title": "qcfg: Refresh language clients"
+      },
+      {
+        "command": "qcfg.langClient.compare",
+        "title": "qcfg: Compare language clients on current symbol"
+      },
+      {
+        "command": "qcfg.clangd.dumpAST",
+        "title": "qcfg: Clangd - dump AST"
+      },
+      {
+        "command": "qcfg.ccls.assignments",
+        "title": "qcfg: ccls - find assignments"
+      }
+    ],
+    "configuration": {
+      "properties": {
+        "qcfg.langClient.remote": {
+          "type": "boolean",
+          "default": false,
+          "description": "C/C++ language clients are remote (over SSH)"
         }
+      }
     }
+  }
 }
