@@ -6,5 +6,6 @@ import * as os from 'os';
 import * as path from 'path';
 import * as process from 'process';
 import * as util from 'util';
+import * as readline from 'readline';
 
-export { path, fs, util, os, child_process, process };
+export { path, fs, util, os, child_process, process, readline };

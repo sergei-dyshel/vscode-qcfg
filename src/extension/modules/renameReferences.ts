@@ -2,10 +2,10 @@ import type { ExtensionContext } from 'vscode';
 import { window, workspace, WorkspaceEdit } from 'vscode';
 import { assert, assertNotNull, check } from '../../library/exception';
 import { mapNonNull } from '../../library/tsUtils';
+import { revealSelection } from '../utils/editorUtils';
 import { registerAsyncCommandWrapped } from './exception';
 import { Modules } from './module';
 import { executeReferenceProvider } from './search';
-import { revealSelection } from './textUtils';
 import { getActiveTextEditor } from './utils';
 
 async function renameReferences(needsConfirmation: boolean) {

@@ -46,27 +46,45 @@ export function getVisibleEditor(
  */
 export async function preserveActiveLocation<T>(
   promise: Promise<T>,
+  options?: {
+    skipOnSuccess?: boolean;
+    skipOnNull?: boolean;
+  },
 ): Promise<T> {
   const prevEditor = window.activeTextEditor;
   const prevSelection = prevEditor?.selection;
-  try {
-    return await promise;
-  } finally {
-    if (prevEditor) {
-      const newEditor = window.activeTextEditor;
-      if (
-        newEditor &&
-        (newEditor !== prevEditor ||
-          !prevSelection!.isEqual(newEditor.selection))
-      ) {
-        handleAsyncStd(
-          window.showTextDocument(prevEditor.document, {
-            selection: prevSelection,
-          }),
-        );
-      }
+  const restore = () => {
+    if (!prevEditor) {
+      return;
     }
-  }
+    const newEditor = window.activeTextEditor;
+    if (
+      newEditor &&
+      (newEditor !== prevEditor || !prevSelection!.isEqual(newEditor.selection))
+    ) {
+      handleAsyncStd(
+        window.showTextDocument(prevEditor.document, {
+          selection: prevSelection,
+        }),
+      );
+    }
+  };
+
+  return new Promise<T>((resolve, reject) => {
+    promise.then(
+      (result) => {
+        if (!options?.skipOnSuccess) {
+          /* TODO:  */
+          restore();
+        }
+        resolve(result);
+      },
+      (reason) => {
+        restore();
+        reject(reason);
+      },
+    );
+  });
 }
 
 /**

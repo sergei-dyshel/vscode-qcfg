@@ -13,6 +13,7 @@ import { StreamHandler } from '../library/loggingHandlers';
 import * as nodejs from '../library/nodejs';
 import type { SyntaxTree } from '../library/syntax';
 import { SyntaxLanguage } from '../library/syntax';
+import { syntaxSymbolToObject } from '../library/syntax/symbol';
 
 const KNOWN_EXTENSIONS: Record<string, string[]> = {
   go: ['.go'],
@@ -45,6 +46,30 @@ class TreeAction extends CliAction {
   }
 }
 
+class SymbolsAction extends CliAction {
+  constructor(cli: Cli) {
+    super(cli, {
+      actionName: 'symbols',
+      summary: 'Dump symbols',
+      documentation: 'Parse file syntax tree and dump all symbols',
+    });
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function,class-methods-use-this
+  onDefineParameters() {}
+
+  async onExecute() {
+    console.log(`Parsing ${this.cli.filename}`);
+    const symbols = SyntaxLanguage.get(this.cli.language).getSymbols(
+      this.cli.tree.rootNode,
+    );
+    console.log(
+      JSON.stringify(symbols.map(syntaxSymbolToObject), undefined, 2),
+    );
+    return Promise.resolve();
+  }
+}
+
 class Cli extends CommandLineParser {
   language!: string;
   filename!: string;
@@ -61,6 +86,7 @@ class Cli extends CommandLineParser {
       toolDescription: 'Dump file syntax tree in various formats',
     });
     this.addAction(new TreeAction(this));
+    this.addAction(new SymbolsAction(this));
   }
 
   protected onDefineParameters() {

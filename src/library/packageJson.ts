@@ -18,9 +18,12 @@ export interface Theme {
   path: string;
 }
 
+// copied from `ILanguageExtensionPoint` in vscode source
 export interface Language {
   id: string;
-  extensions: string;
+  extensions?: string[];
+  filenames?: string[];
+  filenamePatterns?: string[];
   firstLine?: string;
   configuration?: string;
 }

@@ -2,11 +2,42 @@ import { SyntaxNode } from 'tree-sitter';
 
 export { SyntaxNode };
 
+export type SyntaxType =
+  | 'class_definition'
+  | 'declaration'
+  | 'decorated_definition'
+  | 'field_identifier'
+  | 'function_declaration'
+  | 'function_declarator'
+  | 'function_definition'
+  | 'identifier'
+  | 'method_declaration'
+  | 'namespace_identifier'
+  | 'number_literal'
+  | 'object'
+  | 'parameter_list'
+  | 'preproc_include'
+  | 'primitive_type'
+  | 'scoped_identifier'
+  | 'scoped_type_identifier'
+  | 'storage_class_specifier'
+  | 'string_literal'
+  | 'struct_type'
+  | 'system_lib_string'
+  | 'template_type'
+  | 'type_identifier'
+  | 'type_declaration'
+  | 'type_descriptor'
+  | 'type_qualifier'
+  | 'type_spec'
+  | 'var_declaration'
+  | 'var_spec';
+
 declare module 'tree-sitter' {
   // eslint-disable-next-line @typescript-eslint/no-shadow
   class SyntaxNode {}
   interface SyntaxNode {
-    readonly nodeType: SyntaxNode.Type;
+    readonly nodeType: SyntaxType;
     readonly isLeaf: boolean;
     /** For last sibling returns it */
     readonly nextNamedSiblingSafe: SyntaxNode;
@@ -15,36 +46,12 @@ declare module 'tree-sitter' {
 
     toObject: () => Record<string, unknown>;
   }
-
-  namespace SyntaxNode {
-    export type Type =
-      | 'identifier'
-      | 'declaration'
-      | 'function_definition'
-      | 'decorated_definition'
-      | 'class_definition'
-      | 'preproc_include'
-      | 'system_lib_string'
-      | 'string_literal'
-      | 'scoped_identifier'
-      | 'namespace_identifier'
-      | 'function_declarator'
-      | 'number_literal'
-      | 'type_qualifier'
-      | 'primitive_type'
-      | 'type_identifier'
-      | 'template_type'
-      | 'scoped_type_identifier'
-      | 'type_descriptor'
-      | 'object' // typescript
-      | 'storage_class_specifier';
-  }
 }
 
 Object.defineProperty(SyntaxNode.prototype, 'nodeType', {
-  get(): SyntaxNode.Type {
+  get(): SyntaxType {
     const this_ = this as SyntaxNode;
-    return this_.type as SyntaxNode.Type;
+    return this_.type as SyntaxType;
   },
 });
 

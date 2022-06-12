@@ -27,6 +27,12 @@ export const globAsync: (
   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 ) => Promise<string[]> = nodejs.util.promisify(require('glob'));
 
+export async function readFile(filename: string): Promise<string> {
+  const readFilePromise = nodejs.util.promisify(nodejs.fs.readFile);
+  const buf = await readFilePromise(filename);
+  return buf.toString();
+}
+
 export function getTempFile() {
   return tempy.file();
 }
@@ -195,3 +201,26 @@ class FileWatcher implements DisposableLike {
     handleAsyncStd(this.watcher.close());
   }
 }
+
+export async function readFirstLine(filename: string): Promise<string> {
+  // if createReadStream fails, the line iterator below will be stuck
+  // https://stackoverflow.com/questions/59216364/how-to-handle-error-from-fs-readline-interface-async-asyncIterator
+  const readable = await new Promise<nodejs.fs.ReadStream>(
+    (resolve, reject) => {
+      const stream = nodejs.fs.createReadStream(filename);
+      stream.on('open', () => {
+        resolve(stream);
+      });
+      stream.on('error', reject);
+    },
+  );
+  const reader = nodejs.readline.createInterface({ input: readable });
+  for await (const line of reader) {
+    return line;
+  }
+  return '';
+}
+
+// export async function readFile(filename: string): Promise<string> {
+//   nodejs.fs.readFile(a)
+// }

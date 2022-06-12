@@ -1,7 +1,8 @@
 import { SyntaxLanguage } from './language';
-import './parsing'; // auguments classes
-// eslint-disable-next-line @typescript-eslint/no-duplicate-imports
 import { SyntaxTree } from './parsing';
+import type { SymbolType, SyntaxSymbol } from './symbol';
+import type { SyntaxType } from './syntaxNode';
 import { SyntaxNode } from './syntaxNode';
 
+export type { SyntaxType, SyntaxSymbol, SymbolType };
 export { SyntaxNode, SyntaxLanguage, SyntaxTree };

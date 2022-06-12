@@ -1,8 +1,19 @@
+import type { SyntaxNode } from 'tree-sitter';
 import { parseSyntax } from './parsing';
+import type { SymbolRule } from './pattern';
+import { findSymbols } from './pattern';
+import { GoRules } from './rules/go';
+import type { SyntaxSymbol } from './symbol';
 
 export class SyntaxLanguage {
   async parse(text: string) {
     return parseSyntax(text, this.config.parser);
+  }
+
+  getSymbols(node: SyntaxNode) {
+    const symbols: SyntaxSymbol[] = [];
+    findSymbols(node, this.config.rules, symbols);
+    return symbols;
   }
 
   static get(languageId: string) {
@@ -32,16 +43,20 @@ const languages = new Map<string, SyntaxLanguage>();
 
 interface SyntaxConfig {
   parser: unknown;
+  rules: SymbolRule[];
 }
 
 const configs: Record<string, SyntaxConfig | undefined> = {
-  python: { parser: require('tree-sitter-python') },
-  c: { parser: require('tree-sitter-c') },
-  cpp: { parser: require('tree-sitter-cpp') },
-  javascript: { parser: require('tree-sitter-javascript') },
-  json: { parser: require('tree-sitter-json') },
-  typescript: { parser: require('tree-sitter-typescript/typescript') },
-  shellscript: { parser: require('tree-sitter-bash') },
-  go: { parser: require('tree-sitter-go') },
-  lua: { parser: require('tree-sitter-lua') },
+  python: { parser: require('tree-sitter-python'), rules: [] },
+  c: { parser: require('tree-sitter-c'), rules: [] },
+  cpp: { parser: require('tree-sitter-cpp'), rules: [] },
+  javascript: { parser: require('tree-sitter-javascript'), rules: [] },
+  json: { parser: require('tree-sitter-json'), rules: [] },
+  typescript: {
+    parser: require('tree-sitter-typescript/typescript'),
+    rules: [],
+  },
+  shellscript: { parser: require('tree-sitter-bash'), rules: [] },
+  go: { parser: require('tree-sitter-go'), rules: GoRules },
+  lua: { parser: require('tree-sitter-lua'), rules: [] },
 };

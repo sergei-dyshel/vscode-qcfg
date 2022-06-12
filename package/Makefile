@@ -1,7 +1,7 @@
 deps := common tasks alternate treeSitter autoSync editing treeView \
 	relativeJumps navigation multipleSelection macTermBindings formatting \
 	plistOld search peekOutline editorGroups langClient git misc selection \
-	configRules notes diagnostics autoResize
+	configRules notes diagnostics autoResize symbolDb
 deps_files := $(patsubst %,$(d)/%.json,$(deps))
 json_merger := npx json-merger --pretty \
 	--error-on-file-not-found --error-on-ref-not-found --output

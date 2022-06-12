@@ -43,6 +43,7 @@ import * as search from './search';
 import * as semanticHighlight from './semanticHighlight';
 import * as smartCopy from './smartCopy';
 import * as sshFs from './sshFs';
+import * as symbolDb from './symbolDb';
 import * as syntaxTreeView from './syntaxTreeView';
 import * as taskRunner from './taskRunner';
 import * as tasksMain from './tasks/main';
@@ -106,4 +107,5 @@ export const ALL_MODULES = {
   ensureQcfg,
   semanticHighlight,
   autoResize,
+  symbolDb,
 };

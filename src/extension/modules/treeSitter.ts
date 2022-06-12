@@ -17,6 +17,7 @@ import {
 } from '../../library/exception';
 import type { SyntaxNode, SyntaxTree } from '../../library/syntax';
 import { RangeDecorator } from '../utils/decoration';
+import { revealSelection } from '../utils/editorUtils';
 import { setStatusBarErrorBackground } from '../utils/statusBar';
 import {
   listenAsyncWrapped,
@@ -25,7 +26,7 @@ import {
 } from './exception';
 import { Modules } from './module';
 import { SyntaxTrees } from './syntaxTree';
-import { revealSelection, swapRanges } from './textUtils';
+import { swapRanges } from './textUtils';
 import { getActiveTextEditor, WhenContext } from './utils';
 
 const WHEN_CLAUSE = 'qcfgTreeMode';

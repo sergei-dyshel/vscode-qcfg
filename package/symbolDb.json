@@ -1,0 +1,14 @@
+{
+  "contributes": {
+    "commands": [
+      {
+        "command": "qcfg.symbols.createDb",
+        "title": "qcfg: Create symbol DB"
+      },
+      {
+        "command": "qcfg.symbols.show",
+        "title": "qcfg: Show document symbols"
+      }
+    ]
+  }
+}
