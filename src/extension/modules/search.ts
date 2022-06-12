@@ -81,6 +81,17 @@ export async function executeReferenceProvider(uri: Uri, position: Position) {
   );
 }
 
+export async function executeImplementationProvider(
+  uri: Uri,
+  position: Position,
+) {
+  return commands.executeCommand<Location[]>(
+    'vscode.executeImplementationProvider',
+    uri,
+    position,
+  );
+}
+
 export async function searchInFiles(
   query: TextSearchQuery,
   options: FindTextInFilesOptions = {},
@@ -170,7 +181,7 @@ async function searchSelectedText(allFolders: boolean) {
   );
 }
 
-async function searchWithCommand(
+export async function searchWithCommand(
   type: string,
   searchFunc: (uri: Uri, location: Position) => Promise<Location[]>,
 ) {
@@ -280,6 +291,9 @@ function activate(context: ExtensionContext) {
     ),
     registerAsyncCommandWrapped('qcfg.search.references', async () =>
       searchWithCommand('References', executeReferenceProvider),
+    ),
+    registerAsyncCommandWrapped('qcfg.search.implementations', async () =>
+      searchWithCommand('Implementations', executeImplementationProvider),
     ),
     registerAsyncCommandWrapped('qcfg.search.todos', searchTodos),
     registerAsyncCommandWrapped(
