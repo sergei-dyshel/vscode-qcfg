@@ -419,6 +419,10 @@
         "title": "qcfg: Clangd - dump AST"
       },
       {
+        "command": "qcfg.ccls.assignments",
+        "title": "qcfg: ccls - find assignments"
+      },
+      {
         "command": "qcfg.git.dump",
         "title": "qcfg: Git - dump info"
       },

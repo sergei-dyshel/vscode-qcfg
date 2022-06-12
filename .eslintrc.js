@@ -100,6 +100,7 @@ const config = {
     'global-require': off,
     'no-plusplus': [warn, { allowForLoopAfterthoughts: true }],
     'no-constant-condition': [warn, { checkLoops: false }],
+    'no-bitwise': off,
     '@typescript-eslint/no-namespace': off,
     // see: https://github.com/typescript-eslint/typescript-eslint/issues/2077
     '@typescript-eslint/camelcase': off,
@@ -153,6 +154,7 @@ const config = {
     '@typescript-eslint/explicit-module-boundary-types': off,
     '@typescript-eslint/prefer-readonly-parameter-types': off,
     '@typescript-eslint/unbound-method': [warn, { ignoreStatic: true }],
+    '@typescript-eslint/prefer-literal-enum-member': [off],
 
     // no-explicit-any is enough
     '@typescript-eslint/no-unsafe-member-access': off,
