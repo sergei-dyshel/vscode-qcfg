@@ -45,7 +45,14 @@ function terminalInFileFolder() {
 async function runCommand() {
   const allCommands = await commands.getCommands();
   const cmd = await selectStringFromListMru(allCommands, 'qcfg.runCommand');
-  if (cmd) await commands.executeCommand(cmd);
+  if (cmd) {
+    log.info(`Running command ${cmd}`);
+    try {
+      await commands.executeCommand(cmd);
+    } finally {
+      log.info(`Finished command ${cmd}`);
+    }
+  }
 }
 
 async function openInExternalApp() {
