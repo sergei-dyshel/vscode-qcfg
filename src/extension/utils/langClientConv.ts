@@ -1,5 +1,5 @@
-import type { LocationLink } from 'vscode';
-import { Location, Position, Range, SymbolKind, Uri } from 'vscode';
+import type { LocationLink, SymbolKind } from 'vscode';
+import { Location, Position, Range, Uri } from 'vscode';
 import * as client from 'vscode-languageclient';
 import { propagateUndefined, unionizeArrays } from '../../library/tsUtils';
 import { locationOrLink } from './document';

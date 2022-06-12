@@ -1,16 +1,16 @@
 import type {
-  ExtensionContext,
-  FileSystemProvider,
-  FileChangeEvent,
   Disposable,
+  ExtensionContext,
+  FileChangeEvent,
   FileStat,
+  FileSystemProvider,
 } from 'vscode';
-import { Uri, EventEmitter, FileType, workspace, window } from 'vscode';
-import { Modules } from './module';
-import { getTempFile } from './fileUtils';
-import { runSubprocessAndWait } from './subprocess';
+import { EventEmitter, FileType, Uri, window, workspace } from 'vscode';
 import { assert } from '../../library/exception';
 import { handleErrorsAsync } from './exception';
+import { getTempFile } from './fileUtils';
+import { Modules } from './module';
+import { runSubprocessAndWait } from './subprocess';
 
 const SCHEME = 'qsshfs';
 
