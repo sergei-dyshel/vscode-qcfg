@@ -383,6 +383,10 @@
         "command": "qcfg.search.references"
       },
       {
+        "title": "qcfg: Search implementations",
+        "command": "qcfg.search.implementations"
+      },
+      {
         "title": "qcfg: Find definitions using gtags/ctags",
         "command": "qcfg.search.GtagsCtagsDefinition"
       },
