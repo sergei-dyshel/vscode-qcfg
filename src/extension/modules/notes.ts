@@ -3,11 +3,11 @@ import type { ExtensionContext, TextEditor } from 'vscode';
 import { commands, Uri, ViewColumn, window, workspace } from 'vscode';
 import { assertNotNull } from '../../library/exception';
 import * as nodejs from '../../library/nodejs';
+import { getWorkspaceRoot } from '../utils/workspace';
 import { listenAsyncWrapped, registerAsyncCommandWrapped } from './exception';
 import { getWorkspaceFolderByName } from './fileUtils';
 import { Modules } from './module';
 import { getVisibleEditor } from './windowUtils';
-import { getWorkspaceRoot } from '../utils/workspace';
 
 async function onEditorChanged(editor: TextEditor | undefined) {
   if (!editor) return;
