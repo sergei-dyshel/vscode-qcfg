@@ -2320,7 +2320,7 @@
       "activitybar": [
         {
           "id": "qcfg-views-container",
-          "title": "Qcfg Views Container",
+          "title": "Qcfg Tree View",
           "icon": "icons/view-container.png"
         }
       ]
@@ -2329,7 +2329,8 @@
       "qcfg-views-container": [
         {
           "id": "qcfgTreeView",
-          "name": "Qcfg tree view"
+          "name": "Custom tree",
+          "type": "tree"
         }
       ]
     },

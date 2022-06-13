@@ -86,6 +86,7 @@ export interface TreeNode {
 export interface TreeProvider {
   getTrees: () => ProviderResult<TreeNode[]>;
   getMessage?: () => string | undefined;
+  getTitle?: () => string | undefined;
   removeNode?: (node: TreeNode) => void;
   onDidChangeSelection?: (nodes: readonly TreeNode[]) => void;
   onDidChangeVisibility?: (visible: boolean) => void;
@@ -94,6 +95,7 @@ export interface TreeProvider {
 }
 
 export namespace QcfgTreeView {
+  /** Set current provider of tree data */
   export function setProvider(provider: TreeProvider) {
     if (currentProvider !== provider) {
       if (currentProvider?.onUnset) currentProvider.onUnset();
@@ -102,11 +104,16 @@ export namespace QcfgTreeView {
     refresh();
   }
 
+  /**
+   * Trigger full refresh of tree
+   *
+   * Must be called when provider is changed.
+   */
   export function refresh() {
     if (!currentProvider) return;
-    onChangeEmitter.fire();
-    if (currentProvider.getMessage)
-      treeView.message = currentProvider.getMessage();
+    onChangeEmitter.fire(undefined);
+    treeView.message = callIfNonNull(currentProvider.getMessage);
+    treeView.title = callIfNonNull(currentProvider.getTitle);
   }
 
   export function isCurrentProvider(provider: TreeProvider) {
@@ -280,8 +287,7 @@ export namespace StaticTreeNode {
 
 // private
 
-// eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-const onChangeEmitter = new EventEmitter<TreeNode | void>();
+const onChangeEmitter = new EventEmitter<TreeNode | undefined>();
 
 const treeDataProvider: TreeDataProvider<TreeNode> = {
   onDidChangeTreeData: onChangeEmitter.event,

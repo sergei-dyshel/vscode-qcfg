@@ -251,6 +251,7 @@ class LocationNode extends StaticTreeNode {
   async show() {
     await window.showTextDocument(this.location.uri, {
       selection: this.location.range,
+      preserveFocus: true,
     });
   }
 
@@ -267,6 +268,9 @@ const locationTreeProvider: TreeProvider = {
   },
   getMessage() {
     return currentMessage;
+  },
+  getTitle() {
+    return 'locations';
   },
   removeNode(node_: TreeNode) {
     const node = node_ as StaticTreeNode;
