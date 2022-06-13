@@ -8,7 +8,8 @@ import { commands, window, workspace } from 'vscode';
 import { assert, assertNotNull, check } from '../../library/exception';
 import { log, Logger } from '../../library/logging';
 import type { AsyncFunction, PromiseType } from '../../library/templateTypes';
-import { DefaultMap } from '../../library/tsUtils';
+import { DefaultMap, propagateUndefined } from '../../library/tsUtils';
+import { getBesideViewColumn } from '../utils/window';
 import { listenWrapped, registerAsyncCommandWrapped } from './exception';
 import { LiveLocationArray, LivePosition } from './liveLocation';
 import { Modules } from './module';
@@ -21,17 +22,25 @@ const MAX_HISTORY_SIZE = 20;
  * if after promise resolved current editor location changes,
  * add both previous and current point to history
  */
-export async function updateHistory<T>(jump: Promise<T>): Promise<T> {
-  const column = getActiveColumn();
-  const before = LivePosition.fromActiveEditor();
+export async function updateHistory<T>(
+  jump: Promise<T>,
+  column?: ViewColumn,
+): Promise<T> {
+  if (!column) {
+    column = window.activeTextEditor?.viewColumn;
+    if (!column) return jump;
+  }
+  const before = propagateUndefined(LivePosition.fromEditor)(
+    getVisibleEditor(column),
+  );
   try {
     return await jump;
   } finally {
-    const after = LivePosition.fromActiveEditor();
-    if (column === getActiveColumn()) {
-      histories.get(column).push(before);
-      histories.get(column).push(after);
-    }
+    const after = propagateUndefined(LivePosition.fromEditor)(
+      getVisibleEditor(column),
+    );
+    if (before) histories.get(column).push(before);
+    if (after) histories.get(column).push(after);
   }
 }
 
@@ -109,6 +118,7 @@ class History {
   }
 
   push(pos: LivePosition) {
+    if (this.backward.top?.equals(pos)) return;
     this.backward.push(pos);
     this.forward.clear();
     this.log.debug(`Pushed ${pos}`);
@@ -155,6 +165,17 @@ function onDidChangeTextDocument(event: TextDocumentChangeEvent) {
   history.pushOrReplace(pos);
 }
 
+async function peekOpenReference() {
+  return updateHistory(commands.executeCommand('openReference'));
+}
+
+async function peekOpenReferenceToSide() {
+  return updateHistory(
+    commands.executeCommand('openReferenceToSide'),
+    getBesideViewColumn(),
+  );
+}
+
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
     listenWrapped(workspace.onDidChangeTextDocument, onDidChangeTextDocument),
@@ -162,6 +183,11 @@ function activate(context: ExtensionContext) {
     registerAsyncCommandWrapped('qcfg.history.wrapCmd', updateHistoryOnCommand),
     registerAsyncCommandWrapped('qcfg.history.backward', goBackward),
     registerAsyncCommandWrapped('qcfg.history.forward', goForward),
+    registerAsyncCommandWrapped('qcfg.peek.openReference', peekOpenReference),
+    registerAsyncCommandWrapped(
+      'qcfg.peek.openReferenceToSide',
+      peekOpenReferenceToSide,
+    ),
   );
 }
 
