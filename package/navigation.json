@@ -56,6 +56,16 @@
         "key": "ctrl+shift+i",
         "mac": "cmd+shift+i",
         "command": "workbench.action.navigateForward"
+      },
+      {
+        "key": "cmd+enter",
+        "command": "qcfg.peek.openReferenceToSide",
+        "when": "listFocus && referenceSearchVisible && !inputFocus && !treeElementCanCollapse && !treeElementCanExpand"
+      },
+      {
+        "key": "enter",
+        "command": "qcfg.peek.openReference",
+        "when": "listFocus && referenceSearchVisible && !inputFocus && !treeElementCanCollapse && !treeElementCanExpand"
       }
     ]
   }

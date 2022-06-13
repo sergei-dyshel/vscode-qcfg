@@ -42,6 +42,8 @@ export async function saveAndPeekSearch(
     });
     if (savedSearches.length > MAX_SAVED_SEARCHES) savedSearches.pop();
   }
+  // if peekLocations opens peek window it will return immediately and
+  // choosen location will not be pushed to history here but in qcfg.peek.openReference* commands
   await updateHistory(peekLocations(locations));
 }
 
