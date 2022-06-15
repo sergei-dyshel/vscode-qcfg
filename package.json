@@ -469,6 +469,10 @@
       {
         "command": "qcfg.newNote",
         "title": "qcfg: New note"
+      },
+      {
+        "title": "qcfg: Toggle auto-resize",
+        "command": "qcfg.autoResize.toggle"
       }
     ],
     "keybindings": [
@@ -2236,6 +2240,16 @@
             ]
           },
           "description": "Exclude diagnostics whose code matches any of these"
+        },
+        "qcfg.autoResize.steps": {
+          "type": "number",
+          "description": "Number of steps by which to auto-resize active editor",
+          "default": 1
+        },
+        "qcfg.autoResize.enabled": {
+          "type": "boolean",
+          "description": "Whether auto-resize enabled",
+          "default": false
         }
       }
     },
