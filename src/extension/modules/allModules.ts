@@ -2,6 +2,7 @@
 import * as logging from './logging';
 
 import * as alternate from './alternate';
+import * as autoResize from './autoResize';
 import * as autoSync from './autoSync';
 import * as callHierarchy from './callHierarchy';
 import * as codeActions from './codeActions';
@@ -104,4 +105,5 @@ export const ALL_MODULES = {
   renameReferences,
   ensureQcfg,
   semanticHighlight,
+  autoResize,
 };
