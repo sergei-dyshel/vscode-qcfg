@@ -1,3 +1,5 @@
+import { assert } from '../../library/exception';
+
 export namespace Ccls {
   export enum RefRole {
     DECLARATION = 1 << 0,
@@ -12,4 +14,23 @@ export namespace Ccls {
 
     ASSIGNMENT = DEFINITION | WRITE | ADDRESS,
   }
+
+  const refRoleStrings = {
+    declaration: RefRole.DECLARATION,
+    definition: RefRole.DEFINITION,
+    reference: RefRole.REFERENCE,
+    read: RefRole.READ,
+    write: RefRole.WRITE,
+    call: RefRole.CALL,
+    dynamic: RefRole.DYNAMIC,
+    address: RefRole.ADDRESS,
+    implicit: RefRole.IMPLICIT,
+  };
+
+  export function refRoleFromString(role: string) {
+    assert(allRefRoles.includes(role));
+    return (refRoleStrings as Record<string, RefRole>)[role];
+  }
+
+  export const allRefRoles = Object.keys(refRoleStrings);
 }

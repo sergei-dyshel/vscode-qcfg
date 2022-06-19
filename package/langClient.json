@@ -24,6 +24,10 @@
       {
         "command": "qcfg.ccls.assignments",
         "title": "qcfg: ccls - find assignments"
+      },
+      {
+        "command": "qcfg.ccls.specificRefs",
+        "title": "qcfg: ccls - find specific references"
       }
     ],
     "configuration": {
