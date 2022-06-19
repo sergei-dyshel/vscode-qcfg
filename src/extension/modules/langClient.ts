@@ -1,16 +1,16 @@
 import type { ExtensionContext, Position, Range, TextDocument } from 'vscode';
 import { commands, extensions, languages, Location, Uri } from 'vscode';
 import * as client from 'vscode-languageclient';
-import { assertNotNull } from '../../library/exception';
-import * as nodejs from '../../library/nodejs';
-
+import { assertNotNull, check } from '../../library/exception';
 import { log, Logger } from '../../library/logging';
+import * as nodejs from '../../library/nodejs';
 import { diffArrays } from '../../library/tsUtils';
 import { Ccls } from '../utils/ccls';
 import type { Clangd } from '../utils/clangd';
 import { ClangdTypeHierarchyProvider } from '../utils/clangd';
 import { FromClient, ToClient } from '../utils/langClientConv';
 import { mapAsync } from './async';
+import { selectMultiple } from './dialog';
 import {
   executeCommandHandled,
   registerAsyncCommandWrapped,
@@ -333,6 +333,27 @@ async function clangdShowAST() {
   executeCommandHandled('qcfg.log.show');
 }
 
+async function cclsSearchSpecificRefs(uri: Uri, position: Position) {
+  const BASE_TYPES = 'base types';
+  const selected = await selectMultiple(
+    [BASE_TYPES, ...Ccls.allRefRoles],
+    (label) => ({ label }),
+    'cclsRefs',
+    (label) => label,
+    {
+      title: 'Select types of references to search',
+    },
+  );
+  check(selected !== undefined, 'Canceled ccls ref search');
+  const base = selected.includes(BASE_TYPES);
+  let role = 0;
+  for (const roleStr of selected) {
+    if (roleStr === BASE_TYPES) continue;
+    role |= Ccls.refRoleFromString(roleStr);
+  }
+  return cclsWrapper.getReferences(uri, position, { base, role });
+}
+
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
     registerAsyncCommandWrapped('qcfg.langClient.restart', restartLangClients),
@@ -345,6 +366,9 @@ function activate(context: ExtensionContext) {
         'Assignments',
         cclsWrapper.searchAssignments.bind(cclsWrapper),
       ),
+    ),
+    registerAsyncCommandWrapped('qcfg.ccls.specificRefs', async () =>
+      searchWithCommand('Ccls specific refs', cclsSearchSpecificRefs),
     ),
 
     languages.registerTypeHierarchyProvider(
