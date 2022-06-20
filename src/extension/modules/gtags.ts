@@ -1,9 +1,27 @@
-'use strict';
-
 import RE2 from 're2';
 import * as readline from 'readline';
 import * as shellQuote from 'shell-quote';
-import * as vscode from 'vscode';
+import type {
+  CancellationToken,
+  ExtensionContext,
+  HoverProvider,
+  QuickPick,
+  QuickPickItem,
+  TextDocument,
+  WorkspaceSymbolProvider,
+} from 'vscode';
+import {
+  commands,
+  Hover,
+  languages,
+  Location,
+  Position,
+  SymbolInformation,
+  SymbolKind,
+  Uri,
+  window,
+  workspace,
+} from 'vscode';
 import { assert, assertNotNull } from '../../library/exception';
 import { log, Logger } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
@@ -65,7 +83,7 @@ async function onSaveAll(docs: saveAll.DocumentsInFolder) {
 }
 
 async function updateDB() {
-  for (const folder of vscode.workspace.workspaceFolders ?? []) {
+  for (const folder of workspace.workspaceFolders ?? []) {
     const path = folder.uri.fsPath;
     const gtagsDir = await findGtagsDir(path);
 
@@ -77,9 +95,9 @@ async function updateDB() {
         statusBarMessage: 'gtags check',
       });
       if (res.code === 2)
-        await vscode.window.showInformationMessage('gtags db regenerated');
+        await window.showInformationMessage('gtags db regenerated');
     } catch (err: unknown) {
-      await vscode.window.showErrorMessage(
+      await window.showErrorMessage(
         `gtags db check failed: ${(err as Error).message}`,
       );
     }
@@ -90,7 +108,7 @@ const rootLogger = log;
 
 namespace WorkspaceGtags {
   const LIMIT = 1000;
-  let quickPick: vscode.QuickPick<Item> | undefined;
+  let quickPick: QuickPick<Item> | undefined;
   let searchProcess: nodejs.child_process.ChildProcess | undefined;
   let reader: readline.ReadLine;
   let gtagsDir: string;
@@ -107,7 +125,7 @@ namespace WorkspaceGtags {
     const dir = await findGtagsDir(editor.document.fileName);
     assertNotNull(dir);
     gtagsDir = dir;
-    quickPick = vscode.window.createQuickPick();
+    quickPick = window.createQuickPick();
     quickPick.onDidHide(handleErrors(onHide));
     quickPick.onDidAccept(handleErrors(abortSearch));
     quickPick.onDidChangeValue(handleErrors(onNewQuery));
@@ -169,7 +187,7 @@ namespace WorkspaceGtags {
     searchResults = [];
   }
 
-  interface Item extends vscode.QuickPickItem, TagInfo {}
+  interface Item extends QuickPickItem, TagInfo {}
 
   function startSearch(query: string) {
     searchedQuery = query;
@@ -196,7 +214,7 @@ namespace WorkspaceGtags {
       logger.debug(`Search process exited with code ${code} signal ${signal}`);
       if (code || (signal && signal !== 'SIGTERM' && signal !== 'SIGPIPE')) {
         handleAsyncStd(
-          vscode.window.showErrorMessage(
+          window.showErrorMessage(
             `gtags (pattern: ${pattern} exited with code ${code} signal ${signal}`,
           ),
         );
@@ -243,10 +261,10 @@ interface TagInfo {
   text: string;
 }
 
-function tagToLocation(tag: TagInfo, gtagsDir: string): vscode.Location {
-  return new vscode.Location(
-    vscode.Uri.file(nodejs.path.join(gtagsDir, tag.file)),
-    new vscode.Position(tag.line - 1, 0),
+function tagToLocation(tag: TagInfo, gtagsDir: string): Location {
+  return new Location(
+    Uri.file(nodejs.path.join(gtagsDir, tag.file)),
+    new Position(tag.line - 1, 0),
   );
 }
 
@@ -261,22 +279,22 @@ function parseLine(line: string): TagInfo {
   };
 }
 
-function tag2Symbol(tag: TagInfo, gtagsDir: string): vscode.SymbolInformation {
-  const fullpath = vscode.Uri.file(nodejs.path.join(gtagsDir, tag.file));
-  const location = new vscode.Position(tag.line, 0);
-  return new vscode.SymbolInformation(
+function tag2Symbol(tag: TagInfo, gtagsDir: string): SymbolInformation {
+  const fullpath = Uri.file(nodejs.path.join(gtagsDir, tag.file));
+  const location = new Position(tag.line, 0);
+  return new SymbolInformation(
     tag.name,
-    vscode.SymbolKind.Variable,
+    SymbolKind.Variable,
     '',
-    new vscode.Location(fullpath, location),
+    new Location(fullpath, location),
   );
 }
 
-const gtagsGlobalSymbolsProvider: vscode.WorkspaceSymbolProvider = {
+const gtagsGlobalSymbolsProvider: WorkspaceSymbolProvider = {
   async provideWorkspaceSymbols(
     query: string,
-    token: vscode.CancellationToken,
-  ): Promise<vscode.SymbolInformation[]> {
+    token: CancellationToken,
+  ): Promise<SymbolInformation[]> {
     const editor = getActiveTextEditor();
     switch (editor.document.languageId) {
       case 'typescript':
@@ -300,7 +318,7 @@ async function searchGtags(
   query: string,
   regex: string,
   gtagsDir: string,
-  token: vscode.CancellationToken,
+  token: CancellationToken,
 ): Promise<TagInfo[]> {
   const proc = new subprocess.Subprocess(
     `global -d -x -n "${regex}.*" | head -n100`,
@@ -358,7 +376,7 @@ async function openDefinition() {
     return;
   }
   const locations = tags.map((tag) => tagToLocation(tag, gtagsDir));
-  await vscode.commands.executeCommand(
+  await commands.executeCommand(
     'editor.action.showReferences',
     editor.document.uri,
     editor.selection.active,
@@ -379,12 +397,12 @@ export async function getGtagsDefinitionsInWorkspace() {
   return runTaskAndGetLocations('gtags_def', params, { folder: 'all' });
 }
 
-const gtagsHoverProvider: vscode.HoverProvider = {
+const gtagsHoverProvider: HoverProvider = {
   async provideHover(
-    document: vscode.TextDocument,
-    position: vscode.Position,
-    token: vscode.CancellationToken,
-  ): Promise<vscode.Hover | undefined> {
+    document: TextDocument,
+    position: Position,
+    token: CancellationToken,
+  ): Promise<Hover | undefined> {
     switch (document.languageId) {
       case 'cpp':
       case 'c':
@@ -402,14 +420,14 @@ const gtagsHoverProvider: vscode.HoverProvider = {
     const tag = document.getText(range);
     const tags = await searchGtags('hover', tag, tag, gtagsDir, token);
     if (tags.length === 0 || tags.length > 1) return;
-    return new vscode.Hover({
+    return new Hover({
       language: document.languageId,
       value: tags[0].text,
     });
   },
 };
 
-function activate(context: vscode.ExtensionContext) {
+function activate(context: ExtensionContext) {
   const queue = new PromiseQueue('gtags');
   handleAsyncStd(queue.add(updateDB, 'gtags check'));
   setInterval(() => {
@@ -417,11 +435,9 @@ function activate(context: vscode.ExtensionContext) {
   }, 30000);
   context.subscriptions.push(
     saveAll.onEvent(queue.queued(onSaveAll, 'save all')),
-    vscode.languages.registerWorkspaceSymbolProvider(
-      gtagsGlobalSymbolsProvider,
-    ),
+    languages.registerWorkspaceSymbolProvider(gtagsGlobalSymbolsProvider),
     registerAsyncCommandWrapped('qcfg.gtags.definition', openDefinition),
-    vscode.languages.registerHoverProvider('*', gtagsHoverProvider),
+    languages.registerHoverProvider('*', gtagsHoverProvider),
     registerAsyncCommandWrapped(
       'qcfg.gtags.workspace',
       wrapWithHistoryUpdate(WorkspaceGtags.run),
