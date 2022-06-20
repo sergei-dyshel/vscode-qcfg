@@ -2102,6 +2102,11 @@
           "type": "boolean",
           "description": "Per-workspace/folder setting to set it as default remote server"
         },
+        "qcfg.gtags.workspaceSymbols": {
+          "type": "boolean",
+          "description": "Use gtags as workspace symbols provider",
+          "default": false
+        },
         "qcfg.alternate.mapping": {
           "type": "object",
           "description": "Mapping for alternate (header/source)",

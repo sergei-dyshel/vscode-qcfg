@@ -291,15 +291,14 @@ function tag2Symbol(tag: TagInfo, gtagsDir: string): SymbolInformation {
 }
 
 const gtagsGlobalSymbolsProvider: WorkspaceSymbolProvider = {
-  async provideWorkspaceSymbols(
-    query: string,
-    token: CancellationToken,
-  ): Promise<SymbolInformation[]> {
+  async provideWorkspaceSymbols(query: string, token: CancellationToken) {
     const editor = getActiveTextEditor();
-    switch (editor.document.languageId) {
-      case 'typescript':
-        throw new Error('Not used for typescript');
+    if (
+      !workspace.getConfiguration().get<boolean>('qcfg.gtags.workspaceSymbols')
+    ) {
+      return;
     }
+
     const gtagsDir = await findGtagsDir(editor.document.fileName);
     assertNotNull(gtagsDir);
     const tags = await searchGtags(
