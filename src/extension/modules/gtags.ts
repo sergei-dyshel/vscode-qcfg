@@ -296,7 +296,6 @@ const gtagsGlobalSymbolsProvider: WorkspaceSymbolProvider = {
     if (
       !workspace.getConfiguration().get<boolean>('qcfg.gtags.workspaceSymbols')
     ) {
-      log.debug('gtags workspace symbols provider disabled');
       return;
     }
 
