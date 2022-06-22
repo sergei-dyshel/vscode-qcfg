@@ -240,6 +240,20 @@ export async function selectStringFromListMru(
   );
 }
 
+export async function selectRecordFromListMru<T>(
+  items: Record<string, T> & object,
+  persistentKey: string,
+  options?: QuickPickOptions,
+): Promise<T | undefined> {
+  const key = await selectStringFromListMru(
+    Object.keys(items),
+    persistentKey,
+    options,
+  );
+  if (!key) return undefined;
+  return items[key];
+}
+
 function activate(context: ExtensionContext) {
   extContext = context;
   buttons['REMOVE'] = new Button('icons/remove-dark.svg', 'Remove');

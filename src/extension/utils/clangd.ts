@@ -6,10 +6,12 @@ import type {
 } from 'vscode';
 import { TypeHierarchyItem } from 'vscode';
 import * as vsclc from 'vscode-languageclient';
-import { assert, assertNotNull } from '../../library/exception';
+import { assert } from '../../library/exception';
+import { log } from '../../library/logging';
 import { normalizeArray } from '../../library/tsUtils';
 import { handleErrorsAsync } from '../modules/exception';
-import { FromClient, ToClient } from './langClientConv';
+import { BaseLangClientProvider } from './langClientCommon';
+import { c2pConverter, p2cConverter } from './langClientConv';
 
 export namespace Clangd {
   export interface ASTNode {
@@ -77,12 +79,12 @@ class ClangdTypeHierarchyItem extends TypeHierarchyItem {
 
   constructor(item: Clangd.TypeHierarchyItem) {
     super(
-      FromClient.convSymbolKind(item.kind),
+      p2cConverter.asSymbolKind(item.kind),
       item.name,
       item.detail ?? '',
-      FromClient.convUri(item.uri),
-      FromClient.convRange(item.range),
-      FromClient.convRange(item.selectionRange),
+      p2cConverter.asUri(item.uri),
+      p2cConverter.asRange(item.range),
+      p2cConverter.asRange(item.selectionRange),
     );
     this.subtypes = item.children;
     this.supertypes = item.parents;
@@ -90,38 +92,37 @@ class ClangdTypeHierarchyItem extends TypeHierarchyItem {
 
   toClangd(): Clangd.TypeHierarchyItem {
     return {
-      kind: ToClient.convSymbolKind(this.kind),
+      kind: c2pConverter.asSymbolKind(this.kind),
       name: this.name,
       detail: this.detail,
-      uri: ToClient.convUri(this.uri),
-      range: ToClient.convRange(this.range),
-      selectionRange: ToClient.convRange(this.selectionRange),
+      uri: c2pConverter.asUri(this.uri),
+      range: c2pConverter.asRange(this.range),
+      selectionRange: c2pConverter.asRange(this.selectionRange),
     };
   }
 }
 
-export class ClangdTypeHierarchyProvider implements TypeHierarchyProvider {
-  private getNonNullClient() {
-    const cl = this.getClient();
-    assertNotNull(cl, 'Clangd not running');
-    return cl;
-  }
-
-  constructor(
-    private readonly getClient: () => vsclc.LanguageClient | undefined,
-  ) {}
-
-  async prepareTypeHierarchy1(
+export class ClangdTypeHierarchyProvider
+  extends BaseLangClientProvider
+  implements TypeHierarchyProvider
+{
+  private async prepareTypeHierarchyImpl(
     document: TextDocument,
     position: Position,
     token: CancellationToken,
   ) {
-    const item = await this.getNonNullClient().sendRequest(
+    const cl = this.getClient();
+    if (!cl) {
+      log.debug('Clangd not running');
+      return undefined;
+    }
+    log.debug('running');
+    const item = await cl.sendRequest(
       Clangd.TypeHierarchyRequest.type,
       {
         resolve: 3,
         direction: Clangd.TypeHierarchyDirection.Both,
-        ...ToClient.makeTextDocumentPosition(document.uri, position),
+        ...c2pConverter.asTextDocumentPositionParams(document, position),
       },
       token,
     );
@@ -132,10 +133,10 @@ export class ClangdTypeHierarchyProvider implements TypeHierarchyProvider {
   }
 
   prepareTypeHierarchy = handleErrorsAsync(
-    this.prepareTypeHierarchy1.bind(this),
+    this.prepareTypeHierarchyImpl.bind(this),
   );
 
-  async provideTypeHierarchySubtypes(
+  private async provideTypeHierarchySubtypesImpl(
     item: TypeHierarchyItem,
     token: CancellationToken,
   ) {
@@ -156,7 +157,11 @@ export class ClangdTypeHierarchyProvider implements TypeHierarchyProvider {
     return subtypes.map((x) => new ClangdTypeHierarchyItem(x));
   }
 
-  async provideTypeHierarchySupertypes(
+  provideTypeHierarchySubtypes = handleErrorsAsync(
+    this.provideTypeHierarchySubtypesImpl.bind(this),
+  );
+
+  private async provideTypeHierarchySupertypesImpl(
     item: TypeHierarchyItem,
     token: CancellationToken,
   ) {
@@ -176,4 +181,8 @@ export class ClangdTypeHierarchyProvider implements TypeHierarchyProvider {
     );
     return subtypes.map((x) => new ClangdTypeHierarchyItem(x));
   }
+
+  provideTypeHierarchySupertypes = handleErrorsAsync(
+    this.provideTypeHierarchySupertypesImpl.bind(this),
+  );
 }

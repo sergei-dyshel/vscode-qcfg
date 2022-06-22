@@ -1,14 +1,25 @@
 import type { ExtensionContext, Position, Range, TextDocument } from 'vscode';
 import { commands, extensions, languages, Location, Uri } from 'vscode';
 import * as client from 'vscode-languageclient';
-import { assertNotNull, check } from '../../library/exception';
+import { assert, assertNotNull, check } from '../../library/exception';
 import { log, Logger } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
 import { diffArrays } from '../../library/tsUtils';
-import { Ccls } from '../utils/ccls';
+import {
+  Ccls,
+  CclsCallHierarchyProvider,
+  CclsTypeHierarchyProvider,
+} from '../utils/ccls';
 import type { Clangd } from '../utils/clangd';
 import { ClangdTypeHierarchyProvider } from '../utils/clangd';
-import { FromClient, ToClient } from '../utils/langClientConv';
+import { ConditionalResource } from '../utils/disposable';
+import {
+  c2pConverter,
+  c2pTextDocument,
+  c2pTextDocumentPosition,
+  p2cAnyLocations,
+  p2cConverter,
+} from '../utils/langClientConv';
 import { mapAsync } from './async';
 import { selectMultiple } from './dialog';
 import {
@@ -41,7 +52,7 @@ interface LanguageClientAPI {
 class LanguageClientWrapper {
   private readonly log: Logger;
 
-  constructor(public name: string, private readonly extentsionId: string) {
+  constructor(public name: string, readonly extentsionId: string) {
     this.log = new Logger({
       name: 'LanguageClient',
       instance: name,
@@ -78,7 +89,7 @@ class LanguageClientWrapper {
     if (!this.client) return;
     const params: client.DidSaveTextDocumentParams = {
       textDocument: {
-        uri: ToClient.convUri(document.uri),
+        uri: c2pConverter.asUri(document.uri),
         version: null,
       },
     };
@@ -100,37 +111,55 @@ class LanguageClientWrapper {
         context: {
           includeDeclaration: false,
         },
-        ...ToClient.makeTextDocumentPosition(uri, pos),
+        ...c2pTextDocumentPosition(uri, pos),
         ...extra,
       })) ?? []
-    ).map(FromClient.convLocation);
+    ).map((loc) => p2cConverter.asLocation(loc));
   }
 
   async getDefinitions(uri: Uri, pos: Position): Promise<Location[]> {
     const rsp =
       (await this.client?.sendRequest(
         client.DefinitionRequest.type,
-        ToClient.makeTextDocumentPosition(uri, pos),
+        c2pTextDocumentPosition(uri, pos),
       )) ?? [];
-    return FromClient.convAnyLocations(rsp);
+    return p2cAnyLocations(rsp);
   }
 
   async getDeclarations(uri: Uri, pos: Position): Promise<Location[]> {
     const rsp =
       (await this.client?.sendRequest(
         client.DeclarationRequest.type,
-        ToClient.makeTextDocumentPosition(uri, pos),
+        c2pTextDocumentPosition(uri, pos),
       )) ?? [];
-    return FromClient.convAnyLocations(rsp);
+    return p2cAnyLocations(rsp);
   }
 
   async getImplementations(uri: Uri, pos: Position): Promise<Location[]> {
     const rsp =
       (await this.client?.sendRequest(
         client.ImplementationRequest.type,
-        ToClient.makeTextDocumentPosition(uri, pos),
+        c2pTextDocumentPosition(uri, pos),
       )) ?? [];
-    return FromClient.convAnyLocations(rsp);
+    return p2cAnyLocations(rsp);
+  }
+
+  // XXX: currently unused
+  async getDocumentSymbols(uri: Uri) {
+    const rsp = await this.client?.sendRequest(
+      client.DocumentSymbolRequest.type,
+      {
+        textDocument: c2pTextDocument(uri),
+      },
+    );
+    if (!rsp) return;
+    return rsp.map((sym) => {
+      assert(
+        'range' in sym,
+        'Document symbol provider returned SymbolInformation',
+      );
+      return p2cConverter.asDocumentSymbol(sym);
+    });
   }
 
   async restart() {
@@ -193,14 +222,14 @@ class ClangdWrapper extends LanguageClientWrapper {
 
   async getAST(uri: Uri, range: Range) {
     return this.client?.sendRequest<Clangd.ASTNode>('textDocument/ast', {
-      textDocument: ToClient.makeTextDocument(uri),
-      range: ToClient.convRange(range),
+      textDocument: c2pTextDocument(uri),
+      range: c2pConverter.asRange(range),
     });
   }
 }
 
-const cclsWrapper = new CclsWrapper();
-const clangdWrapper = new ClangdWrapper();
+export const cclsWrapper = new CclsWrapper();
+export const clangdWrapper = new ClangdWrapper();
 
 const ALL_CLIENTS = [cclsWrapper, clangdWrapper];
 
@@ -371,9 +400,41 @@ function activate(context: ExtensionContext) {
       searchWithCommand('Ccls specific refs', cclsSearchSpecificRefs),
     ),
 
-    languages.registerTypeHierarchyProvider(
-      { language: 'cpp' },
-      new ClangdTypeHierarchyProvider(() => clangdWrapper.client),
+    new ConditionalResource(
+      'ClangdTypeHierarchy',
+      () =>
+        languages.registerTypeHierarchyProvider(
+          ['c', 'cpp'],
+          new ClangdTypeHierarchyProvider(() => clangdWrapper.client),
+        ),
+      {
+        extensionId: clangdWrapper.extentsionId,
+        configSection: 'qcfg.clangd.typeHierarchy',
+      },
+    ),
+    new ConditionalResource(
+      'CclsTypeHierarchy',
+      () =>
+        languages.registerTypeHierarchyProvider(
+          ['c', 'cpp'],
+          new CclsTypeHierarchyProvider(() => cclsWrapper.client),
+        ),
+      {
+        extensionId: cclsWrapper.extentsionId,
+        configSection: 'qcfg.ccls.typeHierarchy',
+      },
+    ),
+    new ConditionalResource(
+      'CclsCallHierarchy',
+      () =>
+        languages.registerCallHierarchyProvider(
+          ['c', 'cpp'],
+          new CclsCallHierarchyProvider(() => cclsWrapper.client),
+        ),
+      {
+        extensionId: cclsWrapper.extentsionId,
+        configSection: 'qcfg.ccls.callHierarchy',
+      },
     ),
   );
 }

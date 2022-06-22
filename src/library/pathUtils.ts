@@ -11,9 +11,14 @@ export function stripExt(filename: string) {
   return nodejs.path.join(parsed.dir, parsed.name);
 }
 
-export function baseName(filename: string) {
+export function baseNameNoExt(filename: string) {
   const parsed = nodejs.path.parse(filename);
   return parsed.name;
+}
+
+export function baseName(filename: string) {
+  const parsed = nodejs.path.parse(filename);
+  return parsed.name + parsed.ext;
 }
 
 /**

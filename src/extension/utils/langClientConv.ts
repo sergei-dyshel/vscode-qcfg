@@ -1,95 +1,55 @@
-import type { LocationLink, SymbolKind } from 'vscode';
-import { Location, Position, Range, Uri } from 'vscode';
+import type { Location, LocationLink, Position } from 'vscode';
+import { Uri } from 'vscode';
 import * as client from 'vscode-languageclient';
-import { propagateUndefined, unionizeArrays } from '../../library/tsUtils';
+import { createConverter as createCodeConverter } from 'vscode-languageclient/lib/codeConverter';
+import { createConverter as createProtocolConverter } from 'vscode-languageclient/lib/protocolConverter';
+import { unionizeArrays } from '../../library/tsUtils';
 import { locationOrLink } from './document';
 
-export namespace FromClient {
-  export function convPosition(pos: client.Position): Position {
-    return new Position(pos.line, pos.character);
-  }
+/** Converter from vscode types to LSP client */
+export const c2pConverter = createCodeConverter((uri) => uri.toString());
 
-  export function convRange(range: client.Range): Range {
-    return new Range(convPosition(range.start), convPosition(range.end));
-  }
+/** Converter from LSP client types to vscode */
+export const p2cConverter = createProtocolConverter((uri) => Uri.parse(uri));
 
-  export function convUri(uri: client.DocumentUri): Uri {
-    return Uri.parse(uri);
-  }
-
-  export function convLocation(loc: client.Location): Location {
-    return new Location(convUri(loc.uri), convRange(loc.range));
-  }
-
-  export function convLocationLink(loc: client.LocationLink): LocationLink {
-    return {
-      targetUri: convUri(loc.targetUri),
-      targetRange: convRange(loc.targetRange),
-      originSelectionRange: propagateUndefined(convRange)(
-        loc.originSelectionRange,
-      ),
-      targetSelectionRange: convRange(loc.targetSelectionRange),
-    };
-  }
-
-  /** Convert scalar location or array of location/location links into location array
-   *
-   * Such complex union type is returned by definition/declaration/implementations requests.
-   */
-  export function convAnyLocations(
-    rsp: client.Location | client.Location[] | client.LocationLink[],
-  ): Location[] {
-    if (Array.isArray(rsp))
-      return unionizeArrays<client.Location, client.LocationLink>(rsp)
-        .map((loc) => {
-          if ('targetRange' in loc) return convLocationLink(loc);
-          return convLocation(loc);
-        })
-        .map(locationOrLink);
-
-    return [convLocation(rsp)];
-  }
-
-  export function convSymbolKind(kind: client.SymbolKind): SymbolKind {
-    return kind - 1;
-  }
+function p2cLocationLink(loc: client.LocationLink): LocationLink {
+  return {
+    targetUri: p2cConverter.asUri(loc.targetUri),
+    targetRange: p2cConverter.asRange(loc.targetRange),
+    originSelectionRange: p2cConverter.asRange(loc.originSelectionRange),
+    targetSelectionRange: p2cConverter.asRange(loc.targetSelectionRange),
+  };
 }
 
-export namespace ToClient {
-  export function convPosition(pos: Position): client.Position {
-    return client.Position.create(pos.line, pos.character);
-  }
+/** Convert scalar location or array of location/location links into location array
+ *
+ * Such complex union type is returned by definition/declaration/implementations requests.
+ */
+export function p2cAnyLocations(
+  rsp: client.Location | client.Location[] | client.LocationLink[],
+): Location[] {
+  if (Array.isArray(rsp))
+    return unionizeArrays<client.Location, client.LocationLink>(rsp)
+      .map((loc) => {
+        if ('targetRange' in loc) return p2cLocationLink(loc);
+        return p2cConverter.asLocation(loc);
+      })
+      .map(locationOrLink);
 
-  export function convRange(range: Range): client.Range {
-    return client.Range.create(
-      convPosition(range.start),
-      convPosition(range.end),
-    );
-  }
+  return [p2cConverter.asLocation(rsp)];
+}
 
-  export function convUri(uri: Uri): client.DocumentUri {
-    return uri.toString();
-  }
+// Corresponding functions from c2pConverter accept TextDocument instead of Uri
+export function c2pTextDocument(uri: Uri): client.TextDocumentIdentifier {
+  return client.TextDocumentIdentifier.create(c2pConverter.asUri(uri));
+}
 
-  export function convLocation(loc: Location): client.Location {
-    return client.Location.create(convUri(loc.uri), convRange(loc.range));
-  }
-
-  export function makeTextDocument(uri: Uri): client.TextDocumentIdentifier {
-    return client.TextDocumentIdentifier.create(convUri(uri));
-  }
-
-  export function makeTextDocumentPosition(
-    uri: Uri,
-    pos: Position,
-  ): client.TextDocumentPositionParams {
-    return {
-      textDocument: makeTextDocument(uri),
-      position: convPosition(pos),
-    };
-  }
-
-  export function convSymbolKind(kind: SymbolKind): client.SymbolKind {
-    return (kind + 1) as client.SymbolKind;
-  }
+export function c2pTextDocumentPosition(
+  uri: Uri,
+  pos: Position,
+): client.TextDocumentPositionParams {
+  return {
+    textDocument: c2pTextDocument(uri),
+    position: c2pConverter.asPosition(pos),
+  };
 }
