@@ -1,6 +1,12 @@
-'use strict';
+// TODO: rename to string.ts
 
+import {
+  camelCase as convCamelCase,
+  kebabCase as convKebabCase,
+} from 'case-anything';
 import * as stringFormat from 'string-format';
+
+export { convKebabCase, convCamelCase };
 
 export const formatString = stringFormat.default;
 
