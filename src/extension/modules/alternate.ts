@@ -5,7 +5,7 @@ import type { ExtensionContext } from 'vscode';
 import { RelativePattern, Uri, window, workspace } from 'vscode';
 import { assertNotNull } from '../../library/exception';
 import * as nodejs from '../../library/nodejs';
-import { baseName, stripExt } from '../../library/pathUtils';
+import { baseNameNoExt, stripExt } from '../../library/pathUtils';
 import { selectFromList } from './dialog';
 import { registerAsyncCommandWrapped } from './exception';
 import * as fileUtils from './fileUtils';
@@ -35,7 +35,7 @@ async function switchToAlternate() {
     return;
   }
   for (const altExt of altExts) {
-    const shortName = baseName(filePath) + altExt;
+    const shortName = baseNameNoExt(filePath) + altExt;
     const folder = fileUtils.getDocumentWorkspaceFolder(filePath);
     assertNotNull(folder);
     const pattern = new RelativePattern(folder, '**/' + shortName);

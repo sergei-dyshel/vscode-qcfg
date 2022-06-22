@@ -24,6 +24,10 @@
       {
         "command": "qcfg.semanticHighlight.dump",
         "title": "qcfg: Dump semantic tokens on selection"
+      },
+      {
+        "command": "qcfg.showCallHierarchyInPanel",
+        "title": "qcfg: Show call hierachy in side panel"
       }
     ],
     "keybindings": [

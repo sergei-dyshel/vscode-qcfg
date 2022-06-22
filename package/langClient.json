@@ -36,6 +36,21 @@
           "type": "boolean",
           "default": false,
           "description": "C/C++ language clients are remote (over SSH)"
+        },
+        "qcfg.clangd.typeHierarchy": {
+          "type": "boolean",
+          "default": true,
+          "description": "Add clangd provider for type hierarchy"
+        },
+        "qcfg.ccls.typeHierarchy": {
+          "type": "boolean",
+          "default": true,
+          "description": "Add ccls provider for type hierarchy"
+        },
+        "qcfg.ccls.callHierarchy": {
+          "type": "boolean",
+          "default": true,
+          "description": "Add ccls provider for call hierarchy"
         }
       }
     }

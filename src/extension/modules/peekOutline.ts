@@ -6,6 +6,7 @@ import type {
   Uri,
 } from 'vscode';
 import { commands, Location, Range, SymbolKind } from 'vscode';
+import { isDocumentSymbol } from '../utils/symbol';
 import { registerAsyncCommandWrapped } from './exception';
 import { peekLocations } from './fileUtils';
 import { Modules } from './module';
@@ -89,13 +90,6 @@ function narrowRange(name: string, range: Range, document: TextDocument) {
     document.uri,
     range.isSingleLine ? range : findTextInRange(document, name, range),
   );
-}
-
-function isDocumentSymbol(
-  symbol: SymbolInformation | DocumentSymbol,
-): symbol is DocumentSymbol {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (symbol as any).children !== undefined;
 }
 
 async function peekFlatOutline() {
