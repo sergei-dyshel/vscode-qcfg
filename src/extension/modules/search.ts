@@ -37,6 +37,7 @@ import { selectMultiple } from './dialog';
 import { getCompletionPrefix } from './documentUtils';
 import { registerAsyncCommandWrapped } from './exception';
 import { getGtagsDefinitionsInWorkspace } from './gtags';
+import { updateHistory } from './history';
 import { availableLanguageConfigs, getLanguageConfig } from './language';
 import { Modules } from './module';
 import {
@@ -90,6 +91,31 @@ export async function executeImplementationProvider(
     uri,
     position,
   );
+}
+
+export async function executeDeclarationProvider(uri: Uri, position: Position) {
+  return commands.executeCommand<Location[]>(
+    'vscode.executeDeclarationProvider',
+    uri,
+    position,
+  );
+}
+
+/**
+ * Find references which are not defintion/declaration/implementation
+ */
+export async function findProperReferences(
+  uri: Uri,
+  position: Position,
+): Promise<Location[]> {
+  const [refs, defs, decls, impls] = await Promise.all([
+    executeReferenceProvider(uri, position),
+    executeDefinitionProvider(uri, position),
+    executeDeclarationProvider(uri, position),
+    executeImplementationProvider(uri, position),
+  ]);
+  const removeRefs = [...defs, ...decls, ...impls];
+  return refs.filter((loc) => !removeRefs.firstOf((loc1) => loc.equals(loc1)));
 }
 
 export async function searchInFiles(
@@ -292,8 +318,20 @@ function activate(context: ExtensionContext) {
     registerAsyncCommandWrapped('qcfg.search.references', async () =>
       searchWithCommand('References', executeReferenceProvider),
     ),
+    registerAsyncCommandWrapped('qcfg.search.properReferences', async () =>
+      searchWithCommand('Proper references', findProperReferences),
+    ),
     registerAsyncCommandWrapped('qcfg.search.implementations', async () =>
       searchWithCommand('Implementations', executeImplementationProvider),
+    ),
+    registerAsyncCommandWrapped('qcfg.search.declarations', async () =>
+      searchWithCommand('Declarations', executeDeclarationProvider),
+    ),
+    registerAsyncCommandWrapped('qcfg.showTypeHierarchy', async () =>
+      updateHistory(commands.executeCommand('editor.showTypeHierarchy')),
+    ),
+    registerAsyncCommandWrapped('qcfg.showCallHierarchy', async () =>
+      updateHistory(commands.executeCommand('editor.showCallHierarchy')),
     ),
     registerAsyncCommandWrapped('qcfg.search.todos', searchTodos),
     registerAsyncCommandWrapped(

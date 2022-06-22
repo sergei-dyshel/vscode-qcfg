@@ -379,12 +379,28 @@
         "command": "qcfg.search.references"
       },
       {
+        "title": "qcfg: Search proper references",
+        "command": "qcfg.search.properReferences"
+      },
+      {
         "title": "qcfg: Search implementations",
         "command": "qcfg.search.implementations"
       },
       {
+        "title": "qcfg: Search declarations",
+        "command": "qcfg.search.declarations"
+      },
+      {
         "title": "qcfg: Find definitions using gtags/ctags",
         "command": "qcfg.search.GtagsCtagsDefinition"
+      },
+      {
+        "command": "qcfg.showTypeHierarchy",
+        "title": "qcfg: Peek Type Hierarchy"
+      },
+      {
+        "command": "qcfg.showCallHierarchy",
+        "title": "qcfg: Peek Call Hierarchy"
       },
       {
         "command": "qcfg.peekFlatOutline",
