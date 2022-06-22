@@ -84,6 +84,7 @@ const config = {
       always,
       { exceptAfterSingleLine: true },
     ],
+    'class-methods-use-this': [warn, { enforceForClassFields: false }],
     '@typescript-eslint/no-use-before-define': off,
     'no-confusing-arrow': off,
     'implicit-arrow-linebreak': off,
