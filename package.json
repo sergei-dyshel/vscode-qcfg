@@ -439,6 +439,10 @@
         "title": "qcfg: ccls - find assignments"
       },
       {
+        "command": "qcfg.ccls.specificRefs",
+        "title": "qcfg: ccls - find specific references"
+      },
+      {
         "command": "qcfg.git.dump",
         "title": "qcfg: Git - dump info"
       },
