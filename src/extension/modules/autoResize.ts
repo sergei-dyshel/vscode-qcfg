@@ -33,8 +33,7 @@ async function updateEnabled(toggle = false) {
 }
 
 async function onDidChangeConfiguration(event: ConfigurationChangeEvent) {
-  if (event.affectsConfiguration('qcfg.autoResize.enabled'))
-    await updateEnabled();
+  if (event.affectsConfiguration('qcfg.autoResize')) await updateEnabled();
 }
 
 async function onDidChangeActiveTextEditor(editor?: TextEditor) {
