@@ -3,19 +3,15 @@
     "commands": [
       {
         "command": "qcfg.treeView.removeNode",
-        "title": "qcfg: Remove tree view entry",
-        "icon": {
-          "dark": "icons/remove-dark.svg",
-          "light": "icons/remove-light.svg"
-        }
+        "title": "Remove",
+        "enablement": "view == qcfgTreeView && viewItem == removable",
+        "icon": "$(close)"
       },
       {
         "command": "qcfg.treeView.expandNode",
-        "title": "qcfg: Expand tree view",
-        "icon": {
-          "dark": "icons/expandAll-dark.svg",
-          "light": "icons/expandAll-light.svg"
-        }
+        "title": "Expand",
+        "enablement": "view == qcfgTreeView",
+        "icon": "$(expand-all)"
       }
     ],
     "viewsContainers": {

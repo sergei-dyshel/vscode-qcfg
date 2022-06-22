@@ -221,6 +221,7 @@ class LocationNode extends StaticTreeNode {
     options: LocationTreeOptions,
   ) {
     const start = loc.range.start;
+    // TODO: use algo from vscode's `FilePreview.preview`
     const docLine = document.lineAt(start.line);
     const text = docLine.text;
     const trimOffset = docLine.firstNonWhitespaceCharacterIndex;
