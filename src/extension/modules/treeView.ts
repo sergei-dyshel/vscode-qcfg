@@ -112,8 +112,9 @@ export namespace QcfgTreeView {
   export function refresh() {
     if (!currentProvider) return;
     onChangeEmitter.fire(undefined);
-    treeView.message = callIfNonNull(currentProvider.getMessage);
-    treeView.title = callIfNonNull(currentProvider.getTitle);
+    if (currentProvider.getMessage)
+      treeView.message = currentProvider.getMessage();
+    if (currentProvider.getTitle) treeView.title = currentProvider.getTitle();
   }
 
   export function isCurrentProvider(provider: TreeProvider) {
