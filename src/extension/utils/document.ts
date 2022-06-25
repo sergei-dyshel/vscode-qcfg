@@ -1,13 +1,19 @@
 import type { LocationLink, TextDocument } from 'vscode';
 import { Location, Range } from 'vscode';
 
-/** Convert Location/LocationLink union, as returned by some functions, to Location */
-export function locationOrLink(loc: Location | LocationLink): Location {
-  if ('targetRange' in loc) {
-    const range = loc.targetSelectionRange ?? loc.targetRange;
-    return new Location(loc.targetUri, range);
-  }
-  return loc;
+/**
+ * Convert Location/LocationLink union, as returned by some functions, to Location
+ */
+export function resolveLocationLinks(
+  locations: Array<Location | LocationLink>,
+): Location[] {
+  return locations.map((loc) => {
+    if ('targetRange' in loc) {
+      const range = loc.targetSelectionRange ?? loc.targetRange;
+      return new Location(loc.targetUri, range);
+    }
+    return loc;
+  });
 }
 
 /**

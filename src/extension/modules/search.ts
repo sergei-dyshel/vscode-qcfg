@@ -31,7 +31,7 @@ import {
 } from '../../library/exception';
 import { log } from '../../library/logging';
 import { abbrevMatch } from '../../library/stringUtils';
-import { locationOrLink } from '../utils/document';
+import { resolveLocationLinks } from '../utils/document';
 import { getDocumentSymbolsFromCtags } from './ctags';
 import { selectMultiple } from './dialog';
 import { getCompletionPrefix } from './documentUtils';
@@ -71,7 +71,7 @@ export async function executeDefinitionProvider(uri: Uri, position: Position) {
     Array<Location | LocationLink>
   >('vscode.executeDefinitionProvider', uri, position);
 
-  return locationOrLinks.map(locationOrLink);
+  return resolveLocationLinks(locationOrLinks);
 }
 
 export async function executeReferenceProvider(uri: Uri, position: Position) {
@@ -86,18 +86,22 @@ export async function executeImplementationProvider(
   uri: Uri,
   position: Position,
 ) {
-  return commands.executeCommand<Location[]>(
-    'vscode.executeImplementationProvider',
-    uri,
-    position,
+  return resolveLocationLinks(
+    await commands.executeCommand<Array<Location | LocationLink>>(
+      'vscode.executeImplementationProvider',
+      uri,
+      position,
+    ),
   );
 }
 
 export async function executeDeclarationProvider(uri: Uri, position: Position) {
-  return commands.executeCommand<Location[]>(
-    'vscode.executeDeclarationProvider',
-    uri,
-    position,
+  return resolveLocationLinks(
+    await commands.executeCommand<Array<Location | LocationLink>>(
+      'vscode.executeDeclarationProvider',
+      uri,
+      position,
+    ),
   );
 }
 
@@ -115,7 +119,9 @@ export async function findProperReferences(
     executeImplementationProvider(uri, position),
   ]);
   const removeRefs = [...defs, ...decls, ...impls];
-  return refs.filter((loc) => !removeRefs.firstOf((loc1) => loc.equals(loc1)));
+  return refs.filter(
+    (loc) => undefined === removeRefs.firstOf((loc1) => loc.equals(loc1)),
+  );
 }
 
 export async function searchInFiles(

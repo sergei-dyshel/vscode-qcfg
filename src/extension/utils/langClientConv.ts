@@ -4,7 +4,7 @@ import * as client from 'vscode-languageclient';
 import { createConverter as createCodeConverter } from 'vscode-languageclient/lib/codeConverter';
 import { createConverter as createProtocolConverter } from 'vscode-languageclient/lib/protocolConverter';
 import { unionizeArrays } from '../../library/tsUtils';
-import { locationOrLink } from './document';
+import { resolveLocationLinks } from './document';
 
 /** Converter from vscode types to LSP client */
 export const c2pConverter = createCodeConverter((uri) => uri.toString());
@@ -29,12 +29,12 @@ export function p2cAnyLocations(
   rsp: client.Location | client.Location[] | client.LocationLink[],
 ): Location[] {
   if (Array.isArray(rsp))
-    return unionizeArrays<client.Location, client.LocationLink>(rsp)
-      .map((loc) => {
+    return resolveLocationLinks(
+      unionizeArrays<client.Location, client.LocationLink>(rsp).map((loc) => {
         if ('targetRange' in loc) return p2cLocationLink(loc);
         return p2cConverter.asLocation(loc);
-      })
-      .map(locationOrLink);
+      }),
+    );
 
   return [p2cConverter.asLocation(rsp)];
 }
