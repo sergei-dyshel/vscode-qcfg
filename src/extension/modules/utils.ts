@@ -1,7 +1,7 @@
 'use strict';
 
 import type { Range, TextEditor, WorkspaceFolder } from 'vscode';
-import { commands, window } from 'vscode';
+import { commands, Location, window } from 'vscode';
 import { assertNotNull } from '../../library/exception';
 import type { VoidFunction } from '../../library/templateTypes';
 import { registerSyncCommandWrapped } from './exception';
@@ -49,6 +49,11 @@ export function getActiveTextEditor(): TextEditor {
   return editor;
 }
 
+export function getCurrentLocation() {
+  const editor = getActiveTextEditor();
+  return new Location(editor.document.uri, editor.selection);
+}
+
 export function currentWorkspaceFolder(): WorkspaceFolder | undefined {
   const editor = window.activeTextEditor;
   if (!editor) return;
@@ -59,13 +64,16 @@ export interface CursorWordContext {
   editor: TextEditor;
   range: Range;
   word: string;
+  location: Location;
 }
 
 export function getCursorWordContext(): CursorWordContext | undefined {
   const editor = window.activeTextEditor;
   if (!editor) return;
-  const range = editor.document.getWordRangeAtPosition(editor.selection.active);
+  const document = editor.document;
+  const range = document.getWordRangeAtPosition(editor.selection.active);
   if (!range) return;
-  const word = editor.document.getText(range);
-  return { editor, range, word };
+  const word = document.getText(range);
+  const location = new Location(document.uri, range);
+  return { editor, range, word, location };
 }

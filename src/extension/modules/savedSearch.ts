@@ -1,8 +1,8 @@
 import type { ExtensionContext, Location, Uri } from 'vscode';
 import { check, checkNotNull } from '../../library/exception';
 import { DisposableHolder } from '../../library/types';
+import { QuickPickLocations } from '../utils/quickPick';
 import { mapAsync } from './async';
-import { selectFromList } from './dialog';
 import {
   registerAsyncCommandWrapped,
   registerSyncCommandWrapped,
@@ -12,7 +12,7 @@ import { updateHistory } from './history';
 import { LiveLocation, LiveLocationArray } from './liveLocation';
 import { setPanelLocations } from './locationTree';
 import { Modules } from './module';
-import { getActiveTextEditor } from './utils';
+import { getActiveTextEditor, getCurrentLocation } from './utils';
 
 const MAX_SAVED_SEARCHES = 20;
 
@@ -23,6 +23,7 @@ export function dedupeLocations(locations: Location[]): Location[] {
 export async function saveAndPeekSearch(
   name: string,
   func: () => Promise<Location[]>,
+  location?: Location,
 ) {
   let locations = await func();
   if (locations.length === 0) {
@@ -35,6 +36,7 @@ export async function saveAndPeekSearch(
     savedSearches.unshift({
       name,
       func,
+      location,
       details: {
         numLocations: locations.length,
         numFiles: calcNumFiles(locations),
@@ -67,6 +69,7 @@ function calcNumFiles(locations: Location[]): number {
 interface SavedSearch {
   name: string;
   func: () => Promise<Location[]>;
+  location?: Location;
   details: {
     numLocations: number;
     numFiles: number;
@@ -103,20 +106,34 @@ function selectLastLocationsInCurrentEditor() {
 }
 
 async function rerunPreviousSearch() {
-  const prevSearch = await selectFromList(savedSearches, (search) => ({
+  const currLoc = getCurrentLocation();
+  const qp = new QuickPickLocations<SavedSearch>();
+  qp.toQuickPickItem = (search) => ({
     label: search.name,
     description: `${search.details.numLocations} locations in ${search.details.numFiles} files`,
-  }));
+  });
+
+  qp.toLocation = (search) => search.location ?? currLoc;
+  qp.setSeparatedItems(savedSearches);
+  const prevSearch = await qp.showModal();
   if (!prevSearch) return;
   savedSearches.removeFirst(prevSearch);
-  await saveAndPeekSearch(prevSearch.name, async () => prevSearch.func());
+  await saveAndPeekSearch(
+    prevSearch.name,
+    async () => prevSearch.func(),
+    prevSearch.location,
+  );
 }
 
 async function rerunLastSearch() {
   const prevSearch = savedSearches[0];
   checkNotNull(prevSearch, 'No saved searches');
   savedSearches.shift();
-  await saveAndPeekSearch(prevSearch.name, async () => prevSearch.func());
+  await saveAndPeekSearch(
+    prevSearch.name,
+    async () => prevSearch.func(),
+    prevSearch.location,
+  );
 }
 
 const savedSearches: SavedSearch[] = [];

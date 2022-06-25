@@ -219,8 +219,10 @@ export async function searchWithCommand(
 ) {
   const ctx = getCursorWordContext();
   checkNotNull(ctx, 'The cursor is not on word');
-  return saveAndPeekSearch(`${type} of "${ctx.word}"`, async () =>
-    searchFunc(ctx.editor.document.uri, ctx.range.start),
+  return saveAndPeekSearch(
+    `${type} of "${ctx.word}"`,
+    async () => searchFunc(ctx.editor.document.uri, ctx.range.start),
+    ctx.location,
   );
 }
 
@@ -290,13 +292,17 @@ async function getCtagsDefinitions(document: TextDocument, word: string) {
 async function getGtagsCtagsDefinitions() {
   const ctx = getCursorWordContext()!;
   const { word } = ctx;
-  return saveAndPeekSearch(`ctags/gtags for ${word}`, async () => {
-    const [gtagsDefs, ctagsDefs] = await Promise.all([
-      getGtagsDefinitionsInWorkspace(),
-      getCtagsDefinitions(ctx.editor.document, word),
-    ]);
-    return gtagsDefs.concat(ctagsDefs);
-  });
+  return saveAndPeekSearch(
+    `ctags/gtags for ${word}`,
+    async () => {
+      const [gtagsDefs, ctagsDefs] = await Promise.all([
+        getGtagsDefinitionsInWorkspace(),
+        getCtagsDefinitions(ctx.editor.document, word),
+      ]);
+      return gtagsDefs.concat(ctagsDefs);
+    },
+    ctx.location,
+  );
 }
 
 function activate(context: ExtensionContext) {
