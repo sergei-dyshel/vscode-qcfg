@@ -3,6 +3,7 @@
 import type { ExtensionContext } from 'vscode';
 import { assertNotNull } from '../../library/exception';
 import { log, Logger } from '../../library/logging';
+import type { AsyncFunction, PromiseType } from '../../library/templateTypes';
 import { concatArrays, izip, zipArrays } from '../../library/tsUtils';
 import { Modules } from './module';
 
@@ -232,6 +233,20 @@ export async function concatArraysAsync<T>(
 ): Promise<T[]> {
   if (promises.length === 0) return [];
   return concatArrays(...(await Promise.all(promises)));
+}
+
+/**
+ * Create retrying version of async function
+ */
+export function asyncRetry<T extends AsyncFunction>(
+  func: T,
+  maxRetries: number,
+) {
+  return async (...args: Parameters<T>): Promise<PromiseType<ReturnType<T>>> =>
+    func(...args).catch((err) => {
+      if (maxRetries === 0) return err;
+      return asyncRetry(func, maxRetries - 1)(...args);
+    });
 }
 
 let sequentialAsyncByDefault = false;
