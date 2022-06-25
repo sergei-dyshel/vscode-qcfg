@@ -27,12 +27,22 @@ export function unionizeArrays<T, Q>(x: T[] | Q[]): Array<T | Q> {
   return x;
 }
 
-export type CompareFunc<T> = (x: T, y: T) => boolean;
+/**
+ * Generic type for comparison function used in algorithms and data structures.
+ *
+ * Should return negative if `x < y`, 0 if `x = y` and positive if `x > y`.
+ */
+export type CompareFunc<T> = (x: T, y: T) => number;
+
+/**
+ * Generic type for equality function used in algorithms and data structures.
+ */
+export type EqualFunc<T> = (x: T, y: T) => boolean;
 
 export function diffArrays<T>(
   a: T[],
   b: T[],
-  equal: CompareFunc<T>,
+  equal: EqualFunc<T>,
 ): [onlyA: T[], onlyB: T[], common: T[]] {
   const onlyA: T[] = [];
   const onlyB: T[] = [];
@@ -287,16 +297,9 @@ declare global {
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
   interface Thenable<T> extends Promise<T> {}
 
-  interface Array<T> {
-    /**
-     * Iterate over array in reverse order.
-     */
-    reverseIter: () => Iterable<T>;
-    iter: (start?: number, end?: number, step?: number) => Iterable<T>;
-    pairIter: () => Iterable<[T, T]>;
+  interface Array<T> extends ReadonlyArray<T> {
     /** Last element of array (consistent with stack-like push()/pop() ). */
     readonly top: T | undefined;
-    readonly isEmpty: boolean;
     /**
      * Minimum element of array.
      *
@@ -311,10 +314,7 @@ declare global {
     max: (cmp?: (x: T, y: T) => number) => T | undefined;
     equals: (that: T[], eq?: (x: T, y: T) => boolean) => boolean;
     removeFirst: (val: T) => boolean;
-    firstOf: (cond: (val: T) => boolean) => T | undefined;
 
-    /** Indexes of all elements equal to given one */
-    allIndexesOf: (searchElement: T, fromIndex?: number) => number[];
     forEachRight: (
       callbackfn: (value: T, index: number, array: T[]) => void,
     ) => void;
@@ -334,14 +334,36 @@ declare global {
   }
 
   interface ReadonlyArray<T> {
+    /**
+     * Iterate over array in reverse order.
+     */
     reverseIter: () => Iterable<T>;
-    iter: (start: number, end: number, step?: number) => Iterable<T>;
+    iter: (start?: number, end?: number, step?: number) => Iterable<T>;
     pairIter: () => Iterable<[T, T]>;
     readonly isEmpty: boolean;
     firstOf: (cond: (val: T) => boolean) => T | undefined;
 
     /** Indexes of all elements equal to given one */
     allIndexesOf: (searchElement: T, fromIndex?: number) => number[];
+
+    /**
+     * Binary search value and return its index.
+     *
+     * `mode` determines how to act when there is no exact match.
+     *
+     * In `left` mode return LARGEST `i` so that `a[i] <= x`.
+     * If already `a[0] > x`, return `0`.
+     *
+     * In `right` mode return SMALLEST `i` so that `a[i] >= x`.
+     * If already `a[n-1] < x`, return `n`.
+     *
+     * XXX: currently unused
+     */
+    binarySearch: (
+      value: T,
+      compare?: CompareFunc<T>,
+      mode?: 'left' | 'right',
+    ) => number;
   }
 
   interface Map<K, V> {
@@ -353,6 +375,29 @@ declare global {
     ignoreResult: () => Promise<void>;
   }
 }
+
+Array.prototype.binarySearch = function <T>(
+  this: T[],
+  value: T,
+  compare = numberCompare,
+  mode: 'left' | 'right' = 'right',
+): number {
+  let left = 0;
+  let right = this.length;
+  while (left < right) {
+    const mid = Math.floor((left + right) / 2);
+    const cmp = compare(this[mid], value);
+
+    if (mode === 'left') {
+      if (cmp > 0) right = mid;
+      left = mid + 1;
+    } else {
+      if (cmp < 0) left = mid + 1;
+      right = mid;
+    }
+  }
+  return left;
+};
 
 Array.prototype.isAnyTrue = function <T>(this: T[]): boolean {
   return this.find(Boolean) !== undefined;
