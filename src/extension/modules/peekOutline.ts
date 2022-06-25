@@ -9,6 +9,7 @@ import { commands, Location, Range, SymbolKind } from 'vscode';
 import { isDocumentSymbol } from '../utils/symbol';
 import { registerAsyncCommandWrapped } from './exception';
 import { peekLocations } from './fileUtils';
+import { updateHistory } from './history';
 import { Modules } from './module';
 import { offsetPosition } from './textUtils';
 import { getActiveTextEditor } from './utils';
@@ -63,6 +64,8 @@ function flattenOutline(
 
 function symbolIsBlock(symbol: SymbolInformation | DocumentSymbol) {
   switch (symbol.kind) {
+    case SymbolKind.Module:
+    case SymbolKind.Namespace:
     case SymbolKind.Function:
     case SymbolKind.Method:
     case SymbolKind.Struct:
@@ -105,7 +108,7 @@ async function peekFlatOutline() {
     : (outline as SymbolInformation[])
         .filter(symbolIsBlock)
         .map((symbol) => symbol.location);
-  await peekLocations(locations);
+  await updateHistory(peekLocations(locations));
 }
 
 function activate(context: ExtensionContext) {
