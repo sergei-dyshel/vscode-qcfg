@@ -1,4 +1,4 @@
-import type { SymbolInformation, Uri } from 'vscode';
+import type { Range, SymbolInformation, Uri } from 'vscode';
 import {
   commands,
   DocumentSymbol,
@@ -84,4 +84,63 @@ export function convSymInfoToDocSymbol(
     info.location.range,
     info.location.range,
   );
+}
+
+/**
+ * Recursively search for most nested symbol that contains given range.
+ *
+ * Symbol will have filled chain of {@link DocumentSymbol.parent}.
+ *
+ * @param parent used internally in nested recursive call
+ */
+export function getContainingSymbol(
+  range: Range,
+  symbols: DocumentSymbol[],
+  parent?: DocumentSymbol,
+): DocumentSymbol | undefined {
+  for (const symbol of symbols) {
+    const child = getContainingSymbol(range, symbol.children, symbol);
+    if (child) return child;
+    if (symbol.range.contains(range)) {
+      symbol.parent = parent;
+      return symbol;
+    }
+  }
+  return undefined;
+}
+
+declare module 'vscode' {
+  // eslint-disable-next-line @typescript-eslint/no-shadow
+  export interface DocumentSymbol {
+    /**
+     * Parent symbol in tree returned by document symbol provider
+     *
+     * NOTE: This property should be filled by corresponding functions.
+     */
+    parent?: DocumentSymbol;
+
+    /*
+     * NOTE: adding methods not possible because internally VScode uses
+     * different classes (e.g. `MergedInfo`).
+     */
+  }
+}
+
+/**
+ * Fully qualified name.
+ *
+ * Use must fill chain {@link DocumentSymbol.parent} properties in advance.
+ */
+export function qualifiedName(
+  sym: DocumentSymbol,
+  languageId: string,
+  options?: {
+    includeNamespace?: boolean;
+  },
+): string {
+  const sep = ['c', 'cpp'].includes(languageId) ? '::' : '.';
+  return !sym.parent ||
+    (sym.parent.kind === SymbolKind.Namespace && !options?.includeNamespace)
+    ? sym.name
+    : qualifiedName(sym.parent, languageId) + sep + sym.name;
 }

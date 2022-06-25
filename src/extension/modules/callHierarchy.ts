@@ -30,6 +30,7 @@ import {
   normalizeArray,
 } from '../../library/tsUtils';
 import { CclsCallHierarchyProvider } from '../utils/ccls';
+import { getContainingSymbol, qualifiedName } from '../utils/symbol';
 import { mapAsync } from './async';
 import { selectRecordFromListMru } from './dialog';
 import { getCachedDocumentSymbols } from './documentSymbolsCache';
@@ -42,36 +43,14 @@ import { QcfgTreeView } from './treeView';
 import { getActiveTextEditor } from './utils';
 
 class SymbolCallHierarchyItem extends CallHierarchyItem {
-  constructor(uri: Uri, symbolPath: DocumentSymbol[], languageId: string) {
+  constructor(uri: Uri, symbol: DocumentSymbol, languageId: string) {
     // const relpath = workspace.asRelativePath(uri);
-    const symbol = symbolPath.top!;
-    const name = nestedSymbolsQualName(symbolPath, languageId);
-    const detail = symbolPath
-      .slice(0, symbolPath.length - 1)
-      .map((sym) => sym.name)
-      .join(' ');
+    const name = symbol.name;
+    const detail = symbol.parent
+      ? qualifiedName(symbol.parent, languageId)
+      : '';
     super(symbol.kind, name, detail, uri, symbol.range, symbol.selectionRange);
   }
-}
-
-function rangeToNestedSymbols(
-  range: Range,
-  symbols: DocumentSymbol[],
-): DocumentSymbol[] | undefined {
-  for (const symbol of symbols) {
-    const childPath = rangeToNestedSymbols(range, symbol.children);
-    if (childPath) return [symbol, ...childPath];
-    if (symbol.range.contains(range)) return [symbol];
-  }
-  return undefined;
-}
-
-function nestedSymbolsQualName(symbols: DocumentSymbol[], language: string) {
-  const sep = ['c', 'cpp'].includes(language) ? '::' : '.';
-  return symbols
-    .filter((sym) => sym.kind !== SymbolKind.Namespace)
-    .map((sym) => sym.name)
-    .join(sep);
 }
 
 async function location2Call(
@@ -80,11 +59,10 @@ async function location2Call(
 ): Promise<CallHierarchyItem | undefined> {
   const symbols = await getCachedDocumentSymbols(location.uri);
   if (!symbols) return undefined;
-  const symbolPath = rangeToNestedSymbols(location.range, symbols);
-  if (!symbolPath) return undefined;
-  const symbol = symbolPath.top!;
+  const symbol = getContainingSymbol(location.range, symbols);
+  if (!symbol) return undefined;
   return symbol.kind !== SymbolKind.Null
-    ? new SymbolCallHierarchyItem(location.uri, symbolPath, languageId)
+    ? new SymbolCallHierarchyItem(location.uri, symbol, languageId)
     : undefined;
 }
 
@@ -191,9 +169,11 @@ class CallTreeNode implements TreeNode {
       this.call.name,
       TreeItemCollapsibleState.Collapsed,
     );
-    item.description = `${baseName(
-      this.call.uri.fsPath,
-    )} (${SymbolKind.stringKey(this.call.kind)})`;
+    item.description = [
+      this.call.detail ?? '',
+      '-',
+      baseName(this.call.uri.fsPath),
+    ].join(' ');
     item.tooltip = workspace.asRelativePath(this.call.uri);
     item.iconPath = SymbolKind.themeIcon(this.call.kind);
 
