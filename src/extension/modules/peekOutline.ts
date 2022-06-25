@@ -3,10 +3,9 @@ import type {
   ExtensionContext,
   SymbolInformation,
   TextDocument,
-  Uri,
 } from 'vscode';
-import { commands, Location, Range, SymbolKind } from 'vscode';
-import { isDocumentSymbol } from '../utils/symbol';
+import { Location, Range, SymbolKind } from 'vscode';
+import { retrieveDocumentSymbols } from '../utils/symbol';
 import { registerAsyncCommandWrapped } from './exception';
 import { peekLocations } from './fileUtils';
 import { updateHistory } from './history';
@@ -16,14 +15,6 @@ import { getActiveTextEditor } from './utils';
 
 export type OutlineSymbol = SymbolInformation | DocumentSymbol;
 export type Outline = OutlineSymbol[];
-
-export async function executeDocumentSymbolProvider(uri: Uri) {
-  // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
-  return commands.executeCommand<DocumentSymbol[]>(
-    'vscode.executeDocumentSymbolProvider',
-    uri,
-  );
-}
 
 function findTextInRange(
   document: TextDocument,
@@ -98,16 +89,10 @@ function narrowRange(name: string, range: Range, document: TextDocument) {
 async function peekFlatOutline() {
   const editor = getActiveTextEditor();
   const document = editor.document;
-  const outline = (await executeDocumentSymbolProvider(
-    document.uri,
-  )) as Outline;
-  if (outline.isEmpty) return;
+  const symbols = await retrieveDocumentSymbols(document.uri);
+  if (!symbols) return;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const locations = isDocumentSymbol(outline[0])
-    ? flattenOutline(outline as DocumentSymbol[], document)
-    : (outline as SymbolInformation[])
-        .filter(symbolIsBlock)
-        .map((symbol) => symbol.location);
+  const locations = flattenOutline(symbols, document);
   await updateHistory(peekLocations(locations));
 }
 

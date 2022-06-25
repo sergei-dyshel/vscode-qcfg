@@ -32,41 +32,25 @@ import {
 import { CclsCallHierarchyProvider } from '../utils/ccls';
 import { mapAsync } from './async';
 import { selectRecordFromListMru } from './dialog';
+import { getCachedDocumentSymbols } from './documentSymbolsCache';
 import { handleAsyncStd, registerAsyncCommandWrapped } from './exception';
 import { cclsWrapper } from './langClient';
 import { Modules } from './module';
-import { executeDocumentSymbolProvider } from './peekOutline';
 import { executeDefinitionProvider, findProperReferences } from './search';
 import type { TreeNode, TreeProvider } from './treeView';
 import { QcfgTreeView } from './treeView';
 import { getActiveTextEditor } from './utils';
 
-const documentSymbolsCache = new Map<string, DocumentSymbol[]>();
-
-async function getDocumentSymbols(uri: Uri) {
-  const key = uri.toString();
-  if (documentSymbolsCache.has(key)) return documentSymbolsCache.get(key)!;
-  const symbols = await executeDocumentSymbolProvider(uri);
-  documentSymbolsCache.set(key, symbols);
-  return symbols;
-}
-
 class SymbolCallHierarchyItem extends CallHierarchyItem {
-  constructor(uri: Uri, symbolPath: DocumentSymbol[]) {
+  constructor(uri: Uri, symbolPath: DocumentSymbol[], languageId: string) {
     // const relpath = workspace.asRelativePath(uri);
     const symbol = symbolPath.top!;
+    const name = nestedSymbolsQualName(symbolPath, languageId);
     const detail = symbolPath
       .slice(0, symbolPath.length - 1)
       .map((sym) => sym.name)
       .join(' ');
-    super(
-      symbol.kind,
-      symbol.name,
-      detail,
-      uri,
-      symbol.range,
-      symbol.selectionRange,
-    );
+    super(symbol.kind, name, detail, uri, symbol.range, symbol.selectionRange);
   }
 }
 
@@ -92,13 +76,15 @@ function nestedSymbolsQualName(symbols: DocumentSymbol[], language: string) {
 
 async function location2Call(
   location: Location,
+  languageId: string,
 ): Promise<CallHierarchyItem | undefined> {
-  const symbols = await getDocumentSymbols(location.uri);
+  const symbols = await getCachedDocumentSymbols(location.uri);
+  if (!symbols) return undefined;
   const symbolPath = rangeToNestedSymbols(location.range, symbols);
   if (!symbolPath) return undefined;
   const symbol = symbolPath.top!;
   return symbol.kind !== SymbolKind.Null
-    ? new SymbolCallHierarchyItem(location.uri, symbolPath)
+    ? new SymbolCallHierarchyItem(location.uri, symbolPath, languageId)
     : undefined;
 }
 
@@ -110,7 +96,9 @@ class AdhocCallHierarchyProvider implements CallHierarchyProvider {
   ) => {
     const definitions = await executeDefinitionProvider(document.uri, position);
     return filterNonNull(
-      await mapAsync(definitions, async (loc) => location2Call(loc)),
+      await mapAsync(definitions, async (loc) =>
+        location2Call(loc, document.languageId),
+      ),
     );
   };
 
@@ -125,7 +113,8 @@ class AdhocCallHierarchyProvider implements CallHierarchyProvider {
     refs.sort(Location.compare);
     // array of incoming calls, each may be undefined
     const callsOrNulls = await mapAsync(refs, async (ref) => {
-      const call = await location2Call(ref);
+      const document = await workspace.openTextDocument(ref.uri);
+      const call = await location2Call(ref, document.languageId);
       return call
         ? new CallHierarchyIncomingCall(call, [ref.range])
         : undefined;
@@ -197,13 +186,11 @@ class CallTreeNode implements TreeNode {
     private readonly parent?: CallTreeNode,
   ) {}
 
-  async getTreeItem() {
-    const symbols = await getDocumentSymbols(this.call.uri);
-    const nestedSyms = rangeToNestedSymbols(this.call.selectionRange, symbols);
-    const name = nestedSyms
-      ? nestedSymbolsQualName(nestedSyms, this.provider.document.languageId)
-      : this.call.name;
-    const item = new TreeItem(name, TreeItemCollapsibleState.Collapsed);
+  getTreeItem() {
+    const item = new TreeItem(
+      this.call.name,
+      TreeItemCollapsibleState.Collapsed,
+    );
     item.description = `${baseName(
       this.call.uri.fsPath,
     )} (${SymbolKind.stringKey(this.call.kind)})`;
