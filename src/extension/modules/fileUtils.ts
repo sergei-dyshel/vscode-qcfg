@@ -17,6 +17,8 @@ import { assertNotNull, assertNull } from '../../library/exception';
 import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
 import type { DisposableLike } from '../../library/types';
+import { documentRangePreview } from '../utils/document';
+import { QuickPickLocations } from '../utils/quickPick';
 import { handleAsyncStd } from './exception';
 import { getActiveTextEditor } from './utils';
 
@@ -99,6 +101,26 @@ export async function peekLocations(locations: Location[]) {
     editor.selection.active,
     locations,
   );
+}
+
+export async function quickPickLocations(locations: readonly Location[]) {
+  const qp = new QuickPickLocations<Location>();
+  const documents = await new Set<Uri>(
+    locations.map((loc) => loc.uri),
+  ).mapAsync((uri) => workspace.openTextDocument(uri));
+
+  qp.toLocation = (loc) => loc;
+  qp.toQuickPickItem = (loc) => ({
+    label: documentRangePreview(
+      documents.get(loc.uri)!,
+      loc.range,
+      8 /* prefixLen */,
+      8 /* suffixLen */,
+    )[0],
+  });
+  qp.setItems(locations);
+  qp.adjustActiveItem();
+  await qp.showModal();
 }
 
 export async function openTagLocation(
