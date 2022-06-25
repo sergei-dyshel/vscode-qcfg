@@ -4,51 +4,50 @@ import type {
   SymbolInformation,
   TextDocument,
 } from 'vscode';
-import { Location, Range, SymbolKind } from 'vscode';
-import { retrieveDocumentSymbols } from '../utils/symbol';
+import { Location, SymbolKind } from 'vscode';
+import { QuickPickLocations } from '../utils/quickPick';
+import { qualifiedName, retrieveDocumentSymbols } from '../utils/symbol';
 import { registerAsyncCommandWrapped } from './exception';
-import { peekLocations } from './fileUtils';
 import { updateHistory } from './history';
 import { Modules } from './module';
-import { offsetPosition } from './textUtils';
 import { getActiveTextEditor } from './utils';
 
-export type OutlineSymbol = SymbolInformation | DocumentSymbol;
-export type Outline = OutlineSymbol[];
-
-function findTextInRange(
-  document: TextDocument,
-  text: string,
-  range: Range,
-): Range {
-  const fulltext = document.getText(range);
-  const startOffset = fulltext.search(text);
-  const start = offsetPosition(document, range.start, startOffset);
-  const end = offsetPosition(document, start, text.length);
-  return new Range(start, end);
-}
+const minLinesInBlock = 10;
 
 function flattenSubtree(
   symbol: DocumentSymbol,
   document: TextDocument,
-  parent?: string,
-): Location[] {
-  if (!symbolIsBlock(symbol)) return [];
-  const newParent = parent ? parent + '.' + symbol.name : symbol.name;
-  const root = [narrowRange(symbol.name, symbol.selectionRange, document)];
-  if (shouldSkipChildren(symbol)) return root;
-  return root.concat(
-    ...symbol.children.map((child) =>
-      flattenSubtree(child, document, newParent),
-    ),
+  parent?: DocumentSymbol,
+): DocumentSymbol[] {
+  if (
+    !symbolIsBlock(symbol) ||
+    symbol.range.end.line - symbol.range.start.line <= minLinesInBlock
+  )
+    return [];
+  symbol.parent = parent;
+  let result: DocumentSymbol[] = [];
+  if (shouldSkipChildren(symbol)) {
+    result.push(symbol);
+    return result;
+  }
+  result = result.concat(
+    ...symbol.children.map((child) => flattenSubtree(child, document, symbol)),
   );
+  if (result.isEmpty) {
+    result.push(symbol);
+    return result;
+  }
+  if (result[0].range.start.line - symbol.range.start.line >= 5) {
+    result.unshift(symbol);
+  }
+  return result;
 }
 
 function flattenOutline(
   symbols: DocumentSymbol[],
   document: TextDocument,
-): Location[] {
-  return ([] as Location[]).concat(
+): DocumentSymbol[] {
+  return ([] as DocumentSymbol[]).concat(
     ...symbols.map((symbol) => flattenSubtree(symbol, document)),
   );
 }
@@ -79,21 +78,26 @@ function shouldSkipChildren(symbol: DocumentSymbol): boolean {
   }
 }
 
-function narrowRange(name: string, range: Range, document: TextDocument) {
-  return new Location(
-    document.uri,
-    range.isSingleLine ? range : findTextInRange(document, name, range),
-  );
-}
-
 async function peekFlatOutline() {
   const editor = getActiveTextEditor();
   const document = editor.document;
   const symbols = await retrieveDocumentSymbols(document.uri);
   if (!symbols) return;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const locations = flattenOutline(symbols, document);
-  await updateHistory(peekLocations(locations));
+  const flatSymbols = flattenOutline(symbols, document);
+  const qp = new QuickPickLocations<DocumentSymbol>();
+  qp.toQuickPickItem = (sym) => ({
+    label: `${SymbolKind.labelIcon(sym.kind)} ${sym.name}`,
+    description: sym.parent
+      ? qualifiedName(sym.parent, document.languageId, {
+          includeNamespace: true,
+        })
+      : undefined,
+  });
+  qp.toLocation = (sym) => new Location(document.uri, sym.selectionRange);
+  qp.setSeparatedItems(flatSymbols);
+  qp.adjustActiveItem();
+  await updateHistory(qp.showModal());
 }
 
 function activate(context: ExtensionContext) {

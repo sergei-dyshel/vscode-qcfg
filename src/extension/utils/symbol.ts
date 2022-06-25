@@ -20,6 +20,8 @@ declare module 'vscode' {
   export namespace SymbolKind {
     function stringKey(kind: SymbolKind): string;
     function themeIcon(kind: SymbolKind): ThemeIcon;
+    /** Icon with `$(..)` syntax, which can be used inside label */
+    function labelIcon(kind: SymbolKind): string;
   }
 }
 
@@ -33,6 +35,11 @@ SymbolKind.themeIcon = function (kind: SymbolKind) {
     `symbol-${convKebabCase(key)}`,
     new ThemeColor(`symbolIcon.${convCamelCase(key)}Foreground`),
   );
+};
+
+SymbolKind.labelIcon = function (kind: SymbolKind) {
+  const key = SymbolKind.stringKey(kind);
+  return `$(symbol-${convKebabCase(key)})`;
 };
 
 /**

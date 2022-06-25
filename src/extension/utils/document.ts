@@ -1,5 +1,6 @@
 import type { LocationLink, TextDocument } from 'vscode';
 import { Location, Range } from 'vscode';
+import { offsetPosition } from '../modules/textUtils';
 
 /**
  * Convert Location/LocationLink union, as returned by some functions, to Location
@@ -54,4 +55,19 @@ export function documentRangePreview(
   const suffix = document.getText(new Range(range.end, end)).trimEnd();
   const text = document.getText(range);
   return [prefix + text + suffix, prefix.length, prefix.length + text.length];
+}
+
+/**
+ * Search for substring in document's range and return corresponding subrange.
+ */
+export function findTextInRange(
+  document: TextDocument,
+  text: string,
+  range: Range,
+): Range {
+  const fulltext = document.getText(range);
+  const startOffset = fulltext.search(text);
+  const start = offsetPosition(document, range.start, startOffset);
+  const end = offsetPosition(document, start, text.length);
+  return new Range(start, end);
 }
