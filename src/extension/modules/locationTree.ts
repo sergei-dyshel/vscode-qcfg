@@ -6,7 +6,7 @@ import { ThemeIcon, Uri, window, workspace } from 'vscode';
 import { assert, assertInstanceOf } from '../../library/exception';
 import * as nodejs from '../../library/nodejs';
 import { stringify as str } from '../../library/stringify';
-import { maxNumber } from '../../library/tsUtils';
+import { documentRangePreview } from '../utils/document';
 import { mapSomeAsyncAndZip } from './async';
 import { handleAsyncStd } from './exception';
 import { LiveLocation } from './liveLocation';
@@ -220,24 +220,14 @@ class LocationNode extends StaticTreeNode {
     document: TextDocument,
     options: LocationTreeOptions,
   ) {
-    const start = loc.range.start;
-    // TODO: use algo from vscode's `FilePreview.preview`
-    const docLine = document.lineAt(start.line);
-    const text = docLine.text;
-    const trimOffset = docLine.firstNonWhitespaceCharacterIndex;
-    const label = text.substring(trimOffset);
-    if (start.isEqual(loc.range.end)) {
+    if (loc.range.isEmpty) {
       // empty range
-      super(label);
+      super('');
     } else {
+      const [label, start, end] = documentRangePreview(document, loc.range);
       super({
         label,
-        highlights: [
-          [
-            maxNumber(0, loc.range.start.character - trimOffset),
-            maxNumber(0, loc.range.end.character - trimOffset),
-          ],
-        ],
+        highlights: [[start, end]],
       });
     }
     /* TODO: use createLiveLocationAsync */

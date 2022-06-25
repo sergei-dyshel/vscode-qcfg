@@ -1,5 +1,5 @@
-import type { LocationLink } from 'vscode';
-import { Location } from 'vscode';
+import type { LocationLink, TextDocument } from 'vscode';
+import { Location, Range } from 'vscode';
 
 /** Convert Location/LocationLink union, as returned by some functions, to Location */
 export function locationOrLink(loc: Location | LocationLink): Location {
@@ -8,4 +8,44 @@ export function locationOrLink(loc: Location | LocationLink): Location {
     return new Location(loc.targetUri, range);
   }
   return loc;
+}
+
+/**
+ * Generate text preview range with some text before and after the range.
+ *
+ * Produces result similiar to preview texts in Peek dialog.
+ * See `FilePreview.preview` in VScode's repo for original algo.
+ * If {@param suffixLen} is not specified preview will be until the end of string.
+ * @return preview text and offsets of the range inside the preview (usefull for highlights)
+ */
+export function documentRangePreview(
+  document: TextDocument,
+  range: Range,
+  prefixLen?: number,
+  suffixLen?: number,
+): [preview: string, start: number, end: number] {
+  if (prefixLen === undefined) prefixLen = 8;
+  range = document.validateRange(range);
+  let { start, end } = range;
+  if (suffixLen === undefined) suffixLen = 1000; // some big value
+  start = start.withCharacter(Math.max(start.character - prefixLen, 0));
+  end = end.translate(undefined /* lineDelta */, suffixLen);
+  end = document.validatePosition(end); // adjust line end
+
+  // make sure we don't cut in a middle of a word
+  const startWord = document.getWordRangeAtPosition(start);
+  if (
+    startWord &&
+    !startWord.start.isEqual(start) &&
+    !startWord.end.isEqual(start)
+  )
+    start = startWord.start;
+  const endWord = document.getWordRangeAtPosition(end);
+  if (endWord && !endWord.end.isEqual(end) && !endWord.end.isEqual(end))
+    end = endWord.end;
+
+  const prefix = document.getText(new Range(start, range.start)).trimStart();
+  const suffix = document.getText(new Range(range.end, end)).trimEnd();
+  const text = document.getText(range);
+  return [prefix + text + suffix, prefix.length, prefix.length + text.length];
 }
