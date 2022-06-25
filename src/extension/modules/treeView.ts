@@ -21,6 +21,7 @@ import { assert, assertNotNull } from '../../library/exception';
 import { log } from '../../library/logging';
 import { callIfNonNull } from '../../library/tsUtils';
 import {
+  handleErrorsAsync,
   listenWrapped,
   registerAsyncCommandWrapped,
   registerSyncCommandWrapped,
@@ -292,20 +293,16 @@ const onChangeEmitter = new EventEmitter<TreeNode | undefined>();
 
 const treeDataProvider: TreeDataProvider<TreeNode> = {
   onDidChangeTreeData: onChangeEmitter.event,
-  getTreeItem(node: TreeNode) {
-    return node.getTreeItem();
-  },
-  getChildren(node?: TreeNode) {
+  getTreeItem: handleErrorsAsync(async (node: TreeNode) => node.getTreeItem()),
+  getChildren: handleErrorsAsync(async (node?: TreeNode) => {
     if (node) return node.getChildren();
     if (currentProvider) {
       log.debug('Refreshing the tree');
       return currentProvider.getTrees();
     }
     return;
-  },
-  getParent(node: TreeNode) {
-    return node.getParent();
-  },
+  }),
+  getParent: handleErrorsAsync(async (node: TreeNode) => node.getParent()),
 };
 
 function removeNode(...args: any[]) {
