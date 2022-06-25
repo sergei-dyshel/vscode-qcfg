@@ -6,6 +6,10 @@
         "command": "qcfg.showLastLocationsInPanel"
       },
       {
+        "title": "qcfg: Show search last locations in quick pick",
+        "command": "qcfg.quickPickLastLocations"
+      },
+      {
         "title": "qcfg: Select search last locations in current editor",
         "command": "qcfg.selectLastLocations"
       },
@@ -114,6 +118,11 @@
       {
         "key": "alt+g",
         "command": "qcfg.showLastLocationsInPanel",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "alt+shift+g",
+        "command": "qcfg.quickPickLastLocations",
         "when": "editorTextFocus"
       }
     ]

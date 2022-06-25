@@ -7,7 +7,7 @@ import {
   registerAsyncCommandWrapped,
   registerSyncCommandWrapped,
 } from './exception';
-import { peekLocations } from './fileUtils';
+import { peekLocations, quickPickLocations } from './fileUtils';
 import { updateHistory } from './history';
 import { LiveLocation, LiveLocationArray } from './liveLocation';
 import { setPanelLocations } from './locationTree';
@@ -77,7 +77,16 @@ async function showLastLocationsInPanel() {
   if (!lastName) {
     throw Error('No search was issued yet');
   }
-  return setPanelLocations(lastName, lastLocations.get()!.locations());
+  return updateHistory(
+    setPanelLocations(lastName, lastLocations.get()!.locations()),
+  );
+}
+
+async function quickPickLastLocations() {
+  if (!lastName) {
+    throw Error('No search was issued yet');
+  }
+  return updateHistory(quickPickLocations(lastLocations.get()!.locations()));
 }
 
 function selectLastLocationsInCurrentEditor() {
@@ -86,7 +95,7 @@ function selectLastLocationsInCurrentEditor() {
   checkNotNull(lastLoc, 'No last locations');
   const selections = lastLoc
     .locations()
-    .filter((loc) => loc.uri.toString() === editor.document.uri.toString())
+    .filter((loc) => loc.uri.equals(editor.document.uri))
     .map((loc) => loc.range.asSelection());
   check(!selections.isEmpty, 'No results in current file');
   editor.selections = selections;
@@ -120,6 +129,10 @@ function activate(context: ExtensionContext) {
     registerAsyncCommandWrapped(
       'qcfg.showLastLocationsInPanel',
       showLastLocationsInPanel,
+    ),
+    registerAsyncCommandWrapped(
+      'qcfg.quickPickLastLocations',
+      quickPickLastLocations,
     ),
     registerSyncCommandWrapped(
       'qcfg.selectLastLocations',
