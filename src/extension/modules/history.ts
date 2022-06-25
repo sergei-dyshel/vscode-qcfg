@@ -19,13 +19,20 @@ import { getVisibleEditor } from './windowUtils';
 const MAX_HISTORY_SIZE = 20;
 
 /**
- * if after promise resolved current editor location changes,
- * add both previous and current point to history
+ * Update location before and after awaiting the given promise, which is
+ * expected to jump to new location.
+ *
+ * @param column View column to monitor for changes, defaults to active column.
+ * @param onlyWhenChanged Only update history if there was a jump.
  */
 export async function updateHistory<T>(
   jump: Promise<T>,
-  column?: ViewColumn,
+  options?: {
+    column?: ViewColumn;
+    onlyWhenChanged?: boolean;
+  },
 ): Promise<T> {
+  let column = options?.column;
   if (!column) {
     column = window.activeTextEditor?.viewColumn;
     if (!column) return jump;
@@ -39,8 +46,13 @@ export async function updateHistory<T>(
     const after = propagateUndefined(LivePosition.fromEditor)(
       getVisibleEditor(column),
     );
-    if (before) histories.get(column).push(before);
-    if (after) histories.get(column).push(after);
+    if (
+      !options?.onlyWhenChanged ||
+      (after && before && !before.equals(after))
+    ) {
+      if (before) histories.get(column).push(before);
+      if (after) histories.get(column).push(after);
+    }
   }
 }
 
@@ -170,10 +182,9 @@ async function peekOpenReference() {
 }
 
 async function peekOpenReferenceToSide() {
-  return updateHistory(
-    commands.executeCommand('openReferenceToSide'),
-    getBesideViewColumn(),
-  );
+  return updateHistory(commands.executeCommand('openReferenceToSide'), {
+    column: getBesideViewColumn(),
+  });
 }
 
 function activate(context: ExtensionContext) {
