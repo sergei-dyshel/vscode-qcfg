@@ -203,6 +203,11 @@
           "type": "boolean",
           "description": "Use gtags as workspace symbols provider",
           "default": false
+        },
+        "qcfg.notification.timeoutMs": {
+          "type": "number",
+          "default": 3000,
+          "description": "Default timeout (in milliseconds) for notifications"
         }
       }
     },

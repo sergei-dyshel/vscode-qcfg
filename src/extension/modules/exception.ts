@@ -25,7 +25,7 @@ import type {
 } from '../../library/templateTypes';
 import type { DisposableLike } from '../../library/types';
 import { Modules } from './module';
-import { showStatusBarMessage } from './windowUtils';
+import { showNotificationMessage } from './notificationMessage';
 
 let errorMessagesEnabled = true;
 
@@ -41,10 +41,7 @@ export function stdErrorHandler(
 ): never {
   if (error instanceof CheckError) {
     log.info(`${prefix}Check failed: ${error.message}`);
-    showStatusBarMessage(
-      ''.padStart(10, ' ') + error.message + ''.padEnd(10, ' '),
-      { errorBackground: true },
-    );
+    showNotificationMessage(error.message);
   } else {
     log.error(`${prefix}${String(error)}`);
     console.error(error);
