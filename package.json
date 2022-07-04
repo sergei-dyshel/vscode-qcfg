@@ -531,7 +531,7 @@
       },
       {
         "key": "ctrl+shift+;",
-        "cmd": "cmd+shift+;",
+        "mac": "cmd+shift+;",
         "command": "qcfg.runCommand"
       },
       {
