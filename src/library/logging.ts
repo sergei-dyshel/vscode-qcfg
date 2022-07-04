@@ -29,6 +29,8 @@ export namespace LogLevels {
   }
 }
 
+export type LogInstance = string | (() => string);
+
 export interface LogRecord {
   /** Timestamp */
   date: string;
@@ -41,7 +43,7 @@ export interface LogRecord {
   /** Logger name */
   name?: string;
   /** Logger instance name */
-  instance?: string;
+  instance?: LogInstance;
   /** Log message */
   message: string;
 }
@@ -56,7 +58,7 @@ export function registerLogHandler(handler: LogHandler) {
 
 export interface LoggerOptions {
   /** Instance-specific name */
-  instance?: string;
+  instance?: LogInstance;
   /** Parent logger */
   parent?: Logger;
   /** Full logger name or subname if `parent` specified */
@@ -64,7 +66,7 @@ export interface LoggerOptions {
 }
 
 export class Logger {
-  instance?: string;
+  instance?: LogInstance;
 
   constructor(options?: LoggerOptions) {
     if (options) {
@@ -222,7 +224,11 @@ function formatLogRecord(record: LogRecord, opts?: LogFormatOptions): string {
   parts.push(record.location);
   if (all) parts.push(record.function + '()');
   if (all && record.name) parts.push(`[${record.name}]`);
-  if (record.instance) parts.push(`{${record.instance}}`);
+  if (record.instance) {
+    const instance =
+      typeof record.instance === 'string' ? record.instance : record.instance();
+    parts.push(`{${instance}}`);
+  }
   parts.push(record.message);
   return parts.join(' ');
 }
