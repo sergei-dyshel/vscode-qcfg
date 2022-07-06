@@ -9,6 +9,7 @@ import type {
   TextEditorEdit,
 } from 'vscode';
 import { commands, extensions, window } from 'vscode';
+import type { DisposableLike } from '../../library/disposable';
 import {
   CheckError,
   wrapWithErrorHandler,
@@ -23,7 +24,6 @@ import type {
   PromiseType,
   VoidFunction,
 } from '../../library/templateTypes';
-import type { DisposableLike } from '../../library/types';
 import { showLog } from './logging';
 import { Modules } from './module';
 import { showNotificationMessage } from './notificationMessage';

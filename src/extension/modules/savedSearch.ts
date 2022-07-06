@@ -1,6 +1,6 @@
 import type { ExtensionContext, Location, Uri } from 'vscode';
+import { DisposableHolder } from '../../library/disposable';
 import { check, checkNotNull } from '../../library/exception';
-import { DisposableHolder } from '../../library/types';
 import { QuickPickLocations } from '../utils/quickPick';
 import { mapAsync } from './async';
 import {

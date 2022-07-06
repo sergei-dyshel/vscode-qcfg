@@ -2,10 +2,10 @@
 
 import type { ConfigurationChangeEvent, ExtensionContext } from 'vscode';
 import { Disposable, workspace } from 'vscode';
+import type { DisposableLike } from '../../library/disposable';
 import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
 import { expandPath } from '../../library/pathUtils';
-import type { DisposableLike } from '../../library/types';
 import { listenWrapped } from './exception';
 import { watchFile } from './fileUtils';
 import { Modules } from './module';
