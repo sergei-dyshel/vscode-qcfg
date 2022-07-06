@@ -8,10 +8,8 @@ import type {
 import { commands, Position, Range } from 'vscode';
 import { log } from '../../library/logging';
 import { arraySlice, numberToBitArray } from '../../library/tsUtils';
-import {
-  executeCommandHandled,
-  registerAsyncCommandWrapped,
-} from './exception';
+import { registerAsyncCommandWrapped } from './exception';
+import { showLog } from './logging';
 import { Modules } from './module';
 import { getActiveTextEditor } from './utils';
 
@@ -87,7 +85,7 @@ async function dumpSemanticTokens() {
     const { text, type, modifiers } = token;
     log.info({ text, type, modifiers });
   }
-  executeCommandHandled('qcfg.log.show');
+  showLog();
 }
 
 function decodeAllTokens(

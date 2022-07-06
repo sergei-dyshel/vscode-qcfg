@@ -34,6 +34,15 @@ import {
 } from './exception';
 import { Modules } from './module';
 
+/**
+ * Show log output panel
+ *
+ * Preserves focus by default.
+ */
+export function showLog(preserveFocus = true) {
+  outputHandler.show(preserveFocus);
+}
+
 function stringifyTextEditor(editor: TextEditor) {
   const doc = editor.document;
   const relpath = workspace.asRelativePath(doc.fileName);
@@ -125,7 +134,8 @@ class OutputChannelHandler extends TextLogHandler {
     /// #endif
     this.outputChannel = window.createOutputChannel('qcfg', 'qcfg-log');
     for (const editor of window.visibleTextEditors) {
-      if (editor.document.fileName.startsWith('extension-output')) this.show();
+      if (editor.document.fileName.startsWith('extension-output'))
+        this.show(true /* preserveFocus */);
     }
   }
 
@@ -133,8 +143,8 @@ class OutputChannelHandler extends TextLogHandler {
     this.outputChannel.appendLine(line);
   }
 
-  show() {
-    this.outputChannel.show();
+  show(preserveFocus?: boolean) {
+    this.outputChannel.show(preserveFocus);
   }
 
   private readonly outputChannel: OutputChannel;
@@ -154,8 +164,10 @@ function getLogFileName() {
   return '/tmp/' + EXT;
 }
 
+let outputHandler: OutputChannelHandler;
+
 function activate(context: ExtensionContext) {
-  const outputHandler = new OutputChannelHandler();
+  outputHandler = new OutputChannelHandler();
   const fileHandler = new FileHandler(getLogFileName());
   registerLogHandler(outputHandler);
   registerLogHandler(fileHandler);

@@ -22,10 +22,7 @@ import {
 } from '../utils/langClientConv';
 import { mapAsync } from './async';
 import { selectMultiple } from './dialog';
-import {
-  executeCommandHandled,
-  registerAsyncCommandWrapped,
-} from './exception';
+import { registerAsyncCommandWrapped } from './exception';
 import type { LocationGroup } from './locationTree';
 import { setPanelLocationGroups } from './locationTree';
 import { Modules } from './module';
@@ -359,7 +356,6 @@ async function clangdShowAST() {
     ),
   );
   console.log(ast);
-  executeCommandHandled('qcfg.log.show');
 }
 
 async function cclsSearchSpecificRefs(uri: Uri, position: Position) {
