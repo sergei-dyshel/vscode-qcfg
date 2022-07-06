@@ -1,5 +1,5 @@
 import { formatMessage } from './stringify';
-import type { AsyncFunction, PromiseType } from './templateTypes';
+import type { AnyFunction } from './templateTypes';
 
 export function assert(
   condition: boolean | undefined | null,
@@ -60,35 +60,20 @@ export function checkNotNull<T>(
   if (val === undefined || val === null) throw new CheckError(message);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function wrapWithErrorHandler<T extends (...args: any[]) => any, R>(
+/**
+ *  Wrap sync or async function with exception handler (both sync and async exception)
+ */
+export function wrapWithErrorHandler<T extends AnyFunction, R>(
   func: T,
   handler: (error: unknown) => R,
 ): (...funcArgs: Parameters<T>) => ReturnType<T> | R {
-  return (...args: Parameters<T>): ReturnType<T> | R => {
+  return (...args: Parameters<T>) => {
     try {
-      return func(...args);
-    } catch (exc: unknown) {
-      return handler(exc);
-    }
-  };
-}
-
-/**
- * Wrap async function with exception handler (both sync and async)
- */
-export function wrapWithErrorHandlerAsync<T extends AsyncFunction, R>(
-  func: T,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handler: (error: any) => R,
-): (...funcArgs: Parameters<T>) => Promise<PromiseType<ReturnType<T>> | R> | R {
-  return (
-    ...args: Parameters<T>
-  ): Promise<PromiseType<ReturnType<T>> | R> | R => {
-    try {
-      // eslint-disable-next-line @typescript-eslint/return-await
-      return func(...args).catch((exc) => handler(exc));
-    } catch (exc: unknown) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment
+      const result = func(...args);
+      if (!(result instanceof Promise)) return result;
+      return result.catch((exc) => handler(exc));
+    } catch (exc) {
       return handler(exc);
     }
   };
