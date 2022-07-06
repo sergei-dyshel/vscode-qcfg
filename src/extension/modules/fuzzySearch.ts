@@ -47,6 +47,7 @@ function showFuzzySearch() {
 
   // Setup basic quick pick.
   const pick = vscode.window.createQuickPick<Item>();
+  pick.sortByLabel = false;
   pick.items = quickPickEntries;
   pick.canSelectMany = false;
 
