@@ -24,6 +24,7 @@ import type {
   VoidFunction,
 } from '../../library/templateTypes';
 import type { DisposableLike } from '../../library/types';
+import { showLog } from './logging';
 import { Modules } from './module';
 import { showNotificationMessage } from './notificationMessage';
 
@@ -59,7 +60,7 @@ export function stdErrorHandler(
         .showErrorMessage(`${prefix}${error}`, SHOW_OUTPUT)
         .then((item: string | undefined) => {
           if (SHOW_OUTPUT === item) {
-            executeCommandHandled('qcfg.log.show');
+            showLog();
           }
         });
     }
