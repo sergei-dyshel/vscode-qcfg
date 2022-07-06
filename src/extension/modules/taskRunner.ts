@@ -13,9 +13,9 @@ import type {
   WorkspaceFolder,
 } from 'vscode';
 import { tasks, TaskScope, window } from 'vscode';
+import type { DisposableLike } from '../../library/disposable';
 import { assert } from '../../library/exception';
 import { log, Logger } from '../../library/logging';
-import type { DisposableLike } from '../../library/types';
 import { MessageDialog } from '../utils/messageDialog';
 import { executeCommandHandled, listenWrapped } from './exception';
 import { Modules } from './module';

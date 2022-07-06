@@ -1,6 +1,6 @@
 import { extensions, workspace } from 'vscode';
+import type { DisposableLike } from '../../library/disposable';
 import { Logger } from '../../library/logging';
-import type { DisposableLike } from '../../library/types';
 import { listenWrapped } from '../modules/exception';
 
 /**

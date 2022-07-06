@@ -10,9 +10,9 @@ import type {
   TextEditor,
 } from 'vscode';
 import { Location, workspace } from 'vscode';
+import type { DisposableLike } from '../../library/disposable';
 import { assert } from '../../library/exception';
 import { DefaultMap } from '../../library/tsUtils';
-import type { DisposableLike } from '../../library/types';
 import { NumRange, offsetToRange } from './documentUtils';
 import { listenWrapped } from './exception';
 import { Modules } from './module';

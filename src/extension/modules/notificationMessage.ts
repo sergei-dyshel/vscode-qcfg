@@ -5,8 +5,8 @@ import {
   window,
   workspace,
 } from 'vscode';
+import { DisposableLike } from '../../library/disposable';
 import { setTimeoutPromise } from '../../library/nodeUtils';
-import { DisposableLike } from '../../library/types';
 import { registerSyncCommandWrapped } from './exception';
 import { Modules } from './module';
 

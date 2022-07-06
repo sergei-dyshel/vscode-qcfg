@@ -13,10 +13,10 @@ import {
   window,
   workspace,
 } from 'vscode';
+import type { DisposableLike } from '../../library/disposable';
 import { assertNotNull, assertNull } from '../../library/exception';
 import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
-import type { DisposableLike } from '../../library/types';
 import { documentRangePreview } from '../utils/document';
 import { QuickPickLocations } from '../utils/quickPick';
 import { handleAsyncStd } from './exception';
