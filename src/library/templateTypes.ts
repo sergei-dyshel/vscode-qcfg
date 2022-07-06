@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 // type NotVoid = object | string | boolean | symbol | number | null | undefined;
-export type AsyncFunction = (...args: any[]) => Promise<any>;
+export type AsyncFunction<T = any> = (...args: any[]) => Promise<T>;
 /**
  * NOTE: Must used `undefined` because just using `void` wouldn't work,
  * see https://stackoverflow.com/questions/57951850/is-there-not-promise-type-in-typescipt

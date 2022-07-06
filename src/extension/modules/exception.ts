@@ -10,11 +10,7 @@ import type {
 } from 'vscode';
 import { commands, extensions, window } from 'vscode';
 import type { DisposableLike } from '../../library/disposable';
-import {
-  CheckError,
-  wrapWithErrorHandler,
-  wrapWithErrorHandlerAsync,
-} from '../../library/exception';
+import { CheckError, wrapWithErrorHandler } from '../../library/exception';
 import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
 import { replaceAll } from '../../library/stringUtils';
@@ -86,7 +82,7 @@ export function handleErrorsAsync<T extends AsyncFunction>(
   func: T,
   prefix?: string,
 ): (...funcArgs: Parameters<T>) => Promise<PromiseType<ReturnType<T>>> {
-  return wrapWithErrorHandlerAsync(func, createStdErrorHandler(prefix));
+  return wrapWithErrorHandler(func, createStdErrorHandler(prefix));
 }
 
 export function registerAsyncCommandWrapped(
@@ -96,7 +92,7 @@ export function registerAsyncCommandWrapped(
 ): DisposableLike {
   return commands.registerCommand(
     command,
-    wrapWithErrorHandlerAsync(callback, (error) => {
+    wrapWithErrorHandler(callback, (error) => {
       handleErrorDuringCommand(command, error);
     }),
     thisArg,
@@ -137,28 +133,16 @@ export function registerTextEditorCommandWrapped(
 
 export function listenWrapped<T>(
   event: Event<T>,
-  listener: (e: T) => void,
-  thisArgs?: any,
-  disposables?: DisposableLike[],
+  listener: (e: T) => void | Promise<void>,
 ): DisposableLike {
-  return event(
-    wrapWithErrorHandler(listener, handleErrorDuringEvent),
-    thisArgs,
-    disposables,
-  );
+  return event(wrapWithErrorHandler(listener, handleErrorDuringEvent));
 }
 
 export function listenAsyncWrapped<T>(
   event: Event<T>,
   listener: (e: T) => Promise<void>,
-  thisArgs?: any,
-  disposables?: DisposableLike[],
 ): DisposableLike {
-  return event(
-    wrapWithErrorHandlerAsync(listener, handleErrorDuringEvent),
-    thisArgs,
-    disposables,
-  );
+  return listenWrapped(event, listener);
 }
 
 /**
