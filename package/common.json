@@ -11,7 +11,11 @@
   "engines": {
     "vscode": "^1.67.0"
   },
-  "enabledApiProposals": ["textSearchProvider", "findTextInFiles"],
+  "enabledApiProposals": [
+    "textSearchProvider",
+    "findTextInFiles",
+    "quickPickSortByLabel"
+  ],
   "categories": ["Other"],
   "activationEvents": ["workspaceContains:**", "onStartupFinished"],
   "license": "MIT",

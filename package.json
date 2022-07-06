@@ -13,7 +13,8 @@
   },
   "enabledApiProposals": [
     "textSearchProvider",
-    "findTextInFiles"
+    "findTextInFiles",
+    "quickPickSortByLabel"
   ],
   "categories": [
     "Other"
