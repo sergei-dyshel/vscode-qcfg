@@ -29,7 +29,7 @@ install: | package.json
 
 check_tools:
 	bin/q-vscode-cli -h >/dev/null
-	bin/q-vscode-syntax-dump -h >/dev/null
+	# bin/q-vscode-syntax-dump -h >/dev/null
 
 update_proposed:
 	npx vscode-dts dev
