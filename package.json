@@ -498,6 +498,16 @@
       {
         "title": "qcfg: Toggle auto-resize",
         "command": "qcfg.autoResize.toggle"
+      },
+      {
+        "command": "qcfg.persistentStorage.browseGlobal",
+        "title": "qcfg: Browse GLOBAL persistent storage",
+        "category": "Internal"
+      },
+      {
+        "command": "qcfg.persistentStorage.browseWorkspace",
+        "title": "qcfg: Browse WORKSPACE persistent storage",
+        "category": "Internal"
       }
     ],
     "keybindings": [

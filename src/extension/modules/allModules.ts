@@ -33,6 +33,7 @@ import * as multipleSelection from './multipleSelection';
 import * as notes from './notes';
 import * as notificationMessage from './notificationMessage';
 import * as peekOutline from './peekOutline';
+import * as persistentState from './persistentState';
 import * as quickPickDemo from './quickPickDemo';
 import * as readOnlyProject from './readOnlyProject';
 import * as remoteControl from './remoteControl';
@@ -107,5 +108,6 @@ export const ALL_MODULES = {
   semanticHighlight,
   autoResize,
   notificationMessage,
+  persistentState,
   quickPickDemo,
 };

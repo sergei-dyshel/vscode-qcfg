@@ -99,6 +99,20 @@ export function registerAsyncCommandWrapped(
   );
 }
 
+export function registerCommandWrapped(
+  command: string,
+  callback: (...args: any[]) => void | Promise<void>,
+  thisArg?: any,
+): DisposableLike {
+  return commands.registerCommand(
+    command,
+    wrapWithErrorHandler(callback, (error) => {
+      handleErrorDuringCommand(command, error);
+    }),
+    thisArg,
+  );
+}
+
 export function registerSyncCommandWrapped(
   command: string,
   callback: VoidFunction,
