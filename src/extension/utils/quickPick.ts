@@ -511,6 +511,10 @@ export class QuickPickLocations<T> extends QuickPickWrapper<
     this.qp.activeItems = [active];
   }
 
+  setActive(index: number) {
+    this.qp.activeItems = [this.qp.items[index]];
+  }
+
   /**
    * Show modal quick pick. Return selected item of `undefined` if cancelled.
    */

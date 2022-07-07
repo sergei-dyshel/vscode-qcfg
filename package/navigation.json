@@ -12,6 +12,10 @@
       {
         "command": "qcfg.history.forward",
         "title": "qcfg: Go forward in history"
+      },
+      {
+        "command": "qcfg.history.quickPick",
+        "title": "qcfg: Quick pick history"
       }
     ],
     "keybindings": [
@@ -46,6 +50,11 @@
         "key": "ctrl+o",
         "mac": "cmd+o",
         "command": "qcfg.history.backward"
+      },
+      {
+        "key": "ctrl+k ctrl+i",
+        "mac": "cmd+k cmd+i",
+        "command": "qcfg.history.quickPick"
       },
       {
         "key": "ctrl+shift+o",

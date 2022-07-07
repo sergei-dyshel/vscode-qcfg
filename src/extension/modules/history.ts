@@ -1,17 +1,29 @@
 import type {
   ExtensionContext,
+  StatusBarItem,
   TextDocumentChangeEvent,
   TextEditor,
   ViewColumn,
 } from 'vscode';
-import { commands, window, workspace } from 'vscode';
+import {
+  commands,
+  StatusBarAlignment,
+  SymbolKind,
+  ThemeColor,
+  window,
+  workspace,
+} from 'vscode';
 import { assert, assertNotNull, check } from '../../library/exception';
 import { log, Logger } from '../../library/logging';
 import type { AsyncFunction, PromiseType } from '../../library/templateTypes';
-import { DefaultMap, propagateUndefined } from '../../library/tsUtils';
+import { DefaultMap } from '../../library/tsUtils';
+import { documentRangePreview } from '../utils/document';
+import { QuickPickLocations } from '../utils/quickPick';
+import { getContainingSymbol, qualifiedName } from '../utils/symbol';
 import { getBesideViewColumn } from '../utils/window';
-import { listenWrapped, registerAsyncCommandWrapped } from './exception';
-import { LiveLocationArray, LivePosition } from './liveLocation';
+import { getCachedDocumentSymbols } from './documentSymbolsCache';
+import { listenAsyncWrapped, registerAsyncCommandWrapped } from './exception';
+import { LiveLocationBasedArray, LivePosition } from './liveLocation';
 import { Modules } from './module';
 import { getActiveTextEditor } from './utils';
 import { getVisibleEditor } from './windowUtils';
@@ -37,27 +49,29 @@ export async function updateHistory<T>(
     column = window.activeTextEditor?.viewColumn;
     if (!column) return jump;
   }
-  const before = propagateUndefined(LivePosition.fromEditor)(
-    getVisibleEditor(column),
-  );
+  const beforeEditor = getVisibleEditor(column);
+  const before = beforeEditor
+    ? await HistoryItem.fromEditor(beforeEditor)
+    : undefined;
   try {
     return await jump;
   } finally {
-    const after = propagateUndefined(LivePosition.fromEditor)(
-      getVisibleEditor(column),
-    );
+    const afterEditor = getVisibleEditor(column);
+    const after = afterEditor
+      ? await HistoryItem.fromEditor(afterEditor)
+      : undefined;
     if (
       !options?.onlyWhenChanged ||
       (after && before && !before.equals(after))
     ) {
-      if (before) histories.get(column).push(before);
-      if (after) histories.get(column).push(after);
+      if (before) getHistory(column).push(before);
+      if (after) getHistory(column).push(after);
     }
   }
 }
 
 /**
- * Wrap async function with exception handler (both sync and async)
+ * Wrap async function with {@link updateHistory}
  */
 export function wrapWithHistoryUpdate<T extends AsyncFunction>(
   func: T,
@@ -68,6 +82,10 @@ export function wrapWithHistoryUpdate<T extends AsyncFunction>(
 
 // Private
 
+function getHistory(column: ViewColumn) {
+  return histories.get(column);
+}
+
 function getActiveColumn() {
   const editor = getActiveTextEditor();
   const viewCol = editor.viewColumn;
@@ -76,13 +94,56 @@ function getActiveColumn() {
 }
 
 async function goBackward() {
-  const editor = getActiveTextEditor();
-  await histories.get(getActiveColumn()).goBackward(editor);
+  await getHistory(getActiveColumn()).goBackward();
 }
 
 async function goForward() {
   const editor = getActiveTextEditor();
-  await histories.get(getActiveColumn()).goForward(editor);
+  await getHistory(getActiveColumn()).goForward(editor);
+}
+
+export class HistoryItem {
+  location!: LivePosition;
+  preview!: string;
+
+  get position() {
+    return this.location.position;
+  }
+
+  private constructor() {}
+
+  static async fromEditor(editor: TextEditor) {
+    const position = editor.selection.active;
+    const document = editor.document;
+    const item = new HistoryItem();
+    const symbols = await getCachedDocumentSymbols(document.uri);
+    if (symbols) {
+      const symbol = getContainingSymbol(position.asRange, symbols);
+      if (symbol) {
+        item.preview = [
+          SymbolKind.labelIcon(symbol.kind),
+          qualifiedName(symbol, document.languageId),
+        ].join(' ');
+      }
+    }
+    if (!item.preview)
+      item.preview = documentRangePreview(
+        document,
+        position.asRange,
+        undefined,
+        8,
+      )[0];
+    item.location = new LivePosition(document, position);
+    return item;
+  }
+
+  toString(): string {
+    return this.location.toString();
+  }
+
+  equals(other: HistoryItem) {
+    return this.position.isEqual(other.position);
+  }
 }
 
 class History {
@@ -97,65 +158,85 @@ class History {
   }
 
   /** Push current position to forward history and go backward */
-  async goBackward(editor: TextEditor) {
-    assert(editor.viewColumn === this.viewColumn);
-    const cur = LivePosition.fromEditor(editor);
-    let prev = this.backward.pop();
-    check(prev !== undefined, 'No backward history');
-    if (prev.equals(cur)) {
-      prev = this.backward.pop();
-      check(prev !== undefined, 'No backward history');
-    }
-    this.forward.push(cur);
+  async goBackward() {
+    await this.prepareForBrowsing();
+    check(this.cursor < this.items.length - 1, 'Reached end of history');
+    this.cursor += 1;
+    const prev = this.items.get(this.cursor);
     this.log.debug(`Going backward to ${prev}`);
-    await this.show(prev.asPosition);
+    this.updateStatusBar();
+    await this.show(prev);
   }
 
-  private async show(pos: LivePosition) {
-    await pos.show({ viewColumn: this.viewColumn });
+  /** Reset history navigation */
+  reset() {
+    statusBar.hide();
+    while (this.cursor > 0) {
+      this.items.shift();
+      this.cursor -= 1;
+    }
+    /* TODO: clear status bar */
+  }
+
+  private async show(item: HistoryItem) {
+    await item.location.show({ viewColumn: this.viewColumn });
   }
 
   async goForward(editor: TextEditor) {
     assert(editor.viewColumn === this.viewColumn);
-    const cur = LivePosition.fromEditor(editor);
-    const next = this.forward.pop();
-    check(next !== undefined, 'No forward history');
-    this.backward.push(cur);
+    check(this.cursor > 0, 'Top of history');
+    this.cursor += 1;
+    const next = this.items.get(this.cursor);
     this.log.debug(`Going forward to ${next}`);
-    await this.show(next.asPosition);
+    if (this.cursor > 0) this.updateStatusBar();
+    else statusBar.hide();
+    await this.show(next);
   }
 
-  get top(): LivePosition | undefined {
-    return this.backward.top?.asPosition;
+  private updateStatusBar() {
+    // -1 because top item is "current" location
+    statusBar.text = `history: ${this.cursor} / ${this.items.length - 1}`;
+    statusBar.show();
   }
 
-  push(pos: LivePosition) {
-    if (this.backward.top?.equals(pos)) return;
-    this.backward.push(pos);
-    this.forward.clear();
-    this.log.debug(`Pushed ${pos}`);
-    while (this.backward.length > MAX_HISTORY_SIZE) this.backward.shift();
+  get top(): HistoryItem | undefined {
+    return this.items.top;
   }
 
-  pushOrReplace(pos: LivePosition) {
+  push(item: HistoryItem) {
+    this.reset();
     const { top } = this;
-    if (top) {
-      if (Math.abs(top.position.line - pos.position.line) > 4) {
-        this.push(pos);
-      } else {
-        this.backward.pop();
-        this.forward.clear();
-        this.backward.push(pos);
-        this.log.debug(`Replaced top with ${pos}`);
-      }
+    if (top && Math.abs(top.position.line - item.position.line) <= 4) {
+      this.items.shift();
+      this.items.unshift(item);
+      this.log.debug(`Replaced top with ${item}`);
     } else {
-      this.push(pos);
+      this.items.unshift(item);
+      this.log.debug(`Pushed ${item}`);
+      while (this.items.length > MAX_HISTORY_SIZE) this.items.pop();
     }
   }
 
+  async pushCurrent() {
+    const editor = getVisibleEditor(this.viewColumn);
+    assert(!!editor, 'Not in editor');
+    this.push(await HistoryItem.fromEditor(editor));
+  }
+
+  async prepareForBrowsing() {
+    check(this.items.length > 0, 'No backward history');
+    if (this.cursor === 0) {
+      await this.pushCurrent();
+    }
+  }
+
+  getItems() {
+    return [...this.items];
+  }
+
   private readonly log: Logger;
-  private readonly backward = new LiveLocationArray();
-  private readonly forward = new LiveLocationArray();
+  cursor = 0;
+  private readonly items = new LiveLocationBasedArray<HistoryItem>();
 }
 
 const histories = new DefaultMap<ViewColumn, History>(
@@ -166,15 +247,14 @@ async function updateHistoryOnCommand(cmd: string) {
   await updateHistory(commands.executeCommand(cmd));
 }
 
-function onDidChangeTextDocument(event: TextDocumentChangeEvent) {
+async function onDidChangeTextDocument(event: TextDocumentChangeEvent) {
   const editor = window.activeTextEditor;
   if (!editor) return;
   if (editor.document !== event.document) return;
   const column = editor.viewColumn;
   if (!column) return;
-  const history = histories.get(column);
-  const pos = LivePosition.fromActiveEditor();
-  history.pushOrReplace(pos);
+  const history = getHistory(column);
+  await history.pushCurrent();
 }
 
 async function peekOpenReference() {
@@ -187,10 +267,39 @@ async function peekOpenReferenceToSide() {
   });
 }
 
-function activate(context: ExtensionContext) {
-  context.subscriptions.push(
-    listenWrapped(workspace.onDidChangeTextDocument, onDidChangeTextDocument),
+async function quickPickHistory() {
+  const column = window.tabGroups.activeTabGroup.viewColumn;
+  const history = getHistory(column);
+  await history.prepareForBrowsing();
+  const items = history.getItems();
+  let activeIdx = history.cursor;
 
+  const qp = new QuickPickLocations<HistoryItem>(
+    (item) => ({
+      label: item.preview,
+      description: workspace.asRelativePath(item.location.uri),
+    }),
+    (item) => item.location,
+    items,
+  );
+  qp.setActive(activeIdx);
+  const item = await qp.select();
+  if (!item) return;
+  activeIdx = items.indexOf(item);
+  assert(activeIdx >= 0);
+}
+
+let statusBar: StatusBarItem;
+
+function activate(context: ExtensionContext) {
+  statusBar = window.createStatusBarItem('history', StatusBarAlignment.Right);
+  statusBar.backgroundColor = new ThemeColor('statusBarItem.warningBackground');
+  context.subscriptions.push(
+    statusBar,
+    listenAsyncWrapped(
+      workspace.onDidChangeTextDocument,
+      onDidChangeTextDocument,
+    ),
     registerAsyncCommandWrapped('qcfg.history.wrapCmd', updateHistoryOnCommand),
     registerAsyncCommandWrapped('qcfg.history.backward', goBackward),
     registerAsyncCommandWrapped('qcfg.history.forward', goForward),
@@ -199,6 +308,7 @@ function activate(context: ExtensionContext) {
       'qcfg.peek.openReferenceToSide',
       peekOpenReferenceToSide,
     ),
+    registerAsyncCommandWrapped('qcfg.history.quickPick', quickPickHistory),
   );
 }
 

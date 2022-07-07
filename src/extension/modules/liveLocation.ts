@@ -12,7 +12,11 @@ import type {
 import { Location, workspace } from 'vscode';
 import type { DisposableLike } from '../../library/disposable';
 import { assert } from '../../library/exception';
-import { DefaultMap } from '../../library/tsUtils';
+import {
+  ArrayIterator,
+  DefaultMap,
+  NumberIterator,
+} from '../../library/tsUtils';
 import { NumRange, offsetToRange } from './documentUtils';
 import { listenWrapped } from './exception';
 import { Modules } from './module';
@@ -186,6 +190,11 @@ export class LiveRange extends LiveLocation {
   }
 }
 
+/**
+ * Array of {@link LiveLocation}.
+ *
+ * Registers/unregisters locations automatically on array operations.
+ */
 export class LiveLocationArray implements DisposableLike {
   private array: LiveLocation[] = [];
 
@@ -243,6 +252,79 @@ export class LiveLocationArray implements DisposableLike {
   }
 }
 
+/**
+ * Array of objects containing {@link LiveLocation}.
+ *
+ * Similar to {@link LiveLocationArray} but allows to store additional data.
+ * Handles `LiveLocation` registration/deregistrations automatically.
+ */
+export class LiveLocationBasedArray<T extends { location: LiveLocation }>
+  implements DisposableLike
+{
+  array: T[] = [];
+
+  get baseArray(): readonly T[] {
+    return this.array;
+  }
+
+  get(index: number) {
+    return this.array[index];
+  }
+
+  push(item: T) {
+    item.location.register(() => {
+      this.array.removeFirst(item);
+    });
+    this.array.push(item);
+  }
+
+  pop(): T | undefined {
+    const popped = this.array.pop();
+    if (popped) {
+      popped.location.unregister();
+    }
+    return popped;
+  }
+
+  get top(): T | undefined {
+    return this.array.top;
+  }
+
+  unshift(item: T) {
+    item.location.register(() => {
+      this.array.removeFirst(item);
+    });
+    this.array.unshift(item);
+  }
+
+  shift(): T | undefined {
+    const shifted = this.array.shift();
+    if (shifted) {
+      shifted.location.unregister();
+    }
+    return shifted;
+  }
+
+  clear() {
+    this.array.forEach((item) => {
+      item.location.unregister();
+    });
+    this.array = [];
+  }
+
+  dispose() {
+    this.clear();
+  }
+
+  get length() {
+    return this.array.length;
+  }
+
+  [Symbol.iterator]() {
+    return new ArrayIterator(this.array, new NumberIterator(0, this.length, 1));
+  }
+}
+
 // Private
 
 function adjustOffsetAfterChange(
@@ -280,7 +362,8 @@ const allLocations = new DefaultMap<string, LiveLocation[]>(() => []);
 function onDidChangeTextDocument(event: TextDocumentChangeEvent) {
   const document = event.document;
   const changes = event.contentChanges;
-  if (document.fileName.startsWith('extension-output')) return;
+  if (document.uri.scheme === 'output') return;
+  // log.debug('TEMP: Updating live locations', event.document);
   // TODO: exit if no changes for current document
   // make sure changes are sorted in descending order by offset
   for (const [x, y] of changes.pairIter()) {

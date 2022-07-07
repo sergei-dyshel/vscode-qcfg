@@ -1,4 +1,5 @@
 import type {
+  TabGroup,
   TextDocument,
   TextDocumentShowOptions,
   TextEditor,
@@ -24,6 +25,12 @@ export function getBesideViewColumn(): ViewColumn | undefined {
     return groups.all[1].viewColumn;
   }
   return undefined;
+}
+
+export function getTabGroup(column: ViewColumn): TabGroup | undefined {
+  for (const group of window.tabGroups.all)
+    if (group.viewColumn === column) return group;
+  return;
 }
 
 let showTextDocumentGen = 0;
