@@ -1,10 +1,10 @@
 {
-  "tabnine.trigger": "off",
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.codeActionsOnSave": {
       "source.organizeImports": true
-    }
+    },
+    "tabnine.enabled": false
   },
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
