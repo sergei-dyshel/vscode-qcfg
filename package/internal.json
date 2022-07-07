@@ -1,0 +1,26 @@
+{
+  "contributes": {
+    "commands": [
+      {
+        "command": "qcfg.persistent.browseGlobal",
+        "title": "qcfg: Browse GLOBAL persistent state"
+      },
+      {
+        "command": "qcfg.persistent.browseWorkspace",
+        "title": "qcfg: Browse WORKSPACE persistent state"
+      },
+      {
+        "command": "qcfg.persistent.backupGlobal",
+        "title": "qcfg: Backup GLOBAL persistent state"
+      },
+      {
+        "command": "qcfg.persistent.restoreGlobal",
+        "title": "qcfg: Restore GLOBAL persistent state"
+      },
+      {
+        "command": "qcfg.persistent.openGlobalStorage",
+        "title": "qcfg: Open GLOBAL persistent storage folder"
+      }
+    ]
+  }
+}

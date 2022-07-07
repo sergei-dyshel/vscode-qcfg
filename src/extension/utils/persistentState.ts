@@ -3,11 +3,11 @@ import type { JsonTypes } from '../../library/json';
 import { extensionContext } from './extensionContext';
 
 export enum PersistentScope {
-  GLOBAL,
-  WORKSPACE,
+  GLOBAL = 'global',
+  WORKSPACE = 'workspace',
 }
 
-export interface PersistentStorage<T extends JsonTypes.Any> {
+export interface PersistentStorage<T extends JsonTypes.Any | undefined> {
   get: () => T;
   update: (value: T) => Promise<void>;
 }
@@ -18,13 +18,19 @@ export function getMemento(scope: PersistentScope) {
     : extensionContext().workspaceState;
 }
 
+export function getStoragePath(scope: PersistentScope) {
+  return scope === PersistentScope.GLOBAL
+    ? extensionContext().globalStorageUri.fsPath
+    : extensionContext().storageUri?.fsPath;
+}
+
 /**
  * Wrapper for reading/writing to persistent storage.
  *
  * NOTE: Can be initialized at any time, but `get/update`
  * are only allowed after extension is activated.
  */
-export class PersistentState<T extends JsonTypes.Any>
+export class PersistentState<T extends JsonTypes.Any | undefined>
   implements PersistentStorage<T>
 {
   GLOBAL = PersistentScope.GLOBAL;

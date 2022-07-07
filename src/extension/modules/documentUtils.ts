@@ -147,3 +147,12 @@ export function lineIndentationRange(document: TextDocument, line: number) {
 export function lineIndentation(document: TextDocument, line: number): string {
   return document.getText(lineIndentationRange(document, line));
 }
+
+/**
+ * Full range of text in document
+ */
+export function documentRange(document: TextDocument): Range {
+  const firstLine = document.lineAt(0);
+  const lastLine = document.lineAt(document.lineCount - 1);
+  return new Range(firstLine.range.start, lastLine.range.end);
+}

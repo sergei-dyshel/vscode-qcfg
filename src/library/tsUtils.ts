@@ -4,6 +4,15 @@ import { MultiDictionary } from 'typescript-collections';
 
 const emptyRegExp = /(?:)/;
 
+/**
+ * Type-safely copy specific properties into new object.
+ */
+export function pick<T, K extends keyof T>(obj: T, ...keys: K[]): Pick<T, K> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const result: any = {};
+  for (const key of keys) result[key] = obj[key];
+  return result;
+}
 // see https://stackoverflow.com/questions/61148466/typescript-type-that-matches-any-object-but-not-arrays
 // TODO: currently not used
 export type NotArray = (
@@ -487,7 +496,7 @@ Array.prototype.removeFirst = function <T>(this: T[], val: T): boolean {
   return true;
 };
 
-function numberCompare<T>(x: T, y: T): number {
+export function numberCompare<T>(x: T, y: T): number {
   const xNum = x as unknown as number;
   const yNum = y as unknown as number;
   if (xNum < yNum) return -1;

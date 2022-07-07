@@ -3,7 +3,6 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { log } from '../../library/logging';
 import { handleErrors, registerSyncCommandWrapped } from './exception';
 import { Modules } from './module';
 import { getActiveTextEditor } from './utils';
@@ -18,7 +17,6 @@ let valueFromPreviousInvocation = '';
 let lastSelected: Item | undefined;
 
 function showFuzzySearch() {
-  log.info('called');
   // Build the entries we will show the user. One entry for each non-empty line,
   // prefixed with the line number. We prefix with the line number so lines stay
   // in the correct order and so duplicate lines do not get merged together.
