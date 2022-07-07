@@ -13,11 +13,13 @@ import { log } from '../library/logging';
 import { stringify as str } from '../library/stringify';
 import { ALL_MODULES } from './modules/allModules';
 import { Modules } from './modules/module';
+import { setExtensionContext } from './utils/extensionContext';
 
-export function activate(context: ExtensionContext) {
-  console.log('Extension active');
+export async function activate(context: ExtensionContext) {
+  console.log('Extension activating');
+  setExtensionContext(context);
 
-  Modules.activateAll(context);
+  await Modules.activateAll(context);
   log.info(`Activated ${str(Modules.fileNames())}`);
 
   // history.activate(context);
@@ -29,5 +31,5 @@ export function activate(context: ExtensionContext) {
 
 // this method is called when your extension is deactivated
 export async function deactivate() {
-  // await history.deactivate();
+  await Modules.deactivateAll();
 }
