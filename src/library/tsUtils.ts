@@ -4,6 +4,15 @@ import { MultiDictionary } from 'typescript-collections';
 
 const emptyRegExp = /(?:)/;
 
+/**
+ * Type-safely copy specific properties into new object.
+ */
+export function pick<T, K extends keyof T>(obj: T, ...keys: K[]): Pick<T, K> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const result: any = {};
+  for (const key of keys) result[key] = obj[key];
+  return result;
+}
 // see https://stackoverflow.com/questions/61148466/typescript-type-that-matches-any-object-but-not-arrays
 // TODO: currently not used
 export type NotArray = (
