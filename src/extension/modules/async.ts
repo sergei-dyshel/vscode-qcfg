@@ -10,6 +10,28 @@ type Callback = () => Promise<void>;
 type Resolve = () => void;
 type Reject = (err: unknown) => void;
 
+export class AsyncMapper {
+  private readonly callbacks: Callback[] = [];
+
+  constructor(private readonly numWorkers: number) {}
+
+  add(cb: Callback) {
+    this.callbacks.push(cb);
+  }
+
+  async run() {
+    const promises: Array<Promise<void>> = [];
+    for (let i = 0; i < this.numWorkers; i++) promises.push(this.startWorker());
+    return Promise.all(promises);
+  }
+
+  private async startWorker() {
+    while (!this.callbacks.isEmpty) {
+      await this.callbacks.pop()!();
+    }
+  }
+}
+
 export class PromiseQueue {
   private readonly log: Logger;
 

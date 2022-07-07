@@ -6,13 +6,14 @@ import { assertNotNull } from '../../../library/exception';
 import { log } from '../../../library/logging';
 import type { SyntaxSymbol } from '../../../library/syntax';
 import { SyntaxLanguage } from '../../../library/syntax';
+import { AsyncMapper } from '../async';
 import { selectFromList } from '../dialog';
 import {
   executeCommandHandled,
   handleAsyncStd,
   registerAsyncCommandWrapped,
 } from '../exception';
-import { readFile } from '../fileUtils';
+import { clangdWrapper } from '../langClient';
 import { detectLanguage } from '../language';
 import { Modules } from '../module';
 import { searchInFiles } from '../search';
@@ -47,24 +48,35 @@ async function createDb() {
       _: CancellationToken,
     ): Promise<void> => {
       let cnt = 0;
+      const mapper = new AsyncMapper(50);
       for (const uri of files) {
-        cnt += 1;
-        const path = workspace.asRelativePath(uri);
-        const lang = await detectLanguage(uri.fsPath);
-        log.debug(`Parsing ${path} (${lang})`);
-        if (lang && SyntaxLanguage.isSupported(lang)) {
-          const slang = SyntaxLanguage.get(lang);
-          const fileText = await readFile(uri.fsPath);
-          const tree = await slang.parse(fileText);
-          const symbols = slang.getSymbols(tree.rootNode);
-          log.debug(`Found ${symbols.length} symbols`);
-        }
-        const percent = (cnt * 100) / files.length;
-        progress.report({
-          message: `${cnt}/${files.length}`,
-          increment: percent,
+        mapper.add(async () => {
+          const path = workspace.asRelativePath(uri);
+          const lang = await detectLanguage(uri.fsPath);
+          log.debug(`Parsing ${path} (${lang})`);
+          try {
+            const symbols = await clangdWrapper.getDocumentSymbols(uri);
+            if (symbols) log.debug(`${path}: ${symbols.length} symbols`);
+          } catch (err: unknown) {
+            log.debug(`${path}: ${err}`);
+          }
+          // const symbols = await executeDocumentSymbolProvider(uri);
+          cnt += 1;
+          const percent = (cnt * 100) / files.length;
+          progress.report({
+            message: `${cnt}/${files.length}`,
+            increment: percent,
+          });
         });
+        // if (lang && SyntaxLanguage.isSupported(lang)) {
+        //   const slang = SyntaxLanguage.get(lang);
+        //   const fileText = await readFile(uri.fsPath);
+        //   const tree = await slang.parse(fileText);
+        //   const symbols = slang.getSymbols(tree.rootNode);
+        //   log.debug(`Found ${symbols.length} symbols`);
+        // }
       }
+      await mapper.run();
     },
   );
   executeCommandHandled('qcfg.log.show');
