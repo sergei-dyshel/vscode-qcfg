@@ -18,6 +18,13 @@
 - Add new document with date in filename.
 - Open in external app.
 
+# Visual
+
+- Add icon to all `qcfg:` commands. See
+  [list of icons](https://code.visualstudio.com/api/references/icons-in-labels).
+  Good candidates: `account`, `home`, `heart`, `star`, `star-full`.
+- Add `category` property to all commands (may be add icon).
+
 # Documentation
 
 - Create cheat-sheet.
@@ -32,11 +39,18 @@
 - Rename Params -> TaskParams etc.
 - For q-parse-loc run, multi folder-task, gather locations and present them in
   location dialog
+- Tasks for running command for specific set of files, for example organize
+  imports in all typescript files. Will open files one by one and run command on
+  them.
+  - Possible improvement: run only on changed files.
 
 # Refactoring
 
 - Make `mapSome*`/`mapAsync*` methods of `Array`.
--
+- Remove `allModules`. Instead, import all files in `modules` dir with
+  `import()`. Generate `ALL_MODULES` programmatically.
+- Export `nodejs` as namespace (instead of `*` as of now).
+- Add `noUncheckedIndexedAccess` to `tsconfig.ts` (will require a lot of fixes).
 
 # Big/Long-term
 
