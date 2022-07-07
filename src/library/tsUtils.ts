@@ -250,9 +250,13 @@ export class NumberIterator implements IterableIterator<number> {
   }
 }
 
+export interface ArrayLike<T> {
+  [n: number]: T;
+}
+
 export class ArrayIterator<T> implements IterableIterator<T> {
   constructor(
-    private readonly array: T[],
+    private readonly array: ArrayLike<T>,
     private readonly numIter: NumberIterator,
   ) {}
 
@@ -334,6 +338,7 @@ declare global {
   }
 
   interface ReadonlyArray<T> {
+    reversed: () => ReadonlyArray<T>;
     /**
      * Iterate over array in reverse order.
      */
@@ -463,6 +468,10 @@ Array.prototype.iter = function <T>(
       step === undefined ? 1 : step,
     ),
   );
+};
+
+Array.prototype.reversed = function <T>(this: T[]) {
+  return [...this.reverseIter()];
 };
 
 Array.prototype.reverseIter = function <T>(this: T[]) {
