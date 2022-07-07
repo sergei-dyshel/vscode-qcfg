@@ -305,6 +305,11 @@ async function getGtagsCtagsDefinitions() {
   );
 }
 
+async function peekTypeHierarchy() {
+  await commands.executeCommand('editor.showTypeHierarchy');
+  await commands.executeCommand('editor.showSubtypes');
+}
+
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
     languages.registerCompletionItemProvider(
@@ -340,7 +345,7 @@ function activate(context: ExtensionContext) {
       searchWithCommand('Declarations', executeDeclarationProvider),
     ),
     registerAsyncCommandWrapped('qcfg.showTypeHierarchy', async () =>
-      updateHistory(commands.executeCommand('editor.showTypeHierarchy')),
+      updateHistory(peekTypeHierarchy()),
     ),
     registerAsyncCommandWrapped('qcfg.showCallHierarchy', async () =>
       updateHistory(commands.executeCommand('editor.showCallHierarchy')),
