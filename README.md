@@ -101,6 +101,23 @@ feature there is a server API and CLI tool that allows to list open VScode
 windows and to execute specific command in given window. Very handy for
 integrating VScode with external tools.
 
+## Custom navigation history implementation
+
+Navigating backward/forward in location history is one of the more important
+features of code editor. However, VScode's builtin history implementation is
+lacking in many areas.
+
+- Up until recent
+  [Februrary 2022 release](https://code.visualstudio.com/updates/v1_65#_new-editor-history-navigation)
+  the history scope was entire window i.e. all cursor changes in entire window
+  constituted single history stack. If like me you're accustomed to dual-pane
+  editing where two editing panes are independent then this scope model is a big
+  obstacle since going back in history would unexpectedly jump between panes.
+  Fortunately new `workbench.editor.navigationScope` setting can be used to
+  limit the scope to editor group.
+- TODO: too verbose
+- TODO: no way to visualize.
+
 # Minor features
 
 - Switching to alternate (e.g. C source <=> header file).
