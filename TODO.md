@@ -47,10 +47,9 @@
 # Refactoring
 
 - Make `mapSome*`/`mapAsync*` methods of `Array`.
-- Remove `allModules`. Instead, import all files in `modules` dir with
-  `import()`. Generate `ALL_MODULES` programmatically.
 - Export `nodejs` as namespace (instead of `*` as of now).
 - Add `noUncheckedIndexedAccess` to `tsconfig.ts` (will require a lot of fixes).
+- Merge and async versions on `registerCommand` and `listenWrapped`.
 
 # Big/Long-term
 
