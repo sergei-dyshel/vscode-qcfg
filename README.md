@@ -214,6 +214,32 @@ I care to wrap all commands, event handlers and API callbacks with custom error
 handlers which show popup notification. Some errors are not critical (like
 command precondition) and are shown in a less intrusive way in status bar.
 
+## `QuickPick` framework
+
+[QuickPick](https://code.visualstudio.com/api/ux-guidelines/quick-picks) is a
+very powerful feature of VScode as it allows extension developers to implement
+flexible flows where user should select one/some options. However provided API
+is not convenient:
+
+- Both
+  [window.createQuickPick](https://code.visualstudio.com/api/references/vscode-api#window.createQuickPick)
+  and `window.showQuickPick` functions can only accept objects extending
+  [`QuickPickItem`](https://code.visualstudio.com/api/references/vscode-api#QuickPickItem).
+- `createQuickPick` is very powerful but requires some boilerplate code to
+  implement standard flow where user accepts/cancels.
+- `showQuickPick` are very limited and don't support many advanced features of
+  `QuickPick`.
+
+In order to fulfill my needs I had to create my own hierarchy of `QuickPick`
+classes that supports much wider spectrum of operations without much boiler
+plate code. Main new features:
+
+- Allows selecting items of any type, by providing adapter interface which
+  converts from the type to `QuickPickItem`.
+- More convenient use of separators.
+- Allows "saving" `QuickPick` state between invocations and sessions. Each
+  selected item will be moved to top of list thus maintaining MRU history.
+
 # Troubleshooting
 
 ## Requesting Accessibility on MacOS
