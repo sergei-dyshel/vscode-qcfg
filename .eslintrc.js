@@ -123,7 +123,7 @@ const config = {
     'arrow-function': off,
     '@typescript-eslint/no-empty-function': [
       warn,
-      { allow: ['arrowFunctions'] },
+      { allow: ['arrowFunctions', 'private-constructors'] },
     ],
     'new-cap': [warn, { newIsCapExceptions: ['default'] }],
     indent: off,
