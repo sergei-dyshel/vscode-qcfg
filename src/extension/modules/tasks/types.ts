@@ -23,7 +23,6 @@ import { log, LogLevel } from '../../../library/logging';
 import * as nodejs from '../../../library/nodejs';
 import { concatArrays } from '../../../library/tsUtils';
 import { mapAsync, mapAsyncSequential } from '../async';
-import type { ListSelectable } from '../dialog';
 import { handleAsyncStd } from '../exception';
 import { getDocumentWorkspaceFolder, peekLocations } from '../fileUtils';
 import { refreshOrRestartLangClients } from '../langClient';
@@ -156,7 +155,7 @@ export class ConditionError extends ValidationError {
   }
 }
 
-export abstract class BaseTask implements ListSelectable {
+export abstract class BaseTask {
   constructor(public folderText?: string) {}
 
   abstract run(): Promise<void>;

@@ -20,9 +20,9 @@ import {
   DefaultMap,
   mapNonNull,
 } from '../../library/tsUtils';
+import { GenericQuickPick } from '../utils/quickPick';
 import { mapAsync } from './async';
 import { ConfigRules } from './configRules';
-import { selectMultipleFromList } from './dialog';
 import { handleAsyncStd, registerAsyncCommandWrapped } from './exception';
 import { Modules } from './module';
 import { getActiveTextEditor } from './utils';
@@ -182,8 +182,7 @@ async function getWorkspaceFixes() {
 
 /** select with quick pick */
 async function chooseFixes(actions: QuickFixAction[], showFilenames: boolean) {
-  return selectMultipleFromList(
-    actions,
+  const qp = new GenericQuickPick(
     (action) => ({
       label: action.action.title,
       description: showFilenames
@@ -191,20 +190,21 @@ async function chooseFixes(actions: QuickFixAction[], showFilenames: boolean) {
         : undefined,
       picked: action.preSelected,
     }),
-    {
-      matchOnDescription: true,
-      placeHolder: 'Select quick fix code actions to apply',
-    },
-    (action) => {
-      handleAsyncStd(
-        window.showTextDocument(action.uri, {
-          preview: true,
-          preserveFocus: true,
-          selection: action.range,
-        }),
-      );
-    },
+    actions,
   );
+  qp.options.matchOnDescription = true;
+  qp.options.placeholder = 'Select quick fix code actions to apply';
+  qp.onDidActivateItem = (action) => {
+    handleAsyncStd(
+      window.showTextDocument(action.uri, {
+        preview: true,
+        preserveFocus: true,
+        selection: action.range,
+      }),
+    );
+  };
+  qp.options.canSelectMany = true;
+  return qp.selectMany();
 }
 
 async function quickFixFile() {

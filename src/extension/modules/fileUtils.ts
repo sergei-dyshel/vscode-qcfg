@@ -104,23 +104,24 @@ export async function peekLocations(locations: Location[]) {
 }
 
 export async function quickPickLocations(locations: readonly Location[]) {
-  const qp = new QuickPickLocations<Location>();
   const documents = await new Set<Uri>(
     locations.map((loc) => loc.uri),
   ).mapAsync((uri) => workspace.openTextDocument(uri));
 
-  qp.toLocation = (loc) => loc;
-  qp.toQuickPickItem = (loc) => ({
-    label: documentRangePreview(
-      documents.get(loc.uri)!,
-      loc.range,
-      8 /* prefixLen */,
-      8 /* suffixLen */,
-    )[0],
-  });
-  qp.setItems(locations);
+  const qp = new QuickPickLocations<Location>(
+    (loc) => ({
+      label: documentRangePreview(
+        documents.get(loc.uri)!,
+        loc.range,
+        8 /* prefixLen */,
+        8 /* suffixLen */,
+      )[0],
+    }),
+    (loc) => loc,
+    locations,
+  );
   qp.adjustActiveItem();
-  await qp.showModal();
+  await qp.select();
 }
 
 export async function openTagLocation(

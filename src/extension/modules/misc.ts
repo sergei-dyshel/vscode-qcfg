@@ -5,7 +5,7 @@ import type { ExtensionContext, TextEditor } from 'vscode';
 import { commands, Uri, window, workspace } from 'vscode';
 import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
-import { selectStringFromListMru } from './dialog';
+import { PersistentStringQuickPick } from '../utils/quickPickPersistent';
 import {
   listenAsyncWrapped,
   registerAsyncCommandWrapped,
@@ -44,7 +44,8 @@ function terminalInFileFolder() {
 
 async function runCommand() {
   const allCommands = await commands.getCommands();
-  const cmd = await selectStringFromListMru(allCommands, 'qcfg.runCommand');
+  const qp = new PersistentStringQuickPick('qcfg.runCommand', allCommands);
+  const cmd = await qp.select();
   if (cmd) {
     log.info(`Running command ${cmd}`);
     try {

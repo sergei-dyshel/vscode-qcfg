@@ -6,7 +6,7 @@ import { RelativePattern, Uri, window, workspace } from 'vscode';
 import { assertNotNull } from '../../library/exception';
 import * as nodejs from '../../library/nodejs';
 import { baseNameNoExt, stripExt } from '../../library/pathUtils';
-import { selectFromList } from './dialog';
+import { GenericQuickPick } from '../utils/quickPick';
 import { registerAsyncCommandWrapped } from './exception';
 import * as fileUtils from './fileUtils';
 import { Modules } from './module';
@@ -49,9 +49,13 @@ async function switchToAlternate() {
       });
       return;
     }
-    const file = await selectFromList(files, (uri) => ({
-      label: nodejs.path.relative(folder.uri.fsPath, uri.fsPath),
-    }));
+    const qp = new GenericQuickPick(
+      (uri) => ({
+        label: nodejs.path.relative(folder.uri.fsPath, uri.fsPath),
+      }),
+      files,
+    );
+    const file = await qp.select();
     if (file) {
       await window.showTextDocument(file, {
         viewColumn: editor.viewColumn,

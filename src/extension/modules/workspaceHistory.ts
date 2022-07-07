@@ -1,26 +1,21 @@
 'use strict';
 
-import type {
-  ExtensionContext,
-  QuickInputButton,
-  QuickPickItem,
-  QuickPickItemButtonEvent,
-} from 'vscode';
-import { FileType, ThemeIcon, Uri, window, workspace } from 'vscode';
+import type { ExtensionContext } from 'vscode';
+import { FileType, Uri, workspace } from 'vscode';
 import { assert } from '../../library/exception';
 import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
 import { expandTemplate } from '../../library/stringUtils';
 import { MessageDialog } from '../utils/messageDialog';
-import { showQuickPick } from '../utils/quickPick';
+import { PersistentState } from '../utils/persistentState';
+import { GenericQuickPick, QuickPickButtons } from '../utils/quickPick';
 import { openFolder } from '../utils/window';
 import { mapAsyncNoThrow } from './async';
-import { handleStd, registerAsyncCommandWrapped } from './exception';
+import { registerAsyncCommandWrapped } from './exception';
 import { parseJsonFileAsync } from './json';
 import { Modules } from './module';
 
-let extContext: ExtensionContext;
-const PERSISTENT_KEY = 'workspaceHistory';
+const persistentState = new PersistentState<string[]>('workspaceHistory', []);
 
 /**
  * Workspace file path or folder path if single folder is opened, `undefined` otherwise
@@ -111,10 +106,6 @@ async function parseWorkspaceTitle(root: string) {
   }
 }
 
-interface Item extends QuickPickItem {
-  path: string;
-}
-
 async function parseTitle(path: string) {
   const stat = await workspace.fs.stat(Uri.file(path));
   switch (stat.type) {
@@ -131,36 +122,40 @@ async function parseTitle(path: string) {
   }
 }
 
-async function toItem(path: string): Promise<Item> {
+async function toItem(path: string) {
   const { title, isWorkspace } = await parseTitle(path);
   const icon = isWorkspace ? 'folder-library' : 'folder';
   const label = `$(${icon}) ${title}`;
-  const button: QuickInputButton = {
-    iconPath: new ThemeIcon('close'),
-    tooltip: 'Remove from history',
-  };
-  return { path, label, description: path, buttons: [button] };
+  return [path, label] as const;
 }
 
 async function openFromHistory(newWindow: boolean) {
-  const history: string[] = extContext.globalState.get(PERSISTENT_KEY, []);
+  const history = persistentState.get();
   const removedItems: string[] = [];
   const current = getWorkspaceFile();
-  const qp = window.createQuickPick<Item>();
-  qp.items = await mapAsyncNoThrow(
+  const items = await mapAsyncNoThrow(
     history.filter((file) => file !== current),
     toItem,
   );
-  qp.matchOnDescription = true;
-  qp.placeholder = newWindow ? 'Open in NEW window' : 'Open in SAME window';
-  qp.onDidTriggerItemButton((event: QuickPickItemButtonEvent<Item>) => {
-    const path = event.item.path;
+
+  const qp = new GenericQuickPick<readonly [path: string, label: string]>(
+    ([path, label]) => ({ label, detail: path }),
+  );
+  qp.options.matchOnDescription = true;
+  qp.options.placeholder = newWindow
+    ? 'Open in NEW window'
+    : 'Open in SAME window';
+  qp.addItemButton(QuickPickButtons.REMOVE, ([path, _label]) => {
     log.debug(`Removing ${path} from folders/workspaces history`);
     history.removeFirst(path);
     removedItems.push(path);
-    qp.items = qp.items.filter((item) => item !== event.item);
+    qp.items = qp
+      .itemsWithoutSeparators()
+      .filter(([path1, _label1]) => path1 !== path);
   });
-  const selected = await showQuickPick(qp);
+  qp.items = items;
+
+  const selected = await qp.select();
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (!removedItems.isEmpty) {
     const ok = await MessageDialog.showModal(
@@ -169,15 +164,15 @@ async function openFromHistory(newWindow: boolean) {
       ['Ok'] as const,
     );
     if (ok) {
-      await extContext.globalState.update(PERSISTENT_KEY, history);
+      await persistentState.update(history);
     }
   }
   if (selected) {
-    await openFolder(qp.selectedItems[0].path, newWindow);
+    await openFolder(selected[0], newWindow);
   }
 }
 
-function activate(context: ExtensionContext) {
+async function activate(context: ExtensionContext) {
   context.subscriptions.push(
     registerAsyncCommandWrapped('qcfg.openRecent.sameWindow', async () =>
       openFromHistory(false),
@@ -187,14 +182,13 @@ function activate(context: ExtensionContext) {
     ),
   );
 
-  extContext = context;
   const wsFile = getWorkspaceFile();
   if (!wsFile) return;
-  const globalState = extContext.globalState;
-  const history: string[] = globalState.get(PERSISTENT_KEY, []);
+  const history = persistentState.get();
   history.removeFirst(wsFile);
   history.unshift(wsFile);
-  handleStd(() => globalState.update(PERSISTENT_KEY, history));
+  await persistentState.update(history);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
 Modules.register(activate);

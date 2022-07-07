@@ -1,3 +1,4 @@
+import { enumUtil } from './enum';
 import { getCallsite } from './sourceMap';
 import { formatMessage, stringify as str } from './stringify';
 import { formatString } from './stringUtils';
@@ -16,6 +17,8 @@ export enum LogLevel {
 type LogLevelName = keyof typeof LogLevel;
 
 export namespace LogLevels {
+  export const util = enumUtil(LogLevel);
+
   export function toString(level: LogLevel) {
     return LogLevel[level] as LogLevelName;
   }

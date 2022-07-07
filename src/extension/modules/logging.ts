@@ -27,7 +27,7 @@ import {
 import { FileHandler } from '../../library/loggingHandlers';
 import * as nodejs from '../../library/nodejs';
 import { registerStringifier, stringify as str } from '../../library/stringify';
-import { selectStringFromList } from './dialog';
+import { GenericQuickPick } from '../utils/quickPick';
 import {
   registerAsyncCommandWrapped,
   registerSyncCommandWrapped,
@@ -107,9 +107,13 @@ function stringifyVscode(x: object): string | undefined {
 registerStringifier(stringifyVscode);
 
 async function selectLevel(): Promise<LogLevel | undefined> {
-  const levelStr = await selectStringFromList(LogLevels.strings());
-  if (!levelStr) return;
-  return LogLevels.fromString(levelStr);
+  const qp = new GenericQuickPick<LogLevel>(
+    (level) => ({
+      label: LogLevels.toString(level),
+    }),
+    [...LogLevels.util.values()],
+  );
+  return qp.select();
 }
 
 async function promptForLevel(handler: TextLogHandler) {

@@ -107,15 +107,15 @@ function selectLastLocationsInCurrentEditor() {
 
 async function rerunPreviousSearch() {
   const currLoc = getCurrentLocation();
-  const qp = new QuickPickLocations<SavedSearch>();
-  qp.toQuickPickItem = (search) => ({
-    label: search.name,
-    description: `${search.details.numLocations} locations in ${search.details.numFiles} files`,
-  });
-
-  qp.toLocation = (search) => search.location ?? currLoc;
-  qp.setSeparatedItems(savedSearches);
-  const prevSearch = await qp.showModal();
+  const qp = new QuickPickLocations<SavedSearch>(
+    (search) => ({
+      label: search.name,
+      description: `${search.details.numLocations} locations in ${search.details.numFiles} files`,
+    }),
+    (search) => search.location ?? currLoc,
+    savedSearches,
+  );
+  const prevSearch = await qp.select();
   if (!prevSearch) return;
   savedSearches.removeFirst(prevSearch);
   await saveAndPeekSearch(

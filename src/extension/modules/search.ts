@@ -32,8 +32,8 @@ import {
 import { log } from '../../library/logging';
 import { abbrevMatch } from '../../library/stringUtils';
 import { resolveLocationLinks } from '../utils/document';
+import { PersistentStringQuickPick } from '../utils/quickPickPersistent';
 import { getDocumentSymbolsFromCtags } from './ctags';
-import { selectMultiple } from './dialog';
 import { getCompletionPrefix } from './documentUtils';
 import { registerAsyncCommandWrapped } from './exception';
 import { getGtagsDefinitionsInWorkspace } from './gtags';
@@ -147,12 +147,9 @@ export async function searchInFiles(
 async function searchTodos() {
   const folder = currentWorkspaceFolder();
   assertNotNull(folder);
-  const filterCategories = await selectMultiple(
-    TODO_CATEGORIES,
-    (label) => ({ label }),
-    'todos',
-    (label) => label,
-  );
+  const qp = new PersistentStringQuickPick('todos', TODO_CATEGORIES);
+  qp.options.canSelectMany = true;
+  const filterCategories = await qp.selectMany();
   if (!filterCategories) return;
   const patterns = filterCategories.join('|');
   return saveAndPeekSearch(`To-do items ${patterns}`, async () => {

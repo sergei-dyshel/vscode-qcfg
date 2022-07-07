@@ -85,19 +85,20 @@ async function peekFlatOutline() {
   if (!symbols) return;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const flatSymbols = flattenOutline(symbols, document);
-  const qp = new QuickPickLocations<DocumentSymbol>();
-  qp.toQuickPickItem = (sym) => ({
-    label: `${SymbolKind.labelIcon(sym.kind)} ${sym.name}`,
-    description: sym.parent
-      ? qualifiedName(sym.parent, document.languageId, {
-          includeNamespace: true,
-        })
-      : undefined,
-  });
-  qp.toLocation = (sym) => new Location(document.uri, sym.selectionRange);
-  qp.setSeparatedItems(flatSymbols);
+  const qp = new QuickPickLocations<DocumentSymbol>(
+    (sym) => ({
+      label: `${SymbolKind.labelIcon(sym.kind)} ${sym.name}`,
+      description: sym.parent
+        ? qualifiedName(sym.parent, document.languageId, {
+            includeNamespace: true,
+          })
+        : undefined,
+    }),
+    (sym) => new Location(document.uri, sym.selectionRange),
+    flatSymbols,
+  );
   qp.adjustActiveItem();
-  await updateHistory(qp.showModal());
+  await updateHistory(qp.select());
 }
 
 function activate(context: ExtensionContext) {

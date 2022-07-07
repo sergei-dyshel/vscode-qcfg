@@ -4,7 +4,7 @@ import type { ExtensionContext } from 'vscode';
 import { commands, ConfigurationTarget, Uri, window, workspace } from 'vscode';
 import { assert } from '../../library/exception';
 import { log } from '../../library/logging';
-import { selectStringFromList } from './dialog';
+import { StringQuickPick } from '../utils/quickPick';
 import {
   handleAsyncStd,
   listenAsyncWrapped,
@@ -94,8 +94,9 @@ async function onConfigurationChanged() {
 }
 
 async function inspectTheme() {
-  const themes = Object.keys(colorThemeFiles);
-  const theme = await selectStringFromList(themes);
+  const qp = new StringQuickPick(Object.keys(colorThemeFiles));
+  qp.options.title = 'Select theme';
+  const theme = await qp.select();
   if (theme) {
     await window.showTextDocument(Uri.file(colorThemeFiles[theme]!));
   }
