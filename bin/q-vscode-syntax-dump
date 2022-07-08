@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 dir=$(dirname $(readlink -f $0))
-exec $dir/../electron-node.sh --no-deprecation $dir/../dist/syntaxDump.js "$@"
+exec code-node --no-deprecation $dir/../dist/syntaxDump.js "$@"
