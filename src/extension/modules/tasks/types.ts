@@ -24,7 +24,6 @@ import * as nodejs from '../../../library/nodejs';
 import { concatArrays } from '../../../library/tsUtils';
 import { getDocumentWorkspaceFolder } from '../../utils/document';
 import { mapAsync, mapAsyncSequential } from '../async';
-import type { ListSelectable } from '../dialog';
 import { executeCommandHandled } from '../exception';
 import { peekLocations } from '../fileUtils';
 import {
@@ -156,7 +155,7 @@ export class ConditionError extends ValidationError {
   }
 }
 
-export abstract class BaseTask implements ListSelectable {
+export abstract class BaseTask {
   constructor(public folderText?: string) {}
 
   abstract run(): Promise<void>;

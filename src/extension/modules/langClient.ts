@@ -20,8 +20,8 @@ import {
   p2cAnyLocations,
   p2cConverter,
 } from '../utils/langClientConv';
+import { PersistentStringQuickPick } from '../utils/quickPickPersistent';
 import { mapAsync } from './async';
-import { selectMultiple } from './dialog';
 import { registerAsyncCommandWrapped } from './exception';
 import type { LocationGroup } from './locationTree';
 import { setPanelLocationGroups } from './locationTree';
@@ -360,15 +360,13 @@ async function clangdShowAST() {
 
 async function cclsSearchSpecificRefs(uri: Uri, position: Position) {
   const BASE_TYPES = 'base types';
-  const selected = await selectMultiple(
-    [BASE_TYPES, ...Ccls.allRefRoles],
-    (label) => ({ label }),
-    'cclsRefs',
-    (label) => label,
-    {
-      title: 'Select types of references to search',
-    },
-  );
+  const qp = new PersistentStringQuickPick('cclsRefs', [
+    BASE_TYPES,
+    ...Ccls.allRefRoles,
+  ]);
+  qp.options.title = 'Select types of references to search';
+  qp.options.canSelectMany = true;
+  const selected = await qp.selectMany();
   check(selected !== undefined, 'Canceled ccls ref search');
   const base = selected.includes(BASE_TYPES);
   let role = 0;
