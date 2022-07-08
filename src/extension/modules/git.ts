@@ -6,7 +6,7 @@ import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
 import { isSubPath } from '../../library/pathUtils';
 import { expandTemplate } from '../../library/stringUtils';
-import { selectFromListMru } from './dialog';
+import { PersistentGenericQuickPick } from '../utils/quickPickPersistent';
 import { registerAsyncCommandWrapped } from './exception';
 import { Modules } from './module';
 import { getActiveTextEditor } from './utils';
@@ -183,14 +183,15 @@ async function showWebLinks() {
 
   const uniqLinks = links.uniq((x, y) => x.url === y.url);
 
-  const selectedLink = await selectFromListMru(
-    uniqLinks,
+  const qp = new PersistentGenericQuickPick(
     (link: Link) => ({
       label: link.title,
     }),
-    'web_links',
     (link) => link.tag,
+    'web_links',
+    uniqLinks,
   );
+  const selectedLink = await qp.select();
 
   if (!selectedLink) return;
   log.debug(`Opening Git web link: ${selectedLink.url}`);

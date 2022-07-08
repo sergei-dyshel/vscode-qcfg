@@ -11,7 +11,6 @@ import * as commandUtils from './commandUtils';
 import * as config from './config';
 import * as ctags from './ctags';
 import * as diagnostics from './diagnostics';
-import * as dialog from './dialog';
 import * as documentCache from './documentCache';
 import * as editHistory from './editHistory';
 import * as editing from './editing';
@@ -34,6 +33,7 @@ import * as multipleSelection from './multipleSelection';
 import * as notes from './notes';
 import * as notificationMessage from './notificationMessage';
 import * as peekOutline from './peekOutline';
+import * as quickPickDemo from './quickPickDemo';
 import * as readOnlyProject from './readOnlyProject';
 import * as remoteControl from './remoteControl';
 import * as remoteServer from './remoteServer';
@@ -68,7 +68,6 @@ export const ALL_MODULES = {
   readOnlyProject,
   logging,
   editHistory,
-  dialog,
   remoteControl,
   windowState,
   search,
@@ -110,4 +109,5 @@ export const ALL_MODULES = {
   autoResize,
   notificationMessage,
   searchTasks,
+  quickPickDemo,
 };

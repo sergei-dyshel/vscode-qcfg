@@ -30,9 +30,9 @@ import {
   normalizeArray,
 } from '../../library/tsUtils';
 import { CclsCallHierarchyProvider } from '../utils/ccls';
+import { PersistentRecordQuickPick } from '../utils/quickPickPersistent';
 import { getContainingSymbol, qualifiedName } from '../utils/symbol';
 import { mapAsync } from './async';
-import { selectRecordFromListMru } from './dialog';
 import { getCachedDocumentSymbols } from './documentSymbolsCache';
 import { handleAsyncStd, registerAsyncCommandWrapped } from './exception';
 import { cclsWrapper } from './langClient';
@@ -248,9 +248,9 @@ async function showCallTree() {
     ccls: new CclsCallHierarchyProvider(() => cclsWrapper.client),
   };
   const editor = getActiveTextEditor();
-  const provider = await selectRecordFromListMru(providers, 'qcfgCallTree', {
-    title: 'Select call hierarchy provider',
-  });
+  const qp = new PersistentRecordQuickPick('qcfgCallTree', providers);
+  qp.options.title = 'Select call hierarchy provider';
+  const provider = await qp.selectValue();
   if (!provider) return;
   QcfgTreeView.setProvider(
     new CallTreeProvider(editor.document, editor.selection.active, provider),

@@ -12,11 +12,11 @@ import {
 import { log } from '../../../library/logging';
 import * as nodejs from '../../../library/nodejs';
 import { concatArrays, mapObjectToArray } from '../../../library/tsUtils';
+import { PersistentGenericQuickPick } from '../../utils/quickPickPersistent';
 import { getValidWorkspaceFolders } from '../../utils/workspace';
 import { filterAsync, mapSomeAsync, MAP_UNDEFINED } from '../async';
 import type { ConfigFilePair } from '../config';
 import { getConfigFileNames, watchConfigFile } from '../config';
-import * as dialog from '../dialog';
 import { registerAsyncCommandWrapped } from '../exception';
 import { globAsync } from '../fileUtils';
 import { parseJsonFileSync } from '../json';
@@ -322,7 +322,13 @@ async function showTasks() {
   ]);
   const vscodeTasks = rawVscodeTasks.map((task) => new VscodeTask(task));
   const allTasks = [...qcfgTasks, ...vscodeTasks];
-  const anyTask = await dialog.selectObjectFromListMru(allTasks, 'tasks');
+  const qp = new PersistentGenericQuickPick(
+    (item) => item.toQuickPickItem(),
+    (item) => item.toPersistentLabel(),
+    'tasks',
+    allTasks,
+  );
+  const anyTask = await qp.select();
   if (!anyTask) return;
   if (anyTask.isBuild()) lastBuildTask = anyTask;
   await anyTask.run();
