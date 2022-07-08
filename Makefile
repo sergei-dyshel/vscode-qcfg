@@ -22,10 +22,12 @@ $(TASKS_SCHEMA): src/extension/modules/tasks/params.ts
 
 generate: package.json $(TASKS_SCHEMA)
 
-install: | package.json
+build: | package.json
 	rm -rf *.vsix >/dev/null
 	vsce package
-	code --install-extension=`ls *.vsix`
+
+install:
+	code-oss --install-extension=vscode-qcfg-0.0.2.vsix
 
 check_tools:
 	bin/q-vscode-cli -h >/dev/null
