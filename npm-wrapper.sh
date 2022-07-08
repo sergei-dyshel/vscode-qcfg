@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-export npm_config_target=17.2.0
+export npm_config_target=18.3.5
 export npm_config_disturl=https://atom.io/download/atom-shell
 export JOBS=$(nproc)
 
