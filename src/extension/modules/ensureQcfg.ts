@@ -1,16 +1,16 @@
 import type { ExtensionContext } from 'vscode';
-import { commands, window } from 'vscode';
+import { commands } from 'vscode';
 import { log } from '../../library/logging';
 import { process } from '../../library/nodejs';
+import { MessageDialog } from '../utils/messageDialog';
 import { handleAsyncStd } from './exception';
 import { Modules } from './module';
 
 async function run() {
-  const ans = await window.showErrorMessage(
+  const ans = await MessageDialog.showModal(
+    MessageDialog.ERROR,
     'VScode is running not inside QCFG environment. Exit?',
-    { modal: true },
-    'yes',
-    'no',
+    ['yes', 'no'] as const,
   );
   if (ans === 'yes') {
     await commands.executeCommand('workbench.action.quit');

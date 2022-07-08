@@ -6,6 +6,7 @@ import type {
   TextDocumentChangeEvent,
 } from 'vscode';
 import { window, workspace } from 'vscode';
+import { MessageDialog } from '../utils/messageDialog';
 import {
   handleAsyncStd,
   listenWrapped,
@@ -40,9 +41,11 @@ function onDidChangeTextDocument(_: TextDocumentChangeEvent) {
   if (!getState()) return;
 
   handleAsyncStd(
-    window.showErrorMessage('Current workspace is marked as READ-ONLY', {
-      modal: true,
-    }),
+    MessageDialog.showModal(
+      MessageDialog.ERROR,
+      'Current workspace is marked as READ-ONLY',
+      [],
+    ),
   );
 }
 

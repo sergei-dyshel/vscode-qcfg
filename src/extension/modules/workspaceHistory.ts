@@ -11,6 +11,7 @@ import { assert } from '../../library/exception';
 import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
 import { expandTemplate } from '../../library/stringUtils';
+import { MessageDialog } from '../utils/messageDialog';
 import { showQuickPick } from '../utils/quickPick';
 import { openFolder } from '../utils/window';
 import { mapAsyncNoThrow } from './async';
@@ -162,10 +163,10 @@ async function openFromHistory(newWindow: boolean) {
   const selected = await showQuickPick(qp);
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (!removedItems.isEmpty) {
-    const ok = await window.showWarningMessage(
-      'Do you really want to remove from history?',
-      { modal: true, detail: removedItems.join('\n') },
-      'Ok',
+    const ok = await MessageDialog.showModal(
+      MessageDialog.WARNING,
+      ['Do you really want to remove from history?', removedItems.join('\n')],
+      ['Ok'] as const,
     );
     if (ok) {
       await extContext.globalState.update(PERSISTENT_KEY, history);

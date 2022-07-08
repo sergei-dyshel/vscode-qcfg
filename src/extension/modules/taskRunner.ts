@@ -16,6 +16,7 @@ import { tasks, TaskScope, window } from 'vscode';
 import { assert } from '../../library/exception';
 import { log, Logger } from '../../library/logging';
 import type { DisposableLike } from '../../library/types';
+import { MessageDialog } from '../utils/messageDialog';
 import { executeCommandHandled, listenWrapped } from './exception';
 import { Modules } from './module';
 import { registerSyncTemporaryCommand } from './utils';
@@ -93,13 +94,15 @@ export class TaskRun {
     const previous = allRuns.getValue(this.desc);
     if (previous) {
       if (!conflictPolicy) {
-        conflictPolicy = (await window.showWarningMessage(
+        conflictPolicy = await MessageDialog.showModal(
+          MessageDialog.WARNING,
           `Task "${this.task.name} is already running. Would like to wait for it, cancel it or abort?`,
-          { modal: true },
-          TaskConfilictPolicy.WAIT,
-          TaskConfilictPolicy.CANCEL_PREVIOUS,
-          TaskConfilictPolicy.ABORT_CURRENT,
-        )) as TaskConfilictPolicy | undefined;
+          [
+            TaskConfilictPolicy.WAIT,
+            TaskConfilictPolicy.CANCEL_PREVIOUS,
+            TaskConfilictPolicy.ABORT_CURRENT,
+          ],
+        );
       }
       switch (conflictPolicy) {
         case undefined:
