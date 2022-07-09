@@ -3,7 +3,7 @@
 import type { ExtensionContext } from 'vscode';
 import { FileType, Uri, workspace } from 'vscode';
 import { assert } from '../../library/exception';
-import { log } from '../../library/logging';
+import { Logger } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
 import { expandTemplate } from '../../library/stringUtils';
 import { MessageDialog } from '../utils/messageDialog';
@@ -12,10 +12,13 @@ import { GenericQuickPick, QuickPickButtons } from '../utils/quickPick';
 import { openFolder } from '../utils/window';
 import { mapAsyncNoThrow } from './async';
 import { registerAsyncCommandWrapped } from './exception';
+import { fileExists } from './fileUtils';
 import { parseJsonFileAsync } from './json';
 import { Modules } from './module';
 
 const persistentState = new PersistentState<string[]>('workspaceHistory', []);
+
+const log = new Logger({ name: 'workspaceHistory' });
 
 /**
  * Workspace file path or folder path if single folder is opened, `undefined` otherwise
@@ -78,6 +81,9 @@ function getDefaultTitle() {
 
 async function parseFolderTitle(root: string) {
   const filePath = nodejs.path.join(root, '.vscode', 'settings.json');
+  if (!(await fileExists(filePath))) {
+    return nodejs.path.basename(root);
+  }
   try {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const settings = await parseJsonFileAsync(filePath);
@@ -133,13 +139,15 @@ async function openFromHistory(newWindow: boolean) {
   const history = persistentState.get();
   const removedItems: string[] = [];
   const current = getWorkspaceFile();
-  const items = await mapAsyncNoThrow(
-    history.filter((file) => file !== current),
-    toItem,
-  );
+  const allItems = await mapAsyncNoThrow(history, toItem);
+  if (allItems.length < history.length) {
+    await persistentState.update(allItems.map(([path, _label]) => path));
+    log.info(`Removed ${history.length - allItems.length} items`);
+  }
+  const items = allItems.filter(([path, _label]) => path !== current);
 
   const qp = new GenericQuickPick<readonly [path: string, label: string]>(
-    ([path, label]) => ({ label, detail: path }),
+    ([path, label]) => ({ label, description: path }),
   );
   qp.options.matchOnDescription = true;
   qp.options.placeholder = newWindow
