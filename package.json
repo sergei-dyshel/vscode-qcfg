@@ -504,11 +504,11 @@
         "command": "qcfg.autoResize.toggle"
       },
       {
-        "command": "qcfg.persistentStorage.browseGlobal",
+        "command": "qcfg.persistent.browseGlobal",
         "title": "qcfg: Browse GLOBAL persistent storage"
       },
       {
-        "command": "qcfg.persistentStorage.browseWorkspace",
+        "command": "qcfg.persistent.browseWorkspace",
         "title": "qcfg: Browse WORKSPACE persistent storage"
       }
     ],

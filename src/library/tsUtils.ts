@@ -496,7 +496,7 @@ Array.prototype.removeFirst = function <T>(this: T[], val: T): boolean {
   return true;
 };
 
-function numberCompare<T>(x: T, y: T): number {
+export function numberCompare<T>(x: T, y: T): number {
   const xNum = x as unknown as number;
   const yNum = y as unknown as number;
   if (xNum < yNum) return -1;

@@ -22,6 +22,10 @@ export async function activate(context: ExtensionContext) {
   await Modules.activateAll(context);
   log.info(`Activated ${str(Modules.fileNames())}`);
 
+  log.info('Global storage path', context.globalStorageUri.fsPath);
+  if (context.storageUri)
+    log.info('Workspace storage path', context.storageUri.fsPath);
+
   // history.activate(context);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (console as any).qcfg = {
