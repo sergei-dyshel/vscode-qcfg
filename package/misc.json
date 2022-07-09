@@ -14,12 +14,16 @@
         "title": "qcfg: Open current file with its real path"
       },
       {
-        "command": "qcfg.quickFixFile",
+        "command": "qcfg.codeActions.autoFixFile",
         "title": "qcfg: Choose and apply quick fixes for current file"
       },
       {
-        "command": "qcfg.quickFixWorkspace",
+        "command": "qcfg.codeActions.autoFixWorkspace",
         "title": "qcfg: Choose and apply quick fixes for entire workspace"
+      },
+      {
+        "command": "qcfg.codeActions.dumpFile",
+        "title": "qcfg: Dump code actions for current file"
       },
       {
         "command": "qcfg.semanticHighlight.dump",
@@ -33,11 +37,11 @@
     "keybindings": [
       {
         "key": "alt+.",
-        "command": "qcfg.quickFixFile"
+        "command": "qcfg.codeActions.autoFixFile"
       },
       {
         "key": "shift+alt+.",
-        "command": "qcfg.quickFixWorkspace"
+        "command": "qcfg.codeActions.autoFixWorkspace"
       }
     ]
   }

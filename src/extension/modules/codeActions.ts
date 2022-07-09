@@ -1,5 +1,6 @@
 import type {
   CodeAction,
+  Diagnostic,
   ExtensionContext,
   Range,
   Selection,
@@ -23,8 +24,13 @@ import {
 import { GenericQuickPick } from '../utils/quickPick';
 import { mapAsync } from './async';
 import { ConfigRules } from './configRules';
-import { handleAsyncStd, registerAsyncCommandWrapped } from './exception';
+import {
+  handleAsyncStd,
+  registerAsyncCommandWrapped,
+  registerCommandWrapped,
+} from './exception';
 import { Modules } from './module';
+import { showNotificationMessage } from './notificationMessage';
 import { getActiveTextEditor } from './utils';
 import { preserveActiveLocation } from './windowUtils';
 
@@ -120,21 +126,32 @@ function workspaceEditsEqual(wse1: WorkspaceEdit, wse2: WorkspaceEdit) {
   );
 }
 
+interface DiagnosticWithActions {
+  actions: CodeAction[];
+  diagnostic: Diagnostic;
+}
+
+/**
+ * Get all diagnostics in file and gather code actions for all of them
+ */
+async function getFileCodeActions(uri: Uri): Promise<DiagnosticWithActions[]> {
+  const diags = languages.getDiagnostics(uri);
+  return mapAsync(diags, async (diag) => ({
+    actions: await executeCodeActionProvider(uri, diag.range),
+    diagnostic: diag,
+  }));
+}
+
 /** get all quickfix actions for file */
 async function getFileFixes(uri: Uri) {
-  // extract code actions for each diagnostic
-  const diags = languages.getDiagnostics(uri);
-  const actionsByDiag = await mapAsync(diags, async (diag) => ({
-    actions: await executeCodeActionProvider(uri, diag.range),
-    range: diag.range,
-  }));
+  const actionsByDiag = await getFileCodeActions(uri);
   // filter only quick fix type, augument with additional data
   const actions = concatArrays(
     ...actionsByDiag.map((actionRange) =>
-      filterQuickFixActions(actionRange.actions).map((action) => ({
+      filterQuickFixActions(actionRange).map((action) => ({
         action,
         uri,
-        range: actionRange.range,
+        range: actionRange.diagnostic.range,
       })),
     ),
   );
@@ -161,8 +178,8 @@ async function getFileFixes(uri: Uri) {
 }
 
 /** filter only quickfix category */
-function filterQuickFixActions(actions: CodeAction[]) {
-  return actions.filter((action) => {
+function filterQuickFixActions(diag: DiagnosticWithActions) {
+  return diag.actions.filter((action) => {
     if (!action.edit) return false;
     const kind = action.kind ?? CodeActionKind.Empty;
     return (
@@ -246,10 +263,21 @@ async function applyCodeActions(actions: CodeAction[]) {
   await workspace.applyEdit(wsEdit);
 }
 
+async function dumpFileCodeActions() {
+  const editor = getActiveTextEditor();
+  const actions = await getFileCodeActions(editor.document.uri);
+  console.log(actions);
+  showNotificationMessage('Now look in dev tools console or debug console');
+}
+
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
-    registerAsyncCommandWrapped('qcfg.quickFixFile', quickFixFile),
-    registerAsyncCommandWrapped('qcfg.quickFixWorkspace', quickFixWorkspace),
+    registerAsyncCommandWrapped('qcfg.codeActions.autoFixFile', quickFixFile),
+    registerAsyncCommandWrapped(
+      'qcfg.codeActions.autoFixWorkspace',
+      quickFixWorkspace,
+    ),
+    registerCommandWrapped('qcfg.codeActions.dumpFile', dumpFileCodeActions),
   );
 }
 
