@@ -29,7 +29,7 @@ build: | package.json
 	vsce package
 
 install:
-	code-oss --install-extension=vscode-qcfg-0.0.2.vsix
+	code --install-extension=./vscode-qcfg-0.0.2.vsix
 
 check_tools:
 	bin/q-vscode-cli -h >/dev/null

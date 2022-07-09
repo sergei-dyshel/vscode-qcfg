@@ -1,8 +1,12 @@
 {
   "build": {
-    "command": "make install",
+    "command": "make build",
     "type": "terminal",
     "flags": ["build"]
+  },
+  "install": {
+    "command": "make install",
+    "type": "terminal"
   },
   "update common.json": "bcompare package.json package/common.json",
   "Format all typescript sources": "npx prettier --write src/**/*.ts",
