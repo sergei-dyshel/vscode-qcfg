@@ -49,7 +49,7 @@ export class RemoteClient {
             this.log.debug('Received result', res.result);
             return res.result;
           }
-          return;
+          return undefined;
         }) as ReturnType<RemoteProtocol[K]>
     );
   }
@@ -108,7 +108,7 @@ export class MultiClient {
     for (const client of this.clients)
       for (const wsFolder of client.info.workspaceFolders ?? [])
         if (wsFolder === absFolder) return client;
-    return;
+    return undefined;
   }
 
   /**

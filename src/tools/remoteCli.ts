@@ -385,8 +385,8 @@ class Cli extends CommandLineParser {
     this.instance = (this.instanceParam.value ??
       Instance.UNDEFINED) as Instance;
     this.folder = this.folderParam.value ?? process.cwd();
-    if (this.instance === Instance.UNDEFINED) {
-      if (this.folderParam.value) this.instance = Instance.FOLDER;
+    if (this.instance === Instance.UNDEFINED && this.folderParam.value) {
+      this.instance = Instance.FOLDER;
     }
     return super.onExecute();
   }

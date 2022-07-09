@@ -1,11 +1,7 @@
 export function stringify(x: unknown): string {
-  switch (typeof x) {
-    case 'object':
-      return stringifyObject(x);
-    default:
-      // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-      return '' + x;
-  }
+  if (typeof x === 'object') return stringifyObject(x);
+  // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+  return '' + x;
 }
 
 export function formatMessage(args: unknown[], default_ = ''): string {

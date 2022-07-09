@@ -300,7 +300,7 @@ const treeDataProvider: TreeDataProvider<TreeNode> = {
       log.debug('Refreshing the tree');
       return currentProvider.getTrees();
     }
-    return;
+    return undefined;
   }),
   getParent: handleErrorsAsync(async (node: TreeNode) => node.getParent()),
 };

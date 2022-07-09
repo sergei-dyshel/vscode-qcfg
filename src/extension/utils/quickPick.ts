@@ -279,7 +279,7 @@ export class QuickPickWrapper<
     this.assertCanSelectMany(false);
     const selected = await this.selectImpl();
     if (selected) return selected[0];
-    return;
+    return undefined;
   }
 
   /**
@@ -375,7 +375,7 @@ export class QuickPickWrapper<
 
     if (!this.keepAlive) this.dispose();
     if (accepted) return this.selectedItems;
-    return;
+    return undefined;
   }
 }
 

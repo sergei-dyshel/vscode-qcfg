@@ -48,6 +48,8 @@ import type { Params } from './tasks/params';
 import { Flag, LocationFormat, TaskType } from './tasks/params';
 import { getActiveTextEditor } from './utils';
 
+const GTAGS_CHECK = 'gtags check';
+
 async function findGtagsDir(dir: string) {
   for (;;) {
     if (await fileUtils.fileExists(nodejs.path.join(dir, 'GTAGS'))) {
@@ -92,7 +94,7 @@ async function updateDB() {
       const res = await subprocess.executeSubprocess('q-gtags -c', {
         cwd: gtagsDir,
         allowedCodes: [0, 2],
-        statusBarMessage: 'gtags check',
+        statusBarMessage: GTAGS_CHECK,
       });
       if (res.code === 2)
         await window.showInformationMessage('gtags db regenerated');
@@ -428,9 +430,9 @@ const gtagsHoverProvider: HoverProvider = {
 
 function activate(context: ExtensionContext) {
   const queue = new PromiseQueue('gtags');
-  handleAsyncStd(queue.add(updateDB, 'gtags check'));
+  handleAsyncStd(queue.add(updateDB, GTAGS_CHECK));
   setInterval(() => {
-    handleAsyncStd(queue.add(updateDB, 'gtags check'));
+    handleAsyncStd(queue.add(updateDB, GTAGS_CHECK));
   }, 30000);
   context.subscriptions.push(
     saveAll.onEvent(queue.queued(onSaveAll, 'save all')),

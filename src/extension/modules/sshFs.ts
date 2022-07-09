@@ -28,6 +28,7 @@ class WatchedFile {
   constructor(public uri: Uri) {}
 }
 
+// eslint-disable-next-line sonarjs/no-unused-collection
 const watchedFiles: WatchedFile[] = [];
 
 function encodeUri(host: string, path: string) {
