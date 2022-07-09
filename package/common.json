@@ -350,6 +350,7 @@
     "eslint-plugin-only-warn": "^1.0.3",
     "eslint-plugin-react": "^7.30.0",
     "eslint-plugin-react-hooks": "^4.5.0",
+    "eslint-plugin-sonarjs": "^0.13.0",
     "gts": "^3.0.2",
     "ifdef-loader": "^2.1.5",
     "json-merger": "^1.1.9",
