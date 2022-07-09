@@ -10,7 +10,6 @@ import type {
   TaskProcessEndEvent,
   TaskProcessStartEvent,
   Terminal,
-  WorkspaceFolder,
 } from 'vscode';
 import { tasks, TaskScope, window } from 'vscode';
 import type { DisposableLike } from '../../library/disposable';
@@ -185,13 +184,13 @@ export class TaskRun {
     self.log.info(`Process ended with exitCode ${self.exitCode}`);
   }
 
-  private static onDidStartTaskProcess(event: TaskProcessStartEvent) {
+  private static async onDidStartTaskProcess(event: TaskProcessStartEvent) {
     const self = allRuns.getValue(new TaskDescriptor(event.execution.task));
     if (!self) return;
     self.pid = event.processId;
     self.state = State.PROCESS_STARTED;
     self.log.info(`Process started with pid ${self.pid}`);
-    self.terminal = findTaskTerminal(self.task);
+    self.terminal = await findTerminalByPid(self.pid);
     if (!self.task.isBackground) {
       self.status = window.createStatusBarItem();
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -238,20 +237,10 @@ export class TaskRun {
   };
 }
 
-function findTaskTerminal(task: Task): Terminal | undefined {
-  const taskName = task.name;
-  let wsTaskName = taskName;
-  const cands: string[] = [];
-  if (typeof task.scope === 'object' && 'name' in task.scope) {
-    const wsFolder: WorkspaceFolder = task.scope;
-    wsTaskName = `${taskName} (${wsFolder.name})`;
-  }
-  for (const name of [taskName, wsTaskName])
-    cands.push('Task - ' + name, 'Task - qcfg: ' + name);
-  for (const term of window.terminals) {
-    for (const cand of cands) if (term.name === cand) return term;
-  }
-  return undefined;
+async function findTerminalByPid(pid: number): Promise<Terminal | undefined> {
+  for (const terminal of window.terminals)
+    if ((await terminal.processId) === pid) return terminal;
+  return;
 }
 
 export class TaskCancelledError extends Error {

@@ -372,8 +372,6 @@ export class TerminalTask extends BaseQcfgTask {
         break;
       case EndAction.HIDE:
         term.hide();
-        if (window.activeTerminal === term)
-          await commands.executeCommand('workbench.action.closePanel');
         break;
       case EndAction.SHOW:
         term.show();
