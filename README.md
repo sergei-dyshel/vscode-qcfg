@@ -224,6 +224,23 @@ The dialog box asks to request accessibility for
 
 One way to select it is to use "Go to location" by pressing `Cmd+Shift+G`.
 
+## Build
+
+The extension uses some binary packages (e.g. `tree-sitter`, `re2`, `nodegit`).
+In order to keep up with pace at which VScode updates to newer Electron version
+I need to maintain my own forks of them and sometimes do tricks in order to
+install them.
+
+### Installing from tarballs
+
+Some packages can't be installed directly from git because they require some
+packaging step. The flow for upgrading this packages:
+
+- Checkout the package and build it locally, with proper version of Electron.
+- Run `npm pack` to generate `.tgz` archive.
+- Copy archive to `local` dir in extension's root dir.
+- Remove entry in lock file.
+
 # Future plans
 
 - More features!
