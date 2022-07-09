@@ -24,7 +24,7 @@ function filterUri(uri: Uri) {
 
 function onDidOpenTextDocument(document: TextDocument) {
   if (filterUri(document.uri)) return;
-  log.debug('Opened text document ', document);
+  log.trace('Opened text document ', document);
   if (openDocuments.containsKey(document.uri)) {
     log.warn('Opened duplicate text document', document);
   }
@@ -33,7 +33,7 @@ function onDidOpenTextDocument(document: TextDocument) {
 
 function onDidCloseTextDocument(document: TextDocument) {
   if (filterUri(document.uri)) return;
-  log.debug('Closed text document ', document);
+  log.trace('Closed text document ', document);
   openDocuments.remove(document.uri);
   for (const map of uriDicts) map.remove(document.uri);
 }
