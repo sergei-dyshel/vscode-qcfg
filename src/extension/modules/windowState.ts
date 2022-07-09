@@ -70,7 +70,7 @@ function tryGetActiveWindowId(): number {
 
 function windowStateChanged(state: WindowState) {
   const msg = state.focused ? 'Focused' : 'Unfocused';
-  log.debug(msg);
+  log.trace(msg);
   if (state.focused) {
     const newWindowId = tryGetActiveWindowId();
     if (newWindowId !== windowId) {
