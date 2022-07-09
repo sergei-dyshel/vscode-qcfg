@@ -383,6 +383,10 @@ function activate(context: ExtensionContext) {
   context.subscriptions.push(
     registerAsyncCommandWrapped('qcfg.langClient.restart', restartLangClients),
     registerAsyncCommandWrapped('qcfg.langClient.refresh', refreshLangClients),
+    registerAsyncCommandWrapped(
+      'qcfg.langClient.refreshOrRestart',
+      refreshOrRestartLangClients,
+    ),
     registerAsyncCommandWrapped('qcfg.langClient.stop', stopLangClients),
     registerAsyncCommandWrapped('qcfg.langClient.compare', compareLangClients),
     registerAsyncCommandWrapped('qcfg.clangd.dumpAST', clangdShowAST),

@@ -41,7 +41,7 @@ async function handleOpen(folder: string, location: string) {
     fullPath = file;
   } else {
     fullPath = path.join(wsFolder.uri.fsPath, file);
-    const fileExists = await fileUtils.exists(fullPath);
+    const fileExists = await fileUtils.fileExists(fullPath);
     if (!fileExists)
       log.fatal(`File "${file}" does not exist in "${wsFolder.name}"`);
   }

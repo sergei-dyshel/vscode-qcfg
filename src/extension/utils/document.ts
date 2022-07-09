@@ -1,5 +1,6 @@
 import type { LocationLink, TextDocument } from 'vscode';
-import { Location, Range } from 'vscode';
+import { Location, Range, Uri, workspace } from 'vscode';
+import { assertNotNull } from '../../library/exception';
 import { offsetPosition } from '../modules/textUtils';
 
 /**
@@ -70,4 +71,22 @@ export function findTextInRange(
   const start = offsetPosition(document, range.start, startOffset);
   const end = offsetPosition(document, start, text.length);
   return new Range(start, end);
+}
+
+export function getDocumentRoot(fileName: string) {
+  const workspaceFolder = workspace.getWorkspaceFolder(Uri.file(fileName));
+  if (!workspaceFolder) return;
+  const relativePath = workspace.asRelativePath(fileName, false);
+  return { workspaceFolder, relativePath };
+}
+
+export function getDocumentRootThrowing(fileName: string) {
+  const root = getDocumentRoot(fileName);
+  assertNotNull(root, `Could not get workspace folder of ${fileName}`);
+  return root;
+}
+
+export function getDocumentWorkspaceFolder(fileName: string) {
+  const docRoot = getDocumentRoot(fileName);
+  return docRoot ? docRoot.workspaceFolder : undefined;
 }

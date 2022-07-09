@@ -50,7 +50,7 @@ import { getActiveTextEditor } from './utils';
 
 async function findGtagsDir(dir: string) {
   for (;;) {
-    if (await fileUtils.exists(nodejs.path.join(dir, 'GTAGS'))) {
+    if (await fileUtils.fileExists(nodejs.path.join(dir, 'GTAGS'))) {
       return dir;
     }
     if (dir === '/') {

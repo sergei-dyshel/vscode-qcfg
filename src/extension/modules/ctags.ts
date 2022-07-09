@@ -6,14 +6,17 @@ import type {
   ExtensionContext,
   TextDocument,
 } from 'vscode';
-import { DocumentSymbol, languages, SymbolKind } from 'vscode';
+import { DocumentSymbol, languages, Location, SymbolKind } from 'vscode';
 import { Logger } from '../../library/logging';
-import { stdErrorHandler } from './exception';
-import { getDocumentRoot } from './fileUtils';
+import { getDocumentRoot } from '../utils/document';
+import { registerAsyncCommandWrapped, stdErrorHandler } from './exception';
+import { getGtagsDefinitionsInWorkspace } from './gtags';
 import { isAnyLangClientRunning } from './langClient';
 import { Modules } from './module';
 import { adjustRangeInParsedPosition } from './parseLocations';
+import { saveAndPeekSearch } from './savedSearch';
 import * as subprocess from './subprocess';
+import { getCursorWordContext } from './utils';
 
 const C_KINDS =
   'm' /* struct members  */ +
@@ -168,9 +171,36 @@ const documentSymbolProvider: DocumentSymbolProvider = {
   },
 };
 
+async function getCtagsDefinitions(document: TextDocument, word: string) {
+  const symbols = await getDocumentSymbolsFromCtags(document);
+  return symbols
+    .filter((symbol) => symbol.name === word)
+    .map((symbol) => new Location(document.uri, symbol.selectionRange));
+}
+
+async function getGtagsCtagsDefinitions() {
+  const ctx = getCursorWordContext()!;
+  const { word } = ctx;
+  return saveAndPeekSearch(
+    `ctags/gtags for ${word}`,
+    async () => {
+      const [gtagsDefs, ctagsDefs] = await Promise.all([
+        getGtagsDefinitionsInWorkspace(),
+        getCtagsDefinitions(ctx.editor.document, word),
+      ]);
+      return gtagsDefs.concat(ctagsDefs);
+    },
+    ctx.location,
+  );
+}
+
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
     languages.registerDocumentSymbolProvider('*', documentSymbolProvider),
+    registerAsyncCommandWrapped(
+      'qcfg.search.GtagsCtagsDefinition',
+      getGtagsCtagsDefinitions,
+    ),
   );
 }
 

@@ -5,6 +5,7 @@ import type { ExtensionContext, TextEditor } from 'vscode';
 import { commands, Uri, window, workspace } from 'vscode';
 import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
+import { getDocumentRootThrowing } from '../utils/document';
 import { selectStringFromListMru } from './dialog';
 import {
   listenAsyncWrapped,
@@ -29,7 +30,7 @@ function openOrCreateTerminal(name: string, cwd: string) {
 
 function terminalInWorkspaceFolder() {
   const document = getActiveTextEditor().document;
-  const { workspaceFolder: wsFolder } = fileUtils.getDocumentRootThrowing(
+  const { workspaceFolder: wsFolder } = getDocumentRootThrowing(
     document.fileName,
   );
   openOrCreateTerminal(wsFolder.name, wsFolder.uri.fsPath);

@@ -4,8 +4,8 @@ import type { Range, TextEditor, WorkspaceFolder } from 'vscode';
 import { commands, Location, window } from 'vscode';
 import { assertNotNull } from '../../library/exception';
 import type { VoidFunction } from '../../library/templateTypes';
+import { getDocumentWorkspaceFolder } from '../utils/document';
 import { registerSyncCommandWrapped } from './exception';
-import { getDocumentWorkspaceFolder } from './fileUtils';
 
 // XXX: currently unused
 export namespace WhenContext {

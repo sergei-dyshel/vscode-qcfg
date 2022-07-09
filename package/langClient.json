@@ -14,6 +14,10 @@
         "title": "qcfg: Refresh language clients"
       },
       {
+        "command": "qcfg.langClient.refreshOrRestart",
+        "title": "qcfg: Refresh or restart language clients"
+      },
+      {
         "command": "qcfg.langClient.compare",
         "title": "qcfg: Compare language clients on current symbol"
       },

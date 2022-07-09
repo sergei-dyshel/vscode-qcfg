@@ -24,19 +24,13 @@ import {
   SnippetString,
   workspace,
 } from 'vscode';
-import {
-  assertNotNull,
-  CheckError,
-  checkNotNull,
-} from '../../library/exception';
+import { assertNotNull, checkNotNull } from '../../library/exception';
 import { log } from '../../library/logging';
 import { abbrevMatch } from '../../library/stringUtils';
 import { resolveLocationLinks } from '../utils/document';
-import { getDocumentSymbolsFromCtags } from './ctags';
 import { selectMultiple } from './dialog';
 import { getCompletionPrefix } from './documentUtils';
 import { registerAsyncCommandWrapped } from './exception';
-import { getGtagsDefinitionsInWorkspace } from './gtags';
 import { updateHistory } from './history';
 import { availableLanguageConfigs, getLanguageConfig } from './language';
 import { Modules } from './module';
@@ -47,13 +41,7 @@ import {
 } from './parseLocations';
 import { saveAndPeekSearch } from './savedSearch';
 import { Subprocess } from './subprocess';
-import { runTask } from './tasks/main';
-import { Flag, TaskType } from './tasks/params';
-import {
-  currentWorkspaceFolder,
-  getActiveTextEditor,
-  getCursorWordContext,
-} from './utils';
+import { currentWorkspaceFolder, getCursorWordContext } from './utils';
 
 const TODO_CATEGORIES = [
   'TODO',
@@ -177,42 +165,6 @@ async function searchTodos() {
   });
 }
 
-async function searchWordUnderCursor(allFolders: boolean) {
-  if (!getCursorWordContext()) {
-    throw new CheckError('The cursor is not on word');
-  }
-  return runTask(
-    'search_word',
-    {
-      type: TaskType.SEARCH,
-      // eslint-disable-next-line no-template-curly-in-string
-      searchTitle: 'Word "${cursorWord}"',
-      // eslint-disable-next-line no-template-curly-in-string
-      query: '${cursorWord}',
-      flags: [Flag.CASE, Flag.WORD],
-    },
-    { folder: allFolders ? 'all' : undefined },
-  );
-}
-
-async function searchSelectedText(allFolders: boolean) {
-  if (getActiveTextEditor().selection.isEmpty) {
-    throw new CheckError('No text selected');
-  }
-  return runTask(
-    'search_selection',
-    {
-      type: TaskType.SEARCH,
-      // eslint-disable-next-line no-template-curly-in-string
-      searchTitle: 'Selected text "${selectedText}"',
-      // eslint-disable-next-line no-template-curly-in-string
-      query: '${selectedText}',
-      flags: [Flag.CASE],
-    },
-    { folder: allFolders ? 'all' : undefined },
-  );
-}
-
 export async function searchWithCommand(
   type: string,
   searchFunc: (uri: Uri, location: Position) => Promise<Location[]>,
@@ -282,29 +234,6 @@ namespace TodoCompletion {
   };
 }
 
-async function getCtagsDefinitions(document: TextDocument, word: string) {
-  const symbols = await getDocumentSymbolsFromCtags(document);
-  return symbols
-    .filter((symbol) => symbol.name === word)
-    .map((symbol) => new Location(document.uri, symbol.selectionRange));
-}
-
-async function getGtagsCtagsDefinitions() {
-  const ctx = getCursorWordContext()!;
-  const { word } = ctx;
-  return saveAndPeekSearch(
-    `ctags/gtags for ${word}`,
-    async () => {
-      const [gtagsDefs, ctagsDefs] = await Promise.all([
-        getGtagsDefinitionsInWorkspace(),
-        getCtagsDefinitions(ctx.editor.document, word),
-      ]);
-      return gtagsDefs.concat(ctagsDefs);
-    },
-    ctx.location,
-  );
-}
-
 async function peekTypeHierarchy() {
   await commands.executeCommand('editor.showTypeHierarchy');
   await commands.executeCommand('editor.showSubtypes');
@@ -315,19 +244,6 @@ function activate(context: ExtensionContext) {
     languages.registerCompletionItemProvider(
       availableLanguageConfigs(),
       TodoCompletion.provider,
-    ),
-    registerAsyncCommandWrapped('qcfg.search.word', async () =>
-      searchWordUnderCursor(false),
-    ),
-    registerAsyncCommandWrapped('qcfg.search.word.allFolders', async () =>
-      searchWordUnderCursor(true),
-    ),
-    registerAsyncCommandWrapped('qcfg.search.selectedText', async () =>
-      searchSelectedText(false),
-    ),
-    registerAsyncCommandWrapped(
-      'qcfg.search.selectedText.allFolders',
-      async () => searchSelectedText(true),
     ),
     registerAsyncCommandWrapped('qcfg.search.definitions', async () =>
       searchWithCommand('Definitions', executeDefinitionProvider),
@@ -351,10 +267,6 @@ function activate(context: ExtensionContext) {
       updateHistory(commands.executeCommand('editor.showCallHierarchy')),
     ),
     registerAsyncCommandWrapped('qcfg.search.todos', searchTodos),
-    registerAsyncCommandWrapped(
-      'qcfg.search.GtagsCtagsDefinition',
-      getGtagsCtagsDefinitions,
-    ),
   );
 }
 

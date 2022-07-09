@@ -6,9 +6,10 @@ import { RelativePattern, Uri, window, workspace } from 'vscode';
 import { assertNotNull } from '../../library/exception';
 import * as nodejs from '../../library/nodejs';
 import { baseNameNoExt, stripExt } from '../../library/pathUtils';
+import { getDocumentWorkspaceFolder } from '../utils/document';
 import { selectFromList } from './dialog';
 import { registerAsyncCommandWrapped } from './exception';
-import * as fileUtils from './fileUtils';
+import { fileExists } from './fileUtils';
 import { Modules } from './module';
 import { getActiveTextEditor } from './utils';
 
@@ -27,7 +28,7 @@ async function switchToAlternate() {
   assertNotNull(altExts, `No alternate mapping configured for ${ext}`);
   const altFiles = altExts.map((altExt) => stripExt(filePath) + altExt);
   for (const alt of altFiles) {
-    const exists = await fileUtils.exists(alt);
+    const exists = await fileExists(alt);
     if (!exists) continue;
     await window.showTextDocument(Uri.file(alt), {
       viewColumn: editor.viewColumn,
@@ -36,7 +37,7 @@ async function switchToAlternate() {
   }
   for (const altExt of altExts) {
     const shortName = baseNameNoExt(filePath) + altExt;
-    const folder = fileUtils.getDocumentWorkspaceFolder(filePath);
+    const folder = getDocumentWorkspaceFolder(filePath);
     assertNotNull(folder);
     const pattern = new RelativePattern(folder, '**/' + shortName);
     const files = await workspace.findFiles(pattern);

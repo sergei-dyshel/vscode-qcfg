@@ -22,11 +22,11 @@ import {
 import { log, LogLevel } from '../../../library/logging';
 import * as nodejs from '../../../library/nodejs';
 import { concatArrays } from '../../../library/tsUtils';
+import { getDocumentWorkspaceFolder } from '../../utils/document';
 import { mapAsync, mapAsyncSequential } from '../async';
 import type { ListSelectable } from '../dialog';
-import { handleAsyncStd } from '../exception';
-import { getDocumentWorkspaceFolder, peekLocations } from '../fileUtils';
-import { refreshOrRestartLangClients } from '../langClient';
+import { executeCommandHandled } from '../exception';
+import { peekLocations } from '../fileUtils';
 import {
   findPatternInParsedLocations,
   ParseLocationFormat,
@@ -345,8 +345,10 @@ export class TerminalTask extends BaseQcfgTask {
     const exitCodes = params.exitCodes ?? [0];
     const success = exitCodes.includes(this.taskRun.exitCode!);
     const term = this.taskRun.terminal;
-    if (success && params.flags && params.flags.includes(Flag.REINDEX))
-      handleAsyncStd(refreshOrRestartLangClients());
+    if (success && params.flags && params.flags.includes(Flag.REINDEX)) {
+      // avoid circular dependency
+      executeCommandHandled('qcfg.langClient.refreshOrRestart');
+    }
     let action = success ? params.onSuccess : params.onFailure;
     if (action === EndAction.AUTO || action === undefined) {
       if (success) {

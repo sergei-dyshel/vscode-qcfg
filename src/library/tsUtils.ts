@@ -250,9 +250,7 @@ export class NumberIterator implements IterableIterator<number> {
   }
 }
 
-export interface ArrayLike<T> {
-  [n: number]: T;
-}
+export type ArrayLike<T> = Record<number, T>;
 
 export class ArrayIterator<T> implements IterableIterator<T> {
   constructor(
@@ -338,7 +336,7 @@ declare global {
   }
 
   interface ReadonlyArray<T> {
-    reversed: () => ReadonlyArray<T>;
+    reversed: () => readonly T[];
     /**
      * Iterate over array in reverse order.
      */

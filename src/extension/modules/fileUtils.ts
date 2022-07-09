@@ -3,13 +3,12 @@
 import * as chokidar from 'chokidar';
 import * as glob from 'glob';
 import * as tempy from 'tempy';
-import type { Location, ViewColumn, WorkspaceFolder } from 'vscode';
+import type { Location, Uri, ViewColumn, WorkspaceFolder } from 'vscode';
 import {
   commands,
   Position,
   Range,
   Selection,
-  Uri,
   window,
   workspace,
 } from 'vscode';
@@ -40,24 +39,6 @@ export function expandHome(path: string): string {
   return path;
 }
 
-export function getDocumentRoot(fileName: string) {
-  const workspaceFolder = workspace.getWorkspaceFolder(Uri.file(fileName));
-  if (!workspaceFolder) return;
-  const relativePath = workspace.asRelativePath(fileName, false);
-  return { workspaceFolder, relativePath };
-}
-
-export function getDocumentRootThrowing(fileName: string) {
-  const root = getDocumentRoot(fileName);
-  assertNotNull(root, `Could not get workspace folder of ${fileName}`);
-  return root;
-}
-
-export function getDocumentWorkspaceFolder(fileName: string) {
-  const docRoot = getDocumentRoot(fileName);
-  return docRoot ? docRoot.workspaceFolder : undefined;
-}
-
 export function getWorkspaceFolderByName(
   name: string,
 ): WorkspaceFolder | undefined {
@@ -68,7 +49,7 @@ export function getWorkspaceFolderByName(
   return undefined;
 }
 
-export const exists = nodejs.util.promisify(nodejs.fs.exists);
+export const fileExists = nodejs.util.promisify(nodejs.fs.exists);
 export const realPath = nodejs.util.promisify(nodejs.fs.realpath);
 
 export function realPathSync(path: string): string {
@@ -79,7 +60,7 @@ export async function existsInRoot(
   wsFolder: WorkspaceFolder,
   fileName: string,
 ) {
-  return exists(nodejs.path.join(wsFolder.uri.fsPath, fileName));
+  return fileExists(nodejs.path.join(wsFolder.uri.fsPath, fileName));
 }
 
 /**

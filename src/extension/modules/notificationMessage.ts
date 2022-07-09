@@ -1,13 +1,7 @@
-import {
-  ExtensionContext,
-  Progress,
-  ProgressLocation,
-  window,
-  workspace,
-} from 'vscode';
-import { DisposableLike } from '../../library/disposable';
+import type { ExtensionContext, Progress } from 'vscode';
+import { commands, ProgressLocation, window, workspace } from 'vscode';
+import type { DisposableLike } from '../../library/disposable';
 import { setTimeoutPromise } from '../../library/nodeUtils';
-import { registerSyncCommandWrapped } from './exception';
 import { Modules } from './module';
 
 /**
@@ -63,9 +57,9 @@ export class NotificationMessage implements DisposableLike {
     this.cancel();
   }
 
-  private promise: Promise<void>;
+  private readonly promise: Promise<void>;
   private resolveCancel!: () => void;
-  private cancelPromise: Promise<void>;
+  private readonly cancelPromise: Promise<void>;
   private progress!: Progress<{
     message?: string | undefined;
     increment?: number | undefined;
@@ -74,7 +68,7 @@ export class NotificationMessage implements DisposableLike {
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
-    registerSyncCommandWrapped('qcfg.notification.demo', () => {
+    commands.registerCommand('qcfg.notification.demo', () => {
       showNotificationMessage('Demo message');
     }),
   );

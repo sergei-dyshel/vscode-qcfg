@@ -20,7 +20,6 @@ import type {
   PromiseType,
   VoidFunction,
 } from '../../library/templateTypes';
-import { showLog } from './logging';
 import { Modules } from './module';
 import { showNotificationMessage } from './notificationMessage';
 
@@ -56,7 +55,8 @@ export function stdErrorHandler(
         .showErrorMessage(`${prefix}${error}`, SHOW_OUTPUT)
         .then((item: string | undefined) => {
           if (SHOW_OUTPUT === item) {
-            showLog();
+            // avoid circular dependency
+            executeCommandHandled('qcfg.log.show');
           }
         });
     }

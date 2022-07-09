@@ -26,7 +26,7 @@ import {
   registerSyncCommandWrapped,
   registerTextEditorCommandWrapped,
 } from './exception';
-import { exists, expandHome } from './fileUtils';
+import { expandHome, fileExists } from './fileUtils';
 import { Modules } from './module';
 import {
   offsetPosition,
@@ -232,7 +232,7 @@ async function insertPathFromDialog() {
   let preSelected: Uri | undefined;
   if (!editor.selection.isEmpty) {
     const path = expandHome(editor.document.getText(editor.selection));
-    if (await exists(path)) preSelected = Uri.file(path);
+    if (await fileExists(path)) preSelected = Uri.file(path);
   }
   const uris = await window.showOpenDialog({
     canSelectFolders: true,

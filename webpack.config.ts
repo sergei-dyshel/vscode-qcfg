@@ -9,6 +9,9 @@ import path from 'path';
 // eslint-disable-next-line import/no-import-module-exports
 import type webpack from 'webpack';
 
+// eslint-disable-next-line import/no-import-module-exports
+import CircularDependencyPlugin from 'circular-dependency-plugin';
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const generateConfig = (env: any): webpack.Configuration => ({
   target: 'node', // vscode extensions run in a Node.js-context 📖 ->
@@ -19,6 +22,13 @@ const generateConfig = (env: any): webpack.Configuration => ({
     remoteCli: './src/tools/remoteCli.ts',
     syntaxDump: './src/tools/syntaxDump.ts',
   },
+  plugins: [
+    new CircularDependencyPlugin({
+      exclude: /node_modules/,
+      include: /.*.ts/,
+      failOnError: true,
+    }),
+  ],
   output: {
     // the bundle is stored in the 'dist' folder (check package.json), 📖 ->
     // https://webpack.js.org/configuration/output/

@@ -174,7 +174,7 @@ function activate(context: ExtensionContext) {
 
   context.subscriptions.push(
     registerSyncCommandWrapped('qcfg.log.show', () => {
-      outputHandler.show();
+      showLog();
     }),
     registerAsyncCommandWrapped('qcfg.log.setHandlerLevel.output', async () =>
       promptForLevel(outputHandler),

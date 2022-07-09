@@ -41,6 +41,7 @@ import * as renameReferences from './renameReferences';
 import * as saveAll from './saveAll';
 import * as savedSearch from './savedSearch';
 import * as search from './search';
+import * as searchTasks from './searchTasks';
 import * as semanticHighlight from './semanticHighlight';
 import * as smartCopy from './smartCopy';
 import * as sshFs from './sshFs';
@@ -108,4 +109,5 @@ export const ALL_MODULES = {
   semanticHighlight,
   autoResize,
   notificationMessage,
+  searchTasks,
 };
