@@ -79,7 +79,7 @@ export class PersistentQuickPickWrapper<
       this.items,
     ).filter((item) => labels.includes(this.toPersistentLabel(item)));
 
-    const selected = await this.selectMany();
+    const selected = await super.selectMany();
     if (selected) {
       await this.storage.update(selected.map(this.toPersistentLabel));
     }
