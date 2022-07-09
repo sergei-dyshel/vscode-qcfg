@@ -169,7 +169,7 @@ export class TaskRun {
   static findRunningTask(task: Task): TaskRun | undefined {
     for (const run of allRuns.values())
       if (run.task.name === task.name) return run;
-    return;
+    return undefined;
   }
 
   // Private
@@ -240,7 +240,7 @@ export class TaskRun {
 async function findTerminalByPid(pid: number): Promise<Terminal | undefined> {
   for (const terminal of window.terminals)
     if ((await terminal.processId) === pid) return terminal;
-  return;
+  return undefined;
 }
 
 export class TaskCancelledError extends Error {

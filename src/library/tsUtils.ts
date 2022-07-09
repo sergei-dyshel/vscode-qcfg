@@ -211,7 +211,7 @@ export function callIfNonNull<T1, T2, R>(
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function callIfNonNull(func: any, ...args: any[]) {
   if (func) return func(...args);
-  return;
+  return undefined;
 }
 
 export function groupBy<K, T>(
@@ -454,6 +454,7 @@ Array.prototype.forEachRight = function <T>(
   this: T[],
   callbackfn: (value: T, index: number, array: T[]) => void,
 ): void {
+  // eslint-disable-next-line sonarjs/no-ignored-return
   this.reduceRight((_, cur, index, array) => {
     callbackfn(cur, index, array);
     return undefined;

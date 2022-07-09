@@ -20,6 +20,7 @@ const persistentState = new PersistentState<string[]>('workspaceHistory', []);
 
 const log = new Logger({ name: 'workspaceHistory' });
 
+const WINDOW_TITLE = 'window.title';
 /**
  * Workspace file path or folder path if single folder is opened, `undefined` otherwise
  */
@@ -46,7 +47,7 @@ export function getWorkspaceFile(): string | undefined {
 export function getWorkspaceName(): string | undefined {
   const wsFile = getWorkspaceFile();
   if (!wsFile) return undefined;
-  const title = workspace.getConfiguration().get<string>('window.title');
+  const title = workspace.getConfiguration().get<string>(WINDOW_TITLE);
   if (!title) return undefined;
   return expandTitle(wsFile, title);
 }
@@ -75,7 +76,7 @@ function expandTitle(root: string, title: string): string {
 
 function getDefaultTitle() {
   const config = workspace.getConfiguration();
-  const data = config.inspect('window.title')!;
+  const data = config.inspect(WINDOW_TITLE)!;
   return (data.globalValue ?? data.defaultValue) as string;
 }
 
@@ -90,7 +91,7 @@ async function parseFolderTitle(root: string) {
     return expandTitle(
       root,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ((settings as any)['window.title'] ?? getDefaultTitle()) as string,
+      ((settings as any)[WINDOW_TITLE] ?? getDefaultTitle()) as string,
     );
   } catch (err: unknown) {
     log.debug(`Error parsing ${filePath}: ${err}`);
@@ -104,7 +105,7 @@ async function parseWorkspaceTitle(root: string) {
     return expandTitle(
       root,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (settings as any).settings['window.title'] as string,
+      (settings as any).settings[WINDOW_TITLE] as string,
     );
   } catch (err: unknown) {
     log.debug(`Error parsing ${root}: ${err}`);

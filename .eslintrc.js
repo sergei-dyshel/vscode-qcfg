@@ -184,6 +184,11 @@ const config = {
 
     '@typescript-eslint/sort-type-union-intersection-members': off,
     'import/no-duplicates': off,
+
+    'sonarjs/cognitive-complexity': off,
+
+    // sometimes assigning to variable and returning it is convenient for debugging
+    'sonarjs/prefer-immediate-return': off,
   },
 };
 

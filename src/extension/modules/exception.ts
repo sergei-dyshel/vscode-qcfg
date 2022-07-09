@@ -90,13 +90,7 @@ export function registerAsyncCommandWrapped(
   callback: AsyncFunction,
   thisArg?: any,
 ): DisposableLike {
-  return commands.registerCommand(
-    command,
-    wrapWithErrorHandler(callback, (error) => {
-      handleErrorDuringCommand(command, error);
-    }),
-    thisArg,
-  );
+  return registerCommandWrapped(command, callback, thisArg);
 }
 
 export function registerCommandWrapped(
@@ -118,13 +112,7 @@ export function registerSyncCommandWrapped(
   callback: VoidFunction,
   thisArg?: any,
 ): DisposableLike {
-  return commands.registerCommand(
-    command,
-    wrapWithErrorHandler(callback, (error) => {
-      handleErrorDuringCommand(command, error);
-    }),
-    thisArg,
-  );
+  return registerCommandWrapped(command, callback, thisArg);
 }
 
 export function registerTextEditorCommandWrapped(

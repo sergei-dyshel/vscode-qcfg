@@ -70,6 +70,7 @@ function symbolIsBlock(symbol: SymbolInformation | DocumentSymbol) {
 }
 
 function shouldSkipChildren(symbol: DocumentSymbol): boolean {
+  // eslint-disable-next-line sonarjs/no-small-switch
   switch (symbol.kind) {
     case SymbolKind.Interface:
       return true;
