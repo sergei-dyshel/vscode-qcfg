@@ -1,6 +1,8 @@
 d := package
 include $(d)/Makefile
 
+all: build
+
 npm_install:
 	./npm-wrapper.sh install
 
