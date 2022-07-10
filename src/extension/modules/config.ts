@@ -1,5 +1,3 @@
-'use strict';
-
 import type { ConfigurationChangeEvent, ExtensionContext } from 'vscode';
 import { Disposable, workspace } from 'vscode';
 import type { DisposableLike } from '../../library/disposable';
@@ -133,16 +131,16 @@ class ConfigDirWatcher implements Disposable {
   onConfigVarChanged() {
     this.globalDir = parseGlobalDir();
     this.workspaceDir = parseWorkspaceDir();
-    this.pairWatchers.forEach((watcher) => {
+    for (const [_, watcher] of this.pairWatchers) {
       watcher.reset(this.globalDir, this.workspaceDir);
-    });
+    }
   }
 
   dispose() {
     this.configDisposable.dispose();
-    this.pairWatchers.forEach((pairWatcher) => {
+    for (const [_, pairWatcher] of this.pairWatchers) {
       pairWatcher.dispose();
-    });
+    }
   }
 }
 

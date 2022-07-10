@@ -30,7 +30,7 @@ import { searchWithCommand } from './search';
 import { getActiveTextEditor } from './utils';
 
 export function isAnyLangClientRunning(): boolean {
-  return ALL_CLIENTS.map((wrapper) => wrapper.isClientRunning).isAnyTrue();
+  return ALL_CLIENTS.map((wrapper) => wrapper.isClientRunning).some(Boolean);
 }
 
 export async function refreshOrRestartLangClients() {
@@ -87,6 +87,7 @@ class LanguageClientWrapper {
     const params: client.DidSaveTextDocumentParams = {
       textDocument: {
         uri: c2pConverter.asUri(document.uri),
+        // eslint-disable-next-line unicorn/no-null
         version: null,
       },
     };
@@ -322,21 +323,12 @@ async function compareLangClients() {
     ...(await compareOnType('Definitions', async (wrapper, uri, pos) =>
       wrapper.getDefinitions(uri, pos),
     )),
-  );
-
-  groups.push(
     ...(await compareOnType('Declarations', async (wrapper, uri, pos) =>
       wrapper.getDeclarations(uri, pos),
     )),
-  );
-
-  groups.push(
     ...(await compareOnType('Implementations', async (wrapper, uri, pos) =>
       wrapper.getImplementations(uri, pos),
     )),
-  );
-
-  groups.push(
     ...(await compareOnType('References', async (wrapper, uri, pos) =>
       wrapper.getReferences(uri, pos),
     )),

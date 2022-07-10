@@ -1,5 +1,3 @@
-'use strict';
-
 import type { TextDocument, TextDocumentContentChangeEvent } from 'vscode';
 import { Position, Range } from 'vscode';
 import { assert } from '../../library/exception';

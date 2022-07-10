@@ -34,10 +34,9 @@ async function expandFaster() {
 
 async function shrinkFaster() {
   const editor = getActiveTextEditor();
-  const { document } = editor;
-  const { selection } = editor;
+  const { document, selection } = editor;
   await smartSelectShrink();
-  const selection1 = editor.selection;
+  const selection1 = selection;
   if (
     selection1.isEqual(selection) ||
     trimBrackets(document, selection).isEqual(selection1)

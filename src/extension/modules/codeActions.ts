@@ -80,7 +80,7 @@ function filterByConfig(
   // filter by matching against regexes
   const filteredActions = mapNonNull(actions, (action) => {
     for (const rule of fullRules) {
-      if (rule.regex.exec(action.action.title))
+      if (rule.regex.test(action.action.title))
         return { action, priority: rule.priority };
     }
     return undefined;

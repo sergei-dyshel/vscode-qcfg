@@ -30,6 +30,7 @@ function flattenSubtree(
     result.push(symbol);
     return result;
   }
+  // eslint-disable-next-line unicorn/prefer-spread
   result = result.concat(
     ...symbol.children.map((child) => flattenSubtree(child, document, symbol)),
   );
@@ -47,6 +48,7 @@ function flattenOutline(
   symbols: DocumentSymbol[],
   document: TextDocument,
 ): DocumentSymbol[] {
+  // eslint-disable-next-line unicorn/prefer-spread
   return ([] as DocumentSymbol[]).concat(
     ...symbols.map((symbol) => flattenSubtree(symbol, document)),
   );

@@ -1,5 +1,3 @@
-'use strict';
-
 import type { StatusBarItem, TextEditor, ThemeColor, ViewColumn } from 'vscode';
 import { window } from 'vscode';
 import { Timer } from '../../library/nodeUtils';

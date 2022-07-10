@@ -1,5 +1,3 @@
-'use strict';
-
 import type {
   ExtensionContext,
   Selection,
@@ -175,23 +173,23 @@ function parseDirection(direction: string): {
 function selectSibling(direction: string) {
   const { reversed, terminal } = parseDirection(direction);
   validateContext(context);
-  const { selectedNodes } = context;
-  const { single } = selectedNodes;
+  const { selectedNodes, history } = context;
+  const { single, start, end } = selectedNodes;
   if (single) {
     const sibling = getSibling(single, reversed, terminal);
     check(sibling !== single, 'Can not go in this direction');
     selectedNodes.start = sibling;
     selectedNodes.end = sibling;
-    context.history.clear();
+    history.clear();
     updateSelection();
     return;
   }
 
   // if multiple nodes selected, select first/last one
-  const node = reversed ? selectedNodes.start : selectedNodes.end;
+  const node = reversed ? start : end;
   selectedNodes.start = node;
   selectedNodes.end = node;
-  context.history.clear();
+  history.clear();
   updateSelection();
 }
 
@@ -231,18 +229,18 @@ function getSibling(node: SyntaxNode, reversed: boolean, terminal: boolean) {
 function extendSelection(direction: string) {
   const { reversed, terminal } = parseDirection(direction);
   assertNotNull(context?.selectedNodes);
-  const { selectedNodes } = context;
+  const { selectedNodes, history } = context;
   const newActive = getSibling(selectedNodes.active, reversed, terminal);
   check(newActive !== selectedNodes.active, 'Can not extend in this direction');
   context.selectedNodes = SelectedNodes.directed(
     selectedNodes.anchor,
     newActive,
   );
-  context.history.clear();
+  history.clear();
   updateSelection();
 }
 
-const LIST_PARENT_TYPES: string[] = [
+const LIST_PARENT_TYPES = new Set([
   'statement_block',
   'arguments',
   'formal_paremeters',
@@ -259,10 +257,10 @@ const LIST_PARENT_TYPES: string[] = [
   'argument_list',
   'binary_expression',
   'source_file',
-];
+]);
 
 function isListParent(node: SyntaxNode) {
-  return LIST_PARENT_TYPES.includes(node.type);
+  return LIST_PARENT_TYPES.has(node.type);
 }
 
 function isListItem(node: SyntaxNode) {
@@ -299,8 +297,8 @@ export async function enterMode() {
 /** When moving up/down (or entering mode) update parent and sibling decorations */
 function updateDecorations() {
   assertNotNull(context);
-  const { editor } = context;
-  const parent = context.selectedNodes.parent;
+  const { editor, selectedNodes } = context;
+  const parent = selectedNodes.parent;
   parentDecorator.decorate(editor, [parent.range]);
   siblingDecorator.decorate(
     editor,

@@ -1,7 +1,5 @@
 import { SyntaxNode } from 'tree-sitter';
 
-export { SyntaxNode };
-
 declare module 'tree-sitter' {
   // eslint-disable-next-line @typescript-eslint/no-shadow
   class SyntaxNode {}
@@ -77,3 +75,5 @@ SyntaxNode.prototype.toObject = function (this: SyntaxNode) {
     children: this.namedChildren.map((child) => child.toObject()),
   };
 };
+
+export { SyntaxNode } from 'tree-sitter';

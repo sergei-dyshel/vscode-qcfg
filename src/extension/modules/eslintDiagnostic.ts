@@ -1,5 +1,3 @@
-'use strict';
-
 import type {
   CompletionItemProvider,
   CompletionList,
@@ -23,7 +21,7 @@ const CompletionsFromDiagnosticsProvider: CompletionItemProvider = {
     document: TextDocument,
     position: Position,
   ): ProviderResult<CompletionItem[] | CompletionList> {
-    const prefix = getCompletionPrefix(document, position, /([\w@/-]*)$/);
+    const prefix = getCompletionPrefix(document, position, /([\w/@-]*)$/);
     if (prefix === '') return [];
     const items: CompletionItem[] = [];
     for (const code of eslintRules) {
@@ -60,7 +58,7 @@ function activate(context: ExtensionContext) {
     languages.registerCompletionItemProvider(
       { pattern: '**/.eslintrc.*' },
       CompletionsFromDiagnosticsProvider,
-      ...'\'"-/@abcdefghijklmnopqrstuvwxyz'.split(''),
+      ...'\'"-/@abcdefghijklmnopqrstuvwxyz',
     ),
     listenWrapped(languages.onDidChangeDiagnostics, onDidChangeDiagnostics),
   );

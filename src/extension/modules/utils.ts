@@ -1,5 +1,3 @@
-'use strict';
-
 import type { Range, TextEditor, WorkspaceFolder } from 'vscode';
 import { commands, Location, window } from 'vscode';
 import { assertNotNull } from '../../library/exception';

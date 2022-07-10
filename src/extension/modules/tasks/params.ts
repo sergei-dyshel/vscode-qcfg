@@ -1,5 +1,3 @@
-'use strict';
-
 export enum Reveal {
   FOCUS = 'focus',
   YES = 'yes',

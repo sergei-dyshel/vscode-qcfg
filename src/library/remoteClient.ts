@@ -12,7 +12,9 @@ import { filterNonNull } from './tsUtils';
 
 const START_PORT = 7890;
 
-export const PORT_RANGE = [...Array(9).keys()].map((i) => i + START_PORT);
+export const PORT_RANGE = [...Array.from({ length: 9 }).keys()].map(
+  (i) => i + START_PORT,
+);
 
 type MethodName = Extract<keyof RemoteProtocol, string>;
 
@@ -130,7 +132,7 @@ export class MultiClient {
     const requests = PORT_RANGE.map(async (port) => {
       try {
         return await IdentifiedClient.connect(port);
-      } catch (_: unknown) {
+      } catch {
         return undefined;
       }
     });

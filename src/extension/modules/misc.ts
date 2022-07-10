@@ -1,6 +1,3 @@
-'use strict';
-
-import * as path from 'path';
 import type { ExtensionContext, TextEditor } from 'vscode';
 import { commands, Uri, window, workspace } from 'vscode';
 import { log } from '../../library/logging';
@@ -39,8 +36,8 @@ function terminalInWorkspaceFolder() {
 function terminalInFileFolder() {
   const document = getActiveTextEditor().document;
   const relPath = workspace.asRelativePath(document.fileName);
-  const name = path.dirname(relPath);
-  openOrCreateTerminal(name, path.dirname(document.fileName));
+  const name = nodejs.path.dirname(relPath);
+  openOrCreateTerminal(name, nodejs.path.dirname(document.fileName));
 }
 
 async function runCommand() {

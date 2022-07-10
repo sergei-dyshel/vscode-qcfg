@@ -77,9 +77,9 @@ export function wrapWithErrorHandler<T extends AnyFunction, R>(
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment
       const result = func(...args);
       if (!(result instanceof Promise)) return result;
-      return result.catch((exc) => handler(exc));
-    } catch (exc) {
-      return handler(exc);
+      return result.catch((err) => handler(err));
+    } catch (err) {
+      return handler(err);
     }
   };
 }

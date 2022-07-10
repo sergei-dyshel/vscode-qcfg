@@ -1,6 +1,6 @@
 import * as callsites from 'callsites';
-import * as path from 'path';
 import * as sourceMapSupport from 'source-map-support';
+import * as nodejs from './nodejs';
 
 sourceMapSupport.install();
 
@@ -17,11 +17,11 @@ export function getCallsite(frame: number) {
   if (m) funcName = m[1];
   const tsPos = sourceMapSupport.mapSourcePosition(jsPos);
   // show up to 2 elements from path (do not include 'src')
-  const { base, dir } = path.parse(tsPos.source);
+  const { base, dir } = nodejs.path.parse(tsPos.source);
   let filename = base;
   if (dir) {
-    const dirbase = path.basename(dir);
-    if (dirbase !== 'src') filename = path.join(dirbase, base);
+    const dirbase = nodejs.path.basename(dir);
+    if (dirbase !== 'src') filename = nodejs.path.join(dirbase, base);
   }
   return {
     location: `${filename}:${tsPos.line}:${tsPos.column}`,

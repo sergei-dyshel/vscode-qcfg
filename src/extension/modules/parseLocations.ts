@@ -1,5 +1,3 @@
-'use strict';
-
 import type { TextDocument, WorkspaceFolder } from 'vscode';
 import { Location, Position, Range, Uri, workspace } from 'vscode';
 import * as nodejs from '../../library/nodejs';
@@ -25,7 +23,7 @@ export function parseLocations(
   base: string,
   format: ParseLocationFormat,
 ): Location[] {
-  const lines = text.match(/[^\r\n]+/g);
+  const lines = text.match(/[^\n\r]+/g);
   if (!lines) return [];
   return filterNonNull(lines.map((line) => parseLocation(line, base, format)));
 }
@@ -49,12 +47,7 @@ export function parseLocation(
   if (!match) return;
   const groups = match.groups!;
   if (!groups['file']) return;
-  let column;
-  if (!groups['column']) {
-    column = 1;
-  } else {
-    column = Number(groups['column']);
-  }
+  const column = !groups['column'] ? 1 : Number(groups['column']);
   return new Location(
     Uri.file(nodejs.path.resolve(base, groups['file'])),
     new Position(Number(groups['line']) - 1, column - 1),

@@ -86,17 +86,13 @@ export function arraySlice<T>(
  * Convert integer to array of bits starting with LSB
  */
 export function numberToBitArray(x: number): Array<0 | 1> {
-  return x
-    .toString(2)
-    .split('')
-    .reverse()
-    .map((bit) => {
-      if (bit === '0') return 0;
-      if (bit === '1') return 1;
-      throw new Error(
-        `Invalid character in binary representation of ${x}: ${bit}`,
-      );
-    });
+  return [...x.toString(2)].reverse().map((bit) => {
+    if (bit === '0') return 0;
+    if (bit === '1') return 1;
+    throw new Error(
+      `Invalid character in binary representation of ${x}: ${bit}`,
+    );
+  });
 }
 
 /**
@@ -180,6 +176,7 @@ export function mapWithThrow<T, V>(
 
 export function concatArrays<T>(...arrays: T[][]): T[] {
   if (arrays.length === 0) return [];
+  // eslint-disable-next-line unicorn/prefer-spread
   return arrays[0].concat(...arrays.slice(1));
 }
 
@@ -412,7 +409,7 @@ Array.prototype.binarySearch = function <T>(
 };
 
 Array.prototype.isAnyTrue = function <T>(this: T[]): boolean {
-  return this.find(Boolean) !== undefined;
+  return this.some(Boolean);
 };
 
 Array.prototype.areAllTrue = function <T>(this: T[]): boolean {
@@ -425,9 +422,7 @@ Array.prototype.uniq = function <T>(
 ): T[] {
   return this.reduce<T[]>(
     (unique, item) =>
-      unique.find((item1) => equals(item, item1)) !== undefined
-        ? unique
-        : [...unique, item],
+      unique.some((item1) => equals(item, item1)) ? unique : [...unique, item],
     [],
   );
 };
@@ -587,8 +582,7 @@ export class DefaultMap<K, V> extends Map<K, V> {
   override get(key: K): V {
     let val = super.get(key);
     if (val) return val;
-    if (this.factory instanceof Function) val = this.factory(key);
-    else val = this.factory;
+    val = this.factory instanceof Function ? this.factory(key) : this.factory;
     this.set(key, val);
     return val;
   }

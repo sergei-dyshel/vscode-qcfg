@@ -1,5 +1,3 @@
-'use strict';
-
 import type { ExtensionContext, StatusBarItem } from 'vscode';
 import { window, workspace } from 'vscode';
 import { log } from '../../library/logging';
@@ -109,8 +107,8 @@ function activate(context: ExtensionContext) {
   setStatusBar();
   context.subscriptions.push(
     registerSyncCommandWrapped('qcfg.autoSync.toggle', toggle),
+    saveAll.onEvent(onSaveAll),
   );
-  context.subscriptions.push(saveAll.onEvent(onSaveAll));
 }
 
 Modules.register(activate);

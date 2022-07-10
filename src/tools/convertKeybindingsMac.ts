@@ -1,11 +1,9 @@
-'use strict';
-
-import * as fs from 'fs';
 import * as jsonc from 'jsonc-parser';
+import * as nodejs from '../library/nodejs';
 
 const path = process.argv[2];
 
-const text = fs.readFileSync(path, 'utf8');
+const text = nodejs.fs.readFileSync(path, 'utf8');
 // const parsed = jsonc.parseTree(text);
 
 const origin = JSON.parse(jsonc.stripComments(text)) as KeyBinding[];
@@ -20,7 +18,7 @@ const result = origin.map((binding) => {
   return binding;
 });
 
-const resultText = JSON.stringify(result, null, 8);
+const resultText = JSON.stringify(result, undefined, 8);
 
 console.info(resultText);
 // for (let i = 0; i < parsed.children!.length; ++i) {

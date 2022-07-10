@@ -34,7 +34,8 @@ export function documentRangePreview(
 ): [preview: string, start: number, end: number] {
   if (prefixLen === undefined) prefixLen = 8;
   range = document.validateRange(range);
-  let { start, end } = range;
+  let start = range.start;
+  let end = range.end;
   if (suffixLen === undefined) suffixLen = 1000; // some big value
   start = start.withCharacter(Math.max(start.character - prefixLen, 0));
   end = end.translate(undefined /* lineDelta */, suffixLen);

@@ -1,5 +1,3 @@
-'use strict';
-
 import type { ExtensionContext, SourceControlResourceState, Uri } from 'vscode';
 import { commands, window } from 'vscode';
 import { log } from '../../library/logging';

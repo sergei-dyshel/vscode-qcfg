@@ -55,8 +55,7 @@ export function createSeparatedQuickPickItems<T>(
 ): Array<QuickPickSeparator | T> {
   const result: Array<QuickPickSeparator | T> = [];
   for (const [label, items] of Object.entries(obj)) {
-    result.push(new QuickPickSeparator(label));
-    result.push(...items);
+    result.push(new QuickPickSeparator(label), ...items);
   }
   return result;
 }
@@ -257,8 +256,7 @@ export class QuickPickWrapper<
    */
   set selectedItem(value: T | undefined) {
     this.assertCanSelectMany(false);
-    if (value === undefined) this.selectedItems = [];
-    else this.selectedItems = [value];
+    this.selectedItems = value === undefined ? [] : [value];
   }
 
   get selectedItem(): T | undefined {

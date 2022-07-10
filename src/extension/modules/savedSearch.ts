@@ -78,7 +78,7 @@ interface SavedSearch {
 
 async function showLastLocationsInPanel() {
   if (!lastName) {
-    throw Error('No search was issued yet');
+    throw new Error('No search was issued yet');
   }
   return updateHistory(
     setPanelLocations(lastName, lastLocations.get()!.locations()),
@@ -87,7 +87,7 @@ async function showLastLocationsInPanel() {
 
 async function quickPickLastLocations() {
   if (!lastName) {
-    throw Error('No search was issued yet');
+    throw new Error('No search was issued yet');
   }
   return updateHistory(quickPickLocations(lastLocations.get()!.locations()));
 }

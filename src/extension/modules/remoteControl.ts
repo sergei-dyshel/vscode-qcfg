@@ -1,12 +1,9 @@
-'use strict';
-
-import * as net from 'net';
-import * as path from 'path';
 import * as shlex from 'shlex';
 import type { ExtensionContext, WorkspaceFolder } from 'vscode';
 import { Position, Selection, Uri, window, workspace } from 'vscode';
 import { assert } from '../../library/exception';
 import { log } from '../../library/logging';
+import * as nodejs from '../../library/nodejs';
 import { parseNumber } from '../../library/stringUtils';
 import { handleAsyncStd, handleErrors } from './exception';
 import * as fileUtils from './fileUtils';
@@ -18,7 +15,7 @@ import { focusWindow } from './windowState';
 export let port = 48123;
 
 async function handleOpen(folder: string, location: string) {
-  assert(path.isAbsolute(folder), `"${folder}" is not absolute path`);
+  assert(nodejs.path.isAbsolute(folder), `"${folder}" is not absolute path`);
   let wsFolder: WorkspaceFolder | undefined;
   let found = false;
   for (wsFolder of workspace.workspaceFolders ?? [])
@@ -35,12 +32,12 @@ async function handleOpen(folder: string, location: string) {
   if (!file) log.fatal('Filename missing');
 
   let fullPath: string;
-  if (path.isAbsolute(file)) {
+  if (nodejs.path.isAbsolute(file)) {
     if (!file.startsWith(folder))
       log.fatal(`File "${file}" does not belong to "${wsFolder.name}"`);
     fullPath = file;
   } else {
-    fullPath = path.join(wsFolder.uri.fsPath, file);
+    fullPath = nodejs.path.join(wsFolder.uri.fsPath, file);
     const fileExists = await fileUtils.fileExists(fullPath);
     if (!fileExists)
       log.fatal(`File "${file}" does not exist in "${wsFolder.name}"`);
@@ -56,7 +53,7 @@ async function handleOpen(folder: string, location: string) {
 }
 
 function checkFolder(folder: string) {
-  assert(path.isAbsolute(folder), `"${folder}" is not absolute path`);
+  assert(nodejs.path.isAbsolute(folder), `"${folder}" is not absolute path`);
   for (const wsFolder of workspace.workspaceFolders ?? [])
     if (wsFolder.uri.fsPath === folder) {
       return true;
@@ -90,7 +87,7 @@ function handleCmd(cmd: string) {
 }
 
 function activate(_context: ExtensionContext) {
-  const server = net.createServer((socket) => {
+  const server = nodejs.net.createServer((socket) => {
     socket.on('data', () => {
       handleErrors((data) => {
         handleCmd(data.toString() as string);

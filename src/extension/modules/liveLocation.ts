@@ -1,5 +1,3 @@
-'use strict';
-
 import type {
   ExtensionContext,
   Position,
@@ -228,9 +226,9 @@ export class LiveLocationArray implements DisposableLike {
   }
 
   clear() {
-    this.array.forEach((loc) => {
+    for (const loc of this.array) {
       loc.unregister();
-    });
+    }
     this.array = [];
   }
 

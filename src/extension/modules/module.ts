@@ -1,5 +1,3 @@
-'use strict';
-
 // Must not import any modules
 import type { ExtensionContext } from 'vscode';
 import * as nodejs from '../../library/nodejs';

@@ -28,9 +28,8 @@ async function renameReferences(needsConfirmation: boolean) {
 
   const edit = new WorkspaceEdit();
   for (const location of locations) {
-    const word = (await workspace.openTextDocument(location.uri)).getText(
-      location.range,
-    );
+    const doc = await workspace.openTextDocument(location.uri);
+    const word = doc.getText(location.range);
     let invalid = false;
     if (word !== name) invalid = true;
     const label = invalid

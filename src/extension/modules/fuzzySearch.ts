@@ -1,7 +1,5 @@
 // Borrowed from https://github.com/jacobdufault/vscode-fuzzy-search by Jacob Dufault
 
-'use strict';
-
 import * as vscode from 'vscode';
 import { handleErrors, registerSyncCommandWrapped } from './exception';
 import { Modules } from './module';
@@ -23,21 +21,21 @@ function showFuzzySearch() {
   const editor = getActiveTextEditor();
   const lines: string[] = editor.document.getText().split(/\r?\n/);
   const quickPickEntries: Item[] = [];
-  for (let i = 0; i < lines.length; ++i) {
-    if (!lines[i]) {
+  for (const [i, line_] of lines.entries()) {
+    if (!line_) {
       continue;
     }
-    const line = `${(i + 1).toString()}: ${lines[i].trim()}`;
+    const line = `${(i + 1).toString()}: ${line_.trim()}`;
     if (line.length <= 60) {
       quickPickEntries.push(new Item(line, i + 1));
       continue;
     }
-    quickPickEntries.push(new Item(line.substring(0, 58) + '…', i + 1));
     quickPickEntries.push(
+      new Item(line.slice(0, 58) + '…', i + 1),
       new Item(
-        `${(i + 1).toString()}: …${lines[i]
+        `${(i + 1).toString()}: …${line_
           .trim()
-          .substring(line.length - 60 + 1)}`,
+          .slice(Math.max(0, line.length - 60 + 1))}`,
         i + 1,
       ),
     );
@@ -69,7 +67,7 @@ function showFuzzySearch() {
   // Show the currently selected item in the editor.
   pick.onDidChangeActive(
     handleErrors((items) => {
-      if (!items.length) return;
+      if (items.length === 0) return;
 
       const p = new vscode.Position(items[0].line - 1, 0);
       editor.revealRange(

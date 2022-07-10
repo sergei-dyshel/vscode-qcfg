@@ -138,14 +138,14 @@ class History {
   }
 
   pushOrReplace(pos: LivePosition) {
-    const { top } = this;
+    const { top, forward, backward } = this;
     if (top) {
       if (Math.abs(top.position.line - pos.position.line) > 4) {
         this.push(pos);
       } else {
-        this.backward.pop();
-        this.forward.clear();
-        this.backward.push(pos);
+        backward.pop();
+        forward.clear();
+        backward.push(pos);
         this.log.debug(`Replaced top with ${pos}`);
       }
     } else {

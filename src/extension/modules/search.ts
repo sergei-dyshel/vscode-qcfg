@@ -1,5 +1,3 @@
-'use strict';
-
 import type {
   CancellationToken,
   CompletionContext,
@@ -179,7 +177,7 @@ namespace TodoCompletion {
   function createItem(label: string, snippet: string) {
     const item = new CompletionItem(label, CompletionItemKind.Snippet);
     item.insertText = new SnippetString(snippet);
-    item.sortText = String.fromCharCode(0);
+    item.sortText = String.fromCodePoint(0);
     return item;
   }
 

@@ -9,7 +9,7 @@ import { mapObjectValues } from '../../library/tsUtils';
 import { openFolder } from '../utils/window';
 import {
   handleAsyncStd,
-  handleErrorsAsync,
+  handleErrors,
   registerSyncCommandWrapped,
 } from './exception';
 import { Modules } from './module';
@@ -29,15 +29,16 @@ export interface IdentifyResult {
 }
 
 const protocol = {
-  async identify(_: Record<string, unknown>): Promise<IdentifyResult> {
-    return Promise.resolve({
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async identify(_: Record<string, unknown>) {
+    return {
       workspaceFile: getWorkspaceFile(),
       workspaceName: getWorkspaceName(),
       workspaceFolders: workspace.workspaceFolders?.map(
         (folder) => folder.uri.fsPath,
       ),
       setDefaultTimestamp: lastSetDefaultTimestamp,
-    });
+    };
   },
   async openFile(arg: {
     path: string;
@@ -70,15 +71,15 @@ const protocol = {
     return openFolder(args.path, true /* newWindow */).ignoreResult();
   },
 
-  async reloadWindow(_: Record<string, unknown>): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async reloadWindow(_: Record<string, unknown>) {
     setTimeout(() => {
       handleAsyncStd(commands.executeCommand('workbench.action.reloadWindow'));
     }, 1000);
-    return Promise.resolve();
   },
 };
 
-type Handler = (arg: any) => Promise<any>;
+type Handler = (arg: any) => any;
 
 type AbstractProtocol = Record<string, Handler>;
 
@@ -92,7 +93,7 @@ function activate(context: ExtensionContext) {
   const loggedProtocol: AbstractProtocol = mapObjectValues(
     protocol as AbstractProtocol,
     (name, handler) =>
-      handleErrorsAsync(async (arg: any): Promise<any> => {
+      handleErrors((arg: any) => {
         log.info(`Received request "${name}" with arguments ${stringify(arg)}`);
         return handler(arg);
       }),

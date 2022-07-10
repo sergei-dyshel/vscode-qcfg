@@ -27,9 +27,9 @@ async function updateEnabled(toggle = false) {
         .getConfiguration()
         .get<boolean>('qcfg.autoResize.enabled', true);
   log.info('Auto-resize', featureEnabled ? 'enabled' : 'disabled');
-  if (featureEnabled)
-    await onDidChangeActiveTextEditor(window.activeTextEditor);
-  else await evenEditorWidths();
+  await (featureEnabled
+    ? onDidChangeActiveTextEditor(window.activeTextEditor)
+    : evenEditorWidths());
 }
 
 async function onDidChangeConfiguration(event: ConfigurationChangeEvent) {

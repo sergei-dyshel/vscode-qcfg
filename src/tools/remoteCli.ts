@@ -66,6 +66,7 @@ abstract class CliAction extends CommandLineAction {
       default:
         this.client = this.cli.getClient(this.cli.instance);
     }
+    // eslint-disable-next-line unicorn/no-useless-promise-resolve-reject
     return Promise.resolve();
   }
 }
@@ -125,9 +126,9 @@ class ReloadAction extends CliAction {
 
   override async onExecute() {
     await super.onExecute();
-    if (this.cli.instance === Instance.ALL)
-      await this.cli.multiClient.sendNoResult('reloadWindow', {});
-    else await this.client!.sendNoResult('reloadWindow', {});
+    await (this.cli.instance === Instance.ALL
+      ? this.cli.multiClient.sendNoResult('reloadWindow', {})
+      : this.client!.sendNoResult('reloadWindow', {}));
   }
 }
 
@@ -154,14 +155,13 @@ class CommandAction extends CliAction {
 
   override async onExecute() {
     await super.onExecute();
-    if (this.cli.instance === Instance.ALL)
-      await this.cli.multiClient.sendNoResult('executeCommand', {
-        name: this.name.value!,
-      });
-    else
-      await this.client!.sendNoResult('executeCommand', {
-        name: this.name.value!,
-      });
+    await (this.cli.instance === Instance.ALL
+      ? this.cli.multiClient.sendNoResult('executeCommand', {
+          name: this.name.value!,
+        })
+      : this.client!.sendNoResult('executeCommand', {
+          name: this.name.value!,
+        }));
   }
 }
 
@@ -396,5 +396,5 @@ async function main() {
   return new Cli().execute();
 }
 
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
+// eslint-disable-next-line @typescript-eslint/no-floating-promises, unicorn/prefer-top-level-await
 main().then(() => {});

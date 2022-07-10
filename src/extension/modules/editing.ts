@@ -1,7 +1,5 @@
 // noinspection JSUnusedAssignment
 
-'use strict';
-
 import type {
   CompletionList,
   ExtensionContext,
@@ -164,7 +162,7 @@ async function stripBrackets() {
 
 function selectWordUnderCursor() {
   const word = getCursorWordContext();
-  if (!word) throw Error('No word under cursor');
+  if (!word) throw new Error('No word under cursor');
   word.editor.selection = word.range.asSelection();
 }
 
@@ -175,7 +173,7 @@ async function toggleRelativeNumbers() {
   const conf = workspace.getConfiguration();
   const info = conf.inspect<string>(SECTION)!;
   if (info.workspaceFolderValue || info.workspaceValue)
-    throw Error(`"${SECTION}" is overriden on workspace/folder level`);
+    throw new Error(`"${SECTION}" is overriden on workspace/folder level`);
   const value = (info.globalValue ?? info.defaultValue) as LineNumberConf;
   switch (value) {
     case 'on':
@@ -185,7 +183,7 @@ async function toggleRelativeNumbers() {
       await conf.update(SECTION, 'on', ConfigurationTarget.Global);
       break;
     default:
-      throw Error(`"${SECTION} has value of '${value}`);
+      throw new Error(`"${SECTION} has value of '${value}`);
   }
 }
 
@@ -240,9 +238,10 @@ async function insertPathFromDialog() {
     defaultUri: preSelected,
   });
   if (!uris || uris.isEmpty) return;
-  let result: string;
-  if (uris.length === 1) result = uris[0].fsPath;
-  else result = uris.map((uri) => uri.fsPath).join(' ');
+  const result =
+    uris.length === 1
+      ? uris[0].fsPath
+      : uris.map((uri) => uri.fsPath).join(' ');
   await replaceText(editor, editor.selection, result);
 }
 

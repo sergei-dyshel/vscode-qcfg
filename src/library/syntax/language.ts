@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/prefer-module */
 import { parseSyntax } from './parsing';
 
 export class SyntaxLanguage {

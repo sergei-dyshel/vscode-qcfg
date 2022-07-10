@@ -1,9 +1,7 @@
 import { TextBuffer } from 'superstring';
 // eslint-disable-next-line @typescript-eslint/no-duplicate-imports
+import type { Tree as SyntaxTree } from 'tree-sitter';
 import * as SyntaxParser from 'tree-sitter';
-import { Tree as SyntaxTree } from 'tree-sitter';
-
-export { SyntaxTree };
 
 export async function parseSyntax(
   text: string,
@@ -56,3 +54,5 @@ interface ParserWithAsync {
     },
   ) => Promise<SyntaxTree>;
 }
+
+export { Tree as SyntaxTree } from 'tree-sitter';

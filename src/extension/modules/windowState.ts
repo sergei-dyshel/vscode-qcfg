@@ -1,5 +1,3 @@
-'use strict';
-
 import { Window, windowManager } from 'node-window-manager';
 import type { ExtensionContext, WindowState } from 'vscode';
 import { window } from 'vscode';

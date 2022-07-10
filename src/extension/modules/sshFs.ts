@@ -42,7 +42,7 @@ function encodeUri(host: string, path: string) {
 
 function decodeUri(uri: Uri) {
   assert(uri.scheme === SCHEME);
-  const path = uri.query === 'home' ? uri.path.substr(1) : uri.path;
+  const path = uri.query === 'home' ? uri.path.slice(1) : uri.path;
   return [uri.authority, path];
 }
 

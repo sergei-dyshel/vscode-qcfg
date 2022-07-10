@@ -188,12 +188,12 @@ class CallTreeNode implements TreeNode {
   }
 
   async getChildren() {
-    return (
+    const incomingCalls =
       await this.provider.callProvider.provideCallHierarchyIncomingCalls(
         this.call,
         new CancellationTokenSource().token,
-      )
-    )?.map(
+      );
+    return incomingCalls?.map(
       (call) =>
         new CallTreeNode(this.provider, call.from, call.fromRanges, this),
     );
