@@ -1,5 +1,3 @@
-'use strict';
-
 import type {
   CancellationToken,
   DocumentSymbolProvider,
@@ -103,7 +101,9 @@ async function getTags(
       `--language-force=${lang}`,
       '--output-format=json',
       '--fields=*',
-    ].concat(kindsArg, [relativePath]),
+      ...kindsArg,
+      relativePath,
+    ],
     { cwd: workspaceFolder.uri.fsPath, maxBuffer: 1 * 1024 * 1024 },
   );
   log.trace('Started');
@@ -132,7 +132,7 @@ function tag2Symbol(tag: TagInfo, document: TextDocument): DocumentSymbol {
   let pattern: RegExp | string = tag.name;
   try {
     pattern = new RegExp('\\b' + tag.name + '\\b');
-  } catch (err: unknown) {
+  } catch {
     // tag.name is not alhpa-numberic literal
   }
   const range = adjustRangeInParsedPosition(
@@ -180,17 +180,17 @@ async function getCtagsDefinitions(document: TextDocument, word: string) {
 
 async function getGtagsCtagsDefinitions() {
   const ctx = getCursorWordContext()!;
-  const { word } = ctx;
+  const { word, editor, location } = ctx;
   return saveAndPeekSearch(
     `ctags/gtags for ${word}`,
     async () => {
       const [gtagsDefs, ctagsDefs] = await Promise.all([
         getGtagsDefinitionsInWorkspace(),
-        getCtagsDefinitions(ctx.editor.document, word),
+        getCtagsDefinitions(editor.document, word),
       ]);
-      return gtagsDefs.concat(ctagsDefs);
+      return [...gtagsDefs, ...ctagsDefs];
     },
-    ctx.location,
+    location,
   );
 }
 

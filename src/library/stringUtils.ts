@@ -1,12 +1,6 @@
 // TODO: rename to string.ts
 
-import {
-  camelCase as convCamelCase,
-  kebabCase as convKebabCase,
-} from 'case-anything';
 import * as stringFormat from 'string-format';
-
-export { convKebabCase, convCamelCase };
 
 export const formatString = stringFormat.default;
 
@@ -19,13 +13,13 @@ export function parseNumber(
 ): number | undefined {
   if (s === undefined) return default_;
   const num = Number(s);
-  if (isNaN(num) || s === '') throw new Error(`${s} is not a number`);
+  if (Number.isNaN(num) || s === '') throw new Error(`${s} is not a number`);
   return num;
 }
 
 export function buildFuzzyPattern(query: string): string {
   const goodChars = query.replace(/\W/g, '');
-  return goodChars.split('').join('.*');
+  return [...goodChars].join('.*');
 }
 
 export function fuzzyMatch(text: string, query: string): boolean {
@@ -34,17 +28,16 @@ export function fuzzyMatch(text: string, query: string): boolean {
 
 export function buildAbbrevPattern(query: string): string {
   const goodChars = query.replace(/\W/g, '');
-  const midPattern = goodChars
-    .split('')
+  const midPattern = [...goodChars]
     .map((ch) => {
-      if (/[a-zA-Z]/.exec(ch)) {
+      if (/[A-Za-z]/.test(ch)) {
         const lower = ch.toLowerCase();
         const upper = ch.toUpperCase();
         const anyCase = `(.*[^a-zA-Z])?[${lower}${upper}]`;
         const camelCase = `(.*[^A-Z])?${upper}`;
         return `(${anyCase}|${camelCase})`;
       }
-      if (/\d+/.exec(ch)) {
+      if (/\d+/.test(ch)) {
         return `(.*[^0-9])?${ch}`;
       }
       return `.*${ch}`;
@@ -70,8 +63,8 @@ export function splitWithRemainder(
       break;
     }
     if (match[0].length === 0) throw new Error('Empty match inside split');
-    result.push(str.substring(0, match.index));
-    str = str.substring(match.index + match[0].length);
+    result.push(str.slice(0, Math.max(0, match.index)));
+    str = str.slice(Math.max(0, match.index + match[0].length));
     limit -= 1;
   }
   if (str !== '' || result.isEmpty) result.push(str);
@@ -96,7 +89,7 @@ export function ellipsize(
   const delimiter = options?.delimiter ?? '...';
   const left = Math.ceil(maxLen / 2);
   const right = maxLen - left;
-  return str.substr(0, left) + delimiter + str.substr(str.length - right);
+  return str.slice(0, left) + delimiter + str.slice(str.length - right);
 }
 
 export class TemplateError extends Error {}
@@ -106,7 +99,7 @@ export function expandTemplate(
   substitute: Record<string, string | undefined>,
   throwWhenNotExist = false,
 ): string {
-  return text.replace(/\$\{([a-zA-Z\d]+)}/g, (_, varname: string) => {
+  return text.replace(/\${([a-zA-Z\d]+)}/g, (_, varname: string) => {
     const sub = substitute[varname];
     if (!sub) {
       if (throwWhenNotExist)
@@ -116,3 +109,8 @@ export function expandTemplate(
     return sub;
   });
 }
+
+export {
+  camelCase as convCamelCase,
+  kebabCase as convKebabCase,
+} from 'case-anything';

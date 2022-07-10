@@ -1,5 +1,3 @@
-'use strict';
-
 import type { ExtensionContext, Task, WorkspaceFolder } from 'vscode';
 import {
   commands,
@@ -377,8 +375,9 @@ async function runConfiguredTask(name: string, options?: TaskRunOptions) {
 }
 
 async function runConfiguredTaskCmd(arg: string | [string, TaskRunOptions]) {
-  if (typeof arg === 'string') await runConfiguredTask(arg);
-  else await runConfiguredTask(...arg);
+  await (typeof arg === 'string'
+    ? runConfiguredTask(arg)
+    : runConfiguredTask(...arg));
 }
 
 interface FetchedParams {
@@ -430,12 +429,10 @@ async function editGlobalConfig() {
 async function editWorkspaceConfig() {
   const confFilePair = getConfigFileNames(CONFIG_FILE);
   if (!confFilePair.workspace)
-    throw Error('Workspace configuration file not defined!');
-  if (!nodejs.fs.existsSync(confFilePair.workspace))
-    await window.showTextDocument(
-      Uri.parse('untitled:' + confFilePair.workspace),
-    );
-  else await window.showTextDocument(Uri.file(confFilePair.workspace));
+    throw new Error('Workspace configuration file not defined!');
+  await (!nodejs.fs.existsSync(confFilePair.workspace)
+    ? window.showTextDocument(Uri.parse('untitled:' + confFilePair.workspace))
+    : window.showTextDocument(Uri.file(confFilePair.workspace)));
 }
 
 function activate(context: ExtensionContext) {

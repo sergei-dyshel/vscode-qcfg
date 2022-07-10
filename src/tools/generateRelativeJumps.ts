@@ -1,5 +1,3 @@
-'use strict';
-
 import type { Key, KeyBinding, PackageJson } from '../library/packageJson';
 
 const START_LINE = 5;

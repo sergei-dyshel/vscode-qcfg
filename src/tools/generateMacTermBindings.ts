@@ -1,4 +1,5 @@
-'use strict';
+/* eslint-disable unicorn/escape-case */
+/* eslint-disable unicorn/no-hex-escape */
 
 import type { KeyBinding, PackageJson } from '../library/packageJson';
 

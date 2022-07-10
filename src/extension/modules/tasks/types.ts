@@ -1,5 +1,3 @@
-'use strict';
-
 import type {
   FindTextInFilesOptions,
   Location,
@@ -103,7 +101,7 @@ export class TaskContext {
           document.fileName,
         );
         this.vars['relativeFileNoExt'] = this.vars['relativeFile'].replace(
-          /\.[^/.]+$/,
+          /\.[^./]+$/,
           '',
         );
       }
@@ -115,7 +113,7 @@ export class TaskContext {
   }
 
   substitute(text: string): string {
-    return text.replace(/\$\{([a-zA-Z]+)}/g, (_, varname: string) => {
+    return text.replace(/\${([A-Za-z]+)}/g, (_, varname: string) => {
       if (!this.SUBSTITUTE_VARS.includes(varname))
         throw new ParamsError(`Unexpected variable "${varname}"`);
       const sub = this.vars[varname] as string | undefined;
@@ -169,8 +167,7 @@ export abstract class BaseTask {
 
   protected prefixTags(): string {
     let res = '';
-    if (this.isFromWorkspace()) res += '$(home)';
-    else res += '     ';
+    res += this.isFromWorkspace() ? '$(home)' : '     ';
     res += '      ';
     return res;
   }
@@ -377,11 +374,9 @@ export class TerminalTask extends BaseQcfgTask {
         term.show();
         break;
       case EndAction.NOTIFY:
-        if (success)
-          await window.showInformationMessage(
-            `Task "${this.task.name}" finished`,
-          );
-        else await window.showErrorMessage(`Task "${this.task.name}" failed`);
+        await (success
+          ? window.showInformationMessage(`Task "${this.task.name}" finished`)
+          : window.showErrorMessage(`Task "${this.task.name}" failed`));
         break;
     }
   }
@@ -448,7 +443,7 @@ export class ProcessTask extends BaseQcfgTask {
 
   async getLocations(): Promise<Location[]> {
     if (this.parseFormat === undefined)
-      throw Error('Output parsing not defined for this task');
+      throw new Error('Output parsing not defined for this task');
     const output = await this.runAndGetOutput();
     const locations = parseLocations(output, this.cwd, this.parseFormat);
     if (this.parseTag) {

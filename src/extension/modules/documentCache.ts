@@ -1,5 +1,3 @@
-'use strict';
-
 import { Dictionary } from 'typescript-collections';
 import type { ExtensionContext, TextDocument, Uri } from 'vscode';
 import { workspace } from 'vscode';

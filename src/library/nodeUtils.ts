@@ -1,10 +1,8 @@
-'use strict';
+import * as nodejs from './nodejs';
 
-import { promisify } from 'util';
-
-export const setTimeoutPromise = promisify(setTimeout);
-export const setImmediatePromise = promisify(setImmediate);
-export const setIntervalPromise = promisify(setInterval);
+export const setTimeoutPromise = nodejs.util.promisify(setTimeout);
+export const setImmediatePromise = nodejs.util.promisify(setImmediate);
+export const setIntervalPromise = nodejs.util.promisify(setInterval);
 
 // TODO: unused
 export class Timer {

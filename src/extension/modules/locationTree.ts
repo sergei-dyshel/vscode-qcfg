@@ -1,5 +1,3 @@
-'use strict';
-
 import { MultiDictionary } from 'typescript-collections';
 import type { ExtensionContext, Location, TextDocument } from 'vscode';
 import { ThemeIcon, Uri, window, workspace } from 'vscode';
@@ -119,7 +117,7 @@ namespace TreeBuilder {
       insert(tree, components, file);
       return;
     }
-    throw Error();
+    throw new Error('Invalid type of tree');
   }
 
   export function buildDirHierarchy(
@@ -282,13 +280,13 @@ const locationTreeProvider: TreeProvider = {
   },
   onUnset() {
     if (!currentTrees) return;
-    currentTrees.forEach((root) => {
+    for (const root of currentTrees) {
       root.applyRecursively((node) => {
         if (!(node instanceof LocationNode)) return true;
         node.location.unregister();
         return true;
       });
-    });
+    }
   },
 };
 

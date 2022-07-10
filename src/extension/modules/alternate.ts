@@ -1,6 +1,3 @@
-'use strict';
-
-import * as path from 'path';
 import type { ExtensionContext } from 'vscode';
 import { RelativePattern, Uri, window, workspace } from 'vscode';
 import { assertNotNull } from '../../library/exception';
@@ -20,7 +17,7 @@ async function switchToAlternate() {
   const document = editor.document;
   const filePath = document.fileName;
   const relPath = workspace.asRelativePath(document.fileName);
-  const ext = path.extname(filePath);
+  const ext = nodejs.path.extname(filePath);
   const mapping: Mapping = workspace
     .getConfiguration('qcfg.alternate')
     .get('mapping', {});

@@ -1,5 +1,3 @@
-'use strict';
-
 import * as vscode from 'vscode';
 import { Uri } from 'vscode';
 import { assertNotNull } from '../../library/exception';
@@ -18,10 +16,10 @@ const emmiter = new vscode.EventEmitter<DocumentsInFolder>();
 export const onEvent: vscode.Event<DocumentsInFolder> = emmiter.event;
 
 function emit() {
-  savedFiles.forEach((documents, folder, _map) => {
+  for (const [folder, documents] of savedFiles) {
     const docsInFolder: DocumentsInFolder = { folder, documents };
     emmiter.fire(docsInFolder);
-  });
+  }
   savedFiles.clear();
 }
 

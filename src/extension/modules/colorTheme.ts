@@ -1,5 +1,3 @@
-'use strict';
-
 import type { ExtensionContext } from 'vscode';
 import { commands, ConfigurationTarget, Uri, window, workspace } from 'vscode';
 import { assert } from '../../library/exception';

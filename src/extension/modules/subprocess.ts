@@ -1,8 +1,6 @@
-'use strict';
-
-import * as child_process from 'child_process';
 import * as vscode from 'vscode';
 import { log, Logger, LogLevel } from '../../library/logging';
+import * as nodejs from '../../library/nodejs';
 
 const DEFAULT_LOG_LEVEL = LogLevel.TRACE;
 
@@ -48,18 +46,17 @@ export function runSubprocessSync(
   command: string | string[],
   options?: SubprocessOptions,
 ): ExecResult {
-  let returns: child_process.SpawnSyncReturns<string>;
-  if (typeof command === 'string')
-    returns = child_process.spawnSync(command, [], {
-      shell: true,
-      encoding: 'utf8',
-      ...options,
-    });
-  else
-    returns = child_process.spawnSync(command[0], command.slice(1), {
-      encoding: 'utf8',
-      ...options,
-    });
+  const returns: nodejs.child_process.SpawnSyncReturns<string> =
+    typeof command === 'string'
+      ? nodejs.child_process.spawnSync(command, [], {
+          shell: true,
+          encoding: 'utf8',
+          ...options,
+        })
+      : nodejs.child_process.spawnSync(command[0], command.slice(1), {
+          encoding: 'utf8',
+          ...options,
+        });
 
   const result = new ExecResult(returns.pid, returns.stdout, returns.stderr);
   result.code = returns.status ?? 0;
@@ -75,19 +72,19 @@ export class Subprocess {
   ) {
     this.waitingContext = { resolve: (_) => {}, reject: (_) => {} };
     this.logLevel = options?.logLevel ?? DEFAULT_LOG_LEVEL;
-    if (typeof command === 'string')
-      this.process = child_process.exec(
-        command,
-        options ?? {},
-        this.callback.bind(this),
-      );
-    else
-      this.process = child_process.execFile(
-        command[0],
-        command.slice(1),
-        options ?? {},
-        this.callback.bind(this),
-      );
+    this.process =
+      typeof command === 'string'
+        ? nodejs.child_process.exec(
+            command,
+            options ?? {},
+            this.callback.bind(this),
+          )
+        : nodejs.child_process.execFile(
+            command[0],
+            command.slice(1),
+            options ?? {},
+            this.callback.bind(this),
+          );
     this.log = new Logger({
       parent: log,
       instance: `pid=${this.process.pid}`,
@@ -149,7 +146,7 @@ export class Subprocess {
     reject: (result: ExecResult | Error) => void;
   };
 
-  private readonly process: child_process.ChildProcess;
+  private readonly process: nodejs.child_process.ChildProcess;
   status?: vscode.StatusBarItem;
 }
 

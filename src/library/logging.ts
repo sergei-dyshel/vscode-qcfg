@@ -223,8 +223,7 @@ function formatLogRecord(record: LogRecord, opts?: LogFormatOptions): string {
   const parts: string[] = [];
   const all = !opts || opts.preset === 'all';
   if (all) parts.push(record.date);
-  parts.push(LogLevels.toString(record.level));
-  parts.push(record.location);
+  parts.push(LogLevels.toString(record.level), record.location);
   if (all) parts.push(record.function + '()');
   if (all && record.name) parts.push(`[${record.name}]`);
   if (record.instance) {

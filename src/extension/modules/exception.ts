@@ -1,5 +1,3 @@
-'use strict';
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import type {
@@ -183,7 +181,7 @@ const extensionPath = nodejs.fs.realpathSync(
 
 function simplifyErrorStack(stack: string) {
   const idx = stack.search(/\n\s+at.*extensionHostProcess.js/);
-  if (idx !== -1) stack = stack.substring(0, idx);
+  if (idx !== -1) stack = stack.slice(0, Math.max(0, idx));
   return replaceAll(stack, extensionPath + '/', '');
 }
 
@@ -192,7 +190,7 @@ function handleErrorDuringCommand(command: string, error: any) {
     stdErrorHandler(error, `Command "${command}": `, {
       alwaysShowMessage: true,
     });
-  } catch (err: unknown) {
+  } catch {
     // prevent vscode showing error popup again
   }
 }

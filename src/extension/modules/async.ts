@@ -1,5 +1,3 @@
-'use strict';
-
 import type { ExtensionContext } from 'vscode';
 import { assertNotNull } from '../../library/exception';
 import { log, Logger } from '../../library/logging';
@@ -144,9 +142,9 @@ Set.prototype.mapAsync = async function <K, V>(
   this: Set<K>,
   func: (k: K) => Promise<V>,
 ): Promise<Map<K, V>> {
-  const keys = Array.from(this.values());
+  const keys = [...this.values()];
   const values = await mapAsync(keys, func);
-  return new Map<K, V>(Array.from(izip(keys, values)));
+  return new Map<K, V>(izip(keys, values));
 };
 
 export class MapUndefined {}
@@ -179,7 +177,8 @@ export async function mapSomeAsync<V, R>(
   arr: readonly V[],
   func: (v: V) => Promise<R | MapUndefined>,
 ): Promise<R[]> {
-  return (await mapSomeAsyncAndZip(arr, func)).map((pair) => pair[1]);
+  const zip = await mapSomeAsyncAndZip(arr, func);
+  return zip.map((pair) => pair[1]);
 }
 
 /**

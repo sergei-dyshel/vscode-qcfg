@@ -36,12 +36,12 @@ class TreeAction extends CliAction {
   // eslint-disable-next-line @typescript-eslint/no-empty-function,class-methods-use-this
   onDefineParameters() {}
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async onExecute() {
     console.log(`Parsing ${this.cli.filename}`);
     console.log(
       JSON.stringify(this.cli.tree.rootNode.toObject(), undefined, 2),
     );
-    return Promise.resolve();
   }
 }
 
@@ -116,5 +116,5 @@ async function main() {
   await new Cli().executeWithoutErrorHandling();
 }
 
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
+// eslint-disable-next-line @typescript-eslint/no-floating-promises, unicorn/prefer-top-level-await
 main().then(() => {});

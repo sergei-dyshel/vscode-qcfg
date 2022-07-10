@@ -71,9 +71,8 @@ async function backupPersistentState(scope: PersistentScope) {
   log.debug(`Backed up ${scope} persistent state to ${filename}`);
 
   // get list of all files in backup dir
-  const files = (await workspace.fs.readDirectory(Uri.file(backupDir))).filter(
-    ([_name, type_]) => type_ === FileType.File,
-  );
+  const directory = await workspace.fs.readDirectory(Uri.file(backupDir));
+  const files = directory.filter(([_name, type_]) => type_ === FileType.File);
 
   // sort by creation time
   const filesStat = await mapSomeAsyncAndZip(
@@ -109,10 +108,8 @@ async function restorePersistentState(scope: PersistentScope) {
   if (!selected) return;
 
   const backupFile = selected[0].fsPath;
-  const data = JSON.parse((await readFile(backupFile)).toString()) as Record<
-    string,
-    JsonTypes.Any
-  >;
+  const fileData = await readFile(backupFile);
+  const data = JSON.parse(fileData.toString()) as Record<string, JsonTypes.Any>;
 
   const qp = new PersistentStringQuickPick(
     'persistent.restoreBackup.' + scope,

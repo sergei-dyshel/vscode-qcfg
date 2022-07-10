@@ -1,5 +1,3 @@
-'use strict';
-
 import * as vscode from 'vscode';
 import { log } from '../../library/logging';
 import { parseNumber } from '../../library/stringUtils';

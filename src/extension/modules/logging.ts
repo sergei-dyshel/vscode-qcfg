@@ -1,5 +1,3 @@
-'use strict';
-
 import type * as treeSitter from 'tree-sitter';
 import type {
   ExtensionContext,

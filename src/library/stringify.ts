@@ -25,7 +25,7 @@ function stringifyObject(x: object | null): string {
   if (x instanceof Error) {
     return `${x.message}: ${x.name}`;
   }
-  if (x instanceof Array) {
+  if (Array.isArray(x)) {
     const arr = x;
     return '[ ' + arr.map((elem) => stringify(elem)).join(', ') + ' ]';
   }

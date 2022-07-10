@@ -189,6 +189,40 @@ const config = {
 
     // sometimes assigning to variable and returning it is convenient for debugging
     'sonarjs/prefer-immediate-return': off,
+
+    'unicorn/prevent-abbreviations': off,
+    'unicorn/filename-case': [
+      warn,
+      {
+        case: 'camelCase',
+      },
+    ],
+
+    // triggers on `return undefined;`
+    'unicorn/no-useless-undefined': off,
+
+    'unicorn/catch-error-name': [
+      warn,
+      {
+        name: 'err',
+      },
+    ],
+
+    // complains about passing functions to `map`
+    'unicorn/no-array-callback-reference': off,
+
+    // will refactor this one day
+    'unicorn/no-array-reduce': off,
+
+    // do not require sorted character classes
+    'unicorn/better-regex': [warn, { sortCharacterClasses: false }],
+
+    // do not enforce having group seprators
+    // (grepping for number will not work as expected)
+    'unicorn/numeric-separators-style': [
+      warn,
+      { onlyIfContainsSeparator: true },
+    ],
   },
 };
 

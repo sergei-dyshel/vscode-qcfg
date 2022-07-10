@@ -2,8 +2,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
 // @ts-check
 
-'use strict';
-
 // eslint-disable-next-line import/no-import-module-exports
 import path from 'path';
 // eslint-disable-next-line import/no-import-module-exports

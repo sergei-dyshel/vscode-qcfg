@@ -1,5 +1,3 @@
-'use strict';
-
 import type { ExtensionContext } from 'vscode';
 import { FileType, Uri, workspace } from 'vscode';
 import { assert } from '../../library/exception';
@@ -69,7 +67,7 @@ function expandTitle(root: string, title: string): string {
       { rootBase, rootDir1, rootDir2, rootDir3, folderName },
       true,
     );
-  } catch (_: unknown) {
+  } catch {
     return '';
   }
 }

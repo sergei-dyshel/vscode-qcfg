@@ -1,5 +1,3 @@
-'use strict';
-
 import type { Position, TextDocument, TextEditor } from 'vscode';
 import { Range } from 'vscode';
 
@@ -55,12 +53,12 @@ export function revealSelection(editor: TextEditor) {
 export function trimWhitespace(document: TextDocument, range: Range) {
   const text = document.getText(range);
   return new Range(
-    offsetPosition(document, range.start, text.length - text.trimLeft().length),
     offsetPosition(
       document,
-      range.end,
-      -(text.length - text.trimRight().length),
+      range.start,
+      text.length - text.trimStart().length,
     ),
+    offsetPosition(document, range.end, -(text.length - text.trimEnd().length)),
   );
 }
 

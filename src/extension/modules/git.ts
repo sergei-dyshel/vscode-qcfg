@@ -73,7 +73,8 @@ async function getInfo(editor: TextEditor) {
     '',
   );
 
-  const hash = (await repo.getHeadCommit()).sha();
+  const commit = await repo.getHeadCommit();
+  const hash = commit.sha();
   const file = nodejs.path.relative(repo.workdir(), document.fileName);
   const blame = await nodegit.Blame.file(repo, file);
   // getHunkByLine may return undefined if no hunk found
@@ -85,7 +86,7 @@ async function getInfo(editor: TextEditor) {
     line,
     hash,
     blameCommit,
-    shortHash: hash.substring(0, SHORT_SHA_LEN),
+    shortHash: hash.slice(0, SHORT_SHA_LEN),
   };
   try {
     const branch = await repo.getCurrentBranch();
@@ -102,20 +103,20 @@ async function getInfo(editor: TextEditor) {
         remote: await getRemoteInfo(repo, remoteName),
       };
       // eslint-disable-next-line no-empty
-    } catch (_: unknown) {}
+    } catch {}
     // eslint-disable-next-line no-empty
-  } catch (_: unknown) {}
+  } catch {}
   try {
     info.origin = await getRemoteInfo(repo, 'origin');
     // eslint-disable-next-line no-empty
-  } catch (_: unknown) {}
+  } catch {}
   return info;
 }
 
 async function dump() {
   const editor = getActiveTextEditor();
   const info = await getInfo(editor);
-  const infoStr = JSON.stringify(info, null /* replacer */, 4 /* space */);
+  const infoStr = JSON.stringify(info, undefined /* replacer */, 4 /* space */);
   log.info(infoStr);
   await window.showInformationMessage(infoStr);
 }
@@ -151,7 +152,7 @@ async function showWebLinks() {
     try {
       for (const cfgRemote of cfgEntry.remotes) {
         const regexp = new RegExp(cfgRemote);
-        if (!regexp.exec(remoteUrl)) continue;
+        if (!regexp.test(remoteUrl)) continue;
         for (const linkCfg of cfgEntry.links) {
           try {
             const title = expandTemplate(

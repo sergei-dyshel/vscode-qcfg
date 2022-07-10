@@ -8,11 +8,10 @@ import { Modules } from './module';
 const POLL_INTERVAL_MS = 3 * 60 * 1000; // 3 min
 
 async function getCurrentVersion(context: ExtensionContext) {
-  return (
-    await workspace.fs.stat(
-      Uri.file(context.extensionUri.fsPath + '/package.json'),
-    )
-  ).ctime;
+  const stat = await workspace.fs.stat(
+    Uri.file(context.extensionUri.fsPath + '/package.json'),
+  );
+  return stat.ctime;
 }
 
 async function run(context: ExtensionContext) {

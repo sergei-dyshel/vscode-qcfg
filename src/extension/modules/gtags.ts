@@ -1,5 +1,5 @@
+import * as readline from 'node:readline';
 import RE2 from 're2';
-import * as readline from 'readline';
 import * as shellQuote from 'shell-quote';
 import type {
   CancellationToken,
@@ -433,7 +433,7 @@ function activate(context: ExtensionContext) {
   handleAsyncStd(queue.add(updateDB, GTAGS_CHECK));
   setInterval(() => {
     handleAsyncStd(queue.add(updateDB, GTAGS_CHECK));
-  }, 30000);
+  }, 30_000);
   context.subscriptions.push(
     saveAll.onEvent(queue.queued(onSaveAll, 'save all')),
     languages.registerWorkspaceSymbolProvider(gtagsGlobalSymbolsProvider),

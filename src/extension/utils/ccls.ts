@@ -23,7 +23,7 @@ import { c2pTextDocumentPosition, p2cConverter } from './langClientConv';
 
 export namespace Ccls {
   export enum RefRole {
-    DECLARATION = 1 << 0,
+    DECLARATION = 0,
     DEFINITION = 1 << 1,
     REFERENCE = 1 << 2,
     READ = 1 << 3,

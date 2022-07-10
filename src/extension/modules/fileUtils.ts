@@ -1,5 +1,3 @@
-'use strict';
-
 import * as chokidar from 'chokidar';
 import * as glob from 'glob';
 import * as tempy from 'tempy';
@@ -25,7 +23,7 @@ export const globSync = glob.sync;
 export const globAsync: (
   pattern: string,
   options?: glob.IOptions,
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, unicorn/prefer-module
 ) => Promise<string[]> = nodejs.util.promisify(require('glob'));
 
 export function getTempFile() {

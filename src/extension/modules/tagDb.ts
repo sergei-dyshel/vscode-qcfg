@@ -1,5 +1,3 @@
-'use strict';
-
 import type { ExtensionContext } from 'vscode';
 import { workspace } from 'vscode';
 import { registerAsyncCommandWrapped } from './exception';

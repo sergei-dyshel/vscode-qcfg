@@ -1,5 +1,3 @@
-'use strict';
-
 import { Dictionary } from 'typescript-collections';
 import type {
   ExtensionContext,
@@ -107,7 +105,7 @@ export class TaskRun {
         case undefined:
         case TaskConfilictPolicy.ABORT_CURRENT:
           this.state = State.ABORTED;
-          throw Error(`Task "${this.task.name}" aborted`);
+          throw new Error(`Task "${this.task.name}" aborted`);
         case TaskConfilictPolicy.CANCEL_PREVIOUS:
           this.state = State.WAITING;
           await previous.cancel();
@@ -197,13 +195,12 @@ export class TaskRun {
       const { command, disposable } = registerSyncTemporaryCommand(() => {
         if (self.terminal) self.terminal.show();
       });
-      if (
+      self.status.text =
         self.task.scope &&
         self.task.scope !== TaskScope.Global &&
         self.task.scope !== TaskScope.Workspace
-      )
-        self.status.text = `$(tools)${self.task.name} (${self.task.scope.name})`;
-      else self.status.text = '$(tools)' + self.task.name;
+          ? `$(tools)${self.task.name} (${self.task.scope.name})`
+          : '$(tools)' + self.task.name;
       self.status.command = command;
       self.statusCmdDisposable = disposable;
       self.status.show();

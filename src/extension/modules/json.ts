@@ -1,5 +1,3 @@
-'use strict';
-
 import * as jsoncParser from 'jsonc-parser';
 import { Uri, workspace } from 'vscode';
 import * as nodejs from '../../library/nodejs';
@@ -34,8 +32,6 @@ export async function parseJsonFileAsync(
   path: string,
   options?: JsonParseOptions,
 ): Promise<unknown> {
-  return parseJson(
-    (await workspace.fs.readFile(Uri.file(path))).toString(),
-    options,
-  );
+  const fileData = await workspace.fs.readFile(Uri.file(path));
+  return parseJson(fileData.toString(), options);
 }

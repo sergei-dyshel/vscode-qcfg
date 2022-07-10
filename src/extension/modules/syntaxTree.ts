@@ -1,5 +1,3 @@
-'use strict';
-
 // eslint-disable-next-line @typescript-eslint/no-duplicate-imports
 import type {
   Event,

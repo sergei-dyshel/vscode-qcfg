@@ -1,5 +1,3 @@
-'use strict';
-
 import type { SyntaxNode } from 'tree-sitter';
 import type {
   ExtensionContext,
