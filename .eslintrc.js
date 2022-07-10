@@ -8,10 +8,11 @@ const always = 'always';
  */
 const config = {
   parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint', 'import', 'only-warn', 'sonarjs'],
+  plugins: ['@typescript-eslint', 'import', 'only-warn', 'sonarjs', 'unicorn'],
   extends: [
     'airbnb',
     'plugin:sonarjs/recommended',
+    'plugin:unicorn/recommended',
     'eslint:recommended',
     'plugin:import/recommended',
     'plugin:@typescript-eslint/eslint-recommended',
