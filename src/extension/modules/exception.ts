@@ -148,10 +148,11 @@ export function listenAsyncWrapped<T>(
 /**
  * Evaluate promise and handle async error with {@link stdErrorHandler}
  */
-export function handleAsyncStd<T>(promise: Thenable<T>): void {
-  promise.then(undefined, (err) => {
-    stdErrorHandler(err);
-  });
+export function handleAsyncStd(promise: unknown): void {
+  if (promise instanceof Promise)
+    promise.then(undefined, (err) => {
+      stdErrorHandler(err);
+    });
 }
 
 /**
