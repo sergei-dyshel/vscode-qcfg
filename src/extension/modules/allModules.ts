@@ -9,6 +9,7 @@ import * as codeActions from './codeActions';
 import * as colorTheme from './colorTheme';
 import * as commandUtils from './commandUtils';
 import * as config from './config';
+import * as configWatcher from './configWatcher';
 import * as ctags from './ctags';
 import * as diagnostics from './diagnostics';
 import * as documentCache from './documentCache';
@@ -112,4 +113,5 @@ export const ALL_MODULES = {
   searchTasks,
   quickPickDemo,
   persistentState,
+  configWatcher,
 };

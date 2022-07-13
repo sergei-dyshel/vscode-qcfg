@@ -28,5 +28,6 @@ export interface PackageJson {
     keybindings?: KeyBinding[];
     themes?: Theme[];
     languages?: Language[];
+    configuration?: { properties: Record<string, unknown> };
   };
 }
