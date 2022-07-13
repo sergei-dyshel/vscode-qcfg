@@ -1,7 +1,18 @@
 {
   "contributes": {
     "configuration": {
-      "properties": {}
+      "properties": {
+        "qcfg.autoResize.steps": {
+          "type": "number",
+          "description": "Number of steps by which to auto-resize active editor",
+          "default": 1
+        },
+        "qcfg.autoResize.enabled": {
+          "type": "boolean",
+          "description": "Whether auto-resize enabled",
+          "default": false
+        }
+      }
     }
   }
 }

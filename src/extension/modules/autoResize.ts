@@ -1,39 +1,25 @@
-import type {
-  ConfigurationChangeEvent,
-  ExtensionContext,
-  TextEditor,
-  ViewColumn,
-} from 'vscode';
-import { commands, window, workspace } from 'vscode';
+import type { ExtensionContext, TextEditor, ViewColumn } from 'vscode';
+import { commands, window } from 'vscode';
 import { log } from '../../library/logging';
-import {
-  handleAsyncStd,
-  listenAsyncWrapped,
-  registerAsyncCommandWrapped,
-} from './exception';
+import { watchConfiguration } from './configWatcher';
+import { listenAsyncWrapped, registerAsyncCommandWrapped } from './exception';
 import { Modules } from './module';
 
-let featureEnabled: boolean;
+let featureEnabled: boolean | undefined;
+let resizeSteps: number;
 let prevActiveViewColumn: ViewColumn | undefined;
 
 async function evenEditorWidths() {
   return commands.executeCommand('workbench.action.evenEditorWidths');
 }
 
-async function updateEnabled(toggle = false) {
-  featureEnabled = toggle
-    ? !featureEnabled
-    : workspace
-        .getConfiguration()
-        .get<boolean>('qcfg.autoResize.enabled', true);
+async function updateEnabled(enabled?: boolean) {
+  if (featureEnabled === !!enabled) return;
+  featureEnabled = !!enabled;
   log.info('Auto-resize', featureEnabled ? 'enabled' : 'disabled');
   await (featureEnabled
     ? onDidChangeActiveTextEditor(window.activeTextEditor)
     : evenEditorWidths());
-}
-
-async function onDidChangeConfiguration(event: ConfigurationChangeEvent) {
-  if (event.affectsConfiguration('qcfg.autoResize')) await updateEnabled();
 }
 
 async function onDidChangeActiveTextEditor(editor?: TextEditor) {
@@ -50,10 +36,7 @@ async function onDidChangeActiveTextEditor(editor?: TextEditor) {
   ) {
     prevActiveViewColumn = editor.viewColumn;
     await evenEditorWidths();
-    const steps = workspace
-      .getConfiguration()
-      .get<number>('qcfg.autoResize.steps', 1);
-    for (let i = 0; i < steps; i++)
+    for (let i = 0; i < resizeSteps; i++)
       await commands.executeCommand('workbench.action.increaseViewWidth');
   }
 }
@@ -64,15 +47,14 @@ function activate(context: ExtensionContext) {
       window.onDidChangeActiveTextEditor,
       onDidChangeActiveTextEditor,
     ),
-    listenAsyncWrapped(
-      workspace.onDidChangeConfiguration,
-      onDidChangeConfiguration,
-    ),
+    watchConfiguration('qcfg.autoResize.enabled', updateEnabled),
+    watchConfiguration('qcfg.autoResize.steps', (steps) => {
+      resizeSteps = steps!;
+    }),
     registerAsyncCommandWrapped('qcfg.autoResize.toggle', async () =>
-      updateEnabled(true /* toggle */),
+      updateEnabled(!featureEnabled),
     ),
   );
-  handleAsyncStd(updateEnabled());
 }
 
 Modules.register(activate);
