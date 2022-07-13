@@ -1,7 +1,7 @@
 deps := common tasks alternate treeSitter autoSync editing treeView \
 	relativeJumps navigation multipleSelection macTermBindings formatting \
 	plistOld search peekOutline editorGroups langClient git misc selection \
-	configRules notes diagnostics autoResize internal
+	configRules notes diagnostics autoResize internal config
 deps_files := $(patsubst %,$(d)/%.json,$(deps))
 json_merger := npx json-merger --pretty \
 	--error-on-file-not-found --error-on-ref-not-found --output
@@ -18,6 +18,9 @@ $(d)/configRules.schema.json: src/extension/modules/configRules.model.ts
 
 $(d)/configRules.json: $(d)/configRules.merge.json $(d)/configRules.schema.json
 	$(json_merger) $@ $<
+
+$(d)/config.json: src/tools/generateConfig.ts src/library/config.ts
+	npx ts-node $^ Config.All $@
 
 package.json: $(deps_files)
 	$(my_merger) $@ $^
