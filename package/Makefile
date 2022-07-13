@@ -21,6 +21,7 @@ $(d)/configRules.json: $(d)/configRules.merge.json $(d)/configRules.schema.json
 
 $(d)/config.json: src/tools/generateConfig.ts src/library/config.ts
 	npx ts-node $^ Config.All $@
+	npx prettier --write $@
 
 package.json: $(deps_files)
 	$(my_merger) $@ $^

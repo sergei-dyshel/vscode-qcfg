@@ -3,6 +3,7 @@ import { RelativePattern, Uri, window, workspace } from 'vscode';
 import { assertNotNull } from '../../library/exception';
 import * as nodejs from '../../library/nodejs';
 import { baseNameNoExt, stripExt } from '../../library/pathUtils';
+import { getConfiguration } from '../utils/configuration';
 import { getDocumentWorkspaceFolder } from '../utils/document';
 import { GenericQuickPick } from '../utils/quickPick';
 import { registerAsyncCommandWrapped } from './exception';
@@ -10,17 +11,13 @@ import { fileExists } from './fileUtils';
 import { Modules } from './module';
 import { getActiveTextEditor } from './utils';
 
-type Mapping = Record<string, string[]>;
-
 async function switchToAlternate() {
   const editor = getActiveTextEditor();
   const document = editor.document;
   const filePath = document.fileName;
   const relPath = workspace.asRelativePath(document.fileName);
   const ext = nodejs.path.extname(filePath);
-  const mapping: Mapping = workspace
-    .getConfiguration('qcfg.alternate')
-    .get('mapping', {});
+  const mapping = getConfiguration().getNotNull('qcfg.alternate.mapping');
   const altExts = mapping[ext];
   assertNotNull(altExts, `No alternate mapping configured for ${ext}`);
   const altFiles = altExts.map((altExt) => stripExt(filePath) + altExt);

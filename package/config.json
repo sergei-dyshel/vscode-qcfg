@@ -11,6 +11,17 @@
           "type": "boolean",
           "description": "Whether auto-resize enabled",
           "default": false
+        },
+        "qcfg.alternate.mapping": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "description": "Mapping for alternate (header/source) switch.\n\nFor each extension specify list of alternative extension.",
+          "default": {}
         }
       }
     }
