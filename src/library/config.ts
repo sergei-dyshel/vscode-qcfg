@@ -9,5 +9,17 @@ export namespace Config {
    *
    * Used for auto-generation of `configuration` section of `package.json`.
    */
-  export interface All {}
+  export interface All {
+    /**
+     * Number of steps by which to auto-resize active editor
+     * @default 1
+     */
+    'qcfg.autoResize.steps': number;
+
+    /**
+     * Whether auto-resize enabled
+     * @default false
+     */
+    'qcfg.autoResize.enabled': boolean;
+  }
 }
