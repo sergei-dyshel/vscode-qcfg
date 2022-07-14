@@ -1,11 +1,13 @@
 import * as nodegit from 'nodegit';
 import type { ExtensionContext, TextEditor } from 'vscode';
-import { env, Uri, window, workspace } from 'vscode';
+import { env, Uri, window } from 'vscode';
+import type { Config } from '../../library/config';
 import { assert, assertNotNull } from '../../library/exception';
 import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
 import { isSubPath } from '../../library/pathUtils';
 import { expandTemplate } from '../../library/stringUtils';
+import { getConfiguration } from '../utils/configuration';
 import { PersistentGenericQuickPick } from '../utils/quickPickPersistent';
 import { registerAsyncCommandWrapped } from './exception';
 import { Modules } from './module';
@@ -35,18 +37,8 @@ interface Info {
   origin?: RemoteInfo;
 }
 
-interface CfgLink {
-  title: string;
-  url: string;
-}
-
-interface Link extends CfgLink {
+interface Link extends Config.Git.Link {
   tag: string;
-}
-
-interface ConfigEntry {
-  remotes: string[];
-  links: CfgLink[];
 }
 
 async function getRemoteInfo(repo: nodegit.Repository, name: string) {
@@ -122,9 +114,7 @@ async function dump() {
 }
 
 async function showWebLinks() {
-  const config = workspace
-    .getConfiguration()
-    .get('qcfg.git.web', []) as ConfigEntry[];
+  const config = getConfiguration().getNotNull('qcfg.git.web');
   assert(config.length > 0, 'Git web links not configured');
 
   const editor = getActiveTextEditor();

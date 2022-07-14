@@ -9,43 +9,6 @@
         "command": "qcfg.git.weblinks",
         "title": "qcfg: Git - Web links"
       }
-    ],
-    "configuration": {
-      "properties": {
-        "qcfg.git.web": {
-          "type": "array",
-          "description": "List of rules to open current line in Git Web UI",
-          "items": {
-            "type": "object",
-            "properties": {
-              "remotes": {
-                "type": "array",
-                "description": "List of remote patterns",
-                "items": {
-                  "type": "string",
-                  "description": "Regexp to match against remote URL"
-                }
-              },
-              "links": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "title": {
-                      "type": "string",
-                      "description": "Description of Web link"
-                    },
-                    "url": {
-                      "type": "string",
-                      "description": "Web url"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+    ]
   }
 }

@@ -48,25 +48,26 @@ export namespace Config {
     /** Path of notes directory relative to workspace folder root */
     'qcfg.newNote.path': string;
 
-    //   'qcfg.git.web': Git.Entry;
+    /**
+     * List of rules to open current line in Git Web UI
+     * @default []
+     */
+    'qcfg.git.web': Git.Entry[];
   }
 
-  // export namespace Git {
-  //   export interface Link {
-  //     /** Description of Web link */
-  //     title: string;
-  //     /** Web url */
-  //     url: string;
-  //   }
+  export namespace Git {
+    export interface Link {
+      /** Description of Web link */
+      title: string;
+      /** Web url */
+      url: string;
+    }
 
-  //   /**
-  //    * List of rules to open current line in Git Web UI
-  //    */
-  //   export interface Entry {
-  //     /** List of remote patterns */
-  //     remotes: string[];
-  //     /** Description of Web link */
-  //     links: Link[];
-  //   }
-  // }
+    export interface Entry {
+      /** List of remote patterns */
+      remotes: string[];
+      /** Description of Web link */
+      links: Link[];
+    }
+  }
 }

@@ -2177,39 +2177,6 @@
           "default": true,
           "description": "Add ccls provider for call hierarchy"
         },
-        "qcfg.git.web": {
-          "type": "array",
-          "description": "List of rules to open current line in Git Web UI",
-          "items": {
-            "type": "object",
-            "properties": {
-              "remotes": {
-                "type": "array",
-                "description": "List of remote patterns",
-                "items": {
-                  "type": "string",
-                  "description": "Regexp to match against remote URL"
-                }
-              },
-              "links": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "title": {
-                      "type": "string",
-                      "description": "Description of Web link"
-                    },
-                    "url": {
-                      "type": "string",
-                      "description": "Web url"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
         "qcfg.configRules": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "definitions": {},
@@ -2313,6 +2280,62 @@
         "qcfg.autoSync.command": {
           "type": "string",
           "description": "AutoSync command"
+        },
+        "qcfg.autoMarkdownPreview": {
+          "type": "boolean",
+          "description": "Open preview automatically when opening markdown documents"
+        },
+        "qcfg.newNote.folder": {
+          "type": "string",
+          "description": "Workspace folder name for creating new notes"
+        },
+        "qcfg.newNote.path": {
+          "type": "string",
+          "description": "Path of notes directory relative to workspace folder root"
+        },
+        "qcfg.git.web": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "remotes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "List of remote patterns"
+              },
+              "links": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "title": {
+                      "type": "string",
+                      "description": "Description of Web link"
+                    },
+                    "url": {
+                      "type": "string",
+                      "description": "Web url"
+                    }
+                  },
+                  "required": [
+                    "title",
+                    "url"
+                  ],
+                  "additionalProperties": false
+                },
+                "description": "Description of Web link"
+              }
+            },
+            "required": [
+              "remotes",
+              "links"
+            ],
+            "additionalProperties": false
+          },
+          "description": "List of rules to open current line in Git Web UI",
+          "default": []
         }
       }
     },
