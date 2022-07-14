@@ -2133,15 +2133,6 @@
     "configuration": {
       "title": "Qcfg configuration",
       "properties": {
-        "qcfg.log.level": {
-          "type": "string",
-          "description": "Log level",
-          "enum": [
-            "debug",
-            "info",
-            "warning"
-          ]
-        },
         "qcfg.configDir.global": {
           "type": "string",
           "description": "Global configuration directory for vscode-qcfg specific features (defaults to HOME directory)",
