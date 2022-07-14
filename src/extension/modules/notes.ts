@@ -3,21 +3,20 @@ import type { ExtensionContext, TextEditor } from 'vscode';
 import { commands, Uri, ViewColumn, window, workspace } from 'vscode';
 import { assertNotNull } from '../../library/exception';
 import * as nodejs from '../../library/nodejs';
+import { getConfiguration } from '../utils/configuration';
 import { getWorkspaceRoot } from '../utils/workspace';
+import { CachedConfiguration } from './configWatcher';
 import { listenAsyncWrapped, registerAsyncCommandWrapped } from './exception';
 import { getWorkspaceFolderByName } from './fileUtils';
 import { Modules } from './module';
 import { getVisibleEditor } from './windowUtils';
 
+const autoMarkdownPreview = new CachedConfiguration('qcfg.autoMarkdownPreview');
+
 async function onEditorChanged(editor: TextEditor | undefined) {
   if (!editor) return;
 
-  if (
-    !workspace
-      .getConfiguration(undefined, editor.document)
-      .get<boolean>('qcfg.autoMarkdownPreview', false)
-  )
-    return;
+  if (!autoMarkdownPreview.value) return;
 
   if (editor.document.languageId !== 'markdown') return;
 
@@ -32,13 +31,13 @@ async function onEditorChanged(editor: TextEditor | undefined) {
 }
 
 async function newNote() {
-  const config = workspace.getConfiguration();
+  const config = getConfiguration();
 
   let rootPath = getWorkspaceRoot();
   assertNotNull(rootPath, 'No workspace folder is opened');
   if ((workspace.workspaceFolders?.length ?? 1) > 1) {
     // multiple workspace folders
-    const folderName = config.get<string>('qcfg.newNote.folder');
+    const folderName = config.get('qcfg.newNote.folder');
     assertNotNull(
       folderName,
       `"qcfg.newNote.folder" not defined for multi-folder workspace`,
@@ -48,7 +47,7 @@ async function newNote() {
     rootPath = folder.uri.fsPath;
   }
 
-  const path = config.get<string>('qcfg.newNote.path');
+  const path = config.get('qcfg.newNote.path');
   assertNotNull(path, `"qcfg.newNote.path" not defined`);
   const fileName = luxon.DateTime.now().toFormat('yyyy-MM-dd HH-mm');
   const newFile = Uri.parse(
@@ -63,6 +62,7 @@ async function newNote() {
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
     listenAsyncWrapped(window.onDidChangeActiveTextEditor, onEditorChanged),
+    autoMarkdownPreview.register(),
     registerAsyncCommandWrapped('qcfg.newNote', newNote),
   );
 }

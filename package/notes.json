@@ -5,22 +5,6 @@
         "command": "qcfg.newNote",
         "title": "qcfg: New note"
       }
-    ],
-    "configuration": {
-      "properties": {
-        "qcfg.autoMarkdownPreview": {
-          "type": "boolean",
-          "description": "Open preview automatically when opening markdown documents"
-        },
-        "qcfg.newNote.folder": {
-          "type": "string",
-          "description": "Workspace folder name for creating new notes"
-        },
-        "qcfg.newNote.path": {
-          "type": "string",
-          "description": "Path of notes directory relative to workspace folder root"
-        }
-      }
-    }
+    ]
   }
 }
