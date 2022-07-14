@@ -30,14 +30,14 @@ export namespace Config {
      */
     'qcfg.alternate.mapping': Record<string, string[]>;
 
-    //   /**
-    //    * AutoSync enabled on start
-    //    * @default false
-    //    */
-    //   'qcfg.autoSync.enabled': boolean;
+    /**
+     * AutoSync enabled on start
+     * @default false
+     */
+    'qcfg.autoSync.enabled': boolean;
 
-    //   /** AutoSync command */
-    //   'qcfg.autoSync.command': string;
+    /** AutoSync command */
+    'qcfg.autoSync.command': string;
 
     //   'qcfg.temp': Record<string, string>;
 

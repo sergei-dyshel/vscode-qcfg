@@ -3,7 +3,9 @@ import { window, workspace } from 'vscode';
 import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
 import { setTimeoutPromise } from '../../library/nodeUtils';
+import { getConfiguration } from '../utils/configuration';
 import { setStatusBarErrorBackground } from '../utils/statusBar';
+import { watchConfiguration } from './configWatcher';
 import { registerSyncCommandWrapped } from './exception';
 import { sendDidSaveToLangClients } from './langClient';
 import { Modules } from './module';
@@ -49,9 +51,7 @@ function toggle() {
 async function onSaveAll(docs: saveAll.DocumentsInFolder) {
   if (state === State.OFF) return;
 
-  const command = workspace
-    .getConfiguration('qcfg')
-    .get<string>('autoSync.command');
+  const command = getConfiguration().get('qcfg.autoSync.command');
 
   if (!command) return;
 
@@ -99,13 +99,11 @@ function activate(context: ExtensionContext) {
   status = window.createStatusBarItem();
   status.command = 'qcfg.autoSync.toggle';
 
-  state = workspace
-    .getConfiguration('qcfg')
-    .get<boolean>('autoSync.enabled', false)
-    ? State.ON
-    : State.OFF;
-  setStatusBar();
   context.subscriptions.push(
+    watchConfiguration('qcfg.autoSync.enabled', (enabled) => {
+      state = enabled ? State.ON : State.OFF;
+      setStatusBar();
+    }),
     registerSyncCommandWrapped('qcfg.autoSync.toggle', toggle),
     saveAll.onEvent(onSaveAll),
   );
