@@ -22,6 +22,15 @@
           },
           "description": "Mapping for alternate (header/source) switch.\n\nFor each extension specify list of alternative extension.",
           "default": {}
+        },
+        "qcfg.autoSync.enabled": {
+          "type": "boolean",
+          "description": "AutoSync enabled on start",
+          "default": false
+        },
+        "qcfg.autoSync.command": {
+          "type": "string",
+          "description": "AutoSync command"
         }
       }
     }
