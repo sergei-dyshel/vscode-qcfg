@@ -25,7 +25,8 @@ export function watchConfiguration<
   scope?: ConfigurationScope,
 ): DisposableLike {
   const config = getConfiguration(scope);
-  handleAsyncStd(callback(config.get(section), config));
+  const value: V | undefined = config.get(section);
+  handleAsyncStd(callback(value, config));
   return watchers.get(scope).pushDisposable({ section, callback });
 }
 
@@ -52,6 +53,38 @@ function onDidChangeConfiguration(event: ConfigurationChangeEvent) {
       if (event.affectsConfiguration(watcher.section, scope))
         handleAsyncStd(watcher.callback(config.get(watcher.section), config));
     }
+  }
+}
+
+/**
+ * Holds value for specific configuration section and updates it when
+ * configuration is updated.
+ *
+ * Should be used instead of {@link getConfiguration} if frequently accessed.
+ */
+export class CachedConfiguration<
+  K extends keyof Config.All,
+  V extends Config.All[K] = Config.All[K],
+> {
+  private _value: V | undefined;
+
+  get value() {
+    return this._value;
+  }
+
+  constructor(
+    private readonly section: K,
+    private readonly scope?: ConfigurationScope,
+  ) {}
+
+  register(): DisposableLike {
+    return watchConfiguration(
+      this.section,
+      (value: V | undefined) => {
+        this._value = value;
+      },
+      this.scope,
+    );
   }
 }
 
