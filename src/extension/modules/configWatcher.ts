@@ -7,6 +7,7 @@ import { workspace } from 'vscode';
 import type { Config } from '../../library/config';
 import type { DisposableLike } from '../../library/disposable';
 import { ArrayOfDisposables } from '../../library/disposable';
+import { log } from '../../library/logging';
 import { DefaultMap } from '../../library/tsUtils';
 import type { Configuration } from '../utils/configuration';
 import { getConfiguration } from '../utils/configuration';
@@ -26,6 +27,7 @@ export function watchConfiguration<
 ): DisposableLike {
   const config = getConfiguration(scope);
   const value: V | undefined = config.get(section);
+  log.debug(`${section}: initial value is`, value);
   handleAsyncStd(callback(value, config));
   return watchers.get(scope).pushDisposable({ section, callback });
 }
@@ -50,8 +52,11 @@ function onDidChangeConfiguration(event: ConfigurationChangeEvent) {
   for (const [scope, scopeWatchers] of watchers) {
     const config = getConfiguration(scope);
     for (const watcher of scopeWatchers) {
-      if (event.affectsConfiguration(watcher.section, scope))
-        handleAsyncStd(watcher.callback(config.get(watcher.section), config));
+      if (event.affectsConfiguration(watcher.section, scope)) {
+        const value = config.get(watcher.section);
+        log.debug(`${watcher.section}: value changed to`, value);
+        handleAsyncStd(watcher.callback(value, config));
+      }
     }
   }
 }
