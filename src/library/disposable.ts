@@ -47,11 +47,12 @@ export class DisposableCollection implements DisposableLike {
  * which can be used to remove the item from array.
  */
 export class ArrayOfDisposables<T> extends Array<T> {
-  pushDisposable(item: T): DisposableLike {
+  pushDisposable(item: T, onDispose?: () => void): DisposableLike {
     this.push(item);
     return {
       dispose: () => {
         assert(this.removeFirst(item), 'Can not find callback on dispose');
+        if (onDispose) onDispose();
       },
     };
   }

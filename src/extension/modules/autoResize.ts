@@ -1,13 +1,13 @@
 import type { ExtensionContext, TextEditor, ViewColumn } from 'vscode';
 import { commands, window } from 'vscode';
 import { log } from '../../library/logging';
-import { watchConfiguration } from './configWatcher';
+import { CachedConfiguration, watchConfiguration } from './configWatcher';
 import { listenAsyncWrapped, registerAsyncCommandWrapped } from './exception';
 import { Modules } from './module';
 
 let featureEnabled: boolean | undefined;
-let resizeSteps: number;
 let prevActiveViewColumn: ViewColumn | undefined;
+const resizeSteps = new CachedConfiguration('qcfg.autoResize.steps');
 
 async function evenEditorWidths() {
   return commands.executeCommand('workbench.action.evenEditorWidths');
@@ -36,7 +36,7 @@ async function onDidChangeActiveTextEditor(editor?: TextEditor) {
   ) {
     prevActiveViewColumn = editor.viewColumn;
     await evenEditorWidths();
-    for (let i = 0; i < resizeSteps; i++)
+    for (let i = 0; i < resizeSteps.value!; i++)
       await commands.executeCommand('workbench.action.increaseViewWidth');
   }
 }
@@ -48,9 +48,7 @@ function activate(context: ExtensionContext) {
       onDidChangeActiveTextEditor,
     ),
     watchConfiguration('qcfg.autoResize.enabled', updateEnabled),
-    watchConfiguration('qcfg.autoResize.steps', (steps) => {
-      resizeSteps = steps!;
-    }),
+    resizeSteps.register(),
     registerAsyncCommandWrapped('qcfg.autoResize.toggle', async () =>
       updateEnabled(!featureEnabled),
     ),
