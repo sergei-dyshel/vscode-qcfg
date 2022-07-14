@@ -356,7 +356,7 @@
     "ifdef-loader": "^2.1.5",
     "json-merger": "^1.1.9",
     "prettier": "^2.6.2",
-    "ts-json-schema-generator": "^0.77.0",
+    "ts-json-schema-generator": "^1.0.0",
     "ts-loader": "^9.3.0",
     "ts-node": "^10.8.1",
     "ts-prune": "^0.8.4",
