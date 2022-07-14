@@ -81,6 +81,11 @@
           },
           "description": "List of rules to open current line in Git Web UI",
           "default": []
+        },
+        "qcfg.remote.setDefault": {
+          "type": "boolean",
+          "description": "Per-workspace/folder setting to set it as default remote server",
+          "default": false
         }
       }
     }
