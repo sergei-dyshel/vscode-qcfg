@@ -39,11 +39,6 @@ export namespace Config {
     /** AutoSync command */
     'qcfg.autoSync.command': string;
 
-    //   'qcfg.temp': Record<string, string>;
-
-    //   /** Log level */
-    //   'qcfg.log.level': 'debug' | 'info' | 'warning';
-
     //   /** Open preview automatically when opening markdown documents */
     //   'qcfg.autoMarkdownPreview': boolean;
     //   /** Workspace folder name for creating new notes */
