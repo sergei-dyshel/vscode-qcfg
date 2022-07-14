@@ -39,12 +39,14 @@ export namespace Config {
     /** AutoSync command */
     'qcfg.autoSync.command': string;
 
-    //   /** Open preview automatically when opening markdown documents */
-    //   'qcfg.autoMarkdownPreview': boolean;
-    //   /** Workspace folder name for creating new notes */
-    //   'qcfg.newNote.folder': string;
-    //   /** Path of notes directory relative to workspace folder root */
-    //   'qcfg.newNote.path': string;
+    /** Open preview automatically when opening markdown documents */
+    'qcfg.autoMarkdownPreview': boolean;
+
+    /** Workspace folder name for creating new notes */
+    'qcfg.newNote.folder': string;
+
+    /** Path of notes directory relative to workspace folder root */
+    'qcfg.newNote.path': string;
 
     //   'qcfg.git.web': Git.Entry;
   }
