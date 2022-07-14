@@ -194,10 +194,6 @@
           "description": "Workspace configuration direcotry for vsdode-qcfg specific features, relative to workspace file's directory or the only folder by default",
           "default": "."
         },
-        "qcfg.remote.setDefault": {
-          "type": "boolean",
-          "description": "Per-workspace/folder setting to set it as default remote server"
-        },
         "qcfg.gtags.workspaceSymbols": {
           "type": "boolean",
           "description": "Use gtags as workspace symbols provider",

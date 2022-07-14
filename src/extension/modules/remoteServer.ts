@@ -7,6 +7,7 @@ import { PORT_RANGE } from '../../library/remoteClient';
 import { stringify } from '../../library/stringify';
 import { mapObjectValues } from '../../library/tsUtils';
 import { openFolder } from '../utils/window';
+import { watchConfiguration } from './configWatcher';
 import {
   handleAsyncStd,
   handleErrors,
@@ -121,14 +122,13 @@ function activate(context: ExtensionContext) {
   });
 
   context.subscriptions.push(
+    // eslint-disable-next-line sonarjs/no-duplicate-string
     registerSyncCommandWrapped('qcfg.remote.setDefault', setDefaultServer),
+    watchConfiguration('qcfg.remote.setDefault', (isSet) => {
+      if (isSet) setDefaultServer();
+      else lastSetDefaultTimestamp = 0;
+    }),
   );
-
-  if (
-    workspace.getConfiguration().get<boolean>('qcfg.remote.setDefault', false)
-  ) {
-    setDefaultServer();
-  }
 }
 
 Modules.register(activate);

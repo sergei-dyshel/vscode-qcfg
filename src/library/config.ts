@@ -53,6 +53,12 @@ export namespace Config {
      * @default []
      */
     'qcfg.git.web': Git.Entry[];
+
+    /**
+     * Per-workspace/folder setting to set it as default remote server
+     * @default false
+     */
+    'qcfg.remote.setDefault': boolean;
   }
 
   export namespace Git {
