@@ -7,6 +7,7 @@ import { workspace } from 'vscode';
 import type { Config } from '../../library/config';
 import type { DisposableLike } from '../../library/disposable';
 import { ArrayOfDisposables } from '../../library/disposable';
+import { assert } from '../../library/exception';
 import { log } from '../../library/logging';
 import { DefaultMap } from '../../library/tsUtils';
 import type { Configuration } from '../utils/configuration';
@@ -24,12 +25,13 @@ export function watchConfiguration<
   section: K,
   callback: WatcherCallback<V>,
   scope?: ConfigurationScope,
+  onDispose?: () => void,
 ): DisposableLike {
   const config = getConfiguration(scope);
   const value: V | undefined = config.get(section);
   log.debug(`${section}: initial value is`, value);
   handleAsyncStd(callback(value, config));
-  return watchers.get(scope).pushDisposable({ section, callback });
+  return watchers.get(scope).pushDisposable({ section, callback }, onDispose);
 }
 
 type WatcherCallback<V> = (
@@ -72,8 +74,13 @@ export class CachedConfiguration<
   V extends Config.All[K] = Config.All[K],
 > {
   private _value: V | undefined;
+  private registered = false;
 
   get value() {
+    assert(
+      this.registered,
+      'Accessing value of unregistered CachedConfiguration',
+    );
     return this._value;
   }
 
@@ -83,12 +90,16 @@ export class CachedConfiguration<
   ) {}
 
   register(): DisposableLike {
+    this.registered = true;
     return watchConfiguration(
       this.section,
       (value: V | undefined) => {
         this._value = value;
       },
       this.scope,
+      () => {
+        this.registered = false;
+      },
     );
   }
 }
