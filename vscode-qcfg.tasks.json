@@ -8,6 +8,7 @@
     "command": "make install",
     "type": "terminal"
   },
+  "make package.json": "make package.json",
   "update common.json": "bcompare package.json package/common.json",
   "Format all typescript sources": "npx prettier --write src/**/*.ts",
   "Reload all windows": "q-vscode-cli -i all reload"
