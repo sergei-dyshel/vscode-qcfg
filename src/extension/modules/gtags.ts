@@ -31,6 +31,7 @@ import {
   parseNumber,
   splitWithRemainder,
 } from '../../library/stringUtils';
+import { getConfiguration } from '../utils/configuration';
 import { PromiseQueue } from './async';
 import {
   handleAsyncStd,
@@ -295,9 +296,7 @@ function tag2Symbol(tag: TagInfo, gtagsDir: string): SymbolInformation {
 const gtagsGlobalSymbolsProvider: WorkspaceSymbolProvider = {
   async provideWorkspaceSymbols(query: string, token: CancellationToken) {
     const editor = getActiveTextEditor();
-    if (
-      !workspace.getConfiguration().get<boolean>('qcfg.gtags.workspaceSymbols')
-    ) {
+    if (!getConfiguration().get('qcfg.gtags.workspaceSymbols')) {
       return;
     }
 

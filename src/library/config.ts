@@ -59,6 +59,12 @@ export namespace Config {
      * @default false
      */
     'qcfg.remote.setDefault': boolean;
+
+    /**
+     * Use gtags as workspace symbols provider
+     * @default false
+     */
+    'qcfg.gtags.workspaceSymbols': boolean;
   }
 
   export namespace Git {

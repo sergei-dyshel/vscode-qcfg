@@ -86,6 +86,11 @@
           "type": "boolean",
           "description": "Per-workspace/folder setting to set it as default remote server",
           "default": false
+        },
+        "qcfg.gtags.workspaceSymbols": {
+          "type": "boolean",
+          "description": "Use gtags as workspace symbols provider",
+          "default": false
         }
       }
     }
