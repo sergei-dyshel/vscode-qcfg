@@ -2143,11 +2143,6 @@
           "description": "Workspace configuration direcotry for vsdode-qcfg specific features, relative to workspace file's directory or the only folder by default",
           "default": "."
         },
-        "qcfg.notification.timeoutMs": {
-          "type": "number",
-          "default": 3000,
-          "description": "Default timeout (in milliseconds) for notifications"
-        },
         "qcfg.langClient.remote": {
           "type": "boolean",
           "default": false,
@@ -2337,6 +2332,11 @@
           "type": "boolean",
           "description": "Use gtags as workspace symbols provider",
           "default": false
+        },
+        "qcfg.notification.timeoutMs": {
+          "type": "number",
+          "description": "Default timeout (in milliseconds) for notifications",
+          "default": 3000
         }
       }
     },
