@@ -1,7 +1,8 @@
 import type { ExtensionContext, Progress } from 'vscode';
-import { commands, ProgressLocation, window, workspace } from 'vscode';
+import { commands, ProgressLocation, window } from 'vscode';
 import type { DisposableLike } from '../../library/disposable';
 import { setTimeoutPromise } from '../../library/nodeUtils';
+import { getConfiguration } from '../utils/configuration';
 import { Modules } from './module';
 
 /**
@@ -27,9 +28,7 @@ export class NotificationMessage implements DisposableLike {
 
     const promises = [this.cancelPromise];
     if (timeoutMs === undefined)
-      timeoutMs = workspace
-        .getConfiguration()
-        .get<number>('qcfg.notification.timeoutMs', 0);
+      timeoutMs = getConfiguration().getNotNull('qcfg.notification.timeoutMs');
     if (timeoutMs !== 0) promises.push(setTimeoutPromise(timeoutMs));
 
     this.promise = window.withProgress(

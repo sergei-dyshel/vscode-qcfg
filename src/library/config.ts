@@ -65,6 +65,12 @@ export namespace Config {
      * @default false
      */
     'qcfg.gtags.workspaceSymbols': boolean;
+
+    /**
+     * Default timeout (in milliseconds) for notifications
+     * @default 3000
+     */
+    'qcfg.notification.timeoutMs': number;
   }
 
   export namespace Git {
