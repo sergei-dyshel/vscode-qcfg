@@ -1,9 +1,12 @@
 import type { ConfigurationChangeEvent, ExtensionContext } from 'vscode';
-import { Disposable, workspace } from 'vscode';
+import { workspace } from 'vscode';
 import type { DisposableLike } from '../../library/disposable';
+import { DisposableCollection } from '../../library/disposable';
 import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
 import { expandPath } from '../../library/pathUtils';
+import { getConfiguration } from '../utils/configuration';
+import { watchConfiguration } from './configWatcher';
 import { listenWrapped } from './exception';
 import { watchFile } from './fileUtils';
 import { Modules } from './module';
@@ -42,11 +45,8 @@ export function watchConfigFile(
   return { configFilePair: watcher.current(), disposable: watcher };
 }
 
-const GLOBAL_VAR = 'qcfg.configDir.global';
-const WORKSPACE_VAR = 'qcfg.configDir.workspace';
-
 function parseGlobalDir(): string {
-  const raw = workspace.getConfiguration().get<string>(GLOBAL_VAR);
+  const raw = getConfiguration().get('qcfg.configDir.global');
   const defaultValue = nodejs.os.homedir();
   if (!raw) return defaultValue;
   const expanded = expandPath(raw);
@@ -76,7 +76,7 @@ function getWorkspaceDir(): string | undefined {
 }
 
 function parseWorkspaceDir(): string | undefined {
-  const raw = workspace.getConfiguration().get<string>(WORKSPACE_VAR);
+  const raw = getConfiguration().get('qcfg.configDir.workspace');
   const workspaceDir = getWorkspaceDir();
   if (!raw) return workspaceDir;
   if (nodejs.path.isAbsolute(raw)) return raw;
@@ -87,14 +87,23 @@ function parseWorkspaceDir(): string | undefined {
 /**
  * Watches global/workspace config dir variables in settings
  */
-class ConfigDirWatcher implements Disposable {
+class ConfigDirWatcher extends DisposableCollection {
   private globalDir = parseGlobalDir();
   private workspaceDir = parseWorkspaceDir();
 
-  private readonly configDisposable = Disposable.from(
-    watchConfigVariable(GLOBAL_VAR, this.onConfigVarChanged.bind(this)),
-    watchConfigVariable(WORKSPACE_VAR, this.onConfigVarChanged.bind(this)),
-  );
+  constructor() {
+    super();
+    this.disposables.push(
+      watchConfiguration(
+        'qcfg.configDir.global',
+        this.onConfigVarChanged.bind(this),
+      ),
+      watchConfigVariable(
+        'qcfg.configDir.workspace',
+        this.onConfigVarChanged.bind(this),
+      ),
+    );
+  }
 
   private readonly pairWatchers = new Map<string, ConfigPairWatcher>();
 
@@ -136,8 +145,8 @@ class ConfigDirWatcher implements Disposable {
     }
   }
 
-  dispose() {
-    this.configDisposable.dispose();
+  override dispose() {
+    super.dispose();
     for (const [_, pairWatcher] of this.pairWatchers) {
       pairWatcher.dispose();
     }
@@ -145,7 +154,7 @@ class ConfigDirWatcher implements Disposable {
 }
 
 /**
- * Watches specific configuration file
+ * Executes callback when watched file changes
  */
 class ConfigFileWatcher implements DisposableLike {
   private watcher?: DisposableLike;
@@ -228,10 +237,9 @@ class ConfigPairWatcher implements DisposableLike {
   }
 }
 
-let configDirWatcher: ConfigDirWatcher;
+const configDirWatcher = new ConfigDirWatcher();
 
 function activate(context: ExtensionContext) {
-  configDirWatcher = new ConfigDirWatcher();
   context.subscriptions.push(configDirWatcher);
 }
 

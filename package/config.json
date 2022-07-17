@@ -96,6 +96,16 @@
           "type": "number",
           "description": "Default timeout (in milliseconds) for notifications",
           "default": 3000
+        },
+        "qcfg.configDir.global": {
+          "type": "string",
+          "description": "Global configuration directory for vscode-qcfg specific features (defaults to HOME directory)",
+          "default": "~"
+        },
+        "qcfg.configDir.workspace": {
+          "type": "string",
+          "description": "Workspace configuration direcotry for vsdode-qcfg specific features, relative to workspace file's directory or the only folder by default",
+          "default": "."
         }
       }
     }

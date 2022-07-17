@@ -71,6 +71,18 @@ export namespace Config {
      * @default 3000
      */
     'qcfg.notification.timeoutMs': number;
+
+    /**
+     * Global configuration directory for vscode-qcfg specific features (defaults to HOME directory)
+     * @default "~"
+     */
+    'qcfg.configDir.global': string;
+
+    /**
+     * Workspace configuration direcotry for vsdode-qcfg specific features, relative to workspace file's directory or the only folder by default
+     * @default "."
+     */
+    'qcfg.configDir.workspace': string;
   }
 
   export namespace Git {
