@@ -130,6 +130,26 @@
           },
           "description": "Exclude diagnostics whose code matches any of these",
           "scope": "language-overridable"
+        },
+        "qcfg.langClient.remote": {
+          "type": "boolean",
+          "description": "C/C++ language clients are remote (over SSH)",
+          "default": false
+        },
+        "qcfg.clangd.typeHierarchy": {
+          "type": "boolean",
+          "description": "Add clangd provider for type hierarchy",
+          "default": true
+        },
+        "qcfg.ccls.typeHierarchy": {
+          "type": "boolean",
+          "description": "Add ccls provider for type hierarchy",
+          "default": true
+        },
+        "qcfg.ccls.callHierarchy": {
+          "type": "boolean",
+          "description": "Add ccls provider for call hierarchy",
+          "default": true
         }
       }
     }

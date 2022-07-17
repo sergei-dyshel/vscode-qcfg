@@ -2,6 +2,7 @@ import { extensions, workspace } from 'vscode';
 import type { DisposableLike } from '../../library/disposable';
 import { Logger } from '../../library/logging';
 import { listenWrapped } from '../modules/exception';
+import type { ConfigSection } from './configuration';
 
 /**
  * Automatically create/dispose resorcuce when on configuration/ changes, extensions loading/unloading etc.
@@ -17,7 +18,7 @@ export class ConditionalResource implements DisposableLike {
     private readonly createFunc: () => DisposableLike,
     private readonly options: {
       extensionId?: string;
-      configSection?: string;
+      configSection?: ConfigSection;
     },
   ) {
     this.log = new Logger({ instance: name });
