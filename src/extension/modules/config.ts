@@ -6,7 +6,7 @@ import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
 import { expandPath } from '../../library/pathUtils';
 import { getConfiguration } from '../utils/configuration';
-import { watchConfiguration } from './configWatcher';
+import { ConfigSectionWatcher } from './configWatcher';
 import { listenWrapped } from './exception';
 import { watchFile } from './fileUtils';
 import { Modules } from './module';
@@ -93,15 +93,19 @@ class ConfigDirWatcher extends DisposableCollection {
 
   constructor() {
     super();
+    const globalWatcher = new ConfigSectionWatcher(
+      'qcfg.configDir.global',
+      this.onConfigVarChanged.bind(this),
+    );
+
+    const workspaceWatcher = new ConfigSectionWatcher(
+      'qcfg.configDir.workspace',
+      this.onConfigVarChanged.bind(this),
+    );
+
     this.disposables.push(
-      watchConfiguration(
-        'qcfg.configDir.global',
-        this.onConfigVarChanged.bind(this),
-      ),
-      watchConfigVariable(
-        'qcfg.configDir.workspace',
-        this.onConfigVarChanged.bind(this),
-      ),
+      globalWatcher.register(),
+      workspaceWatcher.register(),
     );
   }
 

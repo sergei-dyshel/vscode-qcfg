@@ -5,13 +5,15 @@ import { assertNotNull } from '../../library/exception';
 import * as nodejs from '../../library/nodejs';
 import { getConfiguration } from '../utils/configuration';
 import { getWorkspaceRoot } from '../utils/workspace';
-import { CachedConfiguration } from './configWatcher';
+import { ConfigSectionWatcher } from './configWatcher';
 import { listenAsyncWrapped, registerAsyncCommandWrapped } from './exception';
 import { getWorkspaceFolderByName } from './fileUtils';
 import { Modules } from './module';
 import { getVisibleEditor } from './windowUtils';
 
-const autoMarkdownPreview = new CachedConfiguration('qcfg.autoMarkdownPreview');
+const autoMarkdownPreview = new ConfigSectionWatcher(
+  'qcfg.autoMarkdownPreview',
+);
 
 async function onEditorChanged(editor: TextEditor | undefined) {
   if (!editor) return;

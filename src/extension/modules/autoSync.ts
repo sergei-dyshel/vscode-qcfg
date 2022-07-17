@@ -5,7 +5,7 @@ import * as nodejs from '../../library/nodejs';
 import { setTimeoutPromise } from '../../library/nodeUtils';
 import { getConfiguration } from '../utils/configuration';
 import { setStatusBarErrorBackground } from '../utils/statusBar';
-import { watchConfiguration } from './configWatcher';
+import { ConfigSectionWatcher } from './configWatcher';
 import { registerSyncCommandWrapped } from './exception';
 import { sendDidSaveToLangClients } from './langClient';
 import { Modules } from './module';
@@ -95,15 +95,17 @@ async function onSaveAll(docs: saveAll.DocumentsInFolder) {
   }
 }
 
+const enabled = new ConfigSectionWatcher('qcfg.autoSync.enabled', () => {
+  state = enabled.value ? State.ON : State.OFF;
+  setStatusBar();
+});
+
 function activate(context: ExtensionContext) {
   status = window.createStatusBarItem();
   status.command = 'qcfg.autoSync.toggle';
 
   context.subscriptions.push(
-    watchConfiguration('qcfg.autoSync.enabled', (enabled) => {
-      state = enabled ? State.ON : State.OFF;
-      setStatusBar();
-    }),
+    enabled.register(),
     registerSyncCommandWrapped('qcfg.autoSync.toggle', toggle),
     saveAll.onEvent(onSaveAll),
   );
