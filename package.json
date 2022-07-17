@@ -2196,37 +2196,6 @@
           },
           "type": "array"
         },
-        "qcfg.fileDiagnostics.show": {
-          "type": "boolean",
-          "scope": "language-overridable",
-          "description": "Whether do show per-file diagnostic counts in statusbar",
-          "default": true
-        },
-        "qcfg.fileDiagnostics.excludeMessage": {
-          "type": "string",
-          "scope": "language-overridable",
-          "description": "Exclude diagnostics whose message matches this pattern"
-        },
-        "qcfg.fileDiagnostics.excludeSource": {
-          "type": "string",
-          "scope": "language-overridable",
-          "description": "Exclude diagnostics whose source matches this pattern"
-        },
-        "qcfg.fileDiagnostics.excludeCodes": {
-          "type": "array",
-          "scope": "language-overridable",
-          "items": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "string"
-              }
-            ]
-          },
-          "description": "Exclude diagnostics whose code matches any of these"
-        },
         "qcfg.autoResize.steps": {
           "type": "number",
           "description": "Number of steps by which to auto-resize active editor",
@@ -2337,6 +2306,33 @@
           "type": "string",
           "description": "Workspace configuration direcotry for vsdode-qcfg specific features, relative to workspace file's directory or the only folder by default",
           "default": "."
+        },
+        "qcfg.fileDiagnostics.show": {
+          "type": "boolean",
+          "description": "Whether do show per-file diagnostic counts in statusbar",
+          "scope": "language-overridable",
+          "default": true
+        },
+        "qcfg.fileDiagnostics.excludeMessage": {
+          "type": "string",
+          "description": "Exclude diagnostics whose message matches this pattern",
+          "scope": "language-overridable"
+        },
+        "qcfg.fileDiagnostics.excludeSource": {
+          "type": "string",
+          "description": "Exclude diagnostics whose source matches this pattern",
+          "scope": "language-overridable"
+        },
+        "qcfg.fileDiagnostics.excludeCodes": {
+          "type": "array",
+          "items": {
+            "type": [
+              "number",
+              "string"
+            ]
+          },
+          "description": "Exclude diagnostics whose code matches any of these",
+          "scope": "language-overridable"
         }
       }
     },
@@ -2548,7 +2544,7 @@
     "ifdef-loader": "^2.1.5",
     "json-merger": "^1.1.9",
     "prettier": "^2.6.2",
-    "ts-json-schema-generator": "^1.0.0",
+    "ts-json-schema-generator": "file:local/ts-json-schema-generator.tgz",
     "ts-loader": "^9.3.0",
     "ts-node": "^10.8.1",
     "ts-prune": "^0.8.4",
