@@ -83,6 +83,31 @@ export namespace Config {
      * @default "."
      */
     'qcfg.configDir.workspace': string;
+
+    /**
+     * Whether do show per-file diagnostic counts in statusbar
+     * @scope language-overridable
+     * @default true
+     */
+    'qcfg.fileDiagnostics.show': boolean;
+
+    /**
+     * Exclude diagnostics whose message matches this pattern
+     * @scope language-overridable
+     */
+    'qcfg.fileDiagnostics.excludeMessage': string;
+
+    /**
+     * Exclude diagnostics whose source matches this pattern
+     * @scope language-overridable
+     */
+    'qcfg.fileDiagnostics.excludeSource': string;
+
+    /**
+     * Exclude diagnostics whose code matches any of these
+     * @scope language-overridable
+     */
+    'qcfg.fileDiagnostics.excludeCodes': Array<number | string>;
   }
 
   export namespace Git {

@@ -1,6 +1,5 @@
 import { Dictionary } from 'typescript-collections';
 import type {
-  ConfigurationChangeEvent,
   DiagnosticChangeEvent,
   ExtensionContext,
   StatusBarItem,
@@ -13,10 +12,10 @@ import {
   languages,
   StatusBarAlignment,
   window,
-  workspace,
 } from 'vscode';
 import { DefaultMap, isEmptyRegExp } from '../../library/tsUtils';
 import { setStatusBarBackground } from '../utils/statusBar';
+import { ConfigurationWatcher } from './configWatcher';
 import { registerDocumentUriDict } from './documentCache';
 import { listenWrapped } from './exception';
 import { Modules } from './module';
@@ -26,6 +25,19 @@ const cache = new Dictionary<
   Uri,
   { errors: number; warnings: number } | 'hidden'
 >();
+
+const configWatcher = new ConfigurationWatcher(
+  [
+    'qcfg.fileDiagnostics.show',
+    'qcfg.fileDiagnostics.excludeMessage',
+    'qcfg.fileDiagnostics.excludeSource',
+    'qcfg.fileDiagnostics.excludeCodes',
+  ] as const,
+  () => {
+    cache.clear();
+    updateStatus();
+  },
+);
 
 function onDidChangeDiagnostics(event: DiagnosticChangeEvent) {
   for (const uri of event.uris) cache.remove(uri);
@@ -37,24 +49,21 @@ function editorChanged(_?: TextEditor) {
 }
 
 function countDiags(document: TextDocument) {
-  const config = workspace.getConfiguration('', {
+  const config = configWatcher.getConfiguration({
     uri: document.uri,
     languageId: document.languageId,
   });
-  const show = config.get<boolean>('qcfg.fileDiagnostics.show', true);
+  const show = config.getNotNull('qcfg.fileDiagnostics.show');
   if (!show) {
     return 'hidden';
   }
   const excludeMessage = new RegExp(
-    config.get('qcfg.fileDiagnostics.excludeMessage')!,
+    config.getNotNull('qcfg.fileDiagnostics.excludeMessage'),
   );
   const excludeSource = new RegExp(
     config.get('qcfg.fileDiagnostics.excludeSource')!,
   );
-  const excludeCodes = config.get<Array<string | number>>(
-    'qcfg.fileDiagnostics.excludeCodes',
-    [],
-  );
+  const excludeCodes = config.get('qcfg.fileDiagnostics.excludeCodes', []);
 
   const diags = languages.getDiagnostics(document.uri);
   const diagsBySev = new DefaultMap<DiagnosticSeverity, number>(0);
@@ -107,13 +116,6 @@ function updateStatus() {
   status.show();
 }
 
-function configChanged(event: ConfigurationChangeEvent) {
-  if (event.affectsConfiguration('qcfg.fileDiagnostics')) {
-    cache.clear();
-    updateStatus();
-  }
-}
-
 function activate(context: ExtensionContext) {
   status = window.createStatusBarItem(StatusBarAlignment.Left);
   status.command = 'workbench.action.problems.focus';
@@ -121,10 +123,9 @@ function activate(context: ExtensionContext) {
     status,
     listenWrapped(languages.onDidChangeDiagnostics, onDidChangeDiagnostics),
     listenWrapped(window.onDidChangeActiveTextEditor, editorChanged),
-    listenWrapped(workspace.onDidChangeConfiguration, configChanged),
+    configWatcher.register(),
   );
   registerDocumentUriDict(cache);
-  updateStatus();
 }
 
 Modules.register(activate);
