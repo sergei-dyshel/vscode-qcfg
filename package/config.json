@@ -106,6 +106,30 @@
           "type": "string",
           "description": "Workspace configuration direcotry for vsdode-qcfg specific features, relative to workspace file's directory or the only folder by default",
           "default": "."
+        },
+        "qcfg.fileDiagnostics.show": {
+          "type": "boolean",
+          "description": "Whether do show per-file diagnostic counts in statusbar",
+          "scope": "language-overridable",
+          "default": true
+        },
+        "qcfg.fileDiagnostics.excludeMessage": {
+          "type": "string",
+          "description": "Exclude diagnostics whose message matches this pattern",
+          "scope": "language-overridable"
+        },
+        "qcfg.fileDiagnostics.excludeSource": {
+          "type": "string",
+          "description": "Exclude diagnostics whose source matches this pattern",
+          "scope": "language-overridable"
+        },
+        "qcfg.fileDiagnostics.excludeCodes": {
+          "type": "array",
+          "items": {
+            "type": ["number", "string"]
+          },
+          "description": "Exclude diagnostics whose code matches any of these",
+          "scope": "language-overridable"
         }
       }
     }
