@@ -146,7 +146,7 @@ class History {
         backward.pop();
         forward.clear();
         backward.push(pos);
-        this.log.debug(`Replaced top with ${pos}`);
+        this.log.trace(`Replaced top with ${pos}`);
       }
     } else {
       this.push(pos);
