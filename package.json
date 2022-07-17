@@ -2133,26 +2133,6 @@
     "configuration": {
       "title": "Qcfg configuration",
       "properties": {
-        "qcfg.langClient.remote": {
-          "type": "boolean",
-          "default": false,
-          "description": "C/C++ language clients are remote (over SSH)"
-        },
-        "qcfg.clangd.typeHierarchy": {
-          "type": "boolean",
-          "default": true,
-          "description": "Add clangd provider for type hierarchy"
-        },
-        "qcfg.ccls.typeHierarchy": {
-          "type": "boolean",
-          "default": true,
-          "description": "Add ccls provider for type hierarchy"
-        },
-        "qcfg.ccls.callHierarchy": {
-          "type": "boolean",
-          "default": true,
-          "description": "Add ccls provider for call hierarchy"
-        },
         "qcfg.configRules": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "definitions": {},
@@ -2333,6 +2313,26 @@
           },
           "description": "Exclude diagnostics whose code matches any of these",
           "scope": "language-overridable"
+        },
+        "qcfg.langClient.remote": {
+          "type": "boolean",
+          "description": "C/C++ language clients are remote (over SSH)",
+          "default": false
+        },
+        "qcfg.clangd.typeHierarchy": {
+          "type": "boolean",
+          "description": "Add clangd provider for type hierarchy",
+          "default": true
+        },
+        "qcfg.ccls.typeHierarchy": {
+          "type": "boolean",
+          "description": "Add ccls provider for type hierarchy",
+          "default": true
+        },
+        "qcfg.ccls.callHierarchy": {
+          "type": "boolean",
+          "description": "Add ccls provider for call hierarchy",
+          "default": true
         }
       }
     },

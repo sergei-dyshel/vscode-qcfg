@@ -108,6 +108,30 @@ export namespace Config {
      * @scope language-overridable
      */
     'qcfg.fileDiagnostics.excludeCodes': Array<number | string>;
+
+    /**
+     * C/C++ language clients are remote (over SSH)
+     * @default false
+     */
+    'qcfg.langClient.remote': boolean;
+
+    /**
+     * Add clangd provider for type hierarchy
+     * @default true
+     */
+    'qcfg.clangd.typeHierarchy': boolean;
+
+    /**
+     * Add ccls provider for type hierarchy
+     * @default true
+     */
+    'qcfg.ccls.typeHierarchy': boolean;
+
+    /**
+     * Add ccls provider for call hierarchy
+     * @default true
+     */
+    'qcfg.ccls.callHierarchy': boolean;
   }
 
   export namespace Git {

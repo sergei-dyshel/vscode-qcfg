@@ -106,14 +106,6 @@ export class CclsCallHierarchyProvider
       log.debug('ccls not running');
       return undefined;
     }
-    if (
-      !workspace
-        .getConfiguration()
-        .get<boolean>('qcfg.ccls.callHierarchy', true)
-    ) {
-      log.debug('provider disabled');
-      return undefined;
-    }
     log.debug('running');
     const node = await cl.sendRequest<CallHierarchyNode | undefined>(
       '$ccls/call',

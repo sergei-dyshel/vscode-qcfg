@@ -1,5 +1,5 @@
 import type { ExtensionContext, StatusBarItem } from 'vscode';
-import { window, workspace } from 'vscode';
+import { window } from 'vscode';
 import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
 import { setTimeoutPromise } from '../../library/nodeUtils';
@@ -88,7 +88,7 @@ async function onSaveAll(docs: saveAll.DocumentsInFolder) {
   } finally {
     setStatusBar();
   }
-  if (workspace.getConfiguration().get<boolean>('qcfg.langClient.remote')) {
+  if (getConfiguration().get('qcfg.langClient.remote')) {
     log.debug('Waiting before sending didSave to clients');
     await setTimeoutPromise(500);
     for (const doc of docs.documents) sendDidSaveToLangClients(doc);
