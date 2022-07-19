@@ -1,15 +1,15 @@
-import type { Key, KeyBinding, PackageJson } from '../library/packageJson';
+import type { ExtensionJSON } from '../library/extensionManifest';
 
 const START_LINE = 5;
 const END_LINE = START_LINE * 10;
 
-const keybindings: KeyBinding[] = [];
+const keybindings: ExtensionJSON.KeyBinding[] = [];
 
 function createKey(
   num: number,
   mod: 'ctrl' | 'alt',
   macMod: 'cmd' | 'alt',
-): Key[] {
+): ExtensionJSON.Key[] {
   if (num < 10) {
     return [{ key: `${mod}+${num}`, mac: `${macMod}+${num}` }];
   }
@@ -42,7 +42,7 @@ for (let i = START_LINE; i < END_LINE; ++i) {
     });
 }
 
-const json: PackageJson = {
+const json: ExtensionJSON.Manifest = {
   contributes: { keybindings },
 };
 

@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
+import type { ExtensionJSON } from '../../library/extensionManifest';
 import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
-import type { PackageJson } from '../../library/packageJson';
 import { parseJsonFileSync } from './json';
 import { Modules } from './module';
 
@@ -19,7 +19,7 @@ export function availableLanguageConfigs(): string[] {
 
 function fetchLangConfigs() {
   for (const ext of vscode.extensions.all) {
-    const json = ext.packageJSON as PackageJson;
+    const json = ext.packageJSON as ExtensionJSON.Manifest;
     // All vscode default extensions ids starts with "vscode."
     if (!json.contributes) continue;
     for (const themeData of json.contributes.themes ?? []) {

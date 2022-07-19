@@ -1,6 +1,6 @@
 import * as tsj from 'ts-json-schema-generator';
+import type { ExtensionJSON } from '../library/extensionManifest';
 import * as nodejs from '../library/nodejs';
-import type { PackageJson } from '../library/packageJson';
 
 const [path, type, out] = nodejs.process.argv.slice(2);
 
@@ -17,7 +17,7 @@ const generator = tsj.createGenerator(config);
 
 const schema = generator.createSchema(config.type);
 
-const pkg: PackageJson = {
+const pkg: ExtensionJSON.Manifest = {
   contributes: {
     configuration: {
       properties: schema.properties!,

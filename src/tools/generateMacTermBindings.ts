@@ -1,7 +1,7 @@
 /* eslint-disable unicorn/escape-case */
 /* eslint-disable unicorn/no-hex-escape */
 
-import type { KeyBinding, PackageJson } from '../library/packageJson';
+import type { ExtensionJSON } from '../library/extensionManifest';
 
 const mapping = {
   'cmd+a': '\x01',
@@ -17,7 +17,7 @@ const mapping = {
   'alt+f': '\x1bf',
 };
 
-const keybindings: KeyBinding[] = [];
+const keybindings: ExtensionJSON.KeyBinding[] = [];
 
 for (const [key, code] of Object.entries(mapping)) {
   keybindings.push({
@@ -28,7 +28,7 @@ for (const [key, code] of Object.entries(mapping)) {
   });
 }
 
-const json: PackageJson = {
+const json: ExtensionJSON.Manifest = {
   contributes: { keybindings },
 };
 
