@@ -33,6 +33,7 @@ import {
 } from '../../library/stringUtils';
 import { getConfiguration } from '../utils/configuration';
 import { PromiseQueue } from './async';
+import { ConfigSectionWatcher } from './configWatcher';
 import {
   handleAsyncStd,
   handleErrors,
@@ -397,12 +398,19 @@ export async function getGtagsDefinitionsInWorkspace() {
   return runTaskAndGetLocations('gtags_def', params, { folder: 'all' });
 }
 
-const gtagsHoverProvider: HoverProvider = {
-  async provideHover(
+const gtagsHoverEnabled = new ConfigSectionWatcher('qcfg.gtags.hover');
+
+class GtagsHoverProvider implements HoverProvider {
+  provideHover = handleErrors(this.provideHoverImpl.bind(this));
+
+  // eslint-disable-next-line class-methods-use-this
+  private async provideHoverImpl(
     document: TextDocument,
     position: Position,
     token: CancellationToken,
   ): Promise<Hover | undefined> {
+    if (!gtagsHoverEnabled.value) return;
+
     switch (document.languageId) {
       case 'cpp':
       case 'c':
@@ -414,9 +422,9 @@ const gtagsHoverProvider: HoverProvider = {
     }
     if (document.fileName.startsWith('extension-output')) return;
     const gtagsDir = await findGtagsDir(document.fileName);
-    assertNotNull(gtagsDir, 'GTAGS not found');
+    if (!gtagsDir) return;
     const range = document.getWordRangeAtPosition(position);
-    assertNotNull(range, 'Not on word');
+    if (!range) return;
     const tag = document.getText(range);
     const tags = await searchGtags('hover', tag, tag, gtagsDir, token);
     if (tags.length === 0 || tags.length > 1) return;
@@ -424,8 +432,8 @@ const gtagsHoverProvider: HoverProvider = {
       language: document.languageId,
       value: tags[0].text,
     });
-  },
-};
+  }
+}
 
 function activate(context: ExtensionContext) {
   const queue = new PromiseQueue('gtags');
@@ -437,7 +445,8 @@ function activate(context: ExtensionContext) {
     saveAll.onEvent(queue.queued(onSaveAll, 'save all')),
     languages.registerWorkspaceSymbolProvider(gtagsGlobalSymbolsProvider),
     registerAsyncCommandWrapped('qcfg.gtags.definition', openDefinition),
-    languages.registerHoverProvider('*', gtagsHoverProvider),
+    gtagsHoverEnabled.register(),
+    languages.registerHoverProvider('*', new GtagsHoverProvider()),
     registerAsyncCommandWrapped(
       'qcfg.gtags.workspace',
       wrapWithHistoryUpdate(WorkspaceGtags.run),

@@ -67,6 +67,12 @@ export namespace Config {
     'qcfg.gtags.workspaceSymbols': boolean;
 
     /**
+     * Use gtags hover symbol provider
+     * @default false
+     */
+    'qcfg.gtags.hover': boolean;
+
+    /**
      * Default timeout (in milliseconds) for notifications
      * @default 3000
      */
