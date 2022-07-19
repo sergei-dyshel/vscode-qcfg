@@ -2547,7 +2547,7 @@
     "prettier": "^2.6.2",
     "ts-json-schema-generator": "file:local/ts-json-schema-generator.tgz",
     "ts-loader": "^9.3.0",
-    "ts-node": "^10.8.1",
+    "ts-node": "^10.9.1",
     "ts-prune": "^0.8.4",
     "ts-unused-exports": "^6.2.4",
     "typescript": "^4.7.4",
