@@ -39,3 +39,6 @@ update_proposed:
 	npx vscode-dts dev
 
 check: check_tools
+
+prettier:
+	npx prettier --write "**/*.ts"
