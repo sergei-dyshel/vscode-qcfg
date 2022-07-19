@@ -2545,6 +2545,7 @@
     "ifdef-loader": "^2.1.5",
     "json-merger": "^1.1.9",
     "prettier": "^2.6.2",
+    "prettier-plugin-organize-imports": "^3.0.0",
     "ts-json-schema-generator": "file:local/ts-json-schema-generator.tgz",
     "ts-loader": "^9.3.0",
     "ts-node": "^10.9.1",
