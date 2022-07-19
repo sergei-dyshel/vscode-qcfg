@@ -2527,6 +2527,7 @@
     "@types/vscode": "^1.69.0",
     "@typescript-eslint/eslint-plugin": "^5.26.0",
     "@typescript-eslint/parser": "^5.26.0",
+    "@vscode/test-electron": "^2.1.5",
     "circular-dependency-plugin": "^5.2.2",
     "deepmerge": "^4.2.2",
     "eslint": "^8.19.0",
@@ -2551,7 +2552,6 @@
     "ts-unused-exports": "^6.2.4",
     "typescript": "^4.7.4",
     "vscode-languageserver": "^6.1.1",
-    "vscode-test": "^1.4.1",
     "webpack": "^5.4.0",
     "webpack-cli": "^4.2.0"
   }
