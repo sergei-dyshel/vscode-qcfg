@@ -92,6 +92,11 @@
           "description": "Use gtags as workspace symbols provider",
           "default": false
         },
+        "qcfg.gtags.hover": {
+          "type": "boolean",
+          "description": "Use gtags hover symbol provider",
+          "default": false
+        },
         "qcfg.notification.timeoutMs": {
           "type": "number",
           "description": "Default timeout (in milliseconds) for notifications",
