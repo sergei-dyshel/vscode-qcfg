@@ -2422,8 +2422,8 @@
       "activitybar": [
         {
           "id": "qcfg-views-container",
-          "title": "Qcfg Tree View",
-          "icon": "icons/view-container.png"
+          "title": "Qcfg",
+          "icon": "$(zap)"
         }
       ]
     },
