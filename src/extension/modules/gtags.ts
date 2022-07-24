@@ -45,7 +45,7 @@ import { isAnyLangClientRunning } from './langClient';
 import { Modules } from './module';
 import * as saveAll from './saveAll';
 import * as subprocess from './subprocess';
-import { runTaskAndGetLocations } from './tasks/main';
+import { runTaskAndGetLocations } from './tasks';
 import type { Params } from './tasks/params';
 import { Flag, LocationFormat, TaskType } from './tasks/params';
 import { getActiveTextEditor } from './utils';
