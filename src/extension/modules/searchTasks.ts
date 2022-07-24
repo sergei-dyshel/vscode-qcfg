@@ -2,7 +2,7 @@ import type { ExtensionContext } from 'vscode';
 import { CheckError } from '../../library/exception';
 import { registerAsyncCommandWrapped } from './exception';
 import { Modules } from './module';
-import { runTask } from './tasks/main';
+import { runTask } from './tasks';
 import { Flag, TaskType } from './tasks/params';
 import { getActiveTextEditor, getCursorWordContext } from './utils';
 

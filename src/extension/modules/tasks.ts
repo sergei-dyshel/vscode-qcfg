@@ -7,19 +7,18 @@ import {
   window,
   workspace,
 } from 'vscode';
-import { log } from '../../../library/logging';
-import * as nodejs from '../../../library/nodejs';
-import { concatArrays, mapObjectToArray } from '../../../library/tsUtils';
-import { PersistentGenericQuickPick } from '../../utils/quickPickPersistent';
-import { getValidWorkspaceFolders } from '../../utils/workspace';
-import { filterAsync, mapSomeAsync, MAP_UNDEFINED } from '../async';
-import type { ConfigFilePair } from '../config';
-import { getConfigFileNames, watchConfigFile } from '../config';
-import { registerAsyncCommandWrapped } from '../exception';
-import { globAsync } from '../fileUtils';
-import { parseJsonFileSync } from '../json';
-import { Modules } from '../module';
-import { currentWorkspaceFolder } from '../utils';
+import { log } from '../../library/logging';
+import * as nodejs from '../../library/nodejs';
+import { concatArrays, mapObjectToArray } from '../../library/tsUtils';
+import { PersistentGenericQuickPick } from '../utils/quickPickPersistent';
+import { getValidWorkspaceFolders } from '../utils/workspace';
+import { filterAsync, mapSomeAsync, MAP_UNDEFINED } from './async';
+import type { ConfigFilePair } from './config';
+import { getConfigFileNames, watchConfigFile } from './config';
+import { registerAsyncCommandWrapped } from './exception';
+import { globAsync } from './fileUtils';
+import { parseJsonFileSync } from './json';
+import { Modules } from './module';
 import type {
   BaseTaskParams,
   ConfParamsSet,
@@ -27,9 +26,9 @@ import type {
   ProcessTaskParams,
   SearchTaskParams,
   TerminalTaskParams,
-} from './params';
-import { Flag, TaskType } from './params';
-import type { BaseQcfgTask, BaseTask, FetchInfo } from './types';
+} from './tasks/params';
+import { Flag, TaskType } from './tasks/params';
+import type { BaseQcfgTask, BaseTask, FetchInfo } from './tasks/types';
 import {
   ConditionError,
   isFolderTask,
@@ -43,7 +42,8 @@ import {
   TerminalTask,
   ValidationError,
   VscodeTask,
-} from './types';
+} from './tasks/types';
+import { currentWorkspaceFolder } from './utils';
 
 const CONFIG_FILE = 'vscode-qcfg.tasks.json';
 
