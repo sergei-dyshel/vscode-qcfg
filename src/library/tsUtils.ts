@@ -5,6 +5,19 @@ import { MultiDictionary } from 'typescript-collections';
 const emptyRegExp = /(?:)/;
 
 /**
+ * Create value holder that initializes lazily, e.g. on first use
+ */
+export function lazyValue<T>(initialize: () => T): () => T {
+  let value: T;
+  return () => {
+    if (value === undefined) {
+      value = initialize();
+    }
+    return value;
+  };
+}
+
+/**
  * Type-safely copy specific properties into new object.
  */
 export function pick<T, K extends keyof T>(obj: T, ...keys: K[]): Pick<T, K> {

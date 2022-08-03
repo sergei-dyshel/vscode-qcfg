@@ -5,6 +5,7 @@ import { DisposableCollection } from '../../library/disposable';
 import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
 import { expandPath } from '../../library/pathUtils';
+import { lazyValue } from '../../library/tsUtils';
 import { getConfiguration } from '../utils/configuration';
 import { ConfigSectionWatcher } from './configWatcher';
 import { listenWrapped } from './exception';
@@ -41,7 +42,7 @@ export function watchConfigFile(
   fileName: string,
   callback: (_: ConfigFilePair) => unknown,
 ): { configFilePair: ConfigFilePair; disposable: DisposableLike } {
-  const watcher = configDirWatcher.watch(fileName, callback);
+  const watcher = configDirWatcher().watch(fileName, callback);
   return { configFilePair: watcher.current(), disposable: watcher };
 }
 
@@ -61,7 +62,7 @@ function parseGlobalDir(): string {
  * Get configuration file names (without checking if they exist)
  */
 export function getConfigFileNames(fileName: string): ConfigFilePair {
-  return configDirWatcher.getFileNames(fileName);
+  return configDirWatcher().getFileNames(fileName);
 }
 
 function getWorkspaceDir(): string | undefined {
@@ -241,10 +242,10 @@ class ConfigPairWatcher implements DisposableLike {
   }
 }
 
-const configDirWatcher = new ConfigDirWatcher();
+const configDirWatcher = lazyValue(() => new ConfigDirWatcher());
 
 function activate(context: ExtensionContext) {
-  context.subscriptions.push(configDirWatcher);
+  context.subscriptions.push(configDirWatcher());
 }
 
 Modules.register(activate);

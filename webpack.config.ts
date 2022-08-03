@@ -86,7 +86,7 @@ const generateConfig = (env: any): webpack.Configuration => ({
             loader: 'ts-loader',
             options: {
               compilerOptions: {
-                module: 'es6', // override `tsconfig.json` so that TypeScript
+                module: 'es2020', // override `tsconfig.json` so that TypeScript
                 // emits native JavaScript modules.
                 noUnusedLocals: false,
               },

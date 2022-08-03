@@ -1,58 +1,59 @@
-import type { ExtensionContext } from 'vscode';
 import { commands } from 'vscode';
-import type { UserCommandKeybinding } from '../utils/commands';
-import { registerUserCommand } from '../utils/commands';
+import { UserCommands } from '../../library/userCommands';
 import { updateHistory } from './history';
-import { Modules } from './module';
 
-function registerHistoryWrapCommand(cmd: {
-  command: string;
-  title: string;
-  wrapped: string;
-  keybinding?: UserCommandKeybinding;
-}) {
-  return registerUserCommand(command, title, options, async () =>
-    updateHistory(commands.executeCommand(origCommand)),
+function registerHistoryWrapCommands(
+  ...cmds: Array<{
+    command: string;
+    title: string;
+    wrapped: string;
+    keybinding?: UserCommands.Keybinding;
+  }>
+) {
+  UserCommands.register(
+    ...cmds.map((cmd) => ({
+      command: cmd.command,
+      title: cmd.title,
+      keybinding: cmd.keybinding,
+      callback: async () =>
+        updateHistory(commands.executeCommand(cmd.wrapped).ignoreResult()),
+    })),
   );
 }
 
-function activate(context: ExtensionContext) {
-  context.subscriptions.push(
-    registerHistoryWrapCommand(
-      'qcfg.historyWrap.quickOpen',
-      'qcfg: Go to file...',
-      {
-        key: 'cmd+enter',
-        when: '!referenceSearchTreeFocused',
-      },
-      'workbench.action.quickOpen',
-    ),
-    registerHistoryWrapCommand(
-      'qcfg.historyWrap.openPreviousEditorFromHistory',
-      'qcfg: Quick Open Previous Editor from History',
-      {
-        key: 'cmd+e',
-        when: 'editorTextFocus && !inQuickOpen',
-      },
-      'workbench.action.openPreviousEditorFromHistory',
-    ),
-    registerHistoryWrapCommand(
-      'qcfg.historyWrap.gotoSymbol',
-      'qcfg: Go to Symbol in File...',
-      {
-        key: 'cmd+t',
-      },
-      'workbench.action.gotoSymbol',
-    ),
-    registerHistoryWrapCommand(
-      'qcfg.historyWrap.showAllSymbols',
-      'qcfg: Go to Symbol in Workspace...',
-      {
-        key: 'cmd+shift+t',
-      },
-      'workbench.action.showAllSymbols',
-    ),
-  );
-}
-
-Modules.register(activate);
+registerHistoryWrapCommands(
+  {
+    command: 'qcfg.historyWrap.quickOpen',
+    title: 'qcfg: Go to file...',
+    keybinding: {
+      key: 'cmd+enter',
+      when: '!referenceSearchTreeFocused',
+    },
+    wrapped: 'workbench.action.quickOpen',
+  },
+  {
+    command: 'qcfg.historyWrap.openPreviousEditorFromHistory',
+    title: 'qcfg: Quick Open Previous Editor from History',
+    keybinding: {
+      key: 'cmd+e',
+      when: 'editorTextFocus && !inQuickOpen',
+    },
+    wrapped: 'workbench.action.openPreviousEditorFromHistory',
+  },
+  {
+    command: 'qcfg.historyWrap.gotoSymbol',
+    title: 'qcfg: Go to Symbol in File...',
+    keybinding: {
+      key: 'cmd+t',
+    },
+    wrapped: 'workbench.action.gotoSymbol',
+  },
+  {
+    command: 'qcfg.historyWrap.showAllSymbols',
+    title: 'qcfg: Go to Symbol in Workspace...',
+    keybinding: {
+      key: 'cmd+shift+t',
+    },
+    wrapped: 'workbench.action.showAllSymbols',
+  },
+);

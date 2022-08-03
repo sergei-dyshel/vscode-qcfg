@@ -26,3 +26,6 @@ $(d)/config.json: src/tools/generateConfig.ts src/library/config.ts
 package.json: $(deps_files)
 	$(my_merger) $@ $^
 	npx prettier --write $@
+
+commands:
+	@./ts-node-mock-vscode src/tools/generateCommands.ts $(d)/commands.json $(wildcard src/extension/modules/*.ts)

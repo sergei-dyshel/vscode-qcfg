@@ -191,6 +191,12 @@ const config = {
     // sometimes assigning to variable and returning it is convenient for debugging
     'sonarjs/prefer-immediate-return': off,
 
+    // still using CommonJS for modules
+    'unicorn/prefer-module': off,
+
+    // too aggressive
+    'unicorn/better-regex': off,
+
     'unicorn/prevent-abbreviations': off,
     'unicorn/filename-case': [
       warn,

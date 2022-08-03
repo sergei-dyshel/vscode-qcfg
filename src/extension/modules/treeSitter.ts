@@ -14,6 +14,7 @@ import {
   checkNotNull,
 } from '../../library/exception';
 import type { SyntaxNode, SyntaxTree } from '../../library/syntax';
+import { lazyValue } from '../../library/tsUtils';
 import { RangeDecorator } from '../utils/decoration';
 import { setStatusBarErrorBackground } from '../utils/statusBar';
 import {
@@ -28,18 +29,22 @@ import { getActiveTextEditor, WhenContext } from './utils';
 
 const WHEN_CLAUSE = 'qcfgTreeMode';
 
-const siblingDecorator = RangeDecorator.bracketStyle({
-  // TODO: use color conversion lib, candidates (both are typed):
-  // https://www.npmjs.com/package/color-string
-  // https://www.npmjs.com/package/color-convert
-  color: 'rgba(255, 255, 255, 0.50)',
-  width: 2,
-});
+const siblingDecorator = lazyValue(() =>
+  RangeDecorator.bracketStyle({
+    // TODO: use color conversion lib, candidates (both are typed):
+    // https://www.npmjs.com/package/color-string
+    // https://www.npmjs.com/package/color-convert
+    color: 'rgba(255, 255, 255, 0.50)',
+    width: 2,
+  }),
+);
 
-const parentDecorator = RangeDecorator.bracketStyle({
-  color: 'rgba(255, 255, 0, 0.50)',
-  width: 2,
-});
+const parentDecorator = lazyValue(() =>
+  RangeDecorator.bracketStyle({
+    color: 'rgba(255, 255, 0, 0.50)',
+    width: 2,
+  }),
+);
 
 class SelectedNodes {
   constructor(
@@ -299,8 +304,8 @@ function updateDecorations() {
   assertNotNull(context);
   const { editor, selectedNodes } = context;
   const parent = selectedNodes.parent;
-  parentDecorator.decorate(editor, [parent.range]);
-  siblingDecorator.decorate(
+  parentDecorator().decorate(editor, [parent.range]);
+  siblingDecorator().decorate(
     editor,
     parent.namedChildren.map((child) => child.range),
   );
@@ -333,8 +338,8 @@ export async function onSelectionChanged(
 export async function exitMode() {
   if (!context) return;
 
-  parentDecorator.clear(context.editor);
-  siblingDecorator.clear(context.editor);
+  parentDecorator().clear(context.editor);
+  siblingDecorator().clear(context.editor);
   context = undefined;
   status!.hide();
   await WhenContext.clear(WHEN_CLAUSE);
