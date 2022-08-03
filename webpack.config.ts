@@ -3,7 +3,7 @@
 // @ts-check
 
 // eslint-disable-next-line import/no-import-module-exports
-import path from 'path';
+import path from 'node:path';
 // eslint-disable-next-line import/no-import-module-exports
 import type webpack from 'webpack';
 
@@ -23,6 +23,7 @@ const generateConfig = (env: any): webpack.Configuration => ({
   plugins: [
     new CircularDependencyPlugin({
       exclude: /node_modules/,
+      // eslint-disable-next-line unicorn/better-regex
       include: /.*.ts/,
       failOnError: true,
     }),
