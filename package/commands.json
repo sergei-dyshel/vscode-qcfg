@@ -1,6 +1,50 @@
 {
   "contributes": {
-    "commands": [],
-    "keybindings": []
+    "commands": [
+      {
+        "command": "qcfg.historyWrap.quickOpen",
+        "category": "qcfg",
+        "title": "qcfg: Go to file..."
+      },
+      {
+        "command": "qcfg.historyWrap.openPreviousEditorFromHistory",
+        "category": "qcfg",
+        "title": "qcfg: Quick Open Previous Editor from History"
+      },
+      {
+        "command": "qcfg.historyWrap.gotoSymbol",
+        "category": "qcfg",
+        "title": "qcfg: Go to Symbol in File..."
+      },
+      {
+        "command": "qcfg.historyWrap.showAllSymbols",
+        "category": "qcfg",
+        "title": "qcfg: Go to Symbol in Workspace..."
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "qcfg.historyWrap.quickOpen",
+        "key": "ctrl+enter",
+        "mac": "cmd+enter",
+        "when": "!referenceSearchTreeFocused"
+      },
+      {
+        "command": "qcfg.historyWrap.openPreviousEditorFromHistory",
+        "key": "ctrl+e",
+        "mac": "cmd+e",
+        "when": "editorTextFocus && !inQuickOpen"
+      },
+      {
+        "command": "qcfg.historyWrap.gotoSymbol",
+        "key": "ctrl+t",
+        "mac": "cmd+t"
+      },
+      {
+        "command": "qcfg.historyWrap.showAllSymbols",
+        "key": "ctrl+shift+t",
+        "mac": "cmd+shift+t"
+      }
+    ]
   }
 }

@@ -15,7 +15,10 @@
     "strict": true,
     "noImplicitReturns": true,
     "noImplicitOverride": true,
-    "noPropertyAccessFromIndexSignature": true
+    "noPropertyAccessFromIndexSignature": true,
+    "paths": {
+      "vscode": ["src/extension/vscodeMock.ts"]
+    }
   },
   "exclude": ["webpack.config.js", "node_modules", "server"]
 }

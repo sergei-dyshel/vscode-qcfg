@@ -526,6 +526,26 @@
       {
         "command": "qcfg.persistent.openGlobalStorage",
         "title": "qcfg: Open GLOBAL persistent storage folder"
+      },
+      {
+        "command": "qcfg.historyWrap.quickOpen",
+        "category": "qcfg",
+        "title": "qcfg: Go to file..."
+      },
+      {
+        "command": "qcfg.historyWrap.openPreviousEditorFromHistory",
+        "category": "qcfg",
+        "title": "qcfg: Quick Open Previous Editor from History"
+      },
+      {
+        "command": "qcfg.historyWrap.gotoSymbol",
+        "category": "qcfg",
+        "title": "qcfg: Go to Symbol in File..."
+      },
+      {
+        "command": "qcfg.historyWrap.showAllSymbols",
+        "category": "qcfg",
+        "title": "qcfg: Go to Symbol in Workspace..."
       }
     ],
     "keybindings": [
@@ -1846,28 +1866,6 @@
         "args": -49
       },
       {
-        "key": "cmd+enter",
-        "command": "qcfg.history.wrapCmd",
-        "args": "workbench.action.quickOpen",
-        "when": "!referenceSearchTreeFocused"
-      },
-      {
-        "key": "cmd+e",
-        "command": "qcfg.history.wrapCmd",
-        "args": "workbench.action.openPreviousEditorFromHistory",
-        "when": "editorTextFocus && !inQuickOpen"
-      },
-      {
-        "key": "cmd+t",
-        "command": "qcfg.history.wrapCmd",
-        "args": "workbench.action.gotoSymbol"
-      },
-      {
-        "key": "cmd+shift+t",
-        "command": "qcfg.history.wrapCmd",
-        "args": "workbench.action.showAllSymbols"
-      },
-      {
         "key": "ctrl+i",
         "mac": "cmd+i",
         "command": "qcfg.history.forward"
@@ -2128,6 +2126,28 @@
         "key": "cmd+alt+shift+j",
         "command": "qcfg.shrinkSelectionFaster",
         "when": "editorTextFocus"
+      },
+      {
+        "command": "qcfg.historyWrap.quickOpen",
+        "key": "ctrl+enter",
+        "mac": "cmd+enter",
+        "when": "!referenceSearchTreeFocused"
+      },
+      {
+        "command": "qcfg.historyWrap.openPreviousEditorFromHistory",
+        "key": "ctrl+e",
+        "mac": "cmd+e",
+        "when": "editorTextFocus && !inQuickOpen"
+      },
+      {
+        "command": "qcfg.historyWrap.gotoSymbol",
+        "key": "ctrl+t",
+        "mac": "cmd+t"
+      },
+      {
+        "command": "qcfg.historyWrap.showAllSymbols",
+        "key": "ctrl+shift+t",
+        "mac": "cmd+shift+t"
       }
     ],
     "configuration": {
@@ -2557,6 +2577,7 @@
     "ts-node": "^10.9.1",
     "ts-prune": "^0.8.4",
     "ts-unused-exports": "^6.2.4",
+    "tsconfig-paths": "^4.0.0",
     "typescript": "^4.7.4",
     "vscode-languageserver": "^6.1.1",
     "webpack": "^5.4.0",

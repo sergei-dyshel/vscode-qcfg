@@ -1,34 +1,42 @@
 import * as nodejs from '../../library/nodejs';
 
-import { window } from 'vscode';
+import { commands, window } from 'vscode';
 import type { ExtensionJSON } from '../../library/extensionManifest';
 import { readFile, writeFile } from '../../library/filesystemNodejs';
 import { formatString } from '../../library/stringUtils';
 import { registerCommandWrapped } from '../modules/exception';
 import { extensionContext } from './extensionContext';
 
+export interface UserCommandKeybinding {
+  key: string;
+  when?: string;
+}
+
+export interface UserCommand {
+  command: string;
+  title: string;
+  keybinding?: UserCommandKeybinding;
+  callback: () => void | Promise<void>;
+}
+
 /**
  * Register new user-facing command and optionally a keybinding for it.
  */
-export function registerUserCommand(
-  command: string,
-  title: string,
-  options: { key: string; when?: string } | Record<string, never>,
-  callback: () => void | Promise<void>,
-) {
+export function registerUserCommand(cmd: UserCommand) {
   packageJson.contributes!.commands!.push({
-    command,
-    title,
+    command: cmd.command,
+    category: 'qcfg',
+    title: cmd.title,
   });
-  if ('key' in options) {
+  if (cmd.keybinding) {
     packageJson.contributes!.keybindings!.push({
-      command,
-      key: options.key.replaceAll('cmd+', 'ctrl+'),
-      mac: options.key.replaceAll('ctrl+', 'cmd+'),
-      when: options.when,
+      command: cmd.command,
+      key: cmd.keybinding.key.replaceAll('cmd+', 'ctrl+'),
+      mac: cmd.keybinding.key.replaceAll('ctrl+', 'cmd+'),
+      when: cmd.keybinding.when,
     });
   }
-  return registerCommandWrapped(command, callback);
+  return registerCommandWrapped(cmd.command, cmd.callback);
 }
 
 /**
@@ -54,9 +62,12 @@ export async function updateContributedCommands() {
       prevJson.contributes!.keybindings!.length.toString(),
       packageJson.contributes!.keybindings!.length.toString(),
     );
-    await window.showInformationMessage(
+    const answer = await window.showInformationMessage(
       `Updated auto-generated commands (${diff}), now rebuild the extension`,
+      'Exit',
     );
+    if (answer === 'Exit')
+      await commands.executeCommand('workbench.action.quit');
   }
 }
 

@@ -6,11 +6,10 @@ import type {
   TextEditor,
   TextEditorEdit,
 } from 'vscode';
-import { commands, extensions, window } from 'vscode';
+import { commands, window } from 'vscode';
 import type { DisposableLike } from '../../library/disposable';
 import { CheckError, wrapWithErrorHandler } from '../../library/exception';
 import { log } from '../../library/logging';
-import * as nodejs from '../../library/nodejs';
 import { replaceAll } from '../../library/stringUtils';
 import type {
   AnyFunction,
@@ -18,6 +17,7 @@ import type {
   PromiseType,
   VoidFunction,
 } from '../../library/templateTypes';
+import { extensionContext } from '../utils/extensionContext';
 import { Modules } from './module';
 import { showNotificationMessage } from './notificationMessage';
 
@@ -176,14 +176,10 @@ export function executeCommandHandled(command: string, ...rest: any[]) {
 
 // private
 
-const extensionPath = nodejs.fs.realpathSync(
-  extensions.getExtension('QyRoN.vscode-qcfg')!.extensionPath,
-);
-
 function simplifyErrorStack(stack: string) {
   const idx = stack.search(/\n\s+at.*extensionHostProcess.js/);
   if (idx !== -1) stack = stack.slice(0, Math.max(0, idx));
-  return replaceAll(stack, extensionPath + '/', '');
+  return replaceAll(stack, extensionContext().extensionPath + '/', '');
 }
 
 function handleErrorDuringCommand(command: string, error: any) {
@@ -211,7 +207,7 @@ async function toggleErrorMessages() {
 }
 
 function activate(context: ExtensionContext) {
-  console.info('Extension path: ' + extensionPath);
+  console.info('Extension path: ' + context.extensionPath);
   context.subscriptions.push(
     registerAsyncCommandWrapped(
       'qcfg.errors.toggleMessages',
