@@ -27,7 +27,7 @@ generate: package.json $(TASKS_SCHEMA)
 build: | package.json
 	rm -rf *.vsix >/dev/null
 	vsce package
-	git add $(wildcard vscode-qcfg-*.vsix)
+	git add vscode-qcfg-*.vsix
 	git commit --amend --no-edit
 
 install:
