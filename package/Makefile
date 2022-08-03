@@ -1,11 +1,5 @@
-deps := common tasks alternate treeSitter autoSync editing treeView \
-	relativeJumps navigation multipleSelection macTermBindings formatting \
-	plistOld search peekOutline editorGroups langClient git misc selection \
-	configRules notes diagnostics autoResize internal config commands
-deps_files := $(patsubst %,$(d)/%.json,$(deps))
 json_merger := npx json-merger --pretty \
 	--error-on-file-not-found --error-on-ref-not-found --output
-my_merger := npx ts-node src/tools/merge.ts
 
 $(d)/relativeJumps.json: src/tools/generateRelativeJumps.ts
 	npx ts-node $< >$@
@@ -23,8 +17,8 @@ $(d)/config.json: src/tools/generateConfig.ts src/library/config.ts
 	npx ts-node $^ Config.All $@
 	npx prettier --write $@
 
-package.json: $(deps_files)
-	$(my_merger) $@ $^
+package.json: $(filter-out $(d)/configRules.merge.json $(d)/configRules.schema.json,$(wildcard $(d)/*.json))
+	npx ts-node src/tools/updatePackageJson.ts $^
 	npx prettier --write $@
 
 commands:

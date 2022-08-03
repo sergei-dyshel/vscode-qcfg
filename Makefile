@@ -27,9 +27,11 @@ generate: package.json $(TASKS_SCHEMA)
 build: | package.json
 	rm -rf *.vsix >/dev/null
 	vsce package
+	git add $(wildcard vscode-qcfg-*.vsix)
+	git commit --amend --no-edit
 
 install:
-	code --install-extension=./vscode-qcfg-0.0.2.vsix
+	code --install-extension=$(wildcard vscode-qcfg-*.vsix)
 
 check_tools:
 	bin/q-vscode-cli -h >/dev/null
