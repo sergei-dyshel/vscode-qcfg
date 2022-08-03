@@ -25,6 +25,105 @@
   ],
   "license": "MIT",
   "main": "./dist/extension",
+  "scripts": {
+    "vscode:prepublish": "make generate && npm version patch --allow-same-version && webpack --mode production && make check",
+    "tsc-compile": "tsc -p .",
+    "compile": "make generate && webpack --mode none --env DEBUG && make check",
+    "tsc-watch": "tsc -watch -p ./",
+    "webpack-watch": "webpack --mode none --watch",
+    "test": "npm run compile && node ./node_modules/vscode/bin/test",
+    "check": "gts check",
+    "clean": "gts clean",
+    "fix": "gts fix",
+    "prepare": "npm run compile",
+    "pretest": "npm run compile",
+    "posttest": "npm run check"
+  },
+  "dependencies": {
+    "@rushstack/ts-command-line": "^4.7.6",
+    "callsites": "^3.1.0",
+    "case-anything": "^2.1.10",
+    "chokidar": "^3.4.3",
+    "glob": "^7.1.6",
+    "jayson": "^3.3.4",
+    "jsonc-parser": "^2.3.1",
+    "lodash": "^4.17.20",
+    "luxon": "^1.27.0",
+    "minimatch": "^3.0.4",
+    "node-loader": "^2.0.0",
+    "node-window-manager": "^2.2.4",
+    "nodegit": "file:local/nodegit.tgz",
+    "npm-check-updates": "^13.1.4",
+    "re2": "^1.17.3",
+    "shell-quote": "^1.7.2",
+    "shlex": "^2.0.2",
+    "source-map-support": "^0.5.19",
+    "sprintf-js": "^1.1.2",
+    "string-format": "^2.0.0",
+    "superstring": "github:sergei-dyshel/superstring#master-next",
+    "tempy": "^1.0.0",
+    "tree-sitter": "file:local/tree-sitter.tgz",
+    "tree-sitter-bash": "^0.19.0",
+    "tree-sitter-c": "^0.19.0",
+    "tree-sitter-cpp": "^0.19.0",
+    "tree-sitter-go": "^0.19.1",
+    "tree-sitter-javascript": "^0.19.0",
+    "tree-sitter-json": "^0.19.0",
+    "tree-sitter-lua": "github:sergei-dyshel/tree-sitter-lua#master",
+    "tree-sitter-python": "^0.19.0",
+    "tree-sitter-typescript": "^0.19.0",
+    "tree-sitter-yaml": "^0.5.0",
+    "ts-enum-util": "^4.0.2",
+    "typescript-collections": "^1.3.3",
+    "vscode-languageclient": "^6.1.3"
+  },
+  "devDependencies": {
+    "@types/circular-dependency-plugin": "^5.0.5",
+    "@types/glob": "^7.1.3",
+    "@types/lodash": "^4.14.165",
+    "@types/luxon": "^1.27.0",
+    "@types/minimatch": "^3.0.3",
+    "@types/mocha": "^8.0.3",
+    "@types/node": "^14.18.21",
+    "@types/nodegit": "^0.26.12",
+    "@types/shell-quote": "^1.7.0",
+    "@types/source-map-support": "^0.5.3",
+    "@types/sprintf-js": "^1.1.2",
+    "@types/string-format": "^2.0.0",
+    "@types/vscode": "^1.69.0",
+    "@types/webpack-env": "^1.17.0",
+    "@typescript-eslint/eslint-plugin": "^5.26.0",
+    "@typescript-eslint/parser": "^5.26.0",
+    "@vscode/test-electron": "^2.1.5",
+    "circular-dependency-plugin": "^5.2.2",
+    "deepmerge": "^4.2.2",
+    "eslint": "^8.19.0",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-import-resolver-typescript": "^2.7.1",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-jsx-a11y": "^6.5.1",
+    "eslint-plugin-only-warn": "^1.0.3",
+    "eslint-plugin-react": "^7.30.0",
+    "eslint-plugin-react-hooks": "^4.5.0",
+    "eslint-plugin-sonarjs": "^0.13.0",
+    "eslint-plugin-unicorn": "^43.0.1",
+    "gts": "^3.0.2",
+    "ifdef-loader": "^2.1.5",
+    "json-merger": "^1.1.9",
+    "prettier": "^2.6.2",
+    "prettier-plugin-organize-imports": "^3.0.0",
+    "ts-json-schema-generator": "file:local/ts-json-schema-generator.tgz",
+    "ts-loader": "^9.3.0",
+    "ts-node": "^10.9.1",
+    "ts-prune": "^0.8.4",
+    "ts-unused-exports": "^6.2.4",
+    "tsconfig-paths": "^4.0.0",
+    "typescript": "^4.7.4",
+    "vscode-languageserver": "^6.1.1",
+    "webpack": "^5.4.0",
+    "webpack-cli": "^4.2.0"
+  },
   "contributes": {
     "jsonValidation": [
       {
@@ -32,416 +131,156 @@
         "url": "./tasks.schema.json"
       }
     ],
+    "problemMatchers": [
+      {
+        "name": "gcc-relative",
+        "owner": "qcfg",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}"
+        ],
+        "severity": "warning",
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "message": 5
+        }
+      },
+      {
+        "name": "gcc-absolute",
+        "owner": "qcfg",
+        "fileLocation": "absolute",
+        "severity": "warning",
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "message": 5
+        }
+      },
+      {
+        "name": "qcfg-go",
+        "owner": "qcfg",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}"
+        ],
+        "severity": "warning",
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+): (.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "message": 4
+        }
+      }
+    ],
+    "languages": [
+      {
+        "id": "qcfg-log",
+        "aliases": [
+          "vscode-qcfg log"
+        ],
+        "extensions": [
+          ".vscode-qcfg.log"
+        ]
+      },
+      {
+        "id": "plist-old",
+        "filenames": [
+          "DefaultKeyBinding.Dict"
+        ],
+        "configuration": "./plistOld.language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "qcfg-log",
+        "scopeName": "text.log.qcfg-log",
+        "path": "./syntaxes/qcfg-log.tmLanguage.json"
+      },
+      {
+        "language": "plist-old",
+        "scopeName": "source.plist",
+        "path": "./syntaxes/Property List (Old-Style).tmLanguage.txt"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "qcfg-views-container",
+          "title": "Qcfg",
+          "icon": "$(zap)"
+        }
+      ]
+    },
+    "views": {
+      "qcfg-views-container": [
+        {
+          "id": "qcfgTreeView",
+          "name": "Custom tree",
+          "type": "tree"
+        }
+      ]
+    },
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "qcfg.treeView.removeNode",
+          "when": "view == qcfgTreeView && viewItem == removable",
+          "group": "inline"
+        },
+        {
+          "command": "qcfg.treeView.expandNode",
+          "when": "view == qcfgTreeView",
+          "group": "inline"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "qcfg.explorer.format"
+        },
+        {
+          "command": "qcfg.explorer.organizeImports"
+        }
+      ],
+      "scm/resourceState/context": [
+        {
+          "command": "qcfg.scm.format"
+        }
+      ]
+    },
     "commands": [
-      {
-        "command": "qcfg.toggleReadOnly",
-        "title": "qcfg: Toggle workspace READ-ONLY"
-      },
-      {
-        "command": "qcfg.terminal.inWorkspaceFolder",
-        "title": "qcfg: Open terminal in current workspace folder"
-      },
-      {
-        "command": "qcfg.runCommand",
-        "title": "qcfg: Run command"
-      },
-      {
-        "command": "qcfg.terminal.inFileFolder",
-        "title": "qcfg: Open terminal in current file's folder"
-      },
-      {
-        "command": "qcfg.gtags.workspace",
-        "title": "qcfg: Show gtags for entire workspace"
-      },
-      {
-        "command": "qcfg.gtags.definition",
-        "title": "qcfg: Open gtags definition (current folder and up)"
-      },
-      {
-        "command": "qcfg.search.todos",
-        "title": "qcfg: search ToDos"
-      },
-      {
-        "command": "qcfg.colors.select",
-        "title": "qcfg: Select workspace color theme"
-      },
-      {
-        "command": "qcfg.colors.persist",
-        "title": "qcfg: Persist workspace color theme"
-      },
-      {
-        "command": "qcfg.colors.clear",
-        "title": "qcfg: Clear workspace color theme"
-      },
-      {
-        "command": "qcfg.colors.inspect",
-        "title": "qcfg: Open color theme file"
-      },
-      {
-        "command": "qcfg.log.setHandlerLevel.output",
-        "title": "qcfg: Select log level for OUTPUT PANEL handler"
-      },
-      {
-        "command": "qcfg.log.setHandlerLevel.file",
-        "title": "qcfg: Select log level for FILE handler"
-      },
-      {
-        "command": "qcfg.log.setHandlerLevel.console",
-        "title": "qcfg: Select log level for CONSOLE handler"
-      },
-      {
-        "command": "qcfg.log.show",
-        "title": "qcfg: Show output panel with log"
-      },
-      {
-        "command": "qcfg.errors.toggleMessages",
-        "title": "qcfg: Toggle displaying qcfg errors as messages"
-      },
-      {
-        "command": "qcfg.fuzzySearch",
-        "title": "qcfg: Fuzzy search lines"
-      },
-      {
-        "command": "qcfg.edit.previous",
-        "title": "qcfg: Select previous text edit"
-      },
-      {
-        "command": "qcfg.edit.next",
-        "title": "qcfg: Select next text edit"
-      },
-      {
-        "command": "qcfg.edit.lastLocation",
-        "title": "qcfg: Go to last edit location"
-      },
-      {
-        "command": "qcfg.openRecent.sameWindow",
-        "title": "qcfg: Open recent workspace (SAME window)"
-      },
-      {
-        "command": "qcfg.openRecent.newWindow",
-        "title": "qcfg: Open recent workspace (NEW window)"
-      },
-      {
-        "command": "qcfg.window.focus",
-        "title": "qcfg: Focus window"
-      },
-      {
-        "command": "qcfg.remote.setDefault",
-        "title": "qcfg: Set as default remote server"
-      },
-      {
-        "command": "qcfg.tasks.show",
-        "title": "qcfg: Show list of tasks"
-      },
-      {
-        "command": "qcfg.tasks.build.last",
-        "title": "qcfg: Run last build task"
-      },
-      {
-        "command": "qcfg.tasks.build.default",
-        "title": "qcfg: Run default build task"
-      },
-      {
-        "command": "qcfg.tasks.editGlobalConfig",
-        "title": "qcfg: Edit global tasks configuration"
-      },
-      {
-        "command": "qcfg.tasks.editWorkspaceConfig",
-        "title": "qcfg: Edit workspace tasks configuration"
-      },
       {
         "command": "qcfg.alternate.switch",
         "title": "qcfg: Switch to alternate file"
       },
       {
-        "command": "qcfg.treeMode.selectParent",
-        "title": "qcfg: Tree mode - select parent node"
-      },
-      {
-        "command": "qcfg.treeMode.shrink",
-        "title": "qcfg: Tree mode - shrink selection"
-      },
-      {
-        "command": "qcfg.treeMode.selectParentListItem",
-        "title": "qcfg: Tree mode - select parent list item"
-      },
-      {
-        "command": "qcfg.treeMode.selectAdjacent",
-        "title": "qcfg: Tree mode - select sibling node (left/right/first/last)"
-      },
-      {
-        "command": "qcfg.treeMode.moveSelection",
-        "title": "qcfg: Tree mode - swap selected nodes left/right"
-      },
-      {
-        "command": "qcfg.treeMode.extentSelection",
-        "title": "qcfg: Tree mode - extend selection to sibling node (left/right/first/last)"
-      },
-      {
-        "command": "qcfg.syntaxTree.show",
-        "title": "qcfg: Show syntax tree in side panel"
-      },
-      {
-        "command": "qcfg.treeMode.enter",
-        "title": "qcfg: Tree mode - enter"
-      },
-      {
-        "command": "qcfg.treeMode.exit",
-        "title": "qcfg: Tree mode - exit"
-      },
-      {
-        "command": "qcfg.treeMode.reverseSelection",
-        "title": "qcfg: Tree mode - reverse selection"
+        "title": "qcfg: Toggle auto-resize",
+        "command": "qcfg.autoResize.toggle"
       },
       {
         "command": "qcfg.autoSync.toggle",
         "title": "qcfg: AutoSync toggle"
       },
       {
-        "command": "qcfg.insertPath",
-        "title": "qcfg: Show open file dialog and insert resulting path"
+        "command": "qcfg.block.goDown",
+        "title": "qcfg: Jump down to the start of nearest block"
       },
       {
         "command": "qcfg.block.goUp",
         "title": "qcfg: Jump up to the start of nearest block"
       },
       {
-        "command": "qcfg.block.goDown",
-        "title": "qcfg: Jump down to the start of nearest block"
-      },
-      {
-        "command": "qcfg.block.selectUp",
-        "title": "qcfg: Select up to the start of nearest block"
-      },
-      {
         "command": "qcfg.block.selectDown",
         "title": "qcfg: Select down to the start of nearest block"
       },
       {
-        "command": "qcfg.selectLines",
-        "title": "qcfg: Select lines"
-      },
-      {
-        "command": "qcfg.swapCursorAndAnchor",
-        "title": "qcfg: Swap cursor and anchor"
-      },
-      {
-        "command": "qcfg.smartPaste",
-        "title": "qcfg: Smart paste"
-      },
-      {
-        "command": "qcfg.smartCopy",
-        "title": "qcfg: Smart copy"
-      },
-      {
-        "command": "qcfg.swapWithMark",
-        "title": "qcfg: Swap selection and marked text"
-      },
-      {
-        "command": "qcfg.surroundWith",
-        "title": "qcfg: Surround text with..."
-      },
-      {
-        "command": "qcfg.navigateBackToPreviousFile",
-        "title": "qcfg: Navigate back to previous file"
-      },
-      {
-        "command": "qcfg.stripBrackets",
-        "title": "qcfg: Stripe brackets/quotes etc."
-      },
-      {
-        "command": "qcfg.goToDefinition",
-        "title": "qcfg: Go to definition"
-      },
-      {
-        "command": "qcfg.wrapWithBracketsInline",
-        "title": "qcfg: Wrap with brackets (if/for...)"
-      },
-      {
-        "command": "qcfg.peekReferences",
-        "title": "qcfg: Peek references"
-      },
-      {
-        "command": "qcfg.selectWordUnderCursor",
-        "title": "qcfg: Select word under cursor"
-      },
-      {
-        "command": "qcfg.toggleRelativeLineNumbers",
-        "title": "qcfg: Toggle relative line numbers"
-      },
-      {
-        "command": "qcfg.resolveCompletions",
-        "title": "qcfg: Resolve completions (and dump to console)"
-      },
-      {
-        "command": "qcfg.renameReferences",
-        "title": "qcfg: Rename all references of current symbol"
-      },
-      {
-        "command": "qcfg.renameReferences.withConfirmation",
-        "title": "qcfg: Rename all references of current symbol (with confirmation)"
-      },
-      {
-        "command": "qcfg.selectReferences",
-        "title": "qcfg: Select references in current document"
-      },
-      {
-        "command": "qcfg.treeView.removeNode",
-        "title": "Remove",
-        "enablement": "view == qcfgTreeView && viewItem == removable",
-        "icon": "$(close)"
-      },
-      {
-        "command": "qcfg.treeView.expandNode",
-        "title": "Expand",
-        "enablement": "view == qcfgTreeView",
-        "icon": "$(expand-all)"
-      },
-      {
-        "command": "qcfg.history.wrapCmd",
-        "title": "qcfg: Update history after running command (passed as argument)"
-      },
-      {
-        "command": "qcfg.history.backward",
-        "title": "qcfg: Go backward in history"
-      },
-      {
-        "command": "qcfg.history.forward",
-        "title": "qcfg: Go forward in history"
-      },
-      {
-        "command": "qcfg.multipleSelection.moveMarkDown",
-        "title": "qcfg: Multiple selections - mark next"
-      },
-      {
-        "command": "qcfg.multipleSelection.moveMarkUp",
-        "title": "qcfg: Multiple selections - mark prev"
-      },
-      {
-        "command": "qcfg.multipleSelection.unselectMarked",
-        "title": "qcfg: Multiple selections - unselect marked"
-      },
-      {
-        "command": "qcfg.multipleSelection.resetToMark",
-        "title": "qcfg: Multiple selections - reset selection to mark"
-      },
-      {
-        "command": "qcfg.explorer.format",
-        "title": "Format",
-        "when": "explorerViewletVisible && filesExplorerFocus && !explorerResourceReadonly && !inputFocus"
-      },
-      {
-        "command": "qcfg.explorer.organizeImports",
-        "title": "Organize imports",
-        "when": "explorerViewletVisible && filesExplorerFocus && !explorerResourceReadonly && !inputFocus"
-      },
-      {
-        "command": "qcfg.scm.format",
-        "title": "Format selected files"
-      },
-      {
-        "title": "qcfg: Show search last locations in panel",
-        "command": "qcfg.showLastLocationsInPanel"
-      },
-      {
-        "title": "qcfg: Show search last locations in quick pick",
-        "command": "qcfg.quickPickLastLocations"
-      },
-      {
-        "title": "qcfg: Select search last locations in current editor",
-        "command": "qcfg.selectLastLocations"
-      },
-      {
-        "title": "qcfg: Rerun one of previous searches",
-        "command": "qcfg.rerunPreviousSearch"
-      },
-      {
-        "title": "qcfg: Rerun last search",
-        "command": "qcfg.rerunLastSearch"
-      },
-      {
-        "command": "qcfg.search.word",
-        "title": "qcfg: Search word under cursor (CURRENT workspace folder only)"
-      },
-      {
-        "command": "qcfg.search.word.allFolders",
-        "title": "qcfg: Search word under cursor (ALL workspace folders)"
-      },
-      {
-        "title": "qcfg: Search selected text (CURRENT workspace folder only)",
-        "command": "qcfg.search.selectedText"
-      },
-      {
-        "title": "qcfg: Search selected text (ALL workspace folders)",
-        "command": "qcfg.search.selectedText.allFolders"
-      },
-      {
-        "title": "qcfg: Search definitions",
-        "command": "qcfg.search.definitions"
-      },
-      {
-        "title": "qcfg: Search references",
-        "command": "qcfg.search.references"
-      },
-      {
-        "title": "qcfg: Search proper references",
-        "command": "qcfg.search.properReferences"
-      },
-      {
-        "title": "qcfg: Search implementations",
-        "command": "qcfg.search.implementations"
-      },
-      {
-        "title": "qcfg: Search declarations",
-        "command": "qcfg.search.declarations"
-      },
-      {
-        "title": "qcfg: Find definitions using gtags/ctags",
-        "command": "qcfg.search.GtagsCtagsDefinition"
-      },
-      {
-        "command": "qcfg.showTypeHierarchy",
-        "title": "qcfg: Peek Type Hierarchy"
-      },
-      {
-        "command": "qcfg.showCallHierarchy",
-        "title": "qcfg: Peek Call Hierarchy"
-      },
-      {
-        "command": "qcfg.peekFlatOutline",
-        "title": "qcfg: Peek document outline (flat)"
-      },
-      {
-        "command": "qcfg.focusEditorBeside",
-        "title": "qcfg: Focus editor beside"
-      },
-      {
-        "command": "qcfg.syncToEditorBeside",
-        "title": "qcfg: Sync position to editor beside"
-      },
-      {
-        "command": "qcfg.langClient.restart",
-        "title": "qcfg: Restart language clients"
-      },
-      {
-        "command": "qcfg.langClient.stop",
-        "title": "qcfg: Stop language clients"
-      },
-      {
-        "command": "qcfg.langClient.refresh",
-        "title": "qcfg: Refresh language clients"
-      },
-      {
-        "command": "qcfg.langClient.refreshOrRestart",
-        "title": "qcfg: Refresh or restart language clients"
-      },
-      {
-        "command": "qcfg.langClient.compare",
-        "title": "qcfg: Compare language clients on current symbol"
-      },
-      {
-        "command": "qcfg.clangd.dumpAST",
-        "title": "qcfg: Clangd - dump AST"
+        "command": "qcfg.block.selectUp",
+        "title": "qcfg: Select up to the start of nearest block"
       },
       {
         "command": "qcfg.ccls.assignments",
@@ -452,24 +291,8 @@
         "title": "qcfg: ccls - find specific references"
       },
       {
-        "command": "qcfg.git.dump",
-        "title": "qcfg: Git - dump info"
-      },
-      {
-        "command": "qcfg.git.weblinks",
-        "title": "qcfg: Git - Web links"
-      },
-      {
-        "command": "qcfg.openInExternalApp",
-        "title": "qcfg: Open in external application"
-      },
-      {
-        "command": "qcfg.showInFileManager",
-        "title": "qcfg: Show in OS file manager"
-      },
-      {
-        "command": "qcfg.openRealPath",
-        "title": "qcfg: Open current file with its real path"
+        "command": "qcfg.clangd.dumpAST",
+        "title": "qcfg: Clangd - dump AST"
       },
       {
         "command": "qcfg.codeActions.autoFixFile",
@@ -484,28 +307,202 @@
         "title": "qcfg: Dump code actions for current file"
       },
       {
-        "command": "qcfg.semanticHighlight.dump",
-        "title": "qcfg: Dump semantic tokens on selection"
+        "command": "qcfg.colors.clear",
+        "title": "qcfg: Clear workspace color theme"
       },
       {
-        "command": "qcfg.showCallHierarchyInPanel",
-        "title": "qcfg: Show call hierachy in side panel"
+        "command": "qcfg.colors.inspect",
+        "title": "qcfg: Open color theme file"
+      },
+      {
+        "command": "qcfg.colors.persist",
+        "title": "qcfg: Persist workspace color theme"
+      },
+      {
+        "command": "qcfg.colors.select",
+        "title": "qcfg: Select workspace color theme"
+      },
+      {
+        "command": "qcfg.edit.lastLocation",
+        "title": "qcfg: Go to last edit location"
+      },
+      {
+        "command": "qcfg.edit.next",
+        "title": "qcfg: Select next text edit"
+      },
+      {
+        "command": "qcfg.edit.previous",
+        "title": "qcfg: Select previous text edit"
+      },
+      {
+        "command": "qcfg.errors.toggleMessages",
+        "title": "qcfg: Toggle displaying qcfg errors as messages"
       },
       {
         "command": "qcfg.expandSelectionFaster",
         "title": "qcfg: Expand selection faster"
       },
       {
-        "command": "qcfg.shrinkSelectionFaster",
-        "title": "qcfg: Shrink selection faster"
+        "command": "qcfg.explorer.format",
+        "title": "Format",
+        "when": "explorerViewletVisible && filesExplorerFocus && !explorerResourceReadonly && !inputFocus"
+      },
+      {
+        "command": "qcfg.explorer.organizeImports",
+        "title": "Organize imports",
+        "when": "explorerViewletVisible && filesExplorerFocus && !explorerResourceReadonly && !inputFocus"
+      },
+      {
+        "command": "qcfg.focusEditorBeside",
+        "title": "qcfg: Focus editor beside"
+      },
+      {
+        "command": "qcfg.fuzzySearch",
+        "title": "qcfg: Fuzzy search lines"
+      },
+      {
+        "command": "qcfg.git.dump",
+        "title": "qcfg: Git - dump info"
+      },
+      {
+        "command": "qcfg.git.weblinks",
+        "title": "qcfg: Git - Web links"
+      },
+      {
+        "command": "qcfg.goToDefinition",
+        "title": "qcfg: Go to definition"
+      },
+      {
+        "command": "qcfg.gtags.definition",
+        "title": "qcfg: Open gtags definition (current folder and up)"
+      },
+      {
+        "command": "qcfg.gtags.workspace",
+        "title": "qcfg: Show gtags for entire workspace"
+      },
+      {
+        "command": "qcfg.history.backward",
+        "title": "qcfg: Go backward in history"
+      },
+      {
+        "command": "qcfg.history.forward",
+        "title": "qcfg: Go forward in history"
+      },
+      {
+        "command": "qcfg.history.wrapCmd",
+        "title": "qcfg: Update history after running command (passed as argument)"
+      },
+      {
+        "command": "qcfg.historyWrap.gotoSymbol",
+        "category": "qcfg",
+        "title": "qcfg: Go to Symbol in File..."
+      },
+      {
+        "command": "qcfg.historyWrap.openPreviousEditorFromHistory",
+        "category": "qcfg",
+        "title": "qcfg: Quick Open Previous Editor from History"
+      },
+      {
+        "command": "qcfg.historyWrap.quickOpen",
+        "category": "qcfg",
+        "title": "qcfg: Go to file..."
+      },
+      {
+        "command": "qcfg.historyWrap.showAllSymbols",
+        "category": "qcfg",
+        "title": "qcfg: Go to Symbol in Workspace..."
+      },
+      {
+        "command": "qcfg.insertPath",
+        "title": "qcfg: Show open file dialog and insert resulting path"
+      },
+      {
+        "command": "qcfg.langClient.compare",
+        "title": "qcfg: Compare language clients on current symbol"
+      },
+      {
+        "command": "qcfg.langClient.refresh",
+        "title": "qcfg: Refresh language clients"
+      },
+      {
+        "command": "qcfg.langClient.refreshOrRestart",
+        "title": "qcfg: Refresh or restart language clients"
+      },
+      {
+        "command": "qcfg.langClient.restart",
+        "title": "qcfg: Restart language clients"
+      },
+      {
+        "command": "qcfg.langClient.stop",
+        "title": "qcfg: Stop language clients"
+      },
+      {
+        "command": "qcfg.log.setHandlerLevel.console",
+        "title": "qcfg: Select log level for CONSOLE handler"
+      },
+      {
+        "command": "qcfg.log.setHandlerLevel.file",
+        "title": "qcfg: Select log level for FILE handler"
+      },
+      {
+        "command": "qcfg.log.setHandlerLevel.output",
+        "title": "qcfg: Select log level for OUTPUT PANEL handler"
+      },
+      {
+        "command": "qcfg.log.show",
+        "title": "qcfg: Show output panel with log"
+      },
+      {
+        "command": "qcfg.multipleSelection.moveMarkDown",
+        "title": "qcfg: Multiple selections - mark next"
+      },
+      {
+        "command": "qcfg.multipleSelection.moveMarkUp",
+        "title": "qcfg: Multiple selections - mark prev"
+      },
+      {
+        "command": "qcfg.multipleSelection.resetToMark",
+        "title": "qcfg: Multiple selections - reset selection to mark"
+      },
+      {
+        "command": "qcfg.multipleSelection.unselectMarked",
+        "title": "qcfg: Multiple selections - unselect marked"
+      },
+      {
+        "command": "qcfg.navigateBackToPreviousFile",
+        "title": "qcfg: Navigate back to previous file"
       },
       {
         "command": "qcfg.newNote",
         "title": "qcfg: New note"
       },
       {
-        "title": "qcfg: Toggle auto-resize",
-        "command": "qcfg.autoResize.toggle"
+        "command": "qcfg.openInExternalApp",
+        "title": "qcfg: Open in external application"
+      },
+      {
+        "command": "qcfg.openRealPath",
+        "title": "qcfg: Open current file with its real path"
+      },
+      {
+        "command": "qcfg.openRecent.newWindow",
+        "title": "qcfg: Open recent workspace (NEW window)"
+      },
+      {
+        "command": "qcfg.openRecent.sameWindow",
+        "title": "qcfg: Open recent workspace (SAME window)"
+      },
+      {
+        "command": "qcfg.peekFlatOutline",
+        "title": "qcfg: Peek document outline (flat)"
+      },
+      {
+        "command": "qcfg.peekReferences",
+        "title": "qcfg: Peek references"
+      },
+      {
+        "command": "qcfg.persistent.backupGlobal",
+        "title": "qcfg: Backup GLOBAL persistent state"
       },
       {
         "command": "qcfg.persistent.browseGlobal",
@@ -516,42 +513,308 @@
         "title": "qcfg: Browse WORKSPACE persistent state"
       },
       {
-        "command": "qcfg.persistent.backupGlobal",
-        "title": "qcfg: Backup GLOBAL persistent state"
+        "command": "qcfg.persistent.openGlobalStorage",
+        "title": "qcfg: Open GLOBAL persistent storage folder"
       },
       {
         "command": "qcfg.persistent.restoreGlobal",
         "title": "qcfg: Restore GLOBAL persistent state"
       },
       {
-        "command": "qcfg.persistent.openGlobalStorage",
-        "title": "qcfg: Open GLOBAL persistent storage folder"
+        "title": "qcfg: Show search last locations in quick pick",
+        "command": "qcfg.quickPickLastLocations"
       },
       {
-        "command": "qcfg.historyWrap.quickOpen",
-        "category": "qcfg",
-        "title": "qcfg: Go to file..."
+        "command": "qcfg.remote.setDefault",
+        "title": "qcfg: Set as default remote server"
       },
       {
-        "command": "qcfg.historyWrap.openPreviousEditorFromHistory",
-        "category": "qcfg",
-        "title": "qcfg: Quick Open Previous Editor from History"
+        "command": "qcfg.renameReferences",
+        "title": "qcfg: Rename all references of current symbol"
       },
       {
-        "command": "qcfg.historyWrap.gotoSymbol",
-        "category": "qcfg",
-        "title": "qcfg: Go to Symbol in File..."
+        "command": "qcfg.renameReferences.withConfirmation",
+        "title": "qcfg: Rename all references of current symbol (with confirmation)"
       },
       {
-        "command": "qcfg.historyWrap.showAllSymbols",
-        "category": "qcfg",
-        "title": "qcfg: Go to Symbol in Workspace..."
+        "title": "qcfg: Rerun last search",
+        "command": "qcfg.rerunLastSearch"
+      },
+      {
+        "title": "qcfg: Rerun one of previous searches",
+        "command": "qcfg.rerunPreviousSearch"
+      },
+      {
+        "command": "qcfg.resolveCompletions",
+        "title": "qcfg: Resolve completions (and dump to console)"
+      },
+      {
+        "command": "qcfg.runCommand",
+        "title": "qcfg: Run command"
+      },
+      {
+        "command": "qcfg.scm.format",
+        "title": "Format selected files"
+      },
+      {
+        "title": "qcfg: Find definitions using gtags/ctags",
+        "command": "qcfg.search.GtagsCtagsDefinition"
+      },
+      {
+        "title": "qcfg: Search declarations",
+        "command": "qcfg.search.declarations"
+      },
+      {
+        "title": "qcfg: Search definitions",
+        "command": "qcfg.search.definitions"
+      },
+      {
+        "title": "qcfg: Search implementations",
+        "command": "qcfg.search.implementations"
+      },
+      {
+        "title": "qcfg: Search proper references",
+        "command": "qcfg.search.properReferences"
+      },
+      {
+        "title": "qcfg: Search references",
+        "command": "qcfg.search.references"
+      },
+      {
+        "title": "qcfg: Search selected text (CURRENT workspace folder only)",
+        "command": "qcfg.search.selectedText"
+      },
+      {
+        "title": "qcfg: Search selected text (ALL workspace folders)",
+        "command": "qcfg.search.selectedText.allFolders"
+      },
+      {
+        "command": "qcfg.search.todos",
+        "title": "qcfg: search ToDos"
+      },
+      {
+        "command": "qcfg.search.word",
+        "title": "qcfg: Search word under cursor (CURRENT workspace folder only)"
+      },
+      {
+        "command": "qcfg.search.word.allFolders",
+        "title": "qcfg: Search word under cursor (ALL workspace folders)"
+      },
+      {
+        "title": "qcfg: Select search last locations in current editor",
+        "command": "qcfg.selectLastLocations"
+      },
+      {
+        "command": "qcfg.selectLines",
+        "title": "qcfg: Select lines"
+      },
+      {
+        "command": "qcfg.selectReferences",
+        "title": "qcfg: Select references in current document"
+      },
+      {
+        "command": "qcfg.selectWordUnderCursor",
+        "title": "qcfg: Select word under cursor"
+      },
+      {
+        "command": "qcfg.semanticHighlight.dump",
+        "title": "qcfg: Dump semantic tokens on selection"
+      },
+      {
+        "command": "qcfg.showCallHierarchy",
+        "title": "qcfg: Peek Call Hierarchy"
+      },
+      {
+        "command": "qcfg.showCallHierarchyInPanel",
+        "title": "qcfg: Show call hierachy in side panel"
+      },
+      {
+        "command": "qcfg.showInFileManager",
+        "title": "qcfg: Show in OS file manager"
+      },
+      {
+        "title": "qcfg: Show search last locations in panel",
+        "command": "qcfg.showLastLocationsInPanel"
+      },
+      {
+        "command": "qcfg.showTypeHierarchy",
+        "title": "qcfg: Peek Type Hierarchy"
+      },
+      {
+        "command": "qcfg.shrinkSelectionFaster",
+        "title": "qcfg: Shrink selection faster"
+      },
+      {
+        "command": "qcfg.smartCopy",
+        "title": "qcfg: Smart copy"
+      },
+      {
+        "command": "qcfg.smartPaste",
+        "title": "qcfg: Smart paste"
+      },
+      {
+        "command": "qcfg.stripBrackets",
+        "title": "qcfg: Stripe brackets/quotes etc."
+      },
+      {
+        "command": "qcfg.surroundWith",
+        "title": "qcfg: Surround text with..."
+      },
+      {
+        "command": "qcfg.swapCursorAndAnchor",
+        "title": "qcfg: Swap cursor and anchor"
+      },
+      {
+        "command": "qcfg.swapWithMark",
+        "title": "qcfg: Swap selection and marked text"
+      },
+      {
+        "command": "qcfg.syncToEditorBeside",
+        "title": "qcfg: Sync position to editor beside"
+      },
+      {
+        "command": "qcfg.syntaxTree.show",
+        "title": "qcfg: Show syntax tree in side panel"
+      },
+      {
+        "command": "qcfg.tasks.build.default",
+        "title": "qcfg: Run default build task"
+      },
+      {
+        "command": "qcfg.tasks.build.last",
+        "title": "qcfg: Run last build task"
+      },
+      {
+        "command": "qcfg.tasks.editGlobalConfig",
+        "title": "qcfg: Edit global tasks configuration"
+      },
+      {
+        "command": "qcfg.tasks.editWorkspaceConfig",
+        "title": "qcfg: Edit workspace tasks configuration"
+      },
+      {
+        "command": "qcfg.tasks.show",
+        "title": "qcfg: Show list of tasks"
+      },
+      {
+        "command": "qcfg.terminal.inFileFolder",
+        "title": "qcfg: Open terminal in current file's folder"
+      },
+      {
+        "command": "qcfg.terminal.inWorkspaceFolder",
+        "title": "qcfg: Open terminal in current workspace folder"
+      },
+      {
+        "command": "qcfg.toggleReadOnly",
+        "title": "qcfg: Toggle workspace READ-ONLY"
+      },
+      {
+        "command": "qcfg.toggleRelativeLineNumbers",
+        "title": "qcfg: Toggle relative line numbers"
+      },
+      {
+        "command": "qcfg.treeMode.enter",
+        "title": "qcfg: Tree mode - enter"
+      },
+      {
+        "command": "qcfg.treeMode.exit",
+        "title": "qcfg: Tree mode - exit"
+      },
+      {
+        "command": "qcfg.treeMode.extentSelection",
+        "title": "qcfg: Tree mode - extend selection to sibling node (left/right/first/last)"
+      },
+      {
+        "command": "qcfg.treeMode.moveSelection",
+        "title": "qcfg: Tree mode - swap selected nodes left/right"
+      },
+      {
+        "command": "qcfg.treeMode.reverseSelection",
+        "title": "qcfg: Tree mode - reverse selection"
+      },
+      {
+        "command": "qcfg.treeMode.selectAdjacent",
+        "title": "qcfg: Tree mode - select sibling node (left/right/first/last)"
+      },
+      {
+        "command": "qcfg.treeMode.selectParent",
+        "title": "qcfg: Tree mode - select parent node"
+      },
+      {
+        "command": "qcfg.treeMode.selectParentListItem",
+        "title": "qcfg: Tree mode - select parent list item"
+      },
+      {
+        "command": "qcfg.treeMode.shrink",
+        "title": "qcfg: Tree mode - shrink selection"
+      },
+      {
+        "command": "qcfg.treeView.expandNode",
+        "title": "Expand",
+        "enablement": "view == qcfgTreeView",
+        "icon": "$(expand-all)"
+      },
+      {
+        "command": "qcfg.treeView.removeNode",
+        "title": "Remove",
+        "enablement": "view == qcfgTreeView && viewItem == removable",
+        "icon": "$(close)"
+      },
+      {
+        "command": "qcfg.window.focus",
+        "title": "qcfg: Focus window"
+      },
+      {
+        "command": "qcfg.wrapWithBracketsInline",
+        "title": "qcfg: Wrap with brackets (if/for...)"
       }
     ],
     "keybindings": [
       {
-        "key": "alt+o",
-        "command": "qcfg.edit.previous",
+        "key": "cmd+j",
+        "command": "editor.action.smartSelect.expand",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "cmd+shift+j",
+        "command": "editor.action.smartSelect.shrink",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "alt+a",
+        "command": "qcfg.alternate.switch"
+      },
+      {
+        "key": "alt+down",
+        "command": "qcfg.block.goDown",
+        "when": "editorTextFocus && !qcfgTreeMode"
+      },
+      {
+        "key": "alt+up",
+        "command": "qcfg.block.goUp",
+        "when": "editorTextFocus && !qcfgTreeMode"
+      },
+      {
+        "key": "alt+shift+down",
+        "command": "qcfg.block.selectDown",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "alt+shift+up",
+        "command": "qcfg.block.selectUp",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "alt+.",
+        "command": "qcfg.codeActions.autoFixFile"
+      },
+      {
+        "key": "shift+alt+.",
+        "command": "qcfg.codeActions.autoFixWorkspace"
+      },
+      {
+        "key": "cmd+m",
+        "command": "qcfg.edit.lastLocation",
         "when": "editorFocus"
       },
       {
@@ -560,113 +823,9 @@
         "when": "editorFocus"
       },
       {
-        "key": "cmd+m",
-        "command": "qcfg.edit.lastLocation",
+        "key": "alt+o",
+        "command": "qcfg.edit.previous",
         "when": "editorFocus"
-      },
-      {
-        "key": "alt+q",
-        "command": "workbench.action.closeEditorInAllGroups"
-      },
-      {
-        "key": "ctrl+q",
-        "mac": "cmd+q",
-        "command": "workbench.action.toggleSidebarVisibility"
-      },
-      {
-        "key": "ctrl+w",
-        "mac": "cmd+w",
-        "command": "workbench.action.togglePanel"
-      },
-      {
-        "key": "ctrl+shift+;",
-        "mac": "cmd+shift+;",
-        "command": "qcfg.runCommand"
-      },
-      {
-        "key": "ctrl+u",
-        "mac": "cmd+u",
-        "command": "qcfg.gtags.workspace"
-      },
-      {
-        "key": "ctrl+l",
-        "mac": "cmd+l",
-        "command": "qcfg.fuzzySearch"
-      },
-      {
-        "key": "ctrl+k ctrl+o",
-        "mac": "cmd+k cmd+o",
-        "command": "qcfg.openRecent.sameWindow"
-      },
-      {
-        "key": "ctrl+k shift+ctrl+o",
-        "mac": "cmd+k shift+cmd+o",
-        "command": "qcfg.openRecent.newWindow"
-      },
-      {
-        "key": "alt+t",
-        "command": "qcfg.tasks.show"
-      },
-      {
-        "key": "ctrl+k ctrl+b",
-        "mac": "cmd+k cmd+b",
-        "command": "qcfg.tasks.build.last"
-      },
-      {
-        "key": "ctrl+k ctrl+shift+b",
-        "mac": "cmd+k cmd+shift+b",
-        "command": "qcfg.tasks.build.default"
-      },
-      {
-        "key": "alt+s",
-        "command": "qcfg.tasks.runConfigured",
-        "args": [
-          "syg",
-          {
-            "folder": "all"
-          }
-        ]
-      },
-      {
-        "key": "ctrl+k ctrl+l",
-        "mac": "cmd+k cmd+l",
-        "command": "qcfg.tasks.runConfigured",
-        "args": [
-          "jump2line",
-          {
-            "folder": "all"
-          }
-        ]
-      },
-      {
-        "key": "cmd+k cmd+j",
-        "command": "qcfg.treeMode.enter",
-        "when": "editorTextFocus && !qcfgTreeMode"
-      },
-      {
-        "key": "escape",
-        "command": "qcfg.treeMode.exit",
-        "when": "editorTextFocus && qcfgTreeMode"
-      },
-      {
-        "key": "alt+enter",
-        "command": "qcfg.treeMode.reverseSelection",
-        "when": "editorTextFocus && qcfgTreeMode"
-      },
-      {
-        "key": "up",
-        "command": "qcfg.treeMode.selectParent",
-        "when": "editorTextFocus && qcfgTreeMode"
-      },
-      {
-        "key": "down",
-        "command": "qcfg.treeMode.shrink",
-        "when": "editorTextFocus && qcfgTreeMode"
-      },
-      {
-        "key": "cmd+up",
-        "command": "qcfg.treeMode.selectParentListItem",
-        "when": "editorTextFocus && qcfgTreeMode"
       },
       {
         "key": "cmd+down",
@@ -674,176 +833,19 @@
         "when": "editorTextFocus && qcfgTreeMode"
       },
       {
-        "key": "left",
-        "command": "qcfg.treeMode.selectSibling",
-        "when": "editorTextFocus && qcfgTreeMode",
-        "args": "left"
-      },
-      {
-        "key": "right",
-        "command": "qcfg.treeMode.selectSibling",
-        "when": "editorTextFocus && qcfgTreeMode",
-        "args": "right"
-      },
-      {
-        "key": "cmd+left",
-        "command": "qcfg.treeMode.selectSibling",
-        "when": "editorTextFocus && qcfgTreeMode",
-        "args": "first"
-      },
-      {
-        "key": "cmd+right",
-        "command": "qcfg.treeMode.selectSibling",
-        "when": "editorTextFocus && qcfgTreeMode",
-        "args": "last"
-      },
-      {
-        "key": "cmd+alt+left",
-        "command": "qcfg.treeMode.moveSelection",
-        "when": "editorTextFocus && qcfgTreeMode",
-        "args": "left"
-      },
-      {
-        "key": "cmd+alt+right",
-        "command": "qcfg.treeMode.moveSelection",
-        "when": "editorTextFocus && qcfgTreeMode",
-        "args": "right"
-      },
-      {
-        "key": "shift+left",
-        "command": "qcfg.treeMode.extendSelection",
-        "when": "editorTextFocus && qcfgTreeMode",
-        "args": "left"
-      },
-      {
-        "key": "shift+right",
-        "command": "qcfg.treeMode.extendSelection",
-        "when": "editorTextFocus && qcfgTreeMode",
-        "args": "right"
-      },
-      {
-        "key": "shift+cmd+left",
-        "command": "qcfg.treeMode.extendSelection",
-        "when": "editorTextFocus && qcfgTreeMode",
-        "args": "first"
-      },
-      {
-        "key": "shift+cmd+right",
-        "command": "qcfg.treeMode.extendSelection",
-        "when": "editorTextFocus && qcfgTreeMode",
-        "args": "last"
-      },
-      {
-        "key": "alt+up",
-        "command": "qcfg.block.goUp",
-        "when": "editorTextFocus && !qcfgTreeMode"
-      },
-      {
-        "key": "alt+down",
-        "command": "qcfg.block.goDown",
-        "when": "editorTextFocus && !qcfgTreeMode"
-      },
-      {
-        "key": "alt+shift+up",
-        "command": "qcfg.block.selectUp",
+        "key": "cmd+alt+j",
+        "command": "qcfg.expandSelectionFaster",
         "when": "editorTextFocus"
       },
       {
-        "key": "alt+shift+down",
-        "command": "qcfg.block.selectDown",
-        "when": "editorTextFocus"
+        "key": "ctrl+space",
+        "mac": "cmd+space",
+        "command": "qcfg.focusEditorBeside"
       },
       {
-        "key": "alt+a",
-        "command": "qcfg.alternate.switch"
-      },
-      {
-        "key": "alt+enter",
-        "command": "qcfg.swapCursorAndAnchor",
-        "when": "editorHasSelection && editorTextFocus && !qcfgTreeMode"
-      },
-      {
-        "key": "ctrl+b",
-        "mac": "cmd+b",
-        "command": "qcfg.selectLines",
-        "when": "editorTextFocus"
-      },
-      {
-        "key": "ctrl+backspace",
-        "mac": "cmd+backspace",
-        "command": "qcfg.stripBrackets",
-        "when": "editorTextFocus && editorHasSelection"
-      },
-      {
-        "key": "ctrl+v",
-        "mac": "cmd+v",
-        "command": "qcfg.smartPaste",
-        "when": "editorTextFocus && !editorReadonly"
-      },
-      {
-        "key": "cmd+c",
-        "command": "qcfg.smartCopy",
-        "when": "editorTextFocus"
-      },
-      {
-        "key": "cmd+shift+v",
-        "command": "qcfg.swapWithMark",
-        "when": "editorTextFocus && !editorReadonly"
-      },
-      {
-        "key": "shift+9",
-        "command": "qcfg.surroundWith",
-        "when": "editorTextFocus && editorHasSelection",
-        "args": [
-          "(",
-          ")",
-          "left"
-        ]
-      },
-      {
-        "key": "shift+0",
-        "command": "qcfg.surroundWith",
-        "when": "editorTextFocus && editorHasSelection",
-        "args": [
-          "(",
-          ")",
-          "right"
-        ]
-      },
-      {
-        "key": "[",
-        "command": "qcfg.surroundWith",
-        "when": "editorTextFocus && editorHasSelection",
-        "args": [
-          "[",
-          "]",
-          "left"
-        ]
-      },
-      {
-        "key": "]",
-        "command": "qcfg.surroundWith",
-        "when": "editorTextFocus && editorHasSelection",
-        "args": [
-          "[",
-          "]",
-          "right"
-        ]
-      },
-      {
-        "key": "cmd+f2",
-        "command": "qcfg.renameReferences",
-        "when": "editorTextFocus"
-      },
-      {
-        "key": "cmd+shift+f2",
-        "command": "qcfg.renameReferences.withConfirmation",
-        "when": "editorTextFocus"
-      },
-      {
-        "key": "alt+f2",
-        "command": "qcfg.selectReferences",
-        "when": "editorTextFocus"
+        "key": "ctrl+l",
+        "mac": "cmd+l",
+        "command": "qcfg.fuzzySearch"
       },
       {
         "key": "ctrl+5",
@@ -1866,14 +1868,399 @@
         "args": -49
       },
       {
-        "key": "ctrl+i",
-        "mac": "cmd+i",
-        "command": "qcfg.history.forward"
+        "key": "ctrl+u",
+        "mac": "cmd+u",
+        "command": "qcfg.gtags.workspace"
       },
       {
         "key": "ctrl+o",
         "mac": "cmd+o",
         "command": "qcfg.history.backward"
+      },
+      {
+        "key": "ctrl+i",
+        "mac": "cmd+i",
+        "command": "qcfg.history.forward"
+      },
+      {
+        "command": "qcfg.historyWrap.gotoSymbol",
+        "key": "ctrl+t",
+        "mac": "cmd+t"
+      },
+      {
+        "command": "qcfg.historyWrap.openPreviousEditorFromHistory",
+        "key": "ctrl+e",
+        "mac": "cmd+e",
+        "when": "editorTextFocus && !inQuickOpen"
+      },
+      {
+        "command": "qcfg.historyWrap.quickOpen",
+        "key": "ctrl+enter",
+        "mac": "cmd+enter",
+        "when": "!referenceSearchTreeFocused"
+      },
+      {
+        "command": "qcfg.historyWrap.showAllSymbols",
+        "key": "ctrl+shift+t",
+        "mac": "cmd+shift+t"
+      },
+      {
+        "key": "down",
+        "command": "qcfg.multipleSelection.moveMarkDown",
+        "when": "editorTextFocus && editorHasMultipleSelections && !suggestWidgetVisible"
+      },
+      {
+        "key": "up",
+        "command": "qcfg.multipleSelection.moveMarkUp",
+        "when": "editorTextFocus && editorHasMultipleSelections && !suggestWidgetVisible"
+      },
+      {
+        "key": "escape",
+        "command": "qcfg.multipleSelection.resetToMark",
+        "when": "editorTextFocus && editorHasMultipleSelections && !suggestWidgetVisible && qcfgMultipleSelectionsMarker"
+      },
+      {
+        "key": "tab",
+        "command": "qcfg.multipleSelection.unselectMarked",
+        "when": "editorTextFocus && editorHasMultipleSelections && !suggestWidgetVisible"
+      },
+      {
+        "key": "ctrl+k shift+ctrl+o",
+        "mac": "cmd+k shift+cmd+o",
+        "command": "qcfg.openRecent.newWindow"
+      },
+      {
+        "key": "ctrl+k ctrl+o",
+        "mac": "cmd+k cmd+o",
+        "command": "qcfg.openRecent.sameWindow"
+      },
+      {
+        "key": "enter",
+        "command": "qcfg.peek.openReference",
+        "when": "listFocus && referenceSearchVisible && !inputFocus && !treeElementCanCollapse && !treeElementCanExpand"
+      },
+      {
+        "key": "cmd+enter",
+        "command": "qcfg.peek.openReferenceToSide",
+        "when": "listFocus && referenceSearchVisible && !inputFocus && !treeElementCanCollapse && !treeElementCanExpand"
+      },
+      {
+        "command": "qcfg.peekFlatOutline",
+        "key": "cmd+,"
+      },
+      {
+        "key": "alt+shift+g",
+        "command": "qcfg.quickPickLastLocations",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "cmd+f2",
+        "command": "qcfg.renameReferences",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "cmd+shift+f2",
+        "command": "qcfg.renameReferences.withConfirmation",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "cmd+g",
+        "command": "qcfg.rerunLastSearch",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "cmd+shift+g",
+        "command": "qcfg.rerunPreviousSearch",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "ctrl+shift+;",
+        "mac": "cmd+shift+;",
+        "command": "qcfg.runCommand"
+      },
+      {
+        "key": "alt+d",
+        "command": "qcfg.search.GtagsCtagsDefinition"
+      },
+      {
+        "mac": "cmd+d",
+        "command": "qcfg.search.definitions",
+        "when": "editorHasDefinitionProvider && editorTextFocus"
+      },
+      {
+        "mac": "cmd+r",
+        "command": "qcfg.search.references",
+        "when": "editorHasReferenceProvider && editorTextFocus"
+      },
+      {
+        "key": "alt+r",
+        "command": "qcfg.search.selectedText",
+        "when": "editorTextFocus && editorHasSelection"
+      },
+      {
+        "key": "alt+shift+r",
+        "command": "qcfg.search.selectedText.allFolders",
+        "when": "editorTextFocus && editorHasSelection"
+      },
+      {
+        "key": "alt+shift+r",
+        "command": "qcfg.search.word",
+        "when": "editorTextFocus && !editorHasSelection"
+      },
+      {
+        "key": "alt+r",
+        "command": "qcfg.search.word.allFolders",
+        "when": "editorTextFocus && !editorHasSelection"
+      },
+      {
+        "key": "ctrl+b",
+        "mac": "cmd+b",
+        "command": "qcfg.selectLines",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "alt+f2",
+        "command": "qcfg.selectReferences",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "alt+g",
+        "command": "qcfg.showLastLocationsInPanel",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "cmd+alt+shift+j",
+        "command": "qcfg.shrinkSelectionFaster",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "cmd+c",
+        "command": "qcfg.smartCopy",
+        "when": "editorTextFocus"
+      },
+      {
+        "key": "ctrl+v",
+        "mac": "cmd+v",
+        "command": "qcfg.smartPaste",
+        "when": "editorTextFocus && !editorReadonly"
+      },
+      {
+        "key": "ctrl+backspace",
+        "mac": "cmd+backspace",
+        "command": "qcfg.stripBrackets",
+        "when": "editorTextFocus && editorHasSelection"
+      },
+      {
+        "key": "shift+9",
+        "command": "qcfg.surroundWith",
+        "when": "editorTextFocus && editorHasSelection",
+        "args": [
+          "(",
+          ")",
+          "left"
+        ]
+      },
+      {
+        "key": "shift+0",
+        "command": "qcfg.surroundWith",
+        "when": "editorTextFocus && editorHasSelection",
+        "args": [
+          "(",
+          ")",
+          "right"
+        ]
+      },
+      {
+        "key": "[",
+        "command": "qcfg.surroundWith",
+        "when": "editorTextFocus && editorHasSelection",
+        "args": [
+          "[",
+          "]",
+          "left"
+        ]
+      },
+      {
+        "key": "]",
+        "command": "qcfg.surroundWith",
+        "when": "editorTextFocus && editorHasSelection",
+        "args": [
+          "[",
+          "]",
+          "right"
+        ]
+      },
+      {
+        "key": "alt+enter",
+        "command": "qcfg.swapCursorAndAnchor",
+        "when": "editorHasSelection && editorTextFocus && !qcfgTreeMode"
+      },
+      {
+        "key": "cmd+shift+v",
+        "command": "qcfg.swapWithMark",
+        "when": "editorTextFocus && !editorReadonly"
+      },
+      {
+        "key": "cmd+k cmd+shift+left",
+        "command": "qcfg.syncEditorToDirection",
+        "args": [
+          "left"
+        ]
+      },
+      {
+        "key": "cmd+k cmd+shift+right",
+        "command": "qcfg.syncEditorToDirection",
+        "args": [
+          "right"
+        ]
+      },
+      {
+        "key": "cmd+k cmd+shift+down",
+        "command": "qcfg.syncEditorToDirection",
+        "args": [
+          "down"
+        ]
+      },
+      {
+        "key": "cmd+k cmd+shift+up",
+        "command": "qcfg.syncEditorToDirection",
+        "args": [
+          "up"
+        ]
+      },
+      {
+        "key": "shift+ctrl+space",
+        "mac": "shift+cmd+space",
+        "command": "qcfg.syncToEditorBeside"
+      },
+      {
+        "key": "ctrl+k ctrl+shift+b",
+        "mac": "cmd+k cmd+shift+b",
+        "command": "qcfg.tasks.build.default"
+      },
+      {
+        "key": "ctrl+k ctrl+b",
+        "mac": "cmd+k cmd+b",
+        "command": "qcfg.tasks.build.last"
+      },
+      {
+        "key": "alt+s",
+        "command": "qcfg.tasks.runConfigured",
+        "args": [
+          "syg",
+          {
+            "folder": "all"
+          }
+        ]
+      },
+      {
+        "key": "ctrl+k ctrl+l",
+        "mac": "cmd+k cmd+l",
+        "command": "qcfg.tasks.runConfigured",
+        "args": [
+          "jump2line",
+          {
+            "folder": "all"
+          }
+        ]
+      },
+      {
+        "key": "alt+t",
+        "command": "qcfg.tasks.show"
+      },
+      {
+        "key": "cmd+k cmd+j",
+        "command": "qcfg.treeMode.enter",
+        "when": "editorTextFocus && !qcfgTreeMode"
+      },
+      {
+        "key": "escape",
+        "command": "qcfg.treeMode.exit",
+        "when": "editorTextFocus && qcfgTreeMode"
+      },
+      {
+        "key": "shift+left",
+        "command": "qcfg.treeMode.extendSelection",
+        "when": "editorTextFocus && qcfgTreeMode",
+        "args": "left"
+      },
+      {
+        "key": "shift+right",
+        "command": "qcfg.treeMode.extendSelection",
+        "when": "editorTextFocus && qcfgTreeMode",
+        "args": "right"
+      },
+      {
+        "key": "shift+cmd+left",
+        "command": "qcfg.treeMode.extendSelection",
+        "when": "editorTextFocus && qcfgTreeMode",
+        "args": "first"
+      },
+      {
+        "key": "shift+cmd+right",
+        "command": "qcfg.treeMode.extendSelection",
+        "when": "editorTextFocus && qcfgTreeMode",
+        "args": "last"
+      },
+      {
+        "key": "cmd+alt+left",
+        "command": "qcfg.treeMode.moveSelection",
+        "when": "editorTextFocus && qcfgTreeMode",
+        "args": "left"
+      },
+      {
+        "key": "cmd+alt+right",
+        "command": "qcfg.treeMode.moveSelection",
+        "when": "editorTextFocus && qcfgTreeMode",
+        "args": "right"
+      },
+      {
+        "key": "alt+enter",
+        "command": "qcfg.treeMode.reverseSelection",
+        "when": "editorTextFocus && qcfgTreeMode"
+      },
+      {
+        "key": "up",
+        "command": "qcfg.treeMode.selectParent",
+        "when": "editorTextFocus && qcfgTreeMode"
+      },
+      {
+        "key": "cmd+up",
+        "command": "qcfg.treeMode.selectParentListItem",
+        "when": "editorTextFocus && qcfgTreeMode"
+      },
+      {
+        "key": "left",
+        "command": "qcfg.treeMode.selectSibling",
+        "when": "editorTextFocus && qcfgTreeMode",
+        "args": "left"
+      },
+      {
+        "key": "right",
+        "command": "qcfg.treeMode.selectSibling",
+        "when": "editorTextFocus && qcfgTreeMode",
+        "args": "right"
+      },
+      {
+        "key": "cmd+left",
+        "command": "qcfg.treeMode.selectSibling",
+        "when": "editorTextFocus && qcfgTreeMode",
+        "args": "first"
+      },
+      {
+        "key": "cmd+right",
+        "command": "qcfg.treeMode.selectSibling",
+        "when": "editorTextFocus && qcfgTreeMode",
+        "args": "last"
+      },
+      {
+        "key": "down",
+        "command": "qcfg.treeMode.shrink",
+        "when": "editorTextFocus && qcfgTreeMode"
+      },
+      {
+        "key": "alt+q",
+        "command": "workbench.action.closeEditorInAllGroups"
       },
       {
         "key": "ctrl+shift+o",
@@ -1884,36 +2271,6 @@
         "key": "ctrl+shift+i",
         "mac": "cmd+shift+i",
         "command": "workbench.action.navigateForward"
-      },
-      {
-        "key": "cmd+enter",
-        "command": "qcfg.peek.openReferenceToSide",
-        "when": "listFocus && referenceSearchVisible && !inputFocus && !treeElementCanCollapse && !treeElementCanExpand"
-      },
-      {
-        "key": "enter",
-        "command": "qcfg.peek.openReference",
-        "when": "listFocus && referenceSearchVisible && !inputFocus && !treeElementCanCollapse && !treeElementCanExpand"
-      },
-      {
-        "key": "tab",
-        "command": "qcfg.multipleSelection.unselectMarked",
-        "when": "editorTextFocus && editorHasMultipleSelections && !suggestWidgetVisible"
-      },
-      {
-        "key": "up",
-        "command": "qcfg.multipleSelection.moveMarkUp",
-        "when": "editorTextFocus && editorHasMultipleSelections && !suggestWidgetVisible"
-      },
-      {
-        "key": "down",
-        "command": "qcfg.multipleSelection.moveMarkDown",
-        "when": "editorTextFocus && editorHasMultipleSelections && !suggestWidgetVisible"
-      },
-      {
-        "key": "escape",
-        "command": "qcfg.multipleSelection.resetToMark",
-        "when": "editorTextFocus && editorHasMultipleSelections && !suggestWidgetVisible && qcfgMultipleSelectionsMarker"
       },
       {
         "key": "cmd+a",
@@ -2004,198 +2361,19 @@
         }
       },
       {
-        "key": "alt+d",
-        "command": "qcfg.search.GtagsCtagsDefinition"
+        "key": "ctrl+w",
+        "mac": "cmd+w",
+        "command": "workbench.action.togglePanel"
       },
       {
-        "mac": "cmd+d",
-        "command": "qcfg.search.definitions",
-        "when": "editorHasDefinitionProvider && editorTextFocus"
-      },
-      {
-        "mac": "cmd+r",
-        "command": "qcfg.search.references",
-        "when": "editorHasReferenceProvider && editorTextFocus"
-      },
-      {
-        "key": "alt+r",
-        "command": "qcfg.search.word.allFolders",
-        "when": "editorTextFocus && !editorHasSelection"
-      },
-      {
-        "key": "alt+shift+r",
-        "command": "qcfg.search.word",
-        "when": "editorTextFocus && !editorHasSelection"
-      },
-      {
-        "key": "alt+r",
-        "command": "qcfg.search.selectedText",
-        "when": "editorTextFocus && editorHasSelection"
-      },
-      {
-        "key": "alt+shift+r",
-        "command": "qcfg.search.selectedText.allFolders",
-        "when": "editorTextFocus && editorHasSelection"
-      },
-      {
-        "key": "cmd+g",
-        "command": "qcfg.rerunLastSearch",
-        "when": "editorTextFocus"
-      },
-      {
-        "key": "cmd+shift+g",
-        "command": "qcfg.rerunPreviousSearch",
-        "when": "editorTextFocus"
-      },
-      {
-        "key": "alt+g",
-        "command": "qcfg.showLastLocationsInPanel",
-        "when": "editorTextFocus"
-      },
-      {
-        "key": "alt+shift+g",
-        "command": "qcfg.quickPickLastLocations",
-        "when": "editorTextFocus"
-      },
-      {
-        "command": "qcfg.peekFlatOutline",
-        "key": "cmd+,"
-      },
-      {
-        "key": "ctrl+space",
-        "mac": "cmd+space",
-        "command": "qcfg.focusEditorBeside"
-      },
-      {
-        "key": "shift+ctrl+space",
-        "mac": "shift+cmd+space",
-        "command": "qcfg.syncToEditorBeside"
-      },
-      {
-        "key": "cmd+k cmd+shift+left",
-        "command": "qcfg.syncEditorToDirection",
-        "args": [
-          "left"
-        ]
-      },
-      {
-        "key": "cmd+k cmd+shift+right",
-        "command": "qcfg.syncEditorToDirection",
-        "args": [
-          "right"
-        ]
-      },
-      {
-        "key": "cmd+k cmd+shift+down",
-        "command": "qcfg.syncEditorToDirection",
-        "args": [
-          "down"
-        ]
-      },
-      {
-        "key": "cmd+k cmd+shift+up",
-        "command": "qcfg.syncEditorToDirection",
-        "args": [
-          "up"
-        ]
-      },
-      {
-        "key": "alt+.",
-        "command": "qcfg.codeActions.autoFixFile"
-      },
-      {
-        "key": "shift+alt+.",
-        "command": "qcfg.codeActions.autoFixWorkspace"
-      },
-      {
-        "key": "cmd+j",
-        "command": "editor.action.smartSelect.expand",
-        "when": "editorTextFocus"
-      },
-      {
-        "key": "cmd+shift+j",
-        "command": "editor.action.smartSelect.shrink",
-        "when": "editorTextFocus"
-      },
-      {
-        "key": "cmd+alt+j",
-        "command": "qcfg.expandSelectionFaster",
-        "when": "editorTextFocus"
-      },
-      {
-        "key": "cmd+alt+shift+j",
-        "command": "qcfg.shrinkSelectionFaster",
-        "when": "editorTextFocus"
-      },
-      {
-        "command": "qcfg.historyWrap.quickOpen",
-        "key": "ctrl+enter",
-        "mac": "cmd+enter",
-        "when": "!referenceSearchTreeFocused"
-      },
-      {
-        "command": "qcfg.historyWrap.openPreviousEditorFromHistory",
-        "key": "ctrl+e",
-        "mac": "cmd+e",
-        "when": "editorTextFocus && !inQuickOpen"
-      },
-      {
-        "command": "qcfg.historyWrap.gotoSymbol",
-        "key": "ctrl+t",
-        "mac": "cmd+t"
-      },
-      {
-        "command": "qcfg.historyWrap.showAllSymbols",
-        "key": "ctrl+shift+t",
-        "mac": "cmd+shift+t"
+        "key": "ctrl+q",
+        "mac": "cmd+q",
+        "command": "workbench.action.toggleSidebarVisibility"
       }
     ],
     "configuration": {
       "title": "Qcfg configuration",
       "properties": {
-        "qcfg.configRules": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "definitions": {},
-          "description": "Array of configuration rules per file type, filename etc.",
-          "items": {
-            "additionalProperties": false,
-            "properties": {
-              "glob": {
-                "description": "Glob pattern to match against file name.",
-                "type": "string"
-              },
-              "language": {
-                "description": "Language ID of file",
-                "type": "string"
-              },
-              "quickFixCodeActions": {
-                "items": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "items": [
-                        {
-                          "type": "string"
-                        },
-                        {
-                          "type": "number"
-                        }
-                      ],
-                      "maxItems": 2,
-                      "minItems": 2,
-                      "type": "array"
-                    }
-                  ]
-                },
-                "type": "array"
-              }
-            },
-            "type": "object"
-          },
-          "type": "array"
-        },
         "qcfg.autoResize.steps": {
           "type": "number",
           "description": "Number of steps by which to auto-resize active editor",
@@ -2358,229 +2536,51 @@
           "type": "boolean",
           "description": "Add ccls provider for call hierarchy",
           "default": true
-        }
-      }
-    },
-    "problemMatchers": [
-      {
-        "name": "gcc-relative",
-        "owner": "qcfg",
-        "fileLocation": [
-          "relative",
-          "${workspaceFolder}"
-        ],
-        "severity": "warning",
-        "pattern": {
-          "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
-          "file": 1,
-          "line": 2,
-          "column": 3,
-          "message": 5
-        }
-      },
-      {
-        "name": "gcc-absolute",
-        "owner": "qcfg",
-        "fileLocation": "absolute",
-        "severity": "warning",
-        "pattern": {
-          "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
-          "file": 1,
-          "line": 2,
-          "column": 3,
-          "message": 5
-        }
-      },
-      {
-        "name": "qcfg-go",
-        "owner": "qcfg",
-        "fileLocation": [
-          "relative",
-          "${workspaceFolder}"
-        ],
-        "severity": "warning",
-        "pattern": {
-          "regexp": "^(.*):(\\d+):(\\d+): (.*)$",
-          "file": 1,
-          "line": 2,
-          "column": 3,
-          "message": 4
-        }
-      }
-    ],
-    "languages": [
-      {
-        "id": "qcfg-log",
-        "aliases": [
-          "vscode-qcfg log"
-        ],
-        "extensions": [
-          ".vscode-qcfg.log"
-        ]
-      },
-      {
-        "id": "plist-old",
-        "filenames": [
-          "DefaultKeyBinding.Dict"
-        ],
-        "configuration": "./plistOld.language-configuration.json"
-      }
-    ],
-    "grammars": [
-      {
-        "language": "qcfg-log",
-        "scopeName": "text.log.qcfg-log",
-        "path": "./syntaxes/qcfg-log.tmLanguage.json"
-      },
-      {
-        "language": "plist-old",
-        "scopeName": "source.plist",
-        "path": "./syntaxes/Property List (Old-Style).tmLanguage.txt"
-      }
-    ],
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "qcfg-views-container",
-          "title": "Qcfg",
-          "icon": "$(zap)"
-        }
-      ]
-    },
-    "views": {
-      "qcfg-views-container": [
-        {
-          "id": "qcfgTreeView",
-          "name": "Custom tree",
-          "type": "tree"
-        }
-      ]
-    },
-    "menus": {
-      "view/item/context": [
-        {
-          "command": "qcfg.treeView.removeNode",
-          "when": "view == qcfgTreeView && viewItem == removable",
-          "group": "inline"
         },
-        {
-          "command": "qcfg.treeView.expandNode",
-          "when": "view == qcfgTreeView",
-          "group": "inline"
+        "qcfg.configRules": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "definitions": {},
+          "description": "Array of configuration rules per file type, filename etc.",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "glob": {
+                "description": "Glob pattern to match against file name.",
+                "type": "string"
+              },
+              "language": {
+                "description": "Language ID of file",
+                "type": "string"
+              },
+              "quickFixCodeActions": {
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "items": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ],
+                      "maxItems": 2,
+                      "minItems": 2,
+                      "type": "array"
+                    }
+                  ]
+                },
+                "type": "array"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array"
         }
-      ],
-      "explorer/context": [
-        {
-          "command": "qcfg.explorer.format"
-        },
-        {
-          "command": "qcfg.explorer.organizeImports"
-        }
-      ],
-      "scm/resourceState/context": [
-        {
-          "command": "qcfg.scm.format"
-        }
-      ]
+      }
     }
-  },
-  "scripts": {
-    "vscode:prepublish": "make generate && webpack --mode production && make check",
-    "tsc-compile": "tsc -p .",
-    "compile": "make generate && webpack --mode none --env DEBUG && make check",
-    "tsc-watch": "tsc -watch -p ./",
-    "webpack-watch": "webpack --mode none --watch",
-    "test": "npm run compile && node ./node_modules/vscode/bin/test",
-    "check": "gts check",
-    "clean": "gts clean",
-    "fix": "gts fix",
-    "prepare": "npm run compile",
-    "pretest": "npm run compile",
-    "posttest": "npm run check"
-  },
-  "dependencies": {
-    "@rushstack/ts-command-line": "^4.7.6",
-    "callsites": "^3.1.0",
-    "case-anything": "^2.1.10",
-    "chokidar": "^3.4.3",
-    "glob": "^7.1.6",
-    "jayson": "^3.3.4",
-    "jsonc-parser": "^2.3.1",
-    "lodash": "^4.17.20",
-    "luxon": "^1.27.0",
-    "minimatch": "^3.0.4",
-    "node-loader": "^2.0.0",
-    "node-window-manager": "^2.2.4",
-    "nodegit": "file:local/nodegit.tgz",
-    "npm-check-updates": "^13.1.4",
-    "re2": "^1.17.3",
-    "shell-quote": "^1.7.2",
-    "shlex": "^2.0.2",
-    "source-map-support": "^0.5.19",
-    "sprintf-js": "^1.1.2",
-    "string-format": "^2.0.0",
-    "superstring": "github:sergei-dyshel/superstring#master-next",
-    "tempy": "^1.0.0",
-    "tree-sitter": "file:local/tree-sitter.tgz",
-    "tree-sitter-bash": "^0.19.0",
-    "tree-sitter-c": "^0.19.0",
-    "tree-sitter-cpp": "^0.19.0",
-    "tree-sitter-go": "^0.19.1",
-    "tree-sitter-javascript": "^0.19.0",
-    "tree-sitter-json": "^0.19.0",
-    "tree-sitter-lua": "github:sergei-dyshel/tree-sitter-lua#master",
-    "tree-sitter-python": "^0.19.0",
-    "tree-sitter-typescript": "^0.19.0",
-    "tree-sitter-yaml": "^0.5.0",
-    "ts-enum-util": "^4.0.2",
-    "typescript-collections": "^1.3.3",
-    "vscode-languageclient": "^6.1.3"
-  },
-  "devDependencies": {
-    "@types/circular-dependency-plugin": "^5.0.5",
-    "@types/glob": "^7.1.3",
-    "@types/lodash": "^4.14.165",
-    "@types/luxon": "^1.27.0",
-    "@types/minimatch": "^3.0.3",
-    "@types/mocha": "^8.0.3",
-    "@types/node": "^14.18.21",
-    "@types/nodegit": "^0.26.12",
-    "@types/shell-quote": "^1.7.0",
-    "@types/source-map-support": "^0.5.3",
-    "@types/sprintf-js": "^1.1.2",
-    "@types/string-format": "^2.0.0",
-    "@types/vscode": "^1.69.0",
-    "@types/webpack-env": "^1.17.0",
-    "@typescript-eslint/eslint-plugin": "^5.26.0",
-    "@typescript-eslint/parser": "^5.26.0",
-    "@vscode/test-electron": "^2.1.5",
-    "circular-dependency-plugin": "^5.2.2",
-    "deepmerge": "^4.2.2",
-    "eslint": "^8.19.0",
-    "eslint-config-airbnb": "^19.0.4",
-    "eslint-config-prettier": "^8.5.0",
-    "eslint-import-resolver-typescript": "^2.7.1",
-    "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-jsx-a11y": "^6.5.1",
-    "eslint-plugin-only-warn": "^1.0.3",
-    "eslint-plugin-react": "^7.30.0",
-    "eslint-plugin-react-hooks": "^4.5.0",
-    "eslint-plugin-sonarjs": "^0.13.0",
-    "eslint-plugin-unicorn": "^43.0.1",
-    "gts": "^3.0.2",
-    "ifdef-loader": "^2.1.5",
-    "json-merger": "^1.1.9",
-    "prettier": "^2.6.2",
-    "prettier-plugin-organize-imports": "^3.0.0",
-    "ts-json-schema-generator": "file:local/ts-json-schema-generator.tgz",
-    "ts-loader": "^9.3.0",
-    "ts-node": "^10.9.1",
-    "ts-prune": "^0.8.4",
-    "ts-unused-exports": "^6.2.4",
-    "tsconfig-paths": "^4.0.0",
-    "typescript": "^4.7.4",
-    "vscode-languageserver": "^6.1.1",
-    "webpack": "^5.4.0",
-    "webpack-cli": "^4.2.0"
   }
 }

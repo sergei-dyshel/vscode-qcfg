@@ -13,38 +13,6 @@
         "enablement": "view == qcfgTreeView",
         "icon": "$(expand-all)"
       }
-    ],
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "qcfg-views-container",
-          "title": "Qcfg",
-          "icon": "$(zap)"
-        }
-      ]
-    },
-    "views": {
-      "qcfg-views-container": [
-        {
-          "id": "qcfgTreeView",
-          "name": "Custom tree",
-          "type": "tree"
-        }
-      ]
-    },
-    "menus": {
-      "view/item/context": [
-        {
-          "command": "qcfg.treeView.removeNode",
-          "when": "view == qcfgTreeView && viewItem == removable",
-          "group": "inline"
-        },
-        {
-          "command": "qcfg.treeView.expandNode",
-          "when": "view == qcfgTreeView",
-          "group": "inline"
-        }
-      ]
-    }
+    ]
   }
 }
