@@ -7,6 +7,7 @@ import {
   window,
   workspace,
 } from 'vscode';
+import { globAsync } from '../../library/fileUtils';
 import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
 import { concatArrays, mapObjectToArray } from '../../library/tsUtils';
@@ -16,7 +17,6 @@ import { filterAsync, mapSomeAsync, MAP_UNDEFINED } from './async';
 import type { ConfigFilePair } from './config';
 import { getConfigFileNames, watchConfigFile } from './config';
 import { registerAsyncCommandWrapped } from './exception';
-import { globAsync } from './fileUtils';
 import { parseJsonFileSync } from './json';
 import { Modules } from './module';
 import type {

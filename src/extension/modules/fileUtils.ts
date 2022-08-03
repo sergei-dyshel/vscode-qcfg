@@ -1,5 +1,4 @@
 import * as chokidar from 'chokidar';
-import * as glob from 'glob';
 import * as tempy from 'tempy';
 import type { Location, Uri, ViewColumn, WorkspaceFolder } from 'vscode';
 import {
@@ -18,13 +17,6 @@ import { documentRangePreview } from '../utils/document';
 import { QuickPickLocations } from '../utils/quickPick';
 import { handleAsyncStd } from './exception';
 import { getActiveTextEditor } from './utils';
-
-export const globSync = glob.sync;
-export const globAsync: (
-  pattern: string,
-  options?: glob.IOptions,
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, unicorn/prefer-module
-) => Promise<string[]> = nodejs.util.promisify(require('glob'));
 
 export function getTempFile() {
   return tempy.file();
