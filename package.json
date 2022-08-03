@@ -2,7 +2,7 @@
   "name": "vscode-qcfg",
   "displayName": "vscode-qcfg",
   "description": "My personal extension",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "publisher": "QyRoN",
   "repository": {
     "type": "git",
