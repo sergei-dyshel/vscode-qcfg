@@ -26,6 +26,11 @@ $(TASKS_SCHEMA): src/extension/modules/tasks/params.ts
 
 generate: package.json $(TASKS_SCHEMA)
 
+compile:
+	$(make) generate
+	webpack --mode none --env DEBUG
+	$(make) check
+
 build: | package.json
 	rm -rf *.vsix >/dev/null
 	vsce package

@@ -26,10 +26,10 @@
   "license": "MIT",
   "main": "./dist/extension",
   "scripts": {
-    "vscode:prepublish": "make prepublish ",
-    "tsc-compile": "tsc -p .",
-    "compile": "make generate && webpack --mode none --env DEBUG && make check",
+    "vscode:prepublish": "make prepublish",
+    "compile": "make compile",
     "tsc-watch": "tsc -watch -p ./",
+    "tsc-compile": "tsc -p .",
     "webpack-watch": "webpack --mode none --watch",
     "test": "npm run compile && node ./node_modules/vscode/bin/test",
     "check": "gts check",
