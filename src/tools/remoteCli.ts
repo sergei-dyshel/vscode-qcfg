@@ -304,24 +304,15 @@ class Cli extends CommandLineParser {
   instance!: Instance;
   multiClient!: MultiClient;
 
-  private verbose!: CommandLineIntegerParameter;
-  private instanceParam!: CommandLineChoiceParameter;
-  private folderParam!: CommandLineStringParameter;
+  private readonly verbose: CommandLineIntegerParameter;
+  private readonly instanceParam: CommandLineChoiceParameter;
+  private readonly folderParam: CommandLineStringParameter;
 
   constructor() {
     super({
-      toolFilename: 'remoteCli',
+      toolFilename: 'q-vscode-cli',
       toolDescription: 'Control vscode remotely',
     });
-    this.addAction(new OpenFileAction(this));
-    this.addAction(new OpenFolderAction(this));
-    this.addAction(new IdentifyAction(this));
-    this.addAction(new CommandAction(this));
-    this.addAction(new ReloadAction(this));
-    this.addAction(new OpenSshAction(this));
-  }
-
-  protected onDefineParameters() {
     this.verbose = this.defineIntegerParameter({
       parameterLongName: '--verbose',
       parameterShortName: '-v',
@@ -343,7 +334,16 @@ class Cli extends CommandLineParser {
       description: 'Find instance by workspace folder',
       argumentName: 'FOLDER',
     });
+    this.addAction(new OpenFileAction(this));
+    this.addAction(new OpenFolderAction(this));
+    this.addAction(new IdentifyAction(this));
+    this.addAction(new CommandAction(this));
+    this.addAction(new ReloadAction(this));
+    this.addAction(new OpenSshAction(this));
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  protected onDefineParameters(): void {}
 
   getClient(
     instance: Exclude<Instance, Instance.UNDEFINED | Instance.ALL>,
@@ -393,7 +393,7 @@ class Cli extends CommandLineParser {
 }
 
 async function main() {
-  return new Cli().execute();
+  return new Cli().executeWithoutErrorHandling();
 }
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises, unicorn/prefer-top-level-await
