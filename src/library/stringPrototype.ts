@@ -5,6 +5,11 @@ interface String {
    * Search first occurence of pattern and return the match's [start, length]
    */
   searchFirst: (pattern: string | RegExp) => [number, number] | undefined;
+
+  /**
+   * Replace dashes by underscores
+   */
+  dashesToUnderscores: () => string;
 }
 
 String.prototype.searchFirst = function (
@@ -19,4 +24,8 @@ String.prototype.searchFirst = function (
   const match = pattern.exec(this);
   if (!match) return;
   return [match.index, match[0].length];
+};
+
+String.prototype.dashesToUnderscores = function (this: string) {
+  return this.replaceAll('-', '_');
 };

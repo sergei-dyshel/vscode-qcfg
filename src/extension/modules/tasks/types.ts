@@ -19,6 +19,11 @@ import {
 } from 'vscode';
 import { log, LogLevel } from '../../../library/logging';
 import * as nodejs from '../../../library/nodejs';
+import { baseName, stripExt } from '../../../library/pathUtils';
+import {
+  expandTemplateLiteral,
+  TemplateLiteralError,
+} from '../../../library/stringUtils';
 import { concatArrays } from '../../../library/tsUtils';
 import { getDocumentWorkspaceFolder } from '../../utils/document';
 import { mapAsync, mapAsyncSequential } from '../async';
@@ -65,23 +70,12 @@ export function isFolderTask(params: BaseTaskParams) {
  * current file, line, selected text etc.
  */
 export class TaskContext {
-  SUBSTITUTE_VARS = [
-    'absoluteFile',
-    'relativeFile',
-    'relativeFileNoExt',
-    'cursorWord',
-    'workspaceFolder',
-    'lineNumber',
-    'selectedText',
-    'allWorkspaceFolders',
-  ];
-
   constructor(folder?: WorkspaceFolder) {
     const editor = window.activeTextEditor;
     this.workspaceFolder = folder ?? currentWorkspaceFolder();
     if (editor) {
       const document = editor.document;
-      this.vars['absoluteFile'] = document.fileName;
+      this.vars['file'] = document.fileName;
       if (!editor.selection.isEmpty)
         this.vars['selectedText'] = document.getText(editor.selection);
       if (editor.selection.isEmpty)
@@ -94,15 +88,13 @@ export class TaskContext {
           this.vars['cursorWord'] = wordCtx.word;
         }
       }
+      this.vars['stripExt'] = stripExt;
+      this.vars['baseName'] = baseName;
       if (this.workspaceFolder) {
         this.vars['workspaceFolder'] = this.workspaceFolder.uri.fsPath;
         this.vars['relativeFile'] = nodejs.path.relative(
           this.vars['workspaceFolder'],
           document.fileName,
-        );
-        this.vars['relativeFileNoExt'] = this.vars['relativeFile'].replace(
-          /\.[^./]+$/,
-          '',
         );
       }
     }
@@ -113,20 +105,19 @@ export class TaskContext {
   }
 
   substitute(text: string): string {
-    return text.replace(/\${([A-Za-z]+)}/g, (_, varname: string) => {
-      if (!this.SUBSTITUTE_VARS.includes(varname))
-        throw new ParamsError(`Unexpected variable "${varname}"`);
-      const sub = this.vars[varname] as string | undefined;
-      if (!sub) throw new TaskVarSubstituteError(varname);
-      return sub;
-    });
+    try {
+      return expandTemplateLiteral(text, this.vars);
+    } catch (err) {
+      if (err instanceof TemplateLiteralError)
+        throw new ValidationError(`Could not expand template: ${err.message}`);
+      throw err;
+    }
   }
 
   readonly workspaceFolder?: WorkspaceFolder;
-  readonly vars: Substitute = {};
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  readonly vars: Record<string, string | Function> = {};
 }
-
-type Substitute = Record<string, string>;
 
 /**
  * Task definition (params) has mistakes.

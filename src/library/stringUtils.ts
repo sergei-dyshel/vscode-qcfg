@@ -1,6 +1,7 @@
 // TODO: rename to string.ts
 
 import * as stringFormat from 'string-format';
+import { memoizeWithExc } from './memoize';
 
 export const formatString = stringFormat.default;
 
@@ -108,6 +109,49 @@ export function expandTemplate(
     }
     return sub;
   });
+}
+
+/**
+ * Thrown by {@link expandTemplateLiteral} in case of template literal compiling/expanding error
+ */
+export class TemplateLiteralError extends Error {}
+
+function buildTemplateFunction(keys: string[], template: string) {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
+    return new Function(...keys, 'return `' + template + '`;');
+  } catch (err) {
+    if (err instanceof SyntaxError)
+      throw new TemplateLiteralError(
+        `Error compiling template '${template}' with vars ${keys}: ${err.message}`,
+      );
+    throw err;
+  }
+}
+
+const memoizedBuildTemplateFunction = memoizeWithExc(
+  TemplateLiteralError,
+  buildTemplateFunction,
+);
+/**
+ * Expand ES6 template literal dynamically
+ *
+ * NOTE: INSECURE!!! since all global variables/functions are available
+ */
+export function expandTemplateLiteral(
+  template: string,
+  vars: Record<string, unknown>,
+): string {
+  const func = memoizedBuildTemplateFunction(Object.keys(vars), template);
+  try {
+    return func(...Object.values(vars));
+  } catch (err) {
+    if (err instanceof ReferenceError)
+      throw new TemplateLiteralError(
+        `Error expanding template '${template}': ${err.message}`,
+      );
+    throw err;
+  }
 }
 
 export {
