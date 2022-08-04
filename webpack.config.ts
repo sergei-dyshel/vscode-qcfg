@@ -1,14 +1,12 @@
+/* eslint-disable import/no-import-module-exports */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable import/no-extraneous-dependencies */
 // @ts-check
 
-// eslint-disable-next-line import/no-import-module-exports
-import path from 'node:path';
-// eslint-disable-next-line import/no-import-module-exports
-import type webpack from 'webpack';
-
-// eslint-disable-next-line import/no-import-module-exports
 import CircularDependencyPlugin from 'circular-dependency-plugin';
+import path from 'node:path';
+import type webpack from 'webpack';
+import { DefinePlugin } from 'webpack';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const generateConfig = (env: any): webpack.Configuration => ({
@@ -26,6 +24,9 @@ const generateConfig = (env: any): webpack.Configuration => ({
       // eslint-disable-next-line unicorn/better-regex
       include: /.*.ts/,
       failOnError: true,
+    }),
+    new DefinePlugin({
+      PACKAGE_VERSION: JSON.stringify(require('./package.json').version),
     }),
   ],
   output: {
@@ -81,7 +82,7 @@ const generateConfig = (env: any): webpack.Configuration => ({
     rules: [
       {
         test: /\.ts$/,
-        exclude: /node_modules/,
+        exclude: [/node_modules/],
         use: [
           {
             loader: 'ts-loader',

@@ -1,6 +1,8 @@
 d := package
 include $(d)/Makefile
 
+make = @$(MAKE) --no-print-directory
+
 all: build
 
 npm_install:
@@ -15,7 +17,7 @@ npm_update_major:
 
 npm_full_reinstall:
 	rm -rf node_modules
-	$(MAKE) npm_install
+	$(make) npm_install
 
 TASKS_SCHEMA = tasks.schema.json
 
@@ -32,9 +34,33 @@ build: | package.json
 
 install:
 	code --install-extension=$(wildcard vscode-qcfg-*.vsix)
+	$(make) install_cli
+
+CLI_NAME = q-vscode-cli
+CLI_BIN = dist/$(CLI_NAME)
+
+cli:
+	echo "#!/usr/bin/env node" > $(CLI_BIN)
+	chmod a+x $(CLI_BIN)
+	cat dist/remoteCli.js >> $(CLI_BIN)
+
+LOCAL_BIN = ~/.local/bin
+LOCAL_BIN_CLI = $(LOCAL_BIN)/$(CLI_NAME)
+
+install_cli:
+	mkdir -p $(LOCAL_BIN)
+	cp $(CLI_BIN) $(LOCAL_BIN_CLI)
+	[[ $$(command -v $(CLI_NAME)) == $$(readlink -f $(LOCAL_BIN_CLI)) ]]
+
+prepublish:
+	$(make) generate
+	npm version patch --allow-same-version
+	webpack --mode production
+	$(make) check
+	$(make) cli
 
 check_tools:
-	bin/q-vscode-cli -h >/dev/null
+	node dist/remoteCli.js -h >/dev/null
 	bin/q-vscode-syntax-dump -h >/dev/null
 
 update_proposed:
