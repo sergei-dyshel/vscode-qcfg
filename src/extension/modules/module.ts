@@ -3,6 +3,13 @@ import type { ExtensionContext } from 'vscode';
 import * as nodejs from '../../library/nodejs';
 import { getCallsite } from '../../library/sourceMap';
 
+declare global {
+  // eslint-disable-next-line vars-on-top, no-var
+  var qcfg: Record<string, object>;
+}
+
+globalThis.qcfg = {};
+
 export namespace Modules {
   export function register(
     activate: ActivationFunc,
@@ -10,6 +17,11 @@ export namespace Modules {
   ) {
     const name = nodejs.path.parse(getCallsite(2).fileName).name;
     modules.push({ name, activate, deactivate });
+  }
+
+  export function exportObject(obj: object) {
+    const name = nodejs.path.parse(getCallsite(2).fileName).name;
+    globalThis.qcfg[name] = obj;
   }
 
   export async function activateAll(context: ExtensionContext) {
