@@ -19,6 +19,11 @@ export function baseName(filename: string) {
   return parsed.name + parsed.ext;
 }
 
+export function dirName(name: string) {
+  const parsed = nodejs.path.parse(name);
+  return parsed.dir;
+}
+
 /**
  * Expand ~ and env variables
  */

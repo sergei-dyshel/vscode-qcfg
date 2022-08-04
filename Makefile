@@ -32,10 +32,8 @@ compile:
 	webpack --mode none --env DEBUG
 	$(make) check
 
-build:
-	vsce package
-
 install:
+	vsce package
 	code --install-extension $$(ls vscode-qcfg-*.vsix | sort --version-sort | tail -n1)
 	$(make) install_cli
 
@@ -57,10 +55,15 @@ install_cli:
 
 prepublish:
 	$(make) generate
-	npm version patch --allow-same-version
+	[[ -z "$$NO_VERSION" ]] && npm version patch --allow-same-version || true
 	webpack --mode production
 	$(make) check
 	$(make) cli
+
+install_dev:
+	NO_VERSION=1 vsce package 0.0.0-dev --no-update-package-json --no-git-tag-version
+	code --uninstall-extension QyRoN.vscode-qcfg
+	code --install-extension vscode-qcfg-0.0.0-dev.vsix
 
 check_tools:
 	node dist/remoteCli.js -h >/dev/null

@@ -38,6 +38,8 @@ export namespace ExtensionJSON {
   }
 
   export interface Manifest {
+    version?: string;
+    name?: string;
     contributes?: {
       keybindings?: KeyBinding[];
       themes?: Theme[];
