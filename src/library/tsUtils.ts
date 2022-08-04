@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 
 import { MultiDictionary } from 'typescript-collections';
+import { defaultCompare } from './compare';
 
 const emptyRegExp = /(?:)/;
 
@@ -352,6 +353,9 @@ declare global {
     group: (func: (x: T, y: T) => boolean) => T[][];
 
     sorted: (cmp?: (x: T, y: T) => number) => T[];
+
+    /** Sort by key extracted from operands */
+    sortByKey: <V>(keyFn: (_: T) => V, compareFn?: CompareFunc<V>) => this;
   }
 
   interface ReadonlyArray<T> {
@@ -456,6 +460,18 @@ Array.prototype.sorted = function <T>(
   cmp?: (x: T, y: T) => number,
 ): T[] {
   return this.slice().sort(cmp);
+};
+
+Array.prototype.sortByKey = function <T>(
+  this: T[],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  keyFn: (_: T) => any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  compareFn?: CompareFunc<any>,
+) {
+  const cmp = compareFn === undefined ? defaultCompare : compareFn;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+  return this.sort((a: T, b: T) => cmp(keyFn(a), keyFn(b)));
 };
 
 Array.prototype.forEachRight = function <T>(
