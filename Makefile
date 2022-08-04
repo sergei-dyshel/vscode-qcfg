@@ -31,14 +31,11 @@ compile:
 	webpack --mode none --env DEBUG
 	$(make) check
 
-build: | package.json
-	rm -rf *.vsix >/dev/null
+build:
 	vsce package
-	git add vscode-qcfg-*.vsix
-	git commit --amend --no-edit
 
 install:
-	code --install-extension=$(wildcard vscode-qcfg-*.vsix)
+	code --install-extension vscode-qcfg-*.vsix
 	$(make) install_cli
 
 CLI_NAME = q-vscode-cli
