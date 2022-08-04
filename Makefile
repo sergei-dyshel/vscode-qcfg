@@ -22,7 +22,8 @@ npm_full_reinstall:
 TASKS_SCHEMA = tasks.schema.json
 
 $(TASKS_SCHEMA): src/extension/modules/tasks/params.ts
-	npx ts-json-schema-generator --no-top-ref --strict-tuples --expose all --path $< --type ConfParamsSet > $@
+	npx ts-json-schema-generator --no-top-ref --strict-tuples --expose all --path $< --type ConfParamsSet --out $@
+	npx prettier --write $@
 
 generate: package.json $(TASKS_SCHEMA)
 

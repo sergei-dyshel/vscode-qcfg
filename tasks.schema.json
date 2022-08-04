@@ -16,14 +16,7 @@
       ]
     },
     "EndAction": {
-      "enum": [
-        "none",
-        "auto",
-        "hide",
-        "dispose",
-        "show",
-        "notify"
-      ],
+      "enum": ["none", "auto", "hide", "dispose", "show", "notify"],
       "type": "string"
     },
     "Flag.AUTO_RESTART": {
@@ -69,17 +62,11 @@
       "type": "string"
     },
     "KnownProblemMatcher": {
-      "enum": [
-        "gcc-relative",
-        "gcc-absolute"
-      ],
+      "enum": ["gcc-relative", "gcc-absolute"],
       "type": "string"
     },
     "LocationFormat": {
-      "enum": [
-        "vimgrep",
-        "gtags"
-      ],
+      "enum": ["vimgrep", "gtags"],
       "type": "string"
     },
     "Params": {
@@ -105,9 +92,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "format"
-      ],
+      "required": ["format"],
       "type": "object"
     },
     "ProcessTaskParams": {
@@ -120,8 +105,7 @@
           "type": "string"
         },
         "exitCodes": {
-          "default": [
-          ],
+          "default": [],
           "description": "Expected process exit codes",
           "items": {
             "type": "number"
@@ -135,8 +119,7 @@
           "type": "array"
         },
         "folders": {
-          "default": [
-          ],
+          "default": [],
           "description": "Workspace folders in which this task is valid",
           "items": {
             "type": "string"
@@ -157,10 +140,7 @@
           "$ref": "#/definitions/When"
         }
       },
-      "required": [
-        "command",
-        "type"
-      ],
+      "required": ["command", "type"],
       "type": "object"
     },
     "Record<string,(Params|string)>": {
@@ -177,11 +157,7 @@
       "type": "object"
     },
     "Reveal": {
-      "enum": [
-        "focus",
-        "yes",
-        "no"
-      ],
+      "enum": ["focus", "yes", "no"],
       "type": "string"
     },
     "SearchTaskParams": {
@@ -207,8 +183,7 @@
           "type": "array"
         },
         "folders": {
-          "default": [
-          ],
+          "default": [],
           "description": "Workspace folders in which this task is valid",
           "items": {
             "type": "string"
@@ -231,10 +206,7 @@
           "$ref": "#/definitions/When"
         }
       },
-      "required": [
-        "query",
-        "type"
-      ],
+      "required": ["query", "type"],
       "type": "object"
     },
     "TaskType.PROCESS": {
@@ -259,8 +231,7 @@
           "type": "string"
         },
         "exitCodes": {
-          "default": [
-          ],
+          "default": [],
           "description": "Expected process exit codes",
           "items": {
             "type": "number"
@@ -290,8 +261,7 @@
           "type": "array"
         },
         "folders": {
-          "default": [
-          ],
+          "default": [],
           "description": "Workspace folders in which this task is valid",
           "items": {
             "type": "string"
@@ -328,8 +298,7 @@
               "type": "array"
             }
           ],
-          "default": [
-          ]
+          "default": []
         },
         "reveal": {
           "$ref": "#/definitions/Reveal",
@@ -346,10 +315,7 @@
           "$ref": "#/definitions/When"
         }
       },
-      "required": [
-        "command",
-        "type"
-      ],
+      "required": ["command", "type"],
       "type": "object"
     },
     "When": {
