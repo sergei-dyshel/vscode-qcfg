@@ -1,6 +1,7 @@
 import type { ExtensionContext, TextEditor } from 'vscode';
 import { commands, env, Range, ThemeColor, workspace } from 'vscode';
 import { check } from '../../library/exception';
+import { lazyValue } from '../../library/tsUtils';
 import { RangeDecorator } from '../utils/decoration';
 import { expandSelectionLinewise, replaceText } from './editing';
 import { listenWrapped, registerAsyncCommandWrapped } from './exception';
@@ -16,17 +17,20 @@ let mark:
       text: string;
     };
 
-const decorator = new RangeDecorator(
-  {
-    borderWidth: '0px 0px 0px 4px',
-  },
-  {
-    borderWidth: '0px 4px 0px 0px',
-  },
-  {
-    borderStyle: 'solid',
-    borderColor: new ThemeColor('editor.selectionBackground'),
-  },
+const decorator = lazyValue(
+  () =>
+    new RangeDecorator(
+      {
+        borderWidth: '0px 0px 0px 4px',
+      },
+      {
+        borderWidth: '0px 4px 0px 0px',
+      },
+      {
+        borderStyle: 'solid',
+        borderColor: new ThemeColor('editor.selectionBackground'),
+      },
+    ),
 );
 
 async function normalCopy() {
@@ -34,8 +38,8 @@ async function normalCopy() {
 }
 
 async function markAndCopy(editor: TextEditor, range: Range) {
-  if (mark) decorator.clear(mark.editor);
-  decorator.decorate(editor, [range]);
+  if (mark) decorator().clear(mark.editor);
+  decorator().decorate(editor, [range]);
   mark = {
     editor,
     range,
@@ -161,7 +165,7 @@ async function swapWithMark() {
 }
 
 function invalidateMark() {
-  if (mark) decorator.clear(mark.editor);
+  if (mark) decorator().clear(mark.editor);
   mark = undefined;
 }
 

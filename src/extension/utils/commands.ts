@@ -1,65 +1,45 @@
-import * as nodejs from '../../library/nodejs';
-
-import { window } from 'vscode';
+import { commands, window } from 'vscode';
+import type { DisposableLike } from '../../library/disposable';
 import type { ExtensionJSON } from '../../library/extensionManifest';
-import { readFile, writeFile } from '../../library/filesystemNodejs';
+import { readFile } from '../../library/filesystemNodejs';
+import * as nodejs from '../../library/nodejs';
 import { formatString } from '../../library/stringUtils';
-import { registerCommandWrapped } from '../modules/exception';
+import { UserCommands } from '../../library/userCommands';
 import { extensionContext } from './extensionContext';
-
-/**
- * Register new user-facing command and optionally a keybinding for it.
- */
-export function registerUserCommand(
-  command: string,
-  title: string,
-  options: { key: string; when?: string } | Record<string, never>,
-  callback: () => void | Promise<void>,
-) {
-  packageJson.contributes!.commands!.push({
-    command,
-    title,
-  });
-  if ('key' in options) {
-    packageJson.contributes!.keybindings!.push({
-      command,
-      key: options.key.replaceAll('cmd+', 'ctrl+'),
-      mac: options.key.replaceAll('ctrl+', 'cmd+'),
-      when: options.when,
-    });
-  }
-  return registerCommandWrapped(command, callback);
-}
 
 /**
  * Auto-generate manifest file with user commands and keybindings.
  */
-export async function updateContributedCommands() {
+export async function verifyCommandsJson() {
   const path = nodejs.path.join(
     extensionContext().extensionPath,
-    'package',
-    'commands.json',
+    UserCommands.JSON_PATH,
   );
   const prevContents = await readFile(path);
   const prevJson = JSON.parse(
     prevContents.toString(),
   ) as ExtensionJSON.Manifest;
-  const newContents = JSON.stringify(packageJson, undefined, 2);
+  const newJson = UserCommands.generateJson();
+  const newContents = JSON.stringify(newJson, undefined, 2);
   if (prevContents.toString() !== newContents) {
-    await writeFile(path, newContents);
     const diff = formatString(
       '{} -> {} commands, {} -> {} keybindings',
       prevJson.contributes!.commands!.length.toString(),
-      packageJson.contributes!.commands!.length.toString(),
+      newJson.contributes!.commands!.length.toString(),
       prevJson.contributes!.keybindings!.length.toString(),
-      packageJson.contributes!.keybindings!.length.toString(),
+      newJson.contributes!.keybindings!.length.toString(),
     );
-    await window.showInformationMessage(
-      `Updated auto-generated commands (${diff}), now rebuild the extension`,
+    const answer = await window.showErrorMessage(
+      `Auto-generated commands not up-to-date (${diff})`,
+      'Exit',
     );
+    if (answer === 'Exit')
+      await commands.executeCommand('workbench.action.quit');
   }
 }
 
-const packageJson: ExtensionJSON.Manifest = {
-  contributes: { commands: [], keybindings: [] },
-};
+export function registerAllCommands(): DisposableLike[] {
+  return UserCommands.all.map((cmd) =>
+    commands.registerCommand(cmd.command, cmd.callback),
+  );
+}

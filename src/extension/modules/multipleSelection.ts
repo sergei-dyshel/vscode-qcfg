@@ -5,6 +5,7 @@ import type {
 } from 'vscode';
 import { window } from 'vscode';
 import { log } from '../../library/logging';
+import { lazyValue } from '../../library/tsUtils';
 import {
   handleAsyncStd,
   listenWrapped,
@@ -16,13 +17,15 @@ import { getActiveTextEditor, WhenContext } from './utils';
 const CONTEXT = 'qcfgMultipleSelectionsMarker';
 
 const selectionIndex = new Map<TextEditor, number>();
-const decorationType = window.createTextEditorDecorationType({
-  outline: '2px solid white',
-});
+const decorationType = lazyValue(() =>
+  window.createTextEditorDecorationType({
+    outline: '2px solid white',
+  }),
+);
 
 function clearMark(editor: TextEditor) {
   selectionIndex.delete(editor);
-  editor.setDecorations(decorationType, []);
+  editor.setDecorations(decorationType(), []);
   handleAsyncStd(WhenContext.clear(CONTEXT));
 }
 
@@ -32,8 +35,8 @@ function updateMark(editor: TextEditor, index: number) {
     throw new Error('Invalid selection index');
   selectionIndex.set(editor, index);
   const range = selections[index];
-  editor.setDecorations(decorationType, []);
-  editor.setDecorations(decorationType, [range]);
+  editor.setDecorations(decorationType(), []);
+  editor.setDecorations(decorationType(), [range]);
   editor.revealRange(range);
   handleAsyncStd(WhenContext.set(CONTEXT));
   log.debugStr(

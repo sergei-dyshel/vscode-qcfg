@@ -15,7 +15,7 @@ import type { ExtensionContext } from 'vscode';
 import { log } from '../library/logging';
 import { stringify as str } from '../library/stringify';
 import { Modules } from './modules/module';
-import { updateContributedCommands } from './utils/commands';
+import { registerAllCommands, verifyCommandsJson } from './utils/commands';
 import { setExtensionContext } from './utils/extensionContext';
 
 export async function activate(context: ExtensionContext) {
@@ -29,6 +29,8 @@ export async function activate(context: ExtensionContext) {
   setExtensionContext(context);
 
   await Modules.activateAll(context);
+  context.subscriptions.push(...registerAllCommands());
+
   log.info(`Activated ${str(Modules.fileNames())}`);
 
   log.info('Extension path', context.extensionPath);
@@ -39,7 +41,7 @@ export async function activate(context: ExtensionContext) {
 
   // history.activate(context);
 
-  await updateContributedCommands();
+  await verifyCommandsJson();
 }
 
 // this method is called when your extension is deactivated

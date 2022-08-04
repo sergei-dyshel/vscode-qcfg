@@ -1,7 +1,7 @@
 deps := common tasks alternate treeSitter autoSync editing treeView \
 	relativeJumps navigation multipleSelection macTermBindings formatting \
 	plistOld search peekOutline editorGroups langClient git misc selection \
-	configRules notes diagnostics autoResize internal config
+	configRules notes diagnostics autoResize internal config commands
 deps_files := $(patsubst %,$(d)/%.json,$(deps))
 json_merger := npx json-merger --pretty \
 	--error-on-file-not-found --error-on-ref-not-found --output
@@ -26,3 +26,6 @@ $(d)/config.json: src/tools/generateConfig.ts src/library/config.ts
 package.json: $(deps_files)
 	$(my_merger) $@ $^
 	npx prettier --write $@
+
+commands:
+	@./ts-node-mock-vscode src/tools/generateCommands.ts $(d)/commands.json $(wildcard src/extension/modules/*.ts)

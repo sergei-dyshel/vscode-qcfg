@@ -16,28 +16,6 @@
     ],
     "keybindings": [
       {
-        "key": "cmd+enter",
-        "command": "qcfg.history.wrapCmd",
-        "args": "workbench.action.quickOpen",
-        "when": "!referenceSearchTreeFocused"
-      },
-      {
-        "key": "cmd+e",
-        "command": "qcfg.history.wrapCmd",
-        "args": "workbench.action.openPreviousEditorFromHistory",
-        "when": "editorTextFocus && !inQuickOpen"
-      },
-      {
-        "key": "cmd+t",
-        "command": "qcfg.history.wrapCmd",
-        "args": "workbench.action.gotoSymbol"
-      },
-      {
-        "key": "cmd+shift+t",
-        "command": "qcfg.history.wrapCmd",
-        "args": "workbench.action.showAllSymbols"
-      },
-      {
         "key": "ctrl+i",
         "mac": "cmd+i",
         "command": "qcfg.history.forward"
