@@ -36,7 +36,7 @@ build:
 	vsce package
 
 install:
-	code --install-extension vscode-qcfg-*.vsix
+	code --install-extension $$(ls vscode-qcfg-*.vsix | sort --version-sort | tail -n1)
 	$(make) install_cli
 
 CLI_NAME = q-vscode-cli
