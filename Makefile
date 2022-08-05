@@ -34,6 +34,7 @@ compile:
 
 install:
 	vsce package
+	code --uninstall-extension QyRoN.vscode-qcfg
 	code --install-extension $$(ls vscode-qcfg-*.vsix | sort --version-sort | tail -n1)
 	$(make) install_cli
 

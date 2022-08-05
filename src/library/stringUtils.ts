@@ -118,8 +118,13 @@ export class TemplateLiteralError extends Error {}
 
 function buildTemplateFunction(keys: string[], template: string) {
   try {
+    // convert string to JS syntax and strip quotes, otherwise escape characters
+    // used in regexps are lost
     // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
-    return new Function(...keys, 'return `' + template + '`;');
+    return new Function(
+      ...keys,
+      'return `' + JSON.stringify(template).slice(1, -1) + '`;',
+    );
   } catch (err) {
     if (err instanceof SyntaxError)
       throw new TemplateLiteralError(
