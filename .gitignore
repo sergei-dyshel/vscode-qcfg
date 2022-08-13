@@ -3,5 +3,3 @@ node_modules
 .vscode-test/
 *.vsix
 dist
-/package/configRules.json
-/package/configRules.schema.json

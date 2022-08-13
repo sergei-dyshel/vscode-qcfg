@@ -138,6 +138,12 @@ export namespace Config {
      * @default true
      */
     'qcfg.ccls.callHierarchy': boolean;
+
+    /**
+     * Array of configuration rules per file type, name etc.
+     * @default []
+     */
+    'qcfg.configRules': ConfigRules.Rule[];
   }
 
   export namespace Git {
@@ -153,6 +159,24 @@ export namespace Config {
       remotes: string[];
       /** Description of Web link */
       links: Link[];
+    }
+  }
+
+  export namespace ConfigRules {
+    export type QuickFixCodeActionsConfig = Array<string | [string, number]>;
+
+    export interface RuleConfig {
+      /** TODO: add docs */
+      quickFixCodeActions?: QuickFixCodeActionsConfig;
+    }
+
+    export interface Rule extends Condition, RuleConfig {}
+
+    export interface Condition {
+      /** Glob pattern to match against file name. */
+      glob?: string;
+      /** Language ID of file */
+      language?: string;
     }
   }
 }

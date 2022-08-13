@@ -155,6 +155,49 @@
           "type": "boolean",
           "description": "Add ccls provider for call hierarchy",
           "default": true
+        },
+        "qcfg.configRules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "quickFixCodeActions": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "array",
+                      "minItems": 2,
+                      "items": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ],
+                      "maxItems": 2
+                    }
+                  ]
+                },
+                "description": "TODO: add docs"
+              },
+              "glob": {
+                "type": "string",
+                "description": "Glob pattern to match against file name."
+              },
+              "language": {
+                "type": "string",
+                "description": "Language ID of file"
+              }
+            }
+          },
+          "description": "Array of configuration rules per file type, name etc.",
+          "default": []
         }
       }
     }

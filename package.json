@@ -2538,27 +2538,21 @@
           "default": true
         },
         "qcfg.configRules": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "definitions": {},
-          "description": "Array of configuration rules per file type, filename etc.",
+          "type": "array",
           "items": {
+            "type": "object",
             "additionalProperties": false,
             "properties": {
-              "glob": {
-                "description": "Glob pattern to match against file name.",
-                "type": "string"
-              },
-              "language": {
-                "description": "Language ID of file",
-                "type": "string"
-              },
               "quickFixCodeActions": {
+                "type": "array",
                 "items": {
                   "anyOf": [
                     {
                       "type": "string"
                     },
                     {
+                      "type": "array",
+                      "minItems": 2,
                       "items": [
                         {
                           "type": "string"
@@ -2567,18 +2561,24 @@
                           "type": "number"
                         }
                       ],
-                      "maxItems": 2,
-                      "minItems": 2,
-                      "type": "array"
+                      "maxItems": 2
                     }
                   ]
                 },
-                "type": "array"
+                "description": "TODO: add docs"
+              },
+              "glob": {
+                "type": "string",
+                "description": "Glob pattern to match against file name."
+              },
+              "language": {
+                "type": "string",
+                "description": "Language ID of file"
               }
-            },
-            "type": "object"
+            }
           },
-          "type": "array"
+          "description": "Array of configuration rules per file type, name etc.",
+          "default": []
         }
       }
     }
