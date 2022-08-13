@@ -42,7 +42,7 @@ CLI_NAME = q-vscode-cli
 CLI_BIN = dist/$(CLI_NAME)
 
 cli:
-	echo "#!/usr/bin/env node" > $(CLI_BIN)
+	echo "#!/usr/bin/env node --no-deprecation" > $(CLI_BIN)
 	chmod a+x $(CLI_BIN)
 	cat dist/remoteCli.js >> $(CLI_BIN)
 
