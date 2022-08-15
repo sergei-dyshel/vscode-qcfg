@@ -2579,6 +2579,289 @@
           },
           "description": "Array of configuration rules per file type, name etc.",
           "default": []
+        },
+        "qcfg.tasks": {
+          "type": "object",
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "title": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string",
+                        "const": "terminal",
+                        "description": "Type of task (process, search etc.)"
+                      },
+                      "when": {
+                        "type": "object",
+                        "properties": {
+                          "fileExists": {
+                            "type": "string",
+                            "description": "File exists of given glob pattern"
+                          },
+                          "fileMatches": {
+                            "type": "string",
+                            "description": "Current file matches glob pattern"
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "flags": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "build",
+                            "folder",
+                            "hidden",
+                            "clear",
+                            "dedicatedPanel",
+                            "reindex",
+                            "autoRestart"
+                          ]
+                        }
+                      },
+                      "folders": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Workspace folders in which this task is valid",
+                        "default": []
+                      },
+                      "command": {
+                        "type": "string"
+                      },
+                      "cwd": {
+                        "type": "string"
+                      },
+                      "exitCodes": {
+                        "type": "array",
+                        "items": {
+                          "type": "number"
+                        },
+                        "description": "Expected process exit codes",
+                        "default": []
+                      },
+                      "reveal": {
+                        "type": "string",
+                        "enum": [
+                          "focus",
+                          "yes",
+                          "no"
+                        ],
+                        "description": "Reveal terminal when running",
+                        "default": "yes"
+                      },
+                      "onSuccess": {
+                        "type": "string",
+                        "enum": [
+                          "none",
+                          "auto",
+                          "hide",
+                          "dispose",
+                          "show",
+                          "notify"
+                        ],
+                        "default": "auto"
+                      },
+                      "onFailure": {
+                        "type": "string",
+                        "enum": [
+                          "none",
+                          "auto",
+                          "hide",
+                          "dispose",
+                          "show",
+                          "notify"
+                        ],
+                        "default": "auto"
+                      },
+                      "problemMatchers": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "string",
+                            "enum": [
+                              "gcc-relative",
+                              "gcc-absolute"
+                            ]
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ],
+                        "default": []
+                      }
+                    },
+                    "required": [
+                      "command",
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "title": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string",
+                        "const": "process",
+                        "description": "Type of task (process, search etc.)"
+                      },
+                      "when": {
+                        "type": "object",
+                        "properties": {
+                          "fileExists": {
+                            "type": "string",
+                            "description": "File exists of given glob pattern"
+                          },
+                          "fileMatches": {
+                            "type": "string",
+                            "description": "Current file matches glob pattern"
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "flags": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "build",
+                            "folder",
+                            "hidden"
+                          ]
+                        }
+                      },
+                      "folders": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Workspace folders in which this task is valid",
+                        "default": []
+                      },
+                      "command": {
+                        "type": "string"
+                      },
+                      "cwd": {
+                        "type": "string"
+                      },
+                      "exitCodes": {
+                        "type": "array",
+                        "items": {
+                          "type": "number"
+                        },
+                        "description": "Expected process exit codes",
+                        "default": []
+                      },
+                      "parseOutput": {
+                        "type": "object",
+                        "properties": {
+                          "format": {
+                            "type": "string",
+                            "enum": [
+                              "vimgrep",
+                              "gtags"
+                            ]
+                          },
+                          "tag": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "format"
+                        ],
+                        "additionalProperties": false,
+                        "description": "Extract locations from output using predefined format or custom regular expression"
+                      }
+                    },
+                    "required": [
+                      "command",
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "title": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string",
+                        "const": "search",
+                        "description": "Type of task (process, search etc.)"
+                      },
+                      "when": {
+                        "type": "object",
+                        "properties": {
+                          "fileExists": {
+                            "type": "string",
+                            "description": "File exists of given glob pattern"
+                          },
+                          "fileMatches": {
+                            "type": "string",
+                            "description": "Current file matches glob pattern"
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "flags": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "hidden",
+                            "regex",
+                            "word",
+                            "case"
+                          ]
+                        }
+                      },
+                      "folders": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Workspace folders in which this task is valid",
+                        "default": []
+                      },
+                      "query": {
+                        "type": "string"
+                      },
+                      "searchTitle": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "query",
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "description": "Dictionary of tasks",
+          "default": {}
         }
       }
     }
