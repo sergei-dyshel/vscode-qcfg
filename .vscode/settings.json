@@ -22,5 +22,20 @@
     }
   ],
   "typescript.tsdk": "node_modules/typescript/lib",
-  "workbench.colorTheme": "One Dark Pro Flat"
+  "workbench.colorTheme": "One Dark Pro Flat",
+  "qcfg.tasks": {
+    "build": {
+      "command": "make build",
+      "type": "terminal",
+      "flags": ["build"]
+    },
+    "install": {
+      "command": "make install",
+      "type": "terminal"
+    },
+    "make commands": "make commands",
+    "make package.json": "make package.json",
+    "Format all typescript sources": "npx prettier --write src/**/*.ts",
+    "Reload all windows": "q-vscode-cli -i all reload"
+  }
 }
