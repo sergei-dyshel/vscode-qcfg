@@ -125,12 +125,6 @@
     "webpack-cli": "^4.2.0"
   },
   "contributes": {
-    "jsonValidation": [
-      {
-        "fileMatch": "vscode-qcfg.tasks.json",
-        "url": "./tasks.schema.json"
-      }
-    ],
     "problemMatchers": [
       {
         "name": "gcc-relative",
@@ -683,14 +677,6 @@
       {
         "command": "qcfg.tasks.build.last",
         "title": "qcfg: Run last build task"
-      },
-      {
-        "command": "qcfg.tasks.editGlobalConfig",
-        "title": "qcfg: Edit global tasks configuration"
-      },
-      {
-        "command": "qcfg.tasks.editWorkspaceConfig",
-        "title": "qcfg: Edit workspace tasks configuration"
       },
       {
         "command": "qcfg.tasks.show",
@@ -2594,8 +2580,7 @@
                       },
                       "type": {
                         "type": "string",
-                        "const": "terminal",
-                        "description": "Type of task (process, search etc.)"
+                        "const": "terminal"
                       },
                       "when": {
                         "type": "object",
@@ -2718,8 +2703,7 @@
                       },
                       "type": {
                         "type": "string",
-                        "const": "process",
-                        "description": "Type of task (process, search etc.)"
+                        "const": "process"
                       },
                       "when": {
                         "type": "object",
@@ -2803,8 +2787,7 @@
                       },
                       "type": {
                         "type": "string",
-                        "const": "search",
-                        "description": "Type of task (process, search etc.)"
+                        "const": "search"
                       },
                       "when": {
                         "type": "object",

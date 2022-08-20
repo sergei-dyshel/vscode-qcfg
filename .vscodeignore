@@ -4,7 +4,6 @@
 !dist
 !package.json
 !plistOld.language-configuration.json
-!tasks.schema.json
 !syntaxes
 !LICENSE
 !package/commands.json

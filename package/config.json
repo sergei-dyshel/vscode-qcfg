@@ -213,8 +213,7 @@
                       },
                       "type": {
                         "type": "string",
-                        "const": "terminal",
-                        "description": "Type of task (process, search etc.)"
+                        "const": "terminal"
                       },
                       "when": {
                         "type": "object",
@@ -327,8 +326,7 @@
                       },
                       "type": {
                         "type": "string",
-                        "const": "process",
-                        "description": "Type of task (process, search etc.)"
+                        "const": "process"
                       },
                       "when": {
                         "type": "object",
@@ -400,8 +398,7 @@
                       },
                       "type": {
                         "type": "string",
-                        "const": "search",
-                        "description": "Type of task (process, search etc.)"
+                        "const": "search"
                       },
                       "when": {
                         "type": "object",

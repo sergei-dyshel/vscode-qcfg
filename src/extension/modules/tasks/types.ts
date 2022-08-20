@@ -17,6 +17,7 @@ import {
   window,
   workspace,
 } from 'vscode';
+import { Config } from '../../../library/config';
 import { log, LogLevel } from '../../../library/logging';
 import * as nodejs from '../../../library/nodejs';
 import { baseName, stripExt } from '../../../library/pathUtils';
@@ -44,24 +45,19 @@ import {
   TaskRun,
 } from '../taskRunner';
 import { currentWorkspaceFolder, getCursorWordContext } from '../utils';
-import type {
-  BaseTaskParams,
-  ProcessTaskParams,
-  SearchTaskParams,
-  TerminalTaskParams,
-} from './params';
-import { EndAction, Flag, LocationFormat, Reveal, TaskType } from './params';
+
+import Cfg = Config.Tasks;
 
 export interface FetchInfo {
   label: string;
   fromWorkspace: boolean;
 }
 
-export function isFolderTask(params: BaseTaskParams) {
+export function isFolderTask(params: Cfg.BaseTaskParams) {
   return (
-    params.type === TaskType.SEARCH ||
+    params.type === Cfg.TaskType.SEARCH ||
     params.folders !== undefined ||
-    params.flags?.includes(Flag.FOLDER)
+    params.flags?.includes(Cfg.Flag.FOLDER)
   );
 }
 
@@ -235,9 +231,9 @@ export class VscodeTask extends BaseTask {
 export abstract class BaseQcfgTask extends BaseTask {
   constructor(
     protected readonly params:
-      | TerminalTaskParams
-      | ProcessTaskParams
-      | SearchTaskParams,
+      | Cfg.TerminalTaskParams
+      | Cfg.ProcessTaskParams
+      | Cfg.SearchTaskParams,
     protected readonly info: FetchInfo,
   ) {
     super();
@@ -265,8 +261,8 @@ export abstract class BaseQcfgTask extends BaseTask {
   }
 
   isBuild() {
-    if (this.params.type === TaskType.SEARCH) return false;
-    return (this.params.flags ?? []).includes(Flag.BUILD);
+    if (this.params.type === Cfg.TaskType.SEARCH) return false;
+    return (this.params.flags ?? []).includes(Cfg.Flag.BUILD);
   }
 }
 
@@ -275,7 +271,7 @@ export class TerminalTask extends BaseQcfgTask {
   protected taskRun?: TaskRun;
 
   constructor(
-    protected override params: TerminalTaskParams,
+    protected override params: Cfg.TerminalTaskParams,
     info: FetchInfo,
     context: TaskContext,
   ) {
@@ -285,7 +281,7 @@ export class TerminalTask extends BaseQcfgTask {
     }
     this.params = params;
     const def: TaskDefinition = { type: 'qcfg', task: params };
-    const flags: Flag[] = params.flags ?? [];
+    const flags: Cfg.Flag[] = params.flags ?? [];
 
     const scope = context.workspaceFolder ?? TaskScope.Global;
     const environ = { QCFG_VSCODE_PORT: String(remoteControl.port) };
@@ -302,22 +298,22 @@ export class TerminalTask extends BaseQcfgTask {
       params.problemMatchers ?? [],
     );
     this.task.presentationOptions = {
-      focus: params.reveal === Reveal.FOCUS,
+      focus: params.reveal === Cfg.Reveal.FOCUS,
       reveal:
-        params.reveal !== Reveal.NO
+        params.reveal !== Cfg.Reveal.NO
           ? TaskRevealKind.Always
           : TaskRevealKind.Never,
-      panel: flags.includes(Flag.DEDICATED_PANEL)
+      panel: flags.includes(Cfg.Flag.DEDICATED_PANEL)
         ? TaskPanelKind.Dedicated
         : TaskPanelKind.Shared,
-      clear: flags.includes(Flag.CLEAR) || flags.includes(Flag.BUILD),
+      clear: flags.includes(Cfg.Flag.CLEAR) || flags.includes(Cfg.Flag.BUILD),
     };
-    if (flags.includes(Flag.BUILD)) this.task.group = TaskGroup.Build;
+    if (flags.includes(Cfg.Flag.BUILD)) this.task.group = TaskGroup.Build;
   }
 
   async run() {
     this.taskRun = new TaskRun(this.task);
-    const conflictPolicy = this.params.flags?.includes(Flag.AUTO_RESTART)
+    const conflictPolicy = this.params.flags?.includes(Cfg.Flag.AUTO_RESTART)
       ? TaskConfilictPolicy.CANCEL_PREVIOUS
       : undefined;
     await this.taskRun.start(conflictPolicy);
@@ -332,25 +328,27 @@ export class TerminalTask extends BaseQcfgTask {
     const exitCodes = params.exitCodes ?? [0];
     const success = exitCodes.includes(this.taskRun.exitCode!);
     const term = this.taskRun.terminal;
-    if (success && params.flags && params.flags.includes(Flag.REINDEX)) {
+    if (success && params.flags && params.flags.includes(Cfg.Flag.REINDEX)) {
       // avoid circular dependency
       executeCommandHandled('qcfg.langClient.refreshOrRestart');
     }
     let action = success ? params.onSuccess : params.onFailure;
-    if (action === EndAction.AUTO || action === undefined) {
+    if (action === Cfg.EndAction.AUTO || action === undefined) {
       if (success) {
-        action = EndAction.HIDE;
+        action = Cfg.EndAction.HIDE;
       } else {
         action =
-          params.reveal === Reveal.NO ? EndAction.NOTIFY : EndAction.SHOW;
+          params.reveal === Cfg.Reveal.NO
+            ? Cfg.EndAction.NOTIFY
+            : Cfg.EndAction.SHOW;
       }
     }
     if (!term) return;
 
     switch (action) {
-      case EndAction.NONE:
+      case Cfg.EndAction.NONE:
         break;
-      case EndAction.DISPOSE:
+      case Cfg.EndAction.DISPOSE:
         if (window.activeTerminal === term) {
           term.dispose();
           await commands.executeCommand('workbench.action.closePanel');
@@ -358,13 +356,13 @@ export class TerminalTask extends BaseQcfgTask {
           term.dispose();
         }
         break;
-      case EndAction.HIDE:
+      case Cfg.EndAction.HIDE:
         term.hide();
         break;
-      case EndAction.SHOW:
+      case Cfg.EndAction.SHOW:
         term.show();
         break;
-      case EndAction.NOTIFY:
+      case Cfg.EndAction.NOTIFY:
         await (success
           ? window.showInformationMessage(`Task "${this.task.name}" finished`)
           : window.showErrorMessage(`Task "${this.task.name}" failed`));
@@ -376,7 +374,7 @@ export class TerminalTask extends BaseQcfgTask {
 export class TerminalMultiTask extends BaseQcfgTask {
   private readonly folderTasks: TerminalTask[];
   constructor(
-    params: TerminalTaskParams,
+    params: Cfg.TerminalTaskParams,
     info: FetchInfo,
     folderContexts: TaskContext[],
   ) {
@@ -403,12 +401,12 @@ export class ProcessTask extends BaseQcfgTask {
   private readonly parseTag?: RegExp;
 
   constructor(
-    protected override params: ProcessTaskParams,
+    protected override params: Cfg.ProcessTaskParams,
     info: FetchInfo,
     context: TaskContext,
   ) {
     super(params, info);
-    if (params.flags?.includes(Flag.FOLDER)) {
+    if (params.flags?.includes(Cfg.Flag.FOLDER)) {
       this.folderText = context.workspaceFolder!.name;
     }
     this.command = context.substitute(params.command);
@@ -420,10 +418,10 @@ export class ProcessTask extends BaseQcfgTask {
     else this.cwd = process.cwd();
     if (params.parseOutput) {
       switch (params.parseOutput.format) {
-        case LocationFormat.VIMGREP:
+        case Cfg.LocationFormat.VIMGREP:
           this.parseFormat = ParseLocationFormat.VIMGREP;
           break;
-        case LocationFormat.GTAGS:
+        case Cfg.LocationFormat.GTAGS:
           this.parseFormat = ParseLocationFormat.GTAGS;
           break;
       }
@@ -481,7 +479,7 @@ export class ProcessMultiTask extends BaseQcfgTask {
   private readonly folderTasks: ProcessTask[];
 
   constructor(
-    params: ProcessTaskParams,
+    params: Cfg.ProcessTaskParams,
     info: FetchInfo,
     folderContexts: TaskContext[],
   ) {
@@ -524,7 +522,7 @@ export class SearchMultiTask extends BaseQcfgTask {
   private readonly searchTitle: string;
 
   constructor(
-    params: SearchTaskParams,
+    params: Cfg.SearchTaskParams,
     info: FetchInfo,
     folderContexts: TaskContext[],
   ) {
@@ -541,9 +539,9 @@ export class SearchMultiTask extends BaseQcfgTask {
     const flags = params.flags ?? [];
     this.query = {
       pattern: folderContexts[0].substitute(params.query),
-      isRegExp: flags.includes(Flag.REGEX),
-      isCaseSensitive: flags.includes(Flag.CASE),
-      isWordMatch: flags.includes(Flag.WORD),
+      isRegExp: flags.includes(Cfg.Flag.REGEX),
+      isCaseSensitive: flags.includes(Cfg.Flag.CASE),
+      isWordMatch: flags.includes(Cfg.Flag.WORD),
     };
     this.searchTitle = params.searchTitle
       ? folderContexts[0].substitute(params.searchTitle)
@@ -572,7 +570,11 @@ export class SearchMultiTask extends BaseQcfgTask {
 }
 
 export class SearchTask extends SearchMultiTask {
-  constructor(params: SearchTaskParams, info: FetchInfo, context: TaskContext) {
+  constructor(
+    params: Cfg.SearchTaskParams,
+    info: FetchInfo,
+    context: TaskContext,
+  ) {
     super(params, info, [context]);
   }
 }

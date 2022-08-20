@@ -1,33 +1,15 @@
 import type { ExtensionContext, Task, WorkspaceFolder } from 'vscode';
-import {
-  commands,
-  TaskGroup,
-  tasks as vstasks,
-  Uri,
-  window,
-  workspace,
-} from 'vscode';
+import { commands, TaskGroup, tasks as vstasks, workspace } from 'vscode';
+import { Config } from '../../library/config';
 import { globAsync } from '../../library/fileUtils';
 import { log } from '../../library/logging';
-import * as nodejs from '../../library/nodejs';
 import { concatArrays, mapObjectToArray } from '../../library/tsUtils';
+import { getConfiguration } from '../utils/configuration';
 import { PersistentGenericQuickPick } from '../utils/quickPickPersistent';
 import { getValidWorkspaceFolders } from '../utils/workspace';
 import { filterAsync, mapSomeAsync, MAP_UNDEFINED } from './async';
-import type { ConfigFilePair } from './config';
-import { getConfigFileNames, watchConfigFile } from './config';
 import { registerAsyncCommandWrapped } from './exception';
-import { parseJsonFileSync } from './json';
 import { Modules } from './module';
-import type {
-  BaseTaskParams,
-  ConfParamsSet,
-  Params,
-  ProcessTaskParams,
-  SearchTaskParams,
-  TerminalTaskParams,
-} from './tasks/params';
-import { Flag, TaskType } from './tasks/params';
 import type { BaseQcfgTask, BaseTask, FetchInfo } from './tasks/types';
 import {
   ConditionError,
@@ -45,11 +27,11 @@ import {
 } from './tasks/types';
 import { currentWorkspaceFolder } from './utils';
 
-const CONFIG_FILE = 'vscode-qcfg.tasks.json';
+import Cfg = Config.Tasks;
 
 export async function runTask(
   label: string,
-  params: Params,
+  params: Cfg.Params,
   options?: TaskRunOptions,
 ) {
   const fetchedParams = { params, fetchInfo: { label, fromWorkspace: false } };
@@ -59,7 +41,7 @@ export async function runTask(
 
 export async function runTaskAndGetLocations(
   label: string,
-  params: ProcessTaskParams,
+  params: Cfg.ProcessTaskParams,
   options?: TaskRunOptions,
 ) {
   const fetchedParams = { params, fetchInfo: { label, fromWorkspace: false } };
@@ -78,7 +60,7 @@ interface TaskRunOptions {
 //
 
 async function checkCondition(
-  params: BaseTaskParams,
+  params: Cfg.BaseTaskParams,
   context: TaskContext,
 ): Promise<void> {
   const when = params.when ?? {};
@@ -133,7 +115,7 @@ type MultiFolderTask<P> = new (
   folderContexts: TaskContext[],
 ) => BaseQcfgTask;
 
-class TaskGenerator<P extends BaseTaskParams> {
+class TaskGenerator<P extends Cfg.BaseTaskParams> {
   constructor(
     private readonly single: FolderTask<P>,
     private readonly multi: MultiFolderTask<P>,
@@ -211,22 +193,22 @@ class TaskGenerator<P extends BaseTaskParams> {
 function createTaskGenerator(fetchedParams: FetchedParams) {
   const { fetchInfo, params } = fetchedParams;
   switch (params.type) {
-    case TaskType.PROCESS:
-      return new TaskGenerator<ProcessTaskParams>(
+    case Cfg.TaskType.PROCESS:
+      return new TaskGenerator<Cfg.ProcessTaskParams>(
         ProcessTask,
         ProcessMultiTask,
         params,
         fetchInfo,
       );
-    case TaskType.TERMINAL:
-      return new TaskGenerator<TerminalTaskParams>(
+    case Cfg.TaskType.TERMINAL:
+      return new TaskGenerator<Cfg.TerminalTaskParams>(
         TerminalTask,
         TerminalMultiTask,
         params,
         fetchInfo,
       );
-    case TaskType.SEARCH:
-      return new TaskGenerator<SearchTaskParams>(
+    case Cfg.TaskType.SEARCH:
+      return new TaskGenerator<Cfg.SearchTaskParams>(
         SearchTask,
         SearchMultiTask,
         params,
@@ -252,10 +234,11 @@ async function fetchQcfgTasks(options?: FetchOptions): Promise<BaseQcfgTask[]> {
 
   const folderContexts = folders.map((folder) => new TaskContext(folder));
 
-  const filteredParams = configuredParams.filter((fetchedParams) => {
+  // TODO: fetch per folder
+  const filteredParams = fetchAllParams().filter((fetchedParams) => {
     const { params } = fetchedParams;
     if (!params.flags) params.flags = [];
-    return !(params.flags.includes(Flag.HIDDEN) && !options?.showHidden);
+    return !(params.flags.includes(Cfg.Flag.HIDDEN) && !options?.showHidden);
   });
 
   const tasks = await mapSomeAsync<FetchedParams, BaseQcfgTask[]>(
@@ -298,9 +281,9 @@ async function runLastBuildTask() {
   await runDefaultBuildTask();
 }
 
-function expandParamsOrCmd(paramsOrCmd: Params | string): Params {
+function expandParamsOrCmd(paramsOrCmd: Cfg.Params | string): Cfg.Params {
   return typeof paramsOrCmd === 'string'
-    ? { command: paramsOrCmd, type: TaskType.TERMINAL }
+    ? { command: paramsOrCmd, type: Cfg.TaskType.TERMINAL }
     : paramsOrCmd;
 }
 
@@ -366,7 +349,7 @@ async function createTask(
 }
 
 async function runConfiguredTask(name: string, options?: TaskRunOptions) {
-  const fetchedParams = configuredParams.firstOf(
+  const fetchedParams = fetchAllParams().firstOf(
     (fp) => fp.fetchInfo.label === name,
   );
   if (!fetchedParams) throw new Error(`Task "${name}" is not available`);
@@ -382,67 +365,30 @@ async function runConfiguredTaskCmd(arg: string | [string, TaskRunOptions]) {
 
 interface FetchedParams {
   fetchInfo: FetchInfo;
-  params: Params;
+  params: Cfg.Params;
 }
 
-const configuredParams: FetchedParams[] = [];
-
-function loadConfig(filePair: ConfigFilePair) {
-  const allTasks: ConfParamsSet = {};
-  let workspaceTasks: ConfParamsSet = {};
-  if (filePair.global) {
-    try {
-      const globalTasks = parseJsonFileSync(filePair.global) as ConfParamsSet;
-      log.debug('Loaded tasks from ' + filePair.global);
-      Object.assign(allTasks, globalTasks);
-    } catch (err: unknown) {
-      log.error(`Could not load JSON file ${filePair.global}: ${err}`);
-    }
-  }
-  if (filePair.workspace) {
-    try {
-      workspaceTasks = parseJsonFileSync(filePair.workspace) as ConfParamsSet;
-      log.debug('Loaded tasks from ' + filePair.workspace);
-      Object.assign(allTasks, workspaceTasks);
-    } catch (err: unknown) {
-      log.error(`Could not load JSON file ${filePair.workspace}: ${err}`);
-    }
-  }
-  if (!filePair.global && !filePair.workspace)
-    log.info('No tasks config files found');
-  configuredParams.length = 0;
-  configuredParams.push(
-    ...mapObjectToArray(allTasks, (label, paramsOrCmd) => {
+function fetchAllParams() {
+  const inspect = getConfiguration().inspect('qcfg.tasks');
+  const workspaceTasks = inspect?.workspaceValue ?? {};
+  const folderTasks = inspect?.workspaceFolderValue ?? {};
+  const allTasks = {
+    ...inspect?.globalValue,
+    ...workspaceTasks,
+    ...folderTasks,
+  };
+  return mapObjectToArray(allTasks, (label, paramsOrCmd) => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    const fromWorkspace =
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      const fromWorkspace = workspaceTasks[label] !== undefined;
-      const fetchInfo: FetchInfo = { label, fromWorkspace };
-      return { fetchInfo, params: expandParamsOrCmd(paramsOrCmd) };
-    }),
-  );
-}
-
-async function editGlobalConfig() {
-  const confFilePair = getConfigFileNames(CONFIG_FILE);
-  await window.showTextDocument(Uri.file(confFilePair.global!));
-}
-
-async function editWorkspaceConfig() {
-  const confFilePair = getConfigFileNames(CONFIG_FILE);
-  if (!confFilePair.workspace)
-    throw new Error('Workspace configuration file not defined!');
-  await (!nodejs.fs.existsSync(confFilePair.workspace)
-    ? window.showTextDocument(Uri.parse('untitled:' + confFilePair.workspace))
-    : window.showTextDocument(Uri.file(confFilePair.workspace)));
+      workspaceTasks[label] !== undefined || folderTasks[label] !== undefined;
+    const fetchInfo: FetchInfo = { label, fromWorkspace };
+    return { fetchInfo, params: expandParamsOrCmd(paramsOrCmd) };
+  });
 }
 
 function activate(context: ExtensionContext) {
-  const { configFilePair, disposable } = watchConfigFile(
-    CONFIG_FILE,
-    loadConfig,
-  );
-  loadConfig(configFilePair);
   context.subscriptions.push(
-    disposable,
     registerAsyncCommandWrapped('qcfg.tasks.build.last', runLastBuildTask),
     registerAsyncCommandWrapped(
       'qcfg.tasks.build.default',
@@ -451,14 +397,6 @@ function activate(context: ExtensionContext) {
     registerAsyncCommandWrapped(
       'qcfg.tasks.runConfigured',
       runConfiguredTaskCmd,
-    ),
-    registerAsyncCommandWrapped(
-      'qcfg.tasks.editGlobalConfig',
-      editGlobalConfig,
-    ),
-    registerAsyncCommandWrapped(
-      'qcfg.tasks.editWorkspaceConfig',
-      editWorkspaceConfig,
     ),
     registerAsyncCommandWrapped('qcfg.tasks.show', showTasks),
   );

@@ -12,14 +12,6 @@
       {
         "command": "qcfg.tasks.build.default",
         "title": "qcfg: Run default build task"
-      },
-      {
-        "command": "qcfg.tasks.editGlobalConfig",
-        "title": "qcfg: Edit global tasks configuration"
-      },
-      {
-        "command": "qcfg.tasks.editWorkspaceConfig",
-        "title": "qcfg: Edit workspace tasks configuration"
       }
     ],
     "keybindings": [

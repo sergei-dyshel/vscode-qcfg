@@ -22,6 +22,7 @@ import {
   window,
   workspace,
 } from 'vscode';
+import { Config } from '../../library/config';
 import { assert, assertNotNull } from '../../library/exception';
 import { log, Logger } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
@@ -46,8 +47,6 @@ import { Modules } from './module';
 import * as saveAll from './saveAll';
 import * as subprocess from './subprocess';
 import { runTaskAndGetLocations } from './tasks';
-import type { Params } from './tasks/params';
-import { Flag, LocationFormat, TaskType } from './tasks/params';
 import { getActiveTextEditor } from './utils';
 
 const GTAGS_CHECK = 'gtags check';
@@ -386,13 +385,16 @@ async function openDefinition() {
 }
 
 export async function getGtagsDefinitionsInWorkspace() {
-  const params: Params = {
+  const params: Config.Tasks.Params = {
     // eslint-disable-next-line no-template-curly-in-string
     command: 'global -d -x -n ${cursorWord}',
-    type: TaskType.PROCESS,
+    type: Config.Tasks.TaskType.PROCESS,
     // eslint-disable-next-line no-template-curly-in-string
-    parseOutput: { format: LocationFormat.GTAGS, tag: '\\b${cursorWord}\\b' },
-    flags: [Flag.FOLDER],
+    parseOutput: {
+      format: Config.Tasks.LocationFormat.GTAGS,
+      tag: '\\b${cursorWord}\\b',
+    },
+    flags: [Config.Tasks.Flag.FOLDER],
     when: { fileExists: 'GTAGS' },
   };
   return runTaskAndGetLocations('gtags_def', params, { folder: 'all' });
