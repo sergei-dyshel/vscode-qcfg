@@ -392,6 +392,7 @@ export async function getGtagsDefinitionsInWorkspace() {
     // eslint-disable-next-line no-template-curly-in-string
     parseOutput: {
       format: Config.Tasks.LocationFormat.GTAGS,
+      // eslint-disable-next-line no-template-curly-in-string
       tag: '\\b${cursorWord}\\b',
     },
     flags: [Config.Tasks.Flag.FOLDER],
