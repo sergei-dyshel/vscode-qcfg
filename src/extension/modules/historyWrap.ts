@@ -3,12 +3,11 @@ import { UserCommands } from '../../library/userCommands';
 import { updateHistory } from './history';
 
 function registerHistoryWrapCommands(
-  ...cmds: Array<{
-    command: string;
-    title: string;
-    wrapped: string;
-    keybinding?: UserCommands.Keybinding;
-  }>
+  ...cmds: Array<
+    Omit<UserCommands.Command, 'callback'> & {
+      wrapped: string;
+    }
+  >
 ) {
   UserCommands.register(
     ...cmds.map((cmd) => ({
@@ -24,7 +23,7 @@ function registerHistoryWrapCommands(
 registerHistoryWrapCommands(
   {
     command: 'qcfg.historyWrap.quickOpen',
-    title: 'qcfg: Go to file...',
+    title: 'Go to file...',
     keybinding: {
       key: 'cmd+enter',
       when: '!referenceSearchTreeFocused',
@@ -33,7 +32,7 @@ registerHistoryWrapCommands(
   },
   {
     command: 'qcfg.historyWrap.openPreviousEditorFromHistory',
-    title: 'qcfg: Quick Open Previous Editor from History',
+    title: 'Quick Open Previous Editor from History',
     keybinding: {
       key: 'cmd+e',
       when: 'editorTextFocus && !inQuickOpen',
@@ -42,18 +41,14 @@ registerHistoryWrapCommands(
   },
   {
     command: 'qcfg.historyWrap.gotoSymbol',
-    title: 'qcfg: Go to Symbol in File...',
-    keybinding: {
-      key: 'cmd+t',
-    },
+    title: 'Go to Symbol in File...',
+    keybinding: 'cmd+t',
     wrapped: 'workbench.action.gotoSymbol',
   },
   {
     command: 'qcfg.historyWrap.showAllSymbols',
-    title: 'qcfg: Go to Symbol in Workspace...',
-    keybinding: {
-      key: 'cmd+shift+t',
-    },
+    title: 'Go to Symbol in Workspace...',
+    keybinding: 'cmd+shift+t',
     wrapped: 'workbench.action.showAllSymbols',
   },
 );

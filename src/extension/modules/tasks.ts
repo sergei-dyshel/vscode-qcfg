@@ -4,11 +4,11 @@ import { Config } from '../../library/config';
 import { globAsync } from '../../library/fileUtils';
 import { log } from '../../library/logging';
 import { concatArrays, mapObjectToArray } from '../../library/tsUtils';
+import { UserCommands } from '../../library/userCommands';
 import { getConfiguration } from '../utils/configuration';
 import { PersistentGenericQuickPick } from '../utils/quickPickPersistent';
 import { getValidWorkspaceFolders } from '../utils/workspace';
 import { filterAsync, mapSomeAsync, MAP_UNDEFINED } from './async';
-import { registerAsyncCommandWrapped } from './exception';
 import { Modules } from './module';
 import type { BaseQcfgTask, BaseTask, FetchInfo } from './tasks/types';
 import {
@@ -270,7 +270,9 @@ async function runDefaultBuildTask() {
   const allTasks = await vstasks.fetchTasks();
   for (const task of allTasks)
     if (task.group === TaskGroup.Build)
-      return commands.executeCommand('workbench.action.tasks.build');
+      return commands
+        .executeCommand('workbench.action.tasks.build')
+        .ignoreResult();
 }
 
 async function runLastBuildTask() {
@@ -357,12 +359,6 @@ async function runConfiguredTask(name: string, options?: TaskRunOptions) {
   await task.run();
 }
 
-async function runConfiguredTaskCmd(arg: string | [string, TaskRunOptions]) {
-  await (typeof arg === 'string'
-    ? runConfiguredTask(arg)
-    : runConfiguredTask(...arg));
-}
-
 interface FetchedParams {
   fetchInfo: FetchInfo;
   params: Cfg.Params;
@@ -387,19 +383,79 @@ function fetchAllParams() {
   });
 }
 
-function activate(context: ExtensionContext) {
-  context.subscriptions.push(
-    registerAsyncCommandWrapped('qcfg.tasks.build.last', runLastBuildTask),
-    registerAsyncCommandWrapped(
-      'qcfg.tasks.build.default',
-      runDefaultBuildTask,
-    ),
-    registerAsyncCommandWrapped(
-      'qcfg.tasks.runConfigured',
-      runConfiguredTaskCmd,
-    ),
-    registerAsyncCommandWrapped('qcfg.tasks.show', showTasks),
+function registerTaskCommand(
+  ...cmds: Array<
+    Omit<UserCommands.Command, 'callback'> & {
+      task: {
+        name: string;
+        options?: TaskRunOptions;
+      };
+    }
+  >
+) {
+  UserCommands.register(
+    ...cmds.map((cmd) => ({
+      command: cmd.command,
+      title: cmd.title,
+      keybinding: cmd.keybinding,
+      callback: async () => runConfiguredTask(cmd.task.name, cmd.task.options),
+    })),
   );
 }
+
+UserCommands.register(
+  {
+    command: 'qcfg.tasks.build.last',
+    title: 'Run last build task',
+    keybinding: {
+      key: 'cmd+k cmd+b',
+    },
+    callback: runLastBuildTask,
+  },
+  {
+    command: 'qcfg.tasks.show',
+    title: 'Show list of tasks',
+    keybinding: {
+      key: 'alt+t',
+    },
+    callback: showTasks,
+  },
+  {
+    command: 'qcfg.tasks.build.default',
+    title: 'Run default build task',
+    keybinding: {
+      key: 'cmd+k cmd+shift+b',
+    },
+    callback: runDefaultBuildTask,
+  },
+);
+
+registerTaskCommand(
+  {
+    command: 'qcfg.jump2line',
+    title: 'Jump to line',
+    keybinding: 'cmd+k cmd+l',
+    task: {
+      name: 'jump2line',
+      options: {
+        folder: 'all',
+      },
+    },
+  },
+  {
+    command: 'qcfg.syg',
+    title: 'Syg',
+    keybinding: 'alt+s',
+    task: {
+      name: 'syg',
+      options: {
+        folder: 'all',
+      },
+    },
+  },
+);
+
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+function activate(_context: ExtensionContext) {}
 
 Modules.register(activate);

@@ -4,10 +4,12 @@ import * as nodejs from './nodejs';
 export namespace UserCommands {
   export const JSON_PATH = nodejs.path.join('package', 'commands.json');
 
-  export interface Keybinding {
-    key: string;
-    when?: string;
-  }
+  export type Keybinding =
+    | {
+        key: string;
+        when?: string;
+      }
+    | string;
 
   export interface Command {
     command: string;
@@ -39,12 +41,20 @@ export namespace UserCommands {
       if (cmd.keybinding) {
         json.contributes!.keybindings!.push({
           command: cmd.command,
-          key: cmd.keybinding.key.replaceAll('cmd+', 'ctrl+'),
-          mac: cmd.keybinding.key.replaceAll('ctrl+', 'cmd+'),
-          when: cmd.keybinding.when,
+          ...generateKeybinding(cmd.keybinding),
         });
       }
     }
     return json;
+  }
+
+  function generateKeybinding(binding: Keybinding) {
+    const key = typeof binding === 'string' ? binding : binding.key;
+    const when = typeof binding === 'string' ? undefined : binding.when;
+    return {
+      key: key.replaceAll('cmd+', 'ctrl+'),
+      mac: key.replaceAll('ctrl+', 'cmd+'),
+      when,
+    };
   }
 }

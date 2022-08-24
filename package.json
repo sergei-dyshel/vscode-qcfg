@@ -389,26 +389,31 @@
       {
         "command": "qcfg.historyWrap.gotoSymbol",
         "category": "qcfg",
-        "title": "qcfg: Go to Symbol in File..."
+        "title": "Go to Symbol in File..."
       },
       {
         "command": "qcfg.historyWrap.openPreviousEditorFromHistory",
         "category": "qcfg",
-        "title": "qcfg: Quick Open Previous Editor from History"
+        "title": "Quick Open Previous Editor from History"
       },
       {
         "command": "qcfg.historyWrap.quickOpen",
         "category": "qcfg",
-        "title": "qcfg: Go to file..."
+        "title": "Go to file..."
       },
       {
         "command": "qcfg.historyWrap.showAllSymbols",
         "category": "qcfg",
-        "title": "qcfg: Go to Symbol in Workspace..."
+        "title": "Go to Symbol in Workspace..."
       },
       {
         "command": "qcfg.insertPath",
         "title": "qcfg: Show open file dialog and insert resulting path"
+      },
+      {
+        "command": "qcfg.jump2line",
+        "category": "qcfg",
+        "title": "Jump to line"
       },
       {
         "command": "qcfg.langClient.compare",
@@ -663,6 +668,11 @@
         "title": "qcfg: Swap selection and marked text"
       },
       {
+        "command": "qcfg.syg",
+        "category": "qcfg",
+        "title": "Syg"
+      },
+      {
         "command": "qcfg.syncToEditorBeside",
         "title": "qcfg: Sync position to editor beside"
       },
@@ -672,15 +682,18 @@
       },
       {
         "command": "qcfg.tasks.build.default",
-        "title": "qcfg: Run default build task"
+        "category": "qcfg",
+        "title": "Run default build task"
       },
       {
         "command": "qcfg.tasks.build.last",
-        "title": "qcfg: Run last build task"
+        "category": "qcfg",
+        "title": "Run last build task"
       },
       {
         "command": "qcfg.tasks.show",
-        "title": "qcfg: Show list of tasks"
+        "category": "qcfg",
+        "title": "Show list of tasks"
       },
       {
         "command": "qcfg.terminal.inFileFolder",
@@ -1891,6 +1904,11 @@
         "mac": "cmd+shift+t"
       },
       {
+        "command": "qcfg.jump2line",
+        "key": "ctrl+k ctrl+l",
+        "mac": "cmd+k cmd+l"
+      },
+      {
         "key": "down",
         "command": "qcfg.multipleSelection.moveMarkDown",
         "when": "editorTextFocus && editorHasMultipleSelections && !suggestWidgetVisible"
@@ -2087,6 +2105,11 @@
         "when": "editorTextFocus && !editorReadonly"
       },
       {
+        "command": "qcfg.syg",
+        "key": "alt+s",
+        "mac": "alt+s"
+      },
+      {
         "key": "cmd+k cmd+shift+left",
         "command": "qcfg.syncEditorToDirection",
         "args": [
@@ -2120,39 +2143,19 @@
         "command": "qcfg.syncToEditorBeside"
       },
       {
+        "command": "qcfg.tasks.build.default",
         "key": "ctrl+k ctrl+shift+b",
-        "mac": "cmd+k cmd+shift+b",
-        "command": "qcfg.tasks.build.default"
+        "mac": "cmd+k cmd+shift+b"
       },
       {
+        "command": "qcfg.tasks.build.last",
         "key": "ctrl+k ctrl+b",
-        "mac": "cmd+k cmd+b",
-        "command": "qcfg.tasks.build.last"
+        "mac": "cmd+k cmd+b"
       },
       {
-        "key": "alt+s",
-        "command": "qcfg.tasks.runConfigured",
-        "args": [
-          "syg",
-          {
-            "folder": "all"
-          }
-        ]
-      },
-      {
-        "key": "ctrl+k ctrl+l",
-        "mac": "cmd+k cmd+l",
-        "command": "qcfg.tasks.runConfigured",
-        "args": [
-          "jump2line",
-          {
-            "folder": "all"
-          }
-        ]
-      },
-      {
+        "command": "qcfg.tasks.show",
         "key": "alt+t",
-        "command": "qcfg.tasks.show"
+        "mac": "alt+t"
       },
       {
         "key": "cmd+k cmd+j",

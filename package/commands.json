@@ -2,27 +2,77 @@
   "contributes": {
     "commands": [
       {
+        "command": "qcfg.tasks.build.last",
+        "category": "qcfg",
+        "title": "Run last build task"
+      },
+      {
+        "command": "qcfg.tasks.show",
+        "category": "qcfg",
+        "title": "Show list of tasks"
+      },
+      {
+        "command": "qcfg.tasks.build.default",
+        "category": "qcfg",
+        "title": "Run default build task"
+      },
+      {
+        "command": "qcfg.jump2line",
+        "category": "qcfg",
+        "title": "Jump to line"
+      },
+      {
+        "command": "qcfg.syg",
+        "category": "qcfg",
+        "title": "Syg"
+      },
+      {
         "command": "qcfg.historyWrap.quickOpen",
         "category": "qcfg",
-        "title": "qcfg: Go to file..."
+        "title": "Go to file..."
       },
       {
         "command": "qcfg.historyWrap.openPreviousEditorFromHistory",
         "category": "qcfg",
-        "title": "qcfg: Quick Open Previous Editor from History"
+        "title": "Quick Open Previous Editor from History"
       },
       {
         "command": "qcfg.historyWrap.gotoSymbol",
         "category": "qcfg",
-        "title": "qcfg: Go to Symbol in File..."
+        "title": "Go to Symbol in File..."
       },
       {
         "command": "qcfg.historyWrap.showAllSymbols",
         "category": "qcfg",
-        "title": "qcfg: Go to Symbol in Workspace..."
+        "title": "Go to Symbol in Workspace..."
       }
     ],
     "keybindings": [
+      {
+        "command": "qcfg.tasks.build.last",
+        "key": "ctrl+k ctrl+b",
+        "mac": "cmd+k cmd+b"
+      },
+      {
+        "command": "qcfg.tasks.show",
+        "key": "alt+t",
+        "mac": "alt+t"
+      },
+      {
+        "command": "qcfg.tasks.build.default",
+        "key": "ctrl+k ctrl+shift+b",
+        "mac": "cmd+k cmd+shift+b"
+      },
+      {
+        "command": "qcfg.jump2line",
+        "key": "ctrl+k ctrl+l",
+        "mac": "cmd+k cmd+l"
+      },
+      {
+        "command": "qcfg.syg",
+        "key": "alt+s",
+        "mac": "alt+s"
+      },
       {
         "command": "qcfg.historyWrap.quickOpen",
         "key": "ctrl+enter",

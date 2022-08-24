@@ -54,19 +54,9 @@ function expandTitle(root: string, title: string): string {
   const isWorkspace = nodejs.path.extname(root) === '.code-workspace';
   const rootBase = nodejs.path.basename(root, '.code-workspace');
   const rootDir1 = nodejs.path.basename(nodejs.path.dirname(root));
-  const rootDir2 = nodejs.path.basename(
-    nodejs.path.dirname(nodejs.path.dirname(root)),
-  );
-  const rootDir3 = nodejs.path.basename(
-    nodejs.path.dirname(nodejs.path.dirname(nodejs.path.dirname(root))),
-  );
   const folderName = isWorkspace ? rootDir1 : rootBase;
   try {
-    return expandTemplate(
-      title,
-      { rootBase, rootDir1, rootDir2, rootDir3, folderName },
-      true,
-    );
+    return expandTemplate(title, { folderName }, true);
   } catch {
     return '';
   }
