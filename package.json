@@ -2607,7 +2607,8 @@
                             "clear",
                             "dedicatedPanel",
                             "reindex",
-                            "autoRestart"
+                            "autoRestart",
+                            "notifyOnFailure"
                           ]
                         }
                       },

@@ -208,6 +208,10 @@ export namespace Config {
       AUTO_RESTART = 'autoRestart',
       REINDEX = 'reindex',
       BUILD = 'build',
+
+      /** Notify on failure */
+      NOTIFY_ON_FAILURE = 'notifyOnFailure',
+
       /** Task is hidden when from pick list, i.e. can be run only directly */
       HIDDEN = 'hidden',
 
@@ -297,6 +301,7 @@ export namespace Config {
         | Flag.DEDICATED_PANEL
         | Flag.REINDEX
         | Flag.AUTO_RESTART
+        | Flag.NOTIFY_ON_FAILURE
       >;
     }
 

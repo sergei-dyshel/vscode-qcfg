@@ -30,6 +30,7 @@ import { getDocumentWorkspaceFolder } from '../../utils/document';
 import { mapAsync, mapAsyncSequential } from '../async';
 import { executeCommandHandled } from '../exception';
 import { peekLocations } from '../fileUtils';
+import { showOsNotification } from '../osNotification';
 import {
   findPatternInParsedLocations,
   ParseLocationFormat,
@@ -331,6 +332,19 @@ export class TerminalTask extends BaseQcfgTask {
     if (success && params.flags && params.flags.includes(Cfg.Flag.REINDEX)) {
       // avoid circular dependency
       executeCommandHandled('qcfg.langClient.refreshOrRestart');
+    }
+    if (
+      !success &&
+      params.flags &&
+      params.flags.includes(Cfg.Flag.NOTIFY_ON_FAILURE)
+    ) {
+      showOsNotification(
+        `Task "${this.task.name}" failed with code ${this.taskRun.exitCode}`,
+        {
+          timeoutSec: 0,
+          unfocusedOnly: true,
+        },
+      );
     }
     let action = success ? params.onSuccess : params.onFailure;
     if (action === Cfg.EndAction.AUTO || action === undefined) {
