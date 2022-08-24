@@ -60,6 +60,13 @@ export function shouldSplitVertically(): boolean {
   return pivotMode || screenTooSmall;
 }
 
+/**
+ * Whether current window is focused
+ */
+export function isWindowFocused() {
+  return currentState.focused;
+}
+
 let windowId: number | undefined;
 
 function tryGetActiveWindowId(): number {
@@ -67,6 +74,7 @@ function tryGetActiveWindowId(): number {
 }
 
 function windowStateChanged(state: WindowState) {
+  currentState = state;
   const msg = state.focused ? 'Focused' : 'Unfocused';
   log.trace(msg);
   if (state.focused) {
@@ -95,5 +103,7 @@ function activate(context: ExtensionContext) {
     }),
   );
 }
+
+let currentState: WindowState;
 
 Modules.register(activate);
