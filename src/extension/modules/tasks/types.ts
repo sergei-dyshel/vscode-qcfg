@@ -1,7 +1,6 @@
 import type {
   FindTextInFilesOptions,
   Location,
-  QuickPickItem,
   TaskDefinition,
   TextSearchQuery,
   WorkspaceFolder,
@@ -14,6 +13,7 @@ import {
   TaskPanelKind,
   TaskRevealKind,
   TaskScope,
+  Uri,
   window,
   workspace,
 } from 'vscode';
@@ -27,9 +27,16 @@ import {
 } from '../../../library/stringUtils';
 import { concatArrays } from '../../../library/tsUtils';
 import { getDocumentWorkspaceFolder } from '../../utils/document';
+import {
+  getFolderSettingsPath,
+  getGlobalSettingsPath,
+} from '../../utils/paths';
+import type { BaseQuickPickItem } from '../../utils/quickPick';
+import { QuickPickButtons } from '../../utils/quickPick';
 import { mapAsync, mapAsyncSequential } from '../async';
 import { executeCommandHandled } from '../exception';
 import { peekLocations } from '../fileUtils';
+import { editJsonPath } from '../json';
 import { showOsNotification } from '../osNotification';
 import {
   findPatternInParsedLocations,
@@ -49,9 +56,15 @@ import { currentWorkspaceFolder, getCursorWordContext } from '../utils';
 
 import Cfg = Config.Tasks;
 
+/** Source of task definition (workspace, folder etc.) */
+export interface ParamsSource {
+  workspace?: boolean;
+  folder?: WorkspaceFolder;
+}
+
 export interface FetchInfo {
   label: string;
-  fromWorkspace: boolean;
+  source: ParamsSource;
 }
 
 export function isFolderTask(params: Cfg.BaseTaskParams) {
@@ -168,7 +181,9 @@ export abstract class BaseTask {
   }
 
   toQuickPickItem() {
-    const item: QuickPickItem = { label: this.prefixTags() + this.title() };
+    const item: BaseQuickPickItem = {
+      label: this.prefixTags() + this.title(),
+    };
     if (this.folderText) {
       item.description = this.folderText;
     }
@@ -206,7 +221,7 @@ export class VscodeTask extends BaseTask {
     return this.task.group === TaskGroup.Build;
   }
 
-  protected isFromWorkspace() {
+  protected override isFromWorkspace() {
     return this.task.source === 'Workspace';
   }
 
@@ -244,8 +259,11 @@ export abstract class BaseQcfgTask extends BaseTask {
     return this.info.label;
   }
 
-  protected isFromWorkspace() {
-    return this.info.fromWorkspace;
+  protected override isFromWorkspace() {
+    return (
+      this.info.source.workspace === true ||
+      this.info.source.folder !== undefined
+    );
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -264,6 +282,29 @@ export abstract class BaseQcfgTask extends BaseTask {
   isBuild() {
     if (this.params.type === Cfg.TaskType.SEARCH) return false;
     return (this.params.flags ?? []).includes(Cfg.Flag.BUILD);
+  }
+
+  override toQuickPickItem() {
+    const item = super.toQuickPickItem();
+    item.itemButtons = new Map([
+      [QuickPickButtons.EDIT, () => this.editParams()],
+    ]);
+    return item;
+  }
+
+  /** Go to  */
+  private editParams(): Promise<void> | void {
+    let settings: string;
+    const source = this.info.source;
+    if (source.folder) settings = getFolderSettingsPath(source.folder);
+    else if (source.workspace) settings = workspace.workspaceFile!.fsPath;
+    else settings = getGlobalSettingsPath();
+
+    const jsonPath = ['qcfg.tasks', this.info.label];
+    if (source.workspace) {
+      jsonPath.unshift('settings');
+    }
+    return editJsonPath(Uri.file(settings), jsonPath);
   }
 }
 

@@ -154,3 +154,8 @@ export function documentRange(document: TextDocument): Range {
   const lastLine = document.lineAt(document.lineCount - 1);
   return new Range(firstLine.range.start, lastLine.range.end);
 }
+
+/** Entire text of the document */
+export function documentText(document: TextDocument): string {
+  return document.getText(documentRange(document));
+}

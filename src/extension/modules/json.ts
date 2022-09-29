@@ -1,6 +1,7 @@
 import * as jsoncParser from 'jsonc-parser';
-import { Uri, workspace } from 'vscode';
+import { Selection, Uri, window, workspace } from 'vscode';
 import * as nodejs from '../../library/nodejs';
+import { documentText } from './documentUtils';
 
 interface JsonParseOptions extends jsoncParser.ParseOptions {
   forbidErrors?: boolean;
@@ -34,4 +35,24 @@ export async function parseJsonFileAsync(
 ): Promise<unknown> {
   const fileData = await workspace.fs.readFile(Uri.file(path));
   return parseJson(fileData.toString(), options);
+}
+
+/**
+ * Open JSON file and select node corresponding to given path.
+ */
+export async function editJsonPath(uri: Uri, path: jsoncParser.JSONPath) {
+  const editor = await window.showTextDocument(uri);
+  const document = editor.document;
+  const text = documentText(document);
+  const tree = jsoncParser.parseTree(text, undefined /* errors */, {
+    allowTrailingComma: true,
+  });
+  const node = jsoncParser.findNodeAtLocation(tree, path);
+  if (!node) {
+    const pathStr = path.join('/');
+    throw new Error(`Could not find ${pathStr} in ${uri}`);
+  }
+  const anchor = document.positionAt(node.offset);
+  editor.selection = new Selection(anchor, anchor);
+  editor.revealRange(editor.selection);
 }

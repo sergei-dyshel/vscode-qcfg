@@ -10,7 +10,12 @@ import { PersistentGenericQuickPick } from '../utils/quickPickPersistent';
 import { getValidWorkspaceFolders } from '../utils/workspace';
 import { filterAsync, mapSomeAsync, MAP_UNDEFINED } from './async';
 import { Modules } from './module';
-import type { BaseQcfgTask, BaseTask, FetchInfo } from './tasks/types';
+import type {
+  BaseQcfgTask,
+  BaseTask,
+  FetchInfo,
+  ParamsSource,
+} from './tasks/types';
 import {
   ConditionError,
   isFolderTask,
@@ -34,7 +39,10 @@ export async function runTask(
   params: Cfg.Params,
   options?: TaskRunOptions,
 ) {
-  const fetchedParams = { params, fetchInfo: { label, fromWorkspace: false } };
+  const fetchedParams: FetchedParams = {
+    params,
+    fetchInfo: { label, source: {} },
+  };
   const task = await createTask(fetchedParams, options);
   await task.run();
 }
@@ -44,7 +52,10 @@ export async function runTaskAndGetLocations(
   params: Cfg.ProcessTaskParams,
   options?: TaskRunOptions,
 ) {
-  const fetchedParams = { params, fetchInfo: { label, fromWorkspace: false } };
+  const fetchedParams: FetchedParams = {
+    params,
+    fetchInfo: { label, source: {} },
+  };
   const task = await createTask(fetchedParams, options);
   if (task instanceof ProcessTask) return task.getLocations();
   if (task instanceof ProcessMultiTask) return task.getLocations();
@@ -364,23 +375,38 @@ interface FetchedParams {
   params: Cfg.Params;
 }
 
+function combineParamsWithSource(
+  tasks: Cfg.ConfParamsSet | undefined,
+  source: ParamsSource,
+): FetchedParams[] {
+  if (!tasks) return [];
+  return mapObjectToArray(tasks, (label, paramsOrCmd) => ({
+    fetchInfo: { label, source },
+    params: expandParamsOrCmd(paramsOrCmd),
+  }));
+}
+
 function fetchAllParams() {
   const inspect = getConfiguration().inspect('qcfg.tasks');
-  const workspaceTasks = inspect?.workspaceValue ?? {};
-  const folderTasks = inspect?.workspaceFolderValue ?? {};
-  const allTasks = {
-    ...inspect?.globalValue,
-    ...workspaceTasks,
-    ...folderTasks,
-  };
-  return mapObjectToArray(allTasks, (label, paramsOrCmd) => {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    const fromWorkspace =
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      workspaceTasks[label] !== undefined || folderTasks[label] !== undefined;
-    const fetchInfo: FetchInfo = { label, fromWorkspace };
-    return { fetchInfo, params: expandParamsOrCmd(paramsOrCmd) };
-  });
+  // when just folder is opened `inspect` will return its config value
+  // as `workspaceValue` so we throw it away as we populate tasks from folders
+  // separately
+  const workspaceTasks = workspace.workspaceFile
+    ? inspect?.workspaceValue ?? {}
+    : {};
+  const allTasks = [
+    ...combineParamsWithSource(inspect?.globalValue, {}),
+    ...combineParamsWithSource(workspaceTasks, { workspace: true }),
+  ];
+  for (const folder of workspace.workspaceFolders ?? []) {
+    const inspectFolder = getConfiguration(folder).inspect('qcfg.tasks');
+    allTasks.push(
+      ...combineParamsWithSource(inspectFolder?.workspaceFolderValue, {
+        folder,
+      }),
+    );
+  }
+  return allTasks;
 }
 
 function registerTaskCommand(
