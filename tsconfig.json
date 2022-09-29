@@ -6,6 +6,8 @@
     "moduleResolution": "node",
     "outDir": "out",
     "lib": ["ESNext"],
+    // TODO: try to remove in future versions
+    "skipLibCheck": true,
     "sourceMap": true,
     "alwaysStrict": true,
     "noUnusedLocals": true,
