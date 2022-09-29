@@ -1,4 +1,4 @@
-import type { ExtensionContext, TextEditor } from 'vscode';
+import { ExtensionContext, TabInputTextDiff, TextEditor } from 'vscode';
 import { commands, Uri, window, workspace } from 'vscode';
 import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
@@ -76,6 +76,10 @@ async function autoOpenRealPath(editor: TextEditor | undefined) {
   if (!editor) return;
   const uri = editor.document.uri;
   if (uri.scheme !== 'file') return;
+  if (
+    window.tabGroups.activeTabGroup.activeTab?.input instanceof TabInputTextDiff
+  )
+    return;
   const realPath = await fileUtils.realPath(uri.fsPath);
   if (realPath === uri.fsPath) return;
   await window.showTextDocument(Uri.file(realPath), {
