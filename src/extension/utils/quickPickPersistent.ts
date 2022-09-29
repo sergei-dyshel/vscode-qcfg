@@ -146,7 +146,7 @@ export class PersistentInputHistoryQuickPick extends PersistentStringQuickPick {
       this.onDidTriggerClearAll.bind(this),
     );
 
-    this.addItemButton(
+    this.addCommonItemButton(
       QuickPickButtons.REMOVE,
       this.onDidTriggerRemove.bind(this),
     );

@@ -35,8 +35,9 @@ export namespace QuickPickButtons {
     };
   }
 
-  export const REMOVE = create('trash', 'Delete item');
-  export const CLEAR_ALL = create('clear-all', 'Clear all items');
+  export const REMOVE = create('trash', 'Delete');
+  export const CLEAR_ALL = create('clear-all', 'Clear all');
+  export const EDIT = create('edit', 'Edit');
 }
 
 /**
@@ -76,7 +77,9 @@ export interface BaseQuickPickItem {
   label: string;
   description?: string;
   detail?: string;
-  buttons?: readonly QuickInputButton[];
+
+  /** Map from buttons to handlers */
+  itemButtons?: Map<QuickInputButton, () => void | Promise<void>>;
 }
 
 /**
@@ -101,7 +104,7 @@ export class QuickPickWrapper<
     () => void | Promise<void>
   >();
 
-  private readonly itemButtons = new Map<
+  private readonly commonItemButtons = new Map<
     QuickInputButton,
     (_: T) => void | Promise<void>
   >();
@@ -167,16 +170,20 @@ export class QuickPickWrapper<
   }
 
   /**
-   * Add per-item button.
+   * Add common per-item button to all items
    *
    * Must be called before setting `items`.
+   * These buttons will be shown after {@link BaseQuickPickItem.itemButtons}
    */
-  addItemButton(button: QuickInputButton, cb: (_: T) => void | Promise<void>) {
+  addCommonItemButton(
+    button: QuickInputButton,
+    cb: (_: T) => void | Promise<void>,
+  ) {
     assert(
       this.qp.items.isEmpty,
       'Adding item button after setting `items` - probably bug',
     );
-    this.itemButtons.set(button, cb);
+    this.commonItemButtons.set(button, cb);
   }
 
   /**
@@ -205,11 +212,17 @@ export class QuickPickWrapper<
    * Acts as proxy to internal {@link QuickPick.items}, applies adapter functions.
    */
   set items(values: ReadonlyArray<T | QuickPickSeparator>) {
-    this.qp.items = values.map((value) =>
-      value instanceof QuickPickSeparator
-        ? value
-        : { buttons: [...this.itemButtons.keys()], ...this.wrap(value) },
-    );
+    this.qp.items = values.map((value) => {
+      if (value instanceof QuickPickSeparator) return value;
+      const wrapped = this.wrap(value);
+      return {
+        ...wrapped,
+        buttons: [
+          ...(wrapped.itemButtons?.keys() ?? []),
+          ...this.commonItemButtons.keys(),
+        ],
+      };
+    });
   }
 
   get items(): ReadonlyArray<T | QuickPickSeparator> {
@@ -340,10 +353,15 @@ export class QuickPickWrapper<
   private async onDidTriggerItemButtonImpl(
     event: QuickPickItemButtonEvent<Q | QuickPickSeparator>,
   ) {
-    const cb = this.itemButtons.get(event.button);
-    assert(cb !== undefined);
     assert(!(event.item instanceof QuickPickSeparator));
-    await cb(this.unwrap(event.item));
+    const cb = event.item.itemButtons?.get(event.button);
+    if (cb) {
+      await cb();
+      return;
+    }
+    const commonCb = this.commonItemButtons.get(event.button);
+    assert(commonCb !== undefined);
+    await commonCb(this.unwrap(event.item));
   }
 
   /**

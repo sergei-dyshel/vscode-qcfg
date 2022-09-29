@@ -142,7 +142,7 @@ async function openFromHistory(newWindow: boolean) {
   qp.options.placeholder = newWindow
     ? 'Open in NEW window'
     : 'Open in SAME window';
-  qp.addItemButton(QuickPickButtons.REMOVE, ([path, _label]) => {
+  qp.addCommonItemButton(QuickPickButtons.REMOVE, ([path, _label]) => {
     log.debug(`Removing ${path} from folders/workspaces history`);
     history.removeFirst(path);
     removedItems.push(path);
