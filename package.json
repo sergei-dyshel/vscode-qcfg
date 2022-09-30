@@ -9,7 +9,7 @@
     "url": "https://github.com/sergei-dyshel/qyron-config.git"
   },
   "engines": {
-    "vscode": "^1.69.0"
+    "vscode": "^1.71.0"
   },
   "enabledApiProposals": [
     "textSearchProvider",
@@ -69,7 +69,7 @@
     "tree-sitter-go": "^0.19.1",
     "tree-sitter-javascript": "^0.19.0",
     "tree-sitter-json": "^0.19.0",
-    "tree-sitter-lua": "github:sergei-dyshel/tree-sitter-lua#master",
+    "tree-sitter-lua": "^2.1.3",
     "tree-sitter-python": "^0.19.0",
     "tree-sitter-typescript": "^0.19.0",
     "tree-sitter-yaml": "^0.5.0",
@@ -90,7 +90,7 @@
     "@types/source-map-support": "^0.5.3",
     "@types/sprintf-js": "^1.1.2",
     "@types/string-format": "^2.0.0",
-    "@types/vscode": "^1.69.0",
+    "@types/vscode": "^1.71.0",
     "@types/webpack-env": "^1.17.0",
     "@typescript-eslint/eslint-plugin": "^5.26.0",
     "@typescript-eslint/parser": "^5.26.0",
@@ -2482,18 +2482,15 @@
         "qcfg.fileDiagnostics.show": {
           "type": "boolean",
           "description": "Whether do show per-file diagnostic counts in statusbar",
-          "scope": "language-overridable",
           "default": true
         },
         "qcfg.fileDiagnostics.excludeMessage": {
           "type": "string",
-          "description": "Exclude diagnostics whose message matches this pattern",
-          "scope": "language-overridable"
+          "description": "Exclude diagnostics whose message matches this pattern"
         },
         "qcfg.fileDiagnostics.excludeSource": {
           "type": "string",
-          "description": "Exclude diagnostics whose source matches this pattern",
-          "scope": "language-overridable"
+          "description": "Exclude diagnostics whose source matches this pattern"
         },
         "qcfg.fileDiagnostics.excludeCodes": {
           "type": "array",
@@ -2503,8 +2500,7 @@
               "string"
             ]
           },
-          "description": "Exclude diagnostics whose code matches any of these",
-          "scope": "language-overridable"
+          "description": "Exclude diagnostics whose code matches any of these"
         },
         "qcfg.langClient.remote": {
           "type": "boolean",
@@ -2574,273 +2570,269 @@
           "additionalProperties": {
             "anyOf": [
               {
-                "anyOf": [
-                  {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "terminal"
+                  },
+                  "when": {
                     "type": "object",
                     "properties": {
-                      "title": {
-                        "type": "string"
-                      },
-                      "type": {
+                      "fileExists": {
                         "type": "string",
-                        "const": "terminal"
+                        "description": "File exists of given glob pattern"
                       },
-                      "when": {
-                        "type": "object",
-                        "properties": {
-                          "fileExists": {
-                            "type": "string",
-                            "description": "File exists of given glob pattern"
-                          },
-                          "fileMatches": {
-                            "type": "string",
-                            "description": "Current file matches glob pattern"
-                          }
-                        },
-                        "additionalProperties": false
-                      },
-                      "flags": {
-                        "type": "array",
-                        "items": {
-                          "type": "string",
-                          "enum": [
-                            "build",
-                            "folder",
-                            "hidden",
-                            "clear",
-                            "dedicatedPanel",
-                            "reindex",
-                            "autoRestart",
-                            "notifyOnFailure"
-                          ]
-                        }
-                      },
-                      "folders": {
-                        "type": "array",
-                        "items": {
-                          "type": "string"
-                        },
-                        "description": "Workspace folders in which this task is valid",
-                        "default": []
-                      },
-                      "command": {
-                        "type": "string"
-                      },
-                      "cwd": {
-                        "type": "string"
-                      },
-                      "exitCodes": {
-                        "type": "array",
-                        "items": {
-                          "type": "number"
-                        },
-                        "description": "Expected process exit codes",
-                        "default": []
-                      },
-                      "reveal": {
+                      "fileMatches": {
                         "type": "string",
-                        "enum": [
-                          "focus",
-                          "yes",
-                          "no"
-                        ],
-                        "description": "Reveal terminal when running",
-                        "default": "yes"
-                      },
-                      "onSuccess": {
-                        "type": "string",
-                        "enum": [
-                          "none",
-                          "auto",
-                          "hide",
-                          "dispose",
-                          "show",
-                          "notify"
-                        ],
-                        "default": "auto"
-                      },
-                      "onFailure": {
-                        "type": "string",
-                        "enum": [
-                          "none",
-                          "auto",
-                          "hide",
-                          "dispose",
-                          "show",
-                          "notify"
-                        ],
-                        "default": "auto"
-                      },
-                      "problemMatchers": {
-                        "anyOf": [
-                          {
-                            "type": "string"
-                          },
-                          {
-                            "type": "string",
-                            "enum": [
-                              "gcc-relative",
-                              "gcc-absolute"
-                            ]
-                          },
-                          {
-                            "type": "array",
-                            "items": {
-                              "type": "string"
-                            }
-                          }
-                        ],
-                        "default": []
+                        "description": "Current file matches glob pattern"
                       }
                     },
-                    "required": [
-                      "command",
-                      "type"
-                    ],
                     "additionalProperties": false
                   },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "title": {
-                        "type": "string"
-                      },
-                      "type": {
-                        "type": "string",
-                        "const": "process"
-                      },
-                      "when": {
-                        "type": "object",
-                        "properties": {
-                          "fileExists": {
-                            "type": "string",
-                            "description": "File exists of given glob pattern"
-                          },
-                          "fileMatches": {
-                            "type": "string",
-                            "description": "Current file matches glob pattern"
-                          }
-                        },
-                        "additionalProperties": false
-                      },
-                      "flags": {
-                        "type": "array",
-                        "items": {
-                          "type": "string",
-                          "enum": [
-                            "build",
-                            "folder",
-                            "hidden"
-                          ]
-                        }
-                      },
-                      "folders": {
-                        "type": "array",
-                        "items": {
-                          "type": "string"
-                        },
-                        "description": "Workspace folders in which this task is valid",
-                        "default": []
-                      },
-                      "command": {
-                        "type": "string"
-                      },
-                      "cwd": {
-                        "type": "string"
-                      },
-                      "exitCodes": {
-                        "type": "array",
-                        "items": {
-                          "type": "number"
-                        },
-                        "description": "Expected process exit codes",
-                        "default": []
-                      },
-                      "parseOutput": {
-                        "type": "object",
-                        "properties": {
-                          "format": {
-                            "type": "string",
-                            "enum": [
-                              "vimgrep",
-                              "gtags"
-                            ]
-                          },
-                          "tag": {
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "format"
-                        ],
-                        "additionalProperties": false,
-                        "description": "Extract locations from output using predefined format or custom regular expression"
-                      }
-                    },
-                    "required": [
-                      "command",
-                      "type"
-                    ],
-                    "additionalProperties": false
+                  "flags": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "build",
+                        "folder",
+                        "hidden",
+                        "clear",
+                        "dedicatedPanel",
+                        "reindex",
+                        "autoRestart",
+                        "notifyOnFailure"
+                      ]
+                    }
                   },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "title": {
+                  "folders": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Workspace folders in which this task is valid",
+                    "default": []
+                  },
+                  "command": {
+                    "type": "string"
+                  },
+                  "cwd": {
+                    "type": "string"
+                  },
+                  "exitCodes": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    },
+                    "description": "Expected process exit codes",
+                    "default": []
+                  },
+                  "reveal": {
+                    "type": "string",
+                    "enum": [
+                      "focus",
+                      "yes",
+                      "no"
+                    ],
+                    "description": "Reveal terminal when running",
+                    "default": "yes"
+                  },
+                  "onSuccess": {
+                    "type": "string",
+                    "enum": [
+                      "none",
+                      "auto",
+                      "hide",
+                      "dispose",
+                      "show",
+                      "notify"
+                    ],
+                    "default": "auto"
+                  },
+                  "onFailure": {
+                    "type": "string",
+                    "enum": [
+                      "none",
+                      "auto",
+                      "hide",
+                      "dispose",
+                      "show",
+                      "notify"
+                    ],
+                    "default": "auto"
+                  },
+                  "problemMatchers": {
+                    "anyOf": [
+                      {
                         "type": "string"
                       },
-                      "type": {
+                      {
                         "type": "string",
-                        "const": "search"
+                        "enum": [
+                          "gcc-relative",
+                          "gcc-absolute"
+                        ]
                       },
-                      "when": {
-                        "type": "object",
-                        "properties": {
-                          "fileExists": {
-                            "type": "string",
-                            "description": "File exists of given glob pattern"
-                          },
-                          "fileMatches": {
-                            "type": "string",
-                            "description": "Current file matches glob pattern"
-                          }
-                        },
-                        "additionalProperties": false
-                      },
-                      "flags": {
-                        "type": "array",
-                        "items": {
-                          "type": "string",
-                          "enum": [
-                            "hidden",
-                            "regex",
-                            "word",
-                            "case"
-                          ]
-                        }
-                      },
-                      "folders": {
+                      {
                         "type": "array",
                         "items": {
                           "type": "string"
-                        },
-                        "description": "Workspace folders in which this task is valid",
-                        "default": []
-                      },
-                      "query": {
-                        "type": "string"
-                      },
-                      "searchTitle": {
-                        "type": "string"
+                        }
                       }
-                    },
-                    "required": [
-                      "query",
-                      "type"
                     ],
-                    "additionalProperties": false
+                    "default": []
                   }
-                ]
+                },
+                "required": [
+                  "command",
+                  "type"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "process"
+                  },
+                  "when": {
+                    "type": "object",
+                    "properties": {
+                      "fileExists": {
+                        "type": "string",
+                        "description": "File exists of given glob pattern"
+                      },
+                      "fileMatches": {
+                        "type": "string",
+                        "description": "Current file matches glob pattern"
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "flags": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "build",
+                        "folder",
+                        "hidden"
+                      ]
+                    }
+                  },
+                  "folders": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Workspace folders in which this task is valid",
+                    "default": []
+                  },
+                  "command": {
+                    "type": "string"
+                  },
+                  "cwd": {
+                    "type": "string"
+                  },
+                  "exitCodes": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    },
+                    "description": "Expected process exit codes",
+                    "default": []
+                  },
+                  "parseOutput": {
+                    "type": "object",
+                    "properties": {
+                      "format": {
+                        "type": "string",
+                        "enum": [
+                          "vimgrep",
+                          "gtags"
+                        ]
+                      },
+                      "tag": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "format"
+                    ],
+                    "additionalProperties": false,
+                    "description": "Extract locations from output using predefined format or custom regular expression"
+                  }
+                },
+                "required": [
+                  "command",
+                  "type"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "search"
+                  },
+                  "when": {
+                    "type": "object",
+                    "properties": {
+                      "fileExists": {
+                        "type": "string",
+                        "description": "File exists of given glob pattern"
+                      },
+                      "fileMatches": {
+                        "type": "string",
+                        "description": "Current file matches glob pattern"
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "flags": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "hidden",
+                        "regex",
+                        "word",
+                        "case"
+                      ]
+                    }
+                  },
+                  "folders": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Workspace folders in which this task is valid",
+                    "default": []
+                  },
+                  "query": {
+                    "type": "string"
+                  },
+                  "searchTitle": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "query",
+                  "type"
+                ],
+                "additionalProperties": false
               },
               {
                 "type": "string"
