@@ -1,4 +1,5 @@
-import { ExtensionContext, TabInputTextDiff, TextEditor } from 'vscode';
+import type { ExtensionContext, TextEditor } from 'vscode';
+import { TabInputTextDiff } from 'vscode';
 import { commands, Uri, window, workspace } from 'vscode';
 import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
