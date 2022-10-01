@@ -37,5 +37,6 @@
     "make package.json": "make package.json",
     "Format all typescript sources": "npx prettier --write src/**/*.ts",
     "Reload all windows": "q-vscode-cli -i all reload"
-  }
+  },
+  "task.allowAutomaticTasks": "on"
 }
