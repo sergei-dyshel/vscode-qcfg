@@ -37,6 +37,7 @@ function fetchLangConfigs() {
         ext.extensionPath,
         langData.configuration,
       );
+      if (!nodejs.fs.existsSync(langFilePath)) continue;
       const langConfig = parseJsonFileSync(
         langFilePath,
       ) as vscode.LanguageConfiguration;
