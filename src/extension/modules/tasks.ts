@@ -394,10 +394,7 @@ function fetchAllParams() {
   const workspaceTasks = workspace.workspaceFile
     ? inspect?.workspaceValue ?? {}
     : {};
-  const allTasks = [
-    ...combineParamsWithSource(inspect?.globalValue, {}),
-    ...combineParamsWithSource(workspaceTasks, { workspace: true }),
-  ];
+  const allTasks: FetchedParams[] = [];
   for (const folder of workspace.workspaceFolders ?? []) {
     const inspectFolder = getConfiguration(folder).inspect('qcfg.tasks');
     allTasks.push(
@@ -406,6 +403,10 @@ function fetchAllParams() {
       }),
     );
   }
+  allTasks.push(
+    ...combineParamsWithSource(workspaceTasks, { workspace: true }),
+    ...combineParamsWithSource(inspect?.globalValue, {}),
+  );
   return allTasks;
 }
 
