@@ -3,6 +3,7 @@ import type { ExtensionContext, WindowState } from 'vscode';
 import { window } from 'vscode';
 import { log } from '../../library/logging';
 import { asyncWait } from '../../library/nodeUtils';
+import { ConfigSectionWatcher } from './configWatcher';
 import {
   handleAsyncStd,
   listenWrapped,
@@ -10,6 +11,8 @@ import {
 } from './exception';
 import { Modules } from './module';
 import { runSubprocessSync } from './subprocess';
+
+const focusMethod = new ConfigSectionWatcher('qcfg.focus.method');
 
 function callHammerspoon(funcName: string, ...args: Array<number | string>) {
   const params = args
@@ -22,26 +25,23 @@ function callHammerspoon(funcName: string, ...args: Array<number | string>) {
   return runSubprocessSync(['hs', '-c', callExpr]);
 }
 
-/* XXX: unused */
-export function focusWindowHammerspoon() {
-  if (!windowId) {
-    return;
-  }
-  log.info('Focusing current OS window');
-  callHammerspoon('ipcFocusWindow', windowId);
-  if (windowId === tryGetActiveWindowId()) {
-    log.warn("Couldn't focus window with Hammerspoon");
-  }
-}
-
 export function focusWindow() {
   if (!windowId) {
+    log.warn('Window ID not set yet, can not focus');
     return;
   }
-  const win = new Window(windowId);
-  windowManager.requestAccessibility();
-  win.show();
-  win.bringToTop();
+  log.info('Focusing current window');
+  if (focusMethod.value === 'hammerspoon') {
+    callHammerspoon('ipcFocusWindow', windowId);
+  } else if (focusMethod.value === 'window-manager') {
+    // this method works worse than hammerspoon since it:
+    // 1. requires accessibility granted to Code, Code Helper etc.
+    // 2. focuses all windows (on all monitors) instead of only single window
+    const win = new Window(windowId);
+    windowManager.requestAccessibility();
+    win.show();
+    win.bringToTop();
+  }
   handleAsyncStd(
     asyncWait(
       `window ${windowId} to be focused`,
@@ -97,6 +97,7 @@ function activate(context: ExtensionContext) {
   }
 
   context.subscriptions.push(
+    focusMethod.register(),
     listenWrapped(window.onDidChangeWindowState, windowStateChanged),
     registerSyncCommandWrapped('qcfg.window.focus', () => {
       focusWindow();

@@ -2,6 +2,12 @@
   "contributes": {
     "configuration": {
       "properties": {
+        "qcfg.focus.method": {
+          "type": "string",
+          "enum": ["hammerspoon", "window-manager"],
+          "description": "Method used to focus current window",
+          "default": "hammerspoon"
+        },
         "qcfg.autoResize.steps": {
           "type": "number",
           "description": "Number of steps by which to auto-resize active editor",
