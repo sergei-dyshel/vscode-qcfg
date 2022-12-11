@@ -8,19 +8,15 @@ export interface MapLike<K, V> {
   has: (key: K) => boolean;
   set: (key: K, value: V) => this;
   readonly size: number;
+  values: () => IterableIterator<V>;
 }
 
 /**
  * Similar to {@link MapLike} but `get()` always returns a value.
  */
-export interface DefaultMapLike<K, V> {
-  clear: () => void;
-  delete: (key: K) => boolean;
+export type DefaultMapLike<K, V> = Omit<MapLike<K, V>, 'get'> & {
   get: (key: K) => V;
-  has: (key: K) => boolean;
-  set: (key: K, value: V) => this;
-  readonly size: number;
-}
+};
 
 /**
  * Allows mapping from arbitrary type by providing an adapter -
@@ -56,6 +52,10 @@ export class MapAdapter<K, V, A> implements MapLike<K, V> {
 
   get size(): number {
     return this.map.size;
+  }
+
+  values() {
+    return this.map.values();
   }
 }
 
