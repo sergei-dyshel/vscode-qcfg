@@ -85,7 +85,8 @@ export class TaskContext {
     this.workspaceFolder = folder ?? currentWorkspaceFolder();
     if (editor) {
       const document = editor.document;
-      this.vars['file'] = document.fileName;
+      this.fileName = document.fileName;
+      this.vars['file'] = this.fileName;
       if (!editor.selection.isEmpty)
         this.vars['selectedText'] = document.getText(editor.selection);
       if (editor.selection.isEmpty)
@@ -125,6 +126,7 @@ export class TaskContext {
   }
 
   readonly workspaceFolder?: WorkspaceFolder;
+  readonly fileName?: string;
   // eslint-disable-next-line @typescript-eslint/ban-types
   readonly vars: Record<string, string | Function> = {};
 }

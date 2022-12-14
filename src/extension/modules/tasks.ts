@@ -2,6 +2,7 @@ import type { ExtensionContext, Task, WorkspaceFolder } from 'vscode';
 import { commands, TaskGroup, tasks as vstasks, workspace } from 'vscode';
 import { Config } from '../../library/config';
 import { globAsync } from '../../library/fileUtils';
+import { fileMatch } from '../../library/glob';
 import { log } from '../../library/logging';
 import { concatArrays, mapObjectToArray } from '../../library/tsUtils';
 import { UserCommands } from '../../library/userCommands';
@@ -70,6 +71,11 @@ interface TaskRunOptions {
 // Private
 //
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function assertCondition(cond: any, msg: string): asserts cond {
+  if (!cond) throw new ConditionError(msg);
+}
+
 async function checkCondition(
   params: Cfg.BaseTaskParams,
   context: TaskContext,
@@ -78,19 +84,25 @@ async function checkCondition(
   if (Object.keys(when).length > 1)
     throw new ParamsError("Only one property can be defined for 'when' clause");
   if (when.fileExists) {
-    if (!context.workspaceFolder)
-      throw new ConditionError(
-        '"fileExists" can only be checked in context of workspace folder',
-      );
+    assertCondition(
+      context.workspaceFolder,
+      '"fileExists" can only be checked in context of workspace folder',
+    );
     const matches = await globAsync(when.fileExists, {
       cwd: context.workspaceFolder.uri.path,
     });
-    if (matches.isEmpty)
-      throw new ConditionError(
-        `Globbing for ${when.fileExists} returned no matches`,
-      );
-  } else if (when.fileMatches) {
-    throw new ParamsError('TODO: when.fileMatches not implemented yet');
+    assertCondition(
+      !matches.isEmpty,
+      `Globbing for ${when.fileExists} returned no matches`,
+    );
+  }
+
+  if (when.fileMatches) {
+    assertCondition(context.fileName, `No current file`);
+    assertCondition(
+      fileMatch(context.fileName, when.fileMatches, { matchBase: true }),
+      `Current file ${context.fileName} doesn't match ${when.fileMatches} pattern`,
+    );
   }
 }
 
