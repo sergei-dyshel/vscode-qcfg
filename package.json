@@ -2248,7 +2248,11 @@
         "when": "editorTextFocus && qcfgTreeMode"
       },
       {
-        "key": "alt+q",
+        "key": "shift+cmd+w",
+        "command": "workbench.action.closeAllEditors"
+      },
+      {
+        "key": "cmd+w",
         "command": "workbench.action.closeEditorInAllGroups"
       },
       {
@@ -2350,13 +2354,15 @@
         }
       },
       {
-        "key": "ctrl+w",
-        "mac": "cmd+w",
+        "mac": "alt+e",
+        "command": "workbench.action.toggleAuxiliaryBar"
+      },
+      {
+        "mac": "alt+w",
         "command": "workbench.action.togglePanel"
       },
       {
-        "key": "ctrl+q",
-        "mac": "cmd+q",
+        "mac": "alt+q",
         "command": "workbench.action.toggleSidebarVisibility"
       }
     ],

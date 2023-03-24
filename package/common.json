@@ -115,18 +115,24 @@
         "when": "editorFocus"
       },
       {
-        "key": "alt+q",
-        "command": "workbench.action.closeEditorInAllGroups"
-      },
-      {
-        "key": "ctrl+q",
-        "mac": "cmd+q",
+        "mac": "alt+q",
         "command": "workbench.action.toggleSidebarVisibility"
       },
       {
-        "key": "ctrl+w",
-        "mac": "cmd+w",
+        "mac": "alt+w",
         "command": "workbench.action.togglePanel"
+      },
+      {
+        "mac": "alt+e",
+        "command": "workbench.action.toggleAuxiliaryBar"
+      },
+      {
+        "key": "cmd+w",
+        "command": "workbench.action.closeEditorInAllGroups"
+      },
+      {
+        "key": "shift+cmd+w",
+        "command": "workbench.action.closeAllEditors"
       },
       {
         "key": "ctrl+shift+;",
