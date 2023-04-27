@@ -156,6 +156,12 @@ export namespace Config {
      * @default {}
      */
     'qcfg.tasks': Tasks.ConfParamsSet;
+
+    /**
+     * List of TODO keywords
+     * @default []
+     */
+    'qcfg.todo.keywords': string[];
   }
 
   export namespace Git {

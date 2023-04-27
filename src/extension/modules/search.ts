@@ -25,6 +25,7 @@ import {
 import { assertNotNull, checkNotNull } from '../../library/exception';
 import { log } from '../../library/logging';
 import { abbrevMatch } from '../../library/stringUtils';
+import { getConfiguration } from '../utils/configuration';
 import { resolveLocationLinks } from '../utils/document';
 import { PersistentStringQuickPick } from '../utils/quickPickPersistent';
 import { getCompletionPrefix } from './documentUtils';
@@ -40,17 +41,6 @@ import {
 import { saveAndPeekSearch } from './savedSearch';
 import { Subprocess } from './subprocess';
 import { currentWorkspaceFolder, getCursorWordContext } from './utils';
-
-const TODO_CATEGORIES = [
-  'TODO',
-  'XXX',
-  'TEMP',
-  'FIXME',
-  'REFACTOR',
-  'OPTIMIZE',
-  'DOCS',
-  'STUB',
-];
 
 export async function executeDefinitionProvider(uri: Uri, position: Position) {
   const locationOrLinks = await commands.executeCommand<
@@ -133,7 +123,10 @@ export async function searchInFiles(
 async function searchTodos() {
   const folder = currentWorkspaceFolder();
   assertNotNull(folder);
-  const qp = new PersistentStringQuickPick('todos', TODO_CATEGORIES);
+  const qp = new PersistentStringQuickPick(
+    'todos',
+    getConfiguration().get('qcfg.todo.keywords', []),
+  );
   qp.options.canSelectMany = true;
   const filterCategories = await qp.selectMany();
   if (!filterCategories) return;
@@ -190,23 +183,24 @@ namespace TodoCompletion {
     if (!langCfg) return;
     const comment = langCfg.comments;
     if (!comment) return;
-    if (comment.lineComment)
+    if (comment.lineComment) {
       items.push(
         createItem(
           `${comment.lineComment} ${category}:`,
           `${comment.lineComment} ${category}: $0`,
         ),
       );
-    if (!comment.blockComment) {
       return;
     }
-    const [start, end] = comment.blockComment;
-    items.push(
-      createItem(
-        `${start} ${category}: ${end}`,
-        `${start} ${category}: $0 ${end}`,
-      ),
-    );
+    if (comment.blockComment) {
+      const [start, end] = comment.blockComment;
+      items.push(
+        createItem(
+          `${start} ${category}: ${end}`,
+          `${start} ${category}: $0 ${end}`,
+        ),
+      );
+    }
   }
 
   export const provider: CompletionItemProvider = {
@@ -219,9 +213,9 @@ namespace TodoCompletion {
       const prefix = getCompletionPrefix(document, position);
       if (prefix === '') return [];
       const items: CompletionItem[] = [];
-      const filtered = TODO_CATEGORIES.filter((cat) =>
-        abbrevMatch(cat, prefix),
-      );
+      const filtered = getConfiguration()
+        .get('qcfg.todo.keywords', [])
+        .filter((cat) => abbrevMatch(cat, prefix));
       for (const category of filtered)
         generateItems(document.languageId, category, items);
       return items;

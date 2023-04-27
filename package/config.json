@@ -447,6 +447,14 @@
           },
           "description": "Dictionary of tasks",
           "default": {}
+        },
+        "qcfg.todo.keywords": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of TODO keywords",
+          "default": []
         }
       }
     }
