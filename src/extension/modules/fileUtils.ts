@@ -1,4 +1,3 @@
-import * as chokidar from 'chokidar';
 import * as tempy from 'tempy';
 import type { Location, Uri, ViewColumn, WorkspaceFolder } from 'vscode';
 import {
@@ -15,8 +14,9 @@ import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
 import { documentRangePreview } from '../utils/document';
 import { QuickPickLocations } from '../utils/quickPick';
-import { handleAsyncStd } from './exception';
 import { getActiveTextEditor } from './utils';
+import type Watcher from 'watcher';
+import type { WatcherOptions } from 'watcher/dist/types';
 
 export function getTempFile() {
   return tempy.file();
@@ -142,29 +142,27 @@ export enum FileWatcherEvent {
   DELETED,
 }
 
-/**
- * Watch file and call callback on when it is created/deleted/changed
- */
-export function watchFile(
-  path: string,
-  callback: (event: FileWatcherEvent) => unknown,
-): DisposableLike {
-  return new FileWatcher(path, callback);
-}
-
-class FileWatcher implements DisposableLike {
-  private readonly watcher: chokidar.FSWatcher;
-  constructor(
+export class FileWatcher implements DisposableLike {
+  private constructor(
+    private readonly watcher: Watcher,
     private readonly path: string,
     private readonly callback: (event: FileWatcherEvent) => unknown,
   ) {
-    this.watcher = chokidar.watch(path, {
+    this.watcher.on('all', this.onEvent.bind(this));
+  }
+
+  static async create(
+    path: string,
+    callback: (event: FileWatcherEvent) => unknown,
+    options?: WatcherOptions,
+  ) {
+    const module = await import('watcher');
+    const watcher = new module.default(path, {
       persistent: true,
       ignoreInitial: true,
-      followSymlinks: true,
-      usePolling: false,
+      ...options,
     });
-    this.watcher.on('all', this.onEvent.bind(this));
+    return new FileWatcher(watcher, path, callback);
   }
 
   private onEvent(eventName: string) {
@@ -186,6 +184,6 @@ class FileWatcher implements DisposableLike {
   }
 
   dispose() {
-    handleAsyncStd(this.watcher.close());
+    this.watcher.close();
   }
 }

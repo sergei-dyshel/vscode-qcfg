@@ -1,8 +1,6 @@
 import * as glob from 'glob';
 import * as nodejs from './nodejs';
 
-export * as chokidar from 'chokidar';
-
 export const globSync = glob.sync;
 export const globAsync: (
   pattern: string,

@@ -2,12 +2,7 @@ import type { ExtensionContext } from 'vscode';
 import { commands, window } from 'vscode';
 import type { ExtensionJSON } from '../../library/extensionManifest';
 import { readFile } from '../../library/filesystemNodejs';
-import {
-  chokidar,
-  globSync,
-  isDirectorySync,
-  statAsync,
-} from '../../library/fileUtils';
+import { globSync, isDirectorySync, statAsync } from '../../library/fileUtils';
 import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
 import { dirName } from '../../library/pathUtils';
@@ -20,6 +15,7 @@ import {
   registerCommandWrapped,
 } from './exception';
 import { Modules } from './module';
+import { FileWatcher } from './fileUtils';
 
 async function getExtensionVersion(extensionPath: string) {
   const jsonPath = nodejs.path.join(extensionPath, 'package.json');
@@ -76,13 +72,19 @@ async function run() {
     `Current qcfg version ${initialVersion}, installed ${initialCtime.toISOString()}`,
   );
 
-  const watcher = new chokidar.FSWatcher({ depth: 1, persistent: true });
-  watcher.add(dirName(extensionContext().extensionPath));
-  watcher.on('all', () => {
-    if (timeout) return;
-    log.info('Detected change in extensions directory');
-    timeout = setTimeout(discardReturn(handleErrors(check)), GRACE_TIME_MS);
-  });
+  extensionContext().subscriptions.push(
+    await FileWatcher.create(
+      dirName(extensionContext().extensionPath),
+      () => {
+        if (timeout) return;
+        log.info('Detected change in extensions directory');
+        timeout = setTimeout(discardReturn(handleErrors(check)), GRACE_TIME_MS);
+      },
+      {
+        depth: 1,
+      },
+    ),
+  );
 }
 
 function activate(context: ExtensionContext) {
