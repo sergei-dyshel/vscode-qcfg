@@ -9,6 +9,5 @@
 !package/commands.json
 
 # All modules excluded in webpack "externals" and their dependencies
-!node_modules/node-window-manager
 !node_modules/extract-file-icon
 !node_modules/node-gyp-build

@@ -63,8 +63,6 @@ const generateConfig = (env: any): webpack.Configuration => ({
     // these 2 trigger "Module not found" warning in webpack (deps of "ws")
     'bufferutil',
     'utf-8-validate',
-    // add native modules which cause trouble with webpack
-    'node-window-manager',
   ],
   resolve: {
     // support reading TypeScript and JavaScript files, 📖 ->
