@@ -11,12 +11,6 @@ export namespace Config {
    */
   export interface All {
     /**
-     * Method used to focus current window
-     * @default "hammerspoon"
-     */
-    'qcfg.focus.method': 'hammerspoon' | 'window-manager';
-
-    /**
      * Number of steps by which to auto-resize active editor
      * @default 1
      */

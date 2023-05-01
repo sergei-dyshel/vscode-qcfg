@@ -156,3 +156,11 @@ export async function executeSubprocess(
 ): Promise<ExecResult> {
   return new Subprocess(command, options).wait();
 }
+
+export const childProcessExec = nodejs.util.promisify(
+  nodejs.child_process.exec,
+);
+
+export const childProcessExecFile = nodejs.util.promisify(
+  nodejs.child_process.execFile,
+);

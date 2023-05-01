@@ -53,14 +53,14 @@ const protocol = {
             (arg.column ?? 1) - 1,
           ).asRange.asSelection()
         : undefined;
-    focusWindow();
+    await focusWindow();
     await window
       .showTextDocument(Uri.file(arg.path), { selection })
       .ignoreResult();
   },
 
   async openSsh(arg: { path: string }): Promise<void> {
-    focusWindow();
+    await focusWindow();
     await openRemoteFileViaSsh(arg.path);
   },
 

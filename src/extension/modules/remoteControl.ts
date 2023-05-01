@@ -61,7 +61,7 @@ function checkFolder(folder: string) {
   return false;
 }
 
-function handleCmd(cmd: string) {
+async function handleCmd(cmd: string) {
   const parts = shlex.split(cmd);
   assert(parts.length >= 2, 'Invalid command received', cmd);
   const [opcode, folder, ...args] = parts;
@@ -71,15 +71,15 @@ function handleCmd(cmd: string) {
     log.info(`"${folder}" does not correspond to this workspace's folder`);
     return;
   }
-  focusWindow();
+  await focusWindow();
 
   switch (opcode) {
     case 'open':
       assert(args.length === 1);
-      handleAsyncStd(handleOpen(folder, args[0]));
+      await handleOpen(folder, args[0]);
       break;
     case 'openSsh':
-      handleAsyncStd(openRemoteFileViaSsh(args[0]));
+      await openRemoteFileViaSsh(args[0]);
       break;
     default:
       log.error('Invalid opcode: ' + opcode);
@@ -90,7 +90,7 @@ function activate(_context: ExtensionContext) {
   const server = nodejs.net.createServer((socket) => {
     socket.on('data', () => {
       handleErrors((data) => {
-        handleCmd(data.toString() as string);
+        handleAsyncStd(handleCmd(data.toString() as string));
       });
     });
   });

@@ -9,7 +9,6 @@ import {
 import { registerAsyncCommandWrapped } from './exception';
 import { Modules } from './module';
 import { getActiveTextEditor } from './utils';
-import { shouldSplitVertically } from './windowState';
 
 async function focusEditorBeside(syncPosition: boolean) {
   const editor = getActiveTextEditor();
@@ -20,7 +19,7 @@ async function focusEditorBeside(syncPosition: boolean) {
     case 0:
       throw new Error('No editors opened');
     case 1:
-      return splitEditorToDirection(shouldSplitVertically() ? 'down' : 'right');
+      return splitEditorToDirection('right');
     case 2:
       break;
     default:

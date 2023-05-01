@@ -101,7 +101,7 @@ async function showOsNotificationAsync(
     action === MacOsNotificationAction.CONTENTS_CLICKED ||
     action === MacOsNotificationAction.SHOW_CLICKED
   ) {
-    focusWindow();
+    await focusWindow();
   }
 }
 
