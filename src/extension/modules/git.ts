@@ -1,4 +1,3 @@
-import * as nodegit from 'nodegit';
 import type { ExtensionContext, TextEditor } from 'vscode';
 import { env, Uri, window } from 'vscode';
 import type { Config } from '../../library/config';
@@ -12,6 +11,10 @@ import { PersistentGenericQuickPick } from '../utils/quickPickPersistent';
 import { registerAsyncCommandWrapped } from './exception';
 import { Modules } from './module';
 import { getActiveTextEditor } from './utils';
+import type { SimpleGit } from 'simple-git';
+import simpleGit from 'simple-git';
+import { dirName } from '../../library/pathUtils';
+import { splitWithRemainder } from '../../library/stringUtils';
 
 const SHORT_SHA_LEN = 7;
 
@@ -26,7 +29,6 @@ interface Info {
   file: string;
   line: number;
   workdir: string;
-  blameCommit?: string;
   branch?: {
     name: string;
     upstream?: {
@@ -41,65 +43,56 @@ interface Link extends Config.Git.Link {
   tag: string;
 }
 
-async function getRemoteInfo(repo: nodegit.Repository, name: string) {
-  const remote = await repo.getRemote(name);
-  return {
-    name: remote.name(),
-    url: remote.url(),
-  };
-}
-
-function shortenRemoteBranch(branch: string, remote: string): string {
-  if (branch.startsWith(remote + '/')) {
-    return branch.replace(remote + '/', '');
-  }
-  return branch;
+async function getRemoteInfo(git: SimpleGit, name: string) {
+  const config = await git.getConfig(`remote.${name}.url`);
+  return { name, url: config.value! };
 }
 
 async function getInfo(editor: TextEditor) {
   const document = editor.document;
   const line = editor.selection.active.line + 1;
-  const repo = await nodegit.Repository.openExt(
-    nodejs.path.dirname(document.fileName),
-    0,
-    '',
-  );
+  const fileDir = dirName(document.uri.fsPath);
+  const git = simpleGit(fileDir);
+  const workdir = await git.revparse(['--show-toplevel']);
+  await git.cwd(workdir);
+  const hash = await git.revparse('HEAD');
 
-  const commit = await repo.getHeadCommit();
-  const hash = commit.sha();
-  const file = nodejs.path.relative(repo.workdir(), document.fileName);
-  const blame = await nodegit.Blame.file(repo, file);
-  // getHunkByLine may return undefined if no hunk found
+  const file = nodejs.path.relative(workdir, document.fileName);
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  const blameCommit = blame.getHunkByLine(line)?.finalCommitId().tostrS();
   const info: Info = {
-    workdir: repo.workdir(),
+    workdir,
     file,
     line,
     hash,
-    blameCommit,
     shortHash: hash.slice(0, SHORT_SHA_LEN),
   };
   try {
-    const branch = await repo.getCurrentBranch();
-    info.branch = { name: branch.shorthand() };
-    try {
-      const upstream = await nodegit.Branch.upstream(branch);
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-      const remoteName = (await (nodegit.Branch as any).remoteName(
-        repo,
-        upstream.name(),
-      )) as string;
-      info.branch.upstream = {
-        name: shortenRemoteBranch(upstream.shorthand(), remoteName),
-        remote: await getRemoteInfo(repo, remoteName),
-      };
-      // eslint-disable-next-line no-empty
-    } catch {}
+    const branch = await git.revparse(['--abbrev-ref', 'HEAD']);
+    if (branch !== 'HEAD') {
+      info.branch = { name: branch };
+      try {
+        const upstream = await git.revparse([
+          '--abbrev-ref',
+          '--symbolic-full-name',
+          '@{u}',
+        ]);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
+        const [remoteName, remoteBranch] = splitWithRemainder(
+          upstream,
+          /\//,
+          1,
+        );
+        info.branch.upstream = {
+          name: remoteBranch,
+          remote: await getRemoteInfo(git, remoteName),
+        };
+        // eslint-disable-next-line no-empty
+      } catch {}
+    }
     // eslint-disable-next-line no-empty
   } catch {}
   try {
-    info.origin = await getRemoteInfo(repo, 'origin');
+    info.origin = await getRemoteInfo(git, 'origin');
     // eslint-disable-next-line no-empty
   } catch {}
   return info;
@@ -134,7 +127,6 @@ async function showWebLinks() {
     branch: info.branch?.upstream?.name ?? info.branch?.name,
     file: info.file,
     line: info.line.toString(),
-    blameHash: info.blameCommit,
   };
   const remoteUrl = remote.url;
   const links: Link[] = [];

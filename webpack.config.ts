@@ -59,16 +59,12 @@ const generateConfig = (env: any): webpack.Configuration => ({
       // webpack'ed, 📖 ->
       // https://webpack.js.org/configuration/externals/
     },
-    /Debug\/iconv\.node/,
-    /Debug\/nodegit.node/,
     '../package',
     // these 2 trigger "Module not found" warning in webpack (deps of "ws")
     'bufferutil',
     'utf-8-validate',
     // add native modules which cause trouble with webpack
     'node-window-manager',
-    // otherwise webpack inlines lib/README.md from nodegit
-    /.*\.md$/,
   ],
   resolve: {
     // support reading TypeScript and JavaScript files, 📖 ->
@@ -100,17 +96,13 @@ const generateConfig = (env: any): webpack.Configuration => ({
       {
         test: /\.node$/,
         use: 'node-loader',
-        exclude: ['/Debug/iconv.node', /.*build\/Debug.*/],
+        exclude: [/.*build\/Debug.*/],
       },
     ],
   },
   ignoreWarnings: [
     {
       message: /Can't resolve 'spawn-sync'/,
-    },
-    {
-      // nodegit
-      message: /Can't resolve '\.\/deprecated/,
     },
     {
       message: /build\/Debug/,

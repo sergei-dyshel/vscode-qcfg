@@ -10,7 +10,6 @@
   <component name="TemplatesService">
     <option name="TEMPLATE_FOLDERS">
       <list>
-        <option value="$MODULE_DIR$/node_modules/nodegit/generate/templates" />
       </list>
     </option>
   </component>

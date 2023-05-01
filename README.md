@@ -226,10 +226,9 @@ One way to select it is to use "Go to location" by pressing `Cmd+Shift+G`.
 
 ## Build
 
-The extension uses some binary packages (e.g. `tree-sitter`, `nodegit`). In
-order to keep up with pace at which VScode updates to newer Electron version I
-need to maintain my own forks of them and sometimes do tricks in order to
-install them.
+The extension uses some binary packages (e.g. `tree-sitter`). In order to keep
+up with pace at which VScode updates to newer Electron version I need to
+maintain my own forks of them and sometimes do tricks in order to install them.
 
 ### Installing from tarballs
 
