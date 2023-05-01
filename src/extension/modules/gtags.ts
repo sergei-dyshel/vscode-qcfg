@@ -1,5 +1,4 @@
 import * as readline from 'node:readline';
-import RE2 from 're2';
 import * as shellQuote from 'shell-quote';
 import type {
   CancellationToken,
@@ -121,7 +120,7 @@ namespace WorkspaceGtags {
   let currentItems: Item[];
   let limitReached = false;
   const logger = new Logger({ name: 'workspaceGtags', parent: rootLogger });
-  let re2pattern: RE2;
+  let regexp: RegExp;
 
   export async function run() {
     const editor = getActiveTextEditor();
@@ -164,11 +163,9 @@ namespace WorkspaceGtags {
   function onNewQuery(query: string) {
     logger.debug(`New query: "${query}"`);
     currentQeury = query;
-    re2pattern = new RE2(buildFuzzyPattern(query), 'i');
+    regexp = new RegExp(buildFuzzyPattern(query), 'i');
     if (query.startsWith(searchedQuery) && !limitReached) {
-      currentItems = searchResults.filter((item) =>
-        re2pattern.test(item.label),
-      );
+      currentItems = searchResults.filter((item) => regexp.test(item.label));
       logger.debug(
         `Reused results from previous query "${searchedQuery}", filtered ${currentItems.length} out of ${searchResults.length} items`,
       );
@@ -239,7 +236,7 @@ namespace WorkspaceGtags {
     }
     const item = parse(line);
     searchResults.push(item);
-    if (currentQeury === searchedQuery || re2pattern.test(item.label)) {
+    if (currentQeury === searchedQuery || regexp.test(item.label)) {
       currentItems.push(item);
       updateItems();
     }
