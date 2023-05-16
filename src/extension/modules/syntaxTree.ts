@@ -4,6 +4,7 @@ import type {
   ExtensionContext,
   TextDocument,
   TextDocumentChangeEvent,
+  TextEditor,
 } from 'vscode';
 import { EventEmitter, Position, Range, window, workspace } from 'vscode';
 import { Logger } from '../../library/logging';
@@ -14,12 +15,12 @@ import { SyntaxLanguage, SyntaxNode } from '../../library/syntax';
 import { DefaultMap } from '../../library/tsUtils';
 import { PromiseContext } from './async';
 import { NumRange } from './documentUtils';
-import { handleAsyncStd, handleStd, listenWrapped } from './exception';
+import { handleStd, listenWrapped } from './exception';
 import { Modules } from './module';
 
 type VsRange = Range;
 
-const UPDATE_DELAY_MS = 100;
+const UPDATE_DELAY_MS = 1000;
 
 declare module 'tree-sitter' {
   interface SyntaxNode {
@@ -110,6 +111,7 @@ class DocumentContext {
     for (;;) {
       try {
         const version = this.document.version;
+        if (version === this.tree?.version) break;
         // TODO: make using previous tree configurable (may crash)
         const start = Date.now();
         this.tree = await SyntaxLanguage.get(this.document.languageId).parse(
@@ -181,7 +183,14 @@ function onDidChangeTextDocument(event: TextDocumentChangeEvent) {
       SyntaxTrees.isDocumentSupported(document)) ||
     trees.has(document)
   )
-    handleAsyncStd(trees.get(document).update());
+    trees.get(document).onDocumentUpdated();
+}
+
+function onDidChangeActiveTextEditor(editor: TextEditor | undefined) {
+  if (!editor) return;
+  const document = editor.document;
+  if (SyntaxTrees.isDocumentSupported(document) || trees.has(document))
+    trees.get(document).onDocumentUpdated();
 }
 
 function activate(context: ExtensionContext) {
@@ -190,6 +199,10 @@ function activate(context: ExtensionContext) {
       trees.delete(document);
     }),
     listenWrapped(workspace.onDidChangeTextDocument, onDidChangeTextDocument),
+    listenWrapped(
+      window.onDidChangeActiveTextEditor,
+      onDidChangeActiveTextEditor,
+    ),
   );
 }
 
