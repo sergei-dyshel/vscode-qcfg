@@ -2,6 +2,7 @@ import { TextBuffer } from 'superstring';
 // eslint-disable-next-line @typescript-eslint/no-duplicate-imports
 import type { Tree as SyntaxTree } from 'tree-sitter';
 import * as SyntaxParser from 'tree-sitter';
+import { perfTimerify } from '../performance';
 
 export async function parseSyntax(
   text: string,
@@ -19,6 +20,8 @@ export async function parseSyntax(
     putParser(parser);
   }
 }
+
+export const parseSyntaxTimed = perfTimerify(parseSyntax);
 
 /** Workaround about not being able to export default import */
 declare module 'tree-sitter' {

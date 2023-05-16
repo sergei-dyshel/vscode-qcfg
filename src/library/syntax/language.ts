@@ -1,9 +1,9 @@
 /* eslint-disable unicorn/prefer-module */
-import { parseSyntax } from './parsing';
+import { parseSyntaxTimed } from './parsing';
 
 export class SyntaxLanguage {
   async parse(text: string) {
-    return parseSyntax(text, this.config.parser);
+    return parseSyntaxTimed(text, this.config.parser);
   }
 
   static get(languageId: string) {
