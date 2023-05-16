@@ -117,7 +117,7 @@ export class Subprocess {
 
   private callback(error: Error | null, stdout: string, stderr: string) {
     if (this.status) this.status.dispose();
-    this.result = new ExecResult(this.process.pid, stdout, stderr);
+    this.result = new ExecResult(this.process.pid!, stdout, stderr);
     if (error) {
       const err = error as unknown as { code?: number; signal?: string };
       this.result.code = err.code ?? 0;

@@ -77,7 +77,7 @@ export class IdentifiedClient extends RemoteClient {
 
   [nodejs.util.inspect.custom](
     _depth: unknown,
-    options: NodeJS.InspectOptions,
+    options: nodejs.util.InspectOptions,
   ) {
     return nodejs.util.inspect({ port: this.tcpPort, ...this.info }, options);
   }
