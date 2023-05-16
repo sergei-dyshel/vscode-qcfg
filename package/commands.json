@@ -45,6 +45,11 @@
         "command": "qcfg.historyWrap.showAllSymbols",
         "category": "qcfg",
         "title": "Go to Symbol in Workspace..."
+      },
+      {
+        "command": "qcfg.perf.dumpHistograms",
+        "category": "qcfg",
+        "title": "Dump performance histograms"
       }
     ],
     "keybindings": [

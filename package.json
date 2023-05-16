@@ -497,6 +497,11 @@
         "title": "qcfg: Peek references"
       },
       {
+        "command": "qcfg.perf.dumpHistograms",
+        "category": "qcfg",
+        "title": "Dump performance histograms"
+      },
+      {
         "command": "qcfg.persistent.backupGlobal",
         "title": "qcfg: Backup GLOBAL persistent state"
       },
