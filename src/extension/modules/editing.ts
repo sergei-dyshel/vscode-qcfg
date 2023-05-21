@@ -24,7 +24,7 @@ import {
   registerSyncCommandWrapped,
   registerTextEditorCommandWrapped,
 } from './exception';
-import { expandHome, fileExists } from './fileUtils';
+import { expandHome } from './fileUtils';
 import { Modules } from './module';
 import {
   offsetPosition,
@@ -33,6 +33,7 @@ import {
   trimWhitespace,
 } from './textUtils';
 import { getActiveTextEditor, getCursorWordContext } from './utils';
+import { fileExists } from '../../library/fileUtils';
 
 export function expandSelectionLinewise() {
   const editor = getActiveTextEditor();

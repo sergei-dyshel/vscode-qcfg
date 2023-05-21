@@ -6,28 +6,33 @@ import type {
   TextDocumentChangeEvent,
   TextEditor,
 } from 'vscode';
+import type * as vscode from 'vscode';
 import { EventEmitter, Position, Range, window, workspace } from 'vscode';
 import { Logger } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
 import { Timer } from '../../library/nodeUtils';
-import type { SyntaxTree } from '../../library/syntax';
-import { SyntaxLanguage, SyntaxNode } from '../../library/syntax';
 import { DefaultMap } from '../../library/tsUtils';
 import { PromiseContext } from './async';
 import { NumRange } from './documentUtils';
 import { handleStd, listenWrapped } from './exception';
 import { Modules } from './module';
-
-type VsRange = Range;
+import type { SyntaxNode, SyntaxTree } from '../../library/treeSitter';
+import { TreeSitter } from '../../library/treeSitter';
 
 const UPDATE_DELAY_MS = 1000;
 
-declare module 'tree-sitter' {
+declare module 'web-tree-sitter' {
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   interface SyntaxNode {
     readonly offsetRange: NumRange;
-    readonly range: VsRange;
+    readonly range: vscode.Range;
     readonly start: Position;
     readonly end: Position;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-shadow
+  interface Tree {
+    version: number;
   }
 }
 
@@ -37,7 +42,7 @@ export namespace SyntaxTrees {
     return trees.get(document).get();
   }
   export function isDocumentSupported(document: TextDocument) {
-    return SyntaxLanguage.isSupported(document.languageId);
+    return TreeSitter.languageSupported(document.languageId);
   }
 }
 
@@ -53,45 +58,54 @@ export const onSyntaxTreeUpdated: Event<SyntaxTreeUpdatedEvent> = emmiter.event;
 // Private
 //
 
-Object.defineProperty(SyntaxNode.prototype, 'offsetRange', {
-  get(): NumRange {
-    const this_ = this as SyntaxNode;
-    /* XXX: use memoization package? (e.g. memoizee) */
-    if (!this.offsetRange_)
-      this.offsetRange_ = new NumRange(this_.startIndex, this_.endIndex);
-    return this.offsetRange_;
-  },
-});
+function patchSyntaxNodePrototype(node: SyntaxNode) {
+  const prototype = TreeSitter.syntaxNodePrototype(node);
 
-Object.defineProperty(SyntaxNode.prototype, 'range', {
-  get(): Range {
-    const this_ = this as SyntaxNode;
-    if (!this.range_) this.range_ = new Range(this_.start, this_.end);
-    return this.range_;
-  },
-});
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if ('offsetRange' in (prototype as any)) return;
 
-Object.defineProperty(SyntaxNode.prototype, 'start', {
-  get(): Position {
-    const this_ = this as SyntaxNode;
-    if (!this.start_)
-      this.start_ = new Position(
-        this_.startPosition.row,
-        this_.startPosition.column,
-      );
-    return this.start_;
-  },
-});
+  Object.defineProperty(prototype, 'offsetRange', {
+    get(): NumRange {
+      const this_ = this as SyntaxNode;
+      /* XXX: use memoization package? (e.g. memoizee) */
+      if (!this.offsetRange_)
+        this.offsetRange_ = new NumRange(this_.startIndex, this_.endIndex);
+      return this.offsetRange_;
+    },
+  });
 
-Object.defineProperty(SyntaxNode.prototype, 'end', {
-  get(): Position {
-    const this_ = this as SyntaxNode;
-    if (!this.end_)
-      this.end_ = new Position(this_.endPosition.row, this_.endPosition.column);
-    return this.end_;
-  },
-});
+  Object.defineProperty(prototype, 'range', {
+    get(): Range {
+      const this_ = this as SyntaxNode;
+      if (!this.range_) this.range_ = new Range(this_.start, this_.end);
+      return this.range_;
+    },
+  });
 
+  Object.defineProperty(prototype, 'start', {
+    get(): Position {
+      const this_ = this as SyntaxNode;
+      if (!this.start_)
+        this.start_ = new Position(
+          this_.startPosition.row,
+          this_.startPosition.column,
+        );
+      return this.start_;
+    },
+  });
+
+  Object.defineProperty(prototype, 'end', {
+    get(): Position {
+      const this_ = this as SyntaxNode;
+      if (!this.end_)
+        this.end_ = new Position(
+          this_.endPosition.row,
+          this_.endPosition.column,
+        );
+      return this.end_;
+    },
+  });
+}
 class DocumentContext {
   constructor(private readonly document: TextDocument) {
     this.log = new Logger({
@@ -114,9 +128,12 @@ class DocumentContext {
         if (version === this.tree?.version) break;
         // TODO: make using previous tree configurable (may crash)
         const start = Date.now();
-        this.tree = await SyntaxLanguage.get(this.document.languageId).parse(
+        await TreeSitter.loadLanguage(this.document.languageId);
+        this.tree = TreeSitter.parse(
           this.document.getText(),
+          this.document.languageId,
         );
+        patchSyntaxNodePrototype(this.tree.rootNode);
         const end = Date.now();
         this.log.debug(
           `Parsing took ${(end - start) / 1000} seconds (version ${version})`,

@@ -6,10 +6,10 @@ import { log } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
 import { parseNumber } from '../../library/stringUtils';
 import { handleAsyncStd, handleErrors } from './exception';
-import * as fileUtils from './fileUtils';
 import { Modules } from './module';
 import { openRemoteFileViaSsh } from './sshFs';
 import { focusWindow } from './windowState';
+import { fileExists } from '../../library/fileUtils';
 
 // eslint-disable-next-line import/no-mutable-exports
 export let port = 48123;
@@ -38,8 +38,8 @@ async function handleOpen(folder: string, location: string) {
     fullPath = file;
   } else {
     fullPath = nodejs.path.join(wsFolder.uri.fsPath, file);
-    const fileExists = await fileUtils.fileExists(fullPath);
-    if (!fileExists)
+    const exists = await fileExists(fullPath);
+    if (!exists)
       log.fatal(`File "${file}" does not exist in "${wsFolder.name}"`);
   }
   const lineNo = parseNumber(line);

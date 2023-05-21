@@ -11,8 +11,8 @@ import {
 import { LogLevel, registerLogHandler } from '../library/logging';
 import { StreamHandler } from '../library/loggingHandlers';
 import * as nodejs from '../library/nodejs';
-import type { SyntaxTree } from '../library/syntax';
-import { SyntaxLanguage } from '../library/syntax';
+import type { SyntaxTree } from '../library/treeSitter';
+import { TreeSitter } from '../library/treeSitter';
 
 const KNOWN_EXTENSIONS: Record<string, string[]> = {
   go: ['.go'],
@@ -68,7 +68,7 @@ class Cli extends CommandLineParser {
       parameterLongName: '--language',
       parameterShortName: '-l',
       description: 'Language of provided source file',
-      alternatives: SyntaxLanguage.allSupported(),
+      alternatives: [...TreeSitter.supportedLanguages()],
     });
 
     this.filenameParam = this.defineStringParameter({
@@ -95,8 +95,9 @@ class Cli extends CommandLineParser {
 
     this.filename = this.filenameParam.value!;
     this.language = this.languageParam.value ?? detectLanguage(this.filename);
-    this.tree = await SyntaxLanguage.get(this.language).parse(
+    this.tree = TreeSitter.parse(
       nodejs.fs.readFileSync(this.filename).toString(),
+      this.language,
     );
     return super.onExecute();
   }

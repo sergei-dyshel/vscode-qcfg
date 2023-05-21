@@ -1,4 +1,3 @@
-import type { SyntaxNode } from 'tree-sitter';
 import type {
   ExtensionContext,
   Range,
@@ -20,6 +19,7 @@ import type { SyntaxTreeUpdatedEvent } from './syntaxTree';
 import { onSyntaxTreeUpdated, SyntaxTrees } from './syntaxTree';
 import type { TreeNode, TreeProvider } from './treeView';
 import { QcfgTreeView, StaticTreeNode } from './treeView';
+import type { SyntaxNode } from '../../library/treeSitter';
 
 const ELLIPSIZE_LEN = 20;
 
@@ -165,7 +165,7 @@ class SyntaxTreeViewNode extends StaticTreeNode {
     private readonly document: TextDocument,
   ) {
     super(buildNodeLabel(syntaxNode, document));
-    assert(syntaxNode.isNamed);
+    assert(syntaxNode.isNamed());
     if (syntaxNode.namedChildCount > 0) this.setCollapsed();
     this.treeItem.id = this.calcId();
   }

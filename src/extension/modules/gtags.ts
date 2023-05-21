@@ -39,7 +39,6 @@ import {
   handleErrors,
   registerAsyncCommandWrapped,
 } from './exception';
-import * as fileUtils from './fileUtils';
 import { wrapWithHistoryUpdate } from './history';
 import { isAnyLangClientRunning } from './langClient';
 import { Modules } from './module';
@@ -47,12 +46,14 @@ import * as saveAll from './saveAll';
 import * as subprocess from './subprocess';
 import { runTaskAndGetLocations } from './tasks';
 import { getActiveTextEditor } from './utils';
+import { fileExists } from '../../library/fileUtils';
+import { openTagLocation } from './fileUtils';
 
 const GTAGS_CHECK = 'gtags check';
 
 async function findGtagsDir(dir: string) {
   for (;;) {
-    if (await fileUtils.fileExists(nodejs.path.join(dir, 'GTAGS'))) {
+    if (await fileExists(nodejs.path.join(dir, 'GTAGS'))) {
       return dir;
     }
     if (dir === '/') {
@@ -150,7 +151,7 @@ namespace WorkspaceGtags {
     const selected = quickPick!.selectedItems[0];
     const absPath = nodejs.path.join(gtagsDir, selected.file);
     handleAsyncStd(
-      fileUtils.openTagLocation(absPath, {
+      openTagLocation(absPath, {
         line: selected.line,
         tag: selected.name,
       }),
@@ -366,7 +367,7 @@ async function openDefinition() {
   assert(tags.length > 0, `No definitions found for ${word}`);
   if (tags.length === 1) {
     const tag = tags[0];
-    await fileUtils.openTagLocation(nodejs.path.join(gtagsDir, tag.file), {
+    await openTagLocation(nodejs.path.join(gtagsDir, tag.file), {
       line: tag.line,
       tag: tag.name,
     });

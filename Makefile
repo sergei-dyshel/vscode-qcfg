@@ -62,7 +62,7 @@ install_dev:
 
 check_tools:
 	node dist/remoteCli.js -h >/dev/null
-	bin/q-vscode-syntax-dump -h >/dev/null
+	# bin/q-vscode-syntax-dump -h >/dev/null
 
 update_proposed:
 	npx vscode-dts dev

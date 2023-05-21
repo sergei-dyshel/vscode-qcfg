@@ -22,7 +22,7 @@
     }
   ],
   "typescript.tsdk": "node_modules/typescript/lib",
-  "workbench.colorTheme": "One Dark Pro Flat",
+  "workbench.colorTheme": "Default Dark+ Experimental",
   "qcfg.tasks": {
     "build": {
       "command": "make build",

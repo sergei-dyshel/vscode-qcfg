@@ -7,6 +7,8 @@
 !syntaxes
 !LICENSE
 !package/commands.json
+!tree-sitter/*.wasm
+!node_modules/web-tree-sitter/tree-sitter.wasm
 
 # All modules excluded in webpack "externals" and their dependencies
 !node_modules/extract-file-icon

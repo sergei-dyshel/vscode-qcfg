@@ -10,9 +10,9 @@ import { GenericQuickPick, QuickPickButtons } from '../utils/quickPick';
 import { openFolder } from '../utils/window';
 import { mapAsyncNoThrow } from './async';
 import { registerAsyncCommandWrapped } from './exception';
-import { fileExists } from './fileUtils';
 import { parseJsonFileAsync } from './json';
 import { Modules } from './module';
+import { fileExists } from '../../library/fileUtils';
 
 const persistentState = new PersistentState<string[]>('workspaceHistory', []);
 

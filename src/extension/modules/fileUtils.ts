@@ -17,6 +17,7 @@ import { QuickPickLocations } from '../utils/quickPick';
 import { getActiveTextEditor } from './utils';
 import type Watcher from 'watcher';
 import type { WatcherOptions } from 'watcher/dist/types';
+import { fileExists } from '../../library/fileUtils';
 
 export function getTempFile() {
   return tempy.file();
@@ -38,9 +39,6 @@ export function getWorkspaceFolderByName(
   }
   return undefined;
 }
-
-export const fileExists = nodejs.util.promisify(nodejs.fs.exists);
-export const realPath = nodejs.util.promisify(nodejs.fs.realpath);
 
 export function realPathSync(path: string): string {
   return nodejs.fs.realpathSync(path);

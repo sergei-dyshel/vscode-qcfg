@@ -7,9 +7,9 @@ import { getConfiguration } from '../utils/configuration';
 import { getDocumentWorkspaceFolder } from '../utils/document';
 import { GenericQuickPick } from '../utils/quickPick';
 import { registerAsyncCommandWrapped } from './exception';
-import { fileExists } from './fileUtils';
 import { Modules } from './module';
 import { getActiveTextEditor } from './utils';
+import { fileExists } from '../../library/fileUtils';
 
 async function switchToAlternate() {
   const editor = getActiveTextEditor();

@@ -10,10 +10,10 @@ import {
   registerAsyncCommandWrapped,
   registerSyncCommandWrapped,
 } from './exception';
-import * as fileUtils from './fileUtils';
 import { Modules } from './module';
 import { executeSubprocess } from './subprocess';
 import { getActiveTextEditor } from './utils';
+import { realPath } from '../../library/fileUtils';
 
 function openOrCreateTerminal(name: string, cwd: string) {
   for (const term of window.terminals) {
@@ -67,8 +67,8 @@ async function showInFileManager() {
 
 async function openRealPath() {
   const editor = getActiveTextEditor();
-  const realPath = await fileUtils.realPath(editor.document.fileName);
-  await window.showTextDocument(Uri.file(realPath), {
+  const path = await realPath(editor.document.fileName);
+  await window.showTextDocument(Uri.file(path), {
     selection: editor.selection,
   });
 }
@@ -81,9 +81,9 @@ async function autoOpenRealPath(editor: TextEditor | undefined) {
     window.tabGroups.activeTabGroup.activeTab?.input instanceof TabInputTextDiff
   )
     return;
-  const realPath = await fileUtils.realPath(uri.fsPath);
-  if (realPath === uri.fsPath) return;
-  await window.showTextDocument(Uri.file(realPath), {
+  const path = await realPath(uri.fsPath);
+  if (path === uri.fsPath) return;
+  await window.showTextDocument(Uri.file(path), {
     selection: getActiveTextEditor().selection,
   });
 }

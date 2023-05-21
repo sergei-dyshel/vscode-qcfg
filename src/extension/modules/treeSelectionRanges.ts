@@ -2,13 +2,13 @@ import type { ExtensionContext, Position, Range, TextDocument } from 'vscode';
 import { languages, SelectionRange } from 'vscode';
 import { assertNotNull } from '../../library/exception';
 import { log } from '../../library/logging';
-import type { SyntaxNode, SyntaxTree } from '../../library/syntax';
-import { SyntaxLanguage } from '../../library/syntax';
 import { handleErrorsAsync } from './exception';
 import { Modules } from './module';
 import { SyntaxTrees } from './syntaxTree';
 import { trimInner } from './textUtils';
 import { findContainingNode } from './treeSitter';
+import type { SyntaxNode, SyntaxTree } from '../../library/treeSitter';
+import { TreeSitter } from '../../library/treeSitter';
 
 function computeSelectionRange(
   document: TextDocument,
@@ -54,7 +54,7 @@ async function provideSelectionRanges(
 
 function activate(extContext: ExtensionContext) {
   extContext.subscriptions.push(
-    languages.registerSelectionRangeProvider(SyntaxLanguage.allSupported(), {
+    languages.registerSelectionRangeProvider(TreeSitter.supportedLanguages(), {
       provideSelectionRanges: handleErrorsAsync(provideSelectionRanges),
     }),
   );

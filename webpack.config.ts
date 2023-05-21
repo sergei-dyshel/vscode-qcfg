@@ -67,7 +67,7 @@ const generateConfig = (env: any): webpack.Configuration => ({
   resolve: {
     // support reading TypeScript and JavaScript files, 📖 ->
     // https://github.com/TypeStrong/ts-loader
-    extensions: ['.ts', '.js', '.node'],
+    extensions: ['.ts', '.js'],
   },
   module: {
     // becaues of `typescript-collections`
@@ -91,19 +91,11 @@ const generateConfig = (env: any): webpack.Configuration => ({
           { loader: 'ifdef-loader', options: { DEBUG: env?.DEBUG } },
         ],
       },
-      {
-        test: /\.node$/,
-        use: 'node-loader',
-        exclude: [/.*build\/Debug.*/],
-      },
     ],
   },
   ignoreWarnings: [
     {
       message: /Can't resolve 'spawn-sync'/,
-    },
-    {
-      message: /build\/Debug/,
     },
     {
       message: /the request of a dependency is an expression/,

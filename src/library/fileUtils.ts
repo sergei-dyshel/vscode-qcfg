@@ -10,6 +10,8 @@ export const globAsync: (
 
 export const statAsync = nodejs.util.promisify(nodejs.fs.stat);
 
+export const readDirectory = nodejs.util.promisify(nodejs.fs.readdir);
+
 export async function isDirectory(path: string): Promise<boolean> {
   const stat = await statAsync(path);
   return stat.isDirectory();
@@ -29,3 +31,6 @@ export function isFileSync(path: string): boolean {
   const stat = nodejs.fs.statSync(path);
   return stat.isFile();
 }
+
+export const fileExists = nodejs.util.promisify(nodejs.fs.exists);
+export const realPath = nodejs.util.promisify(nodejs.fs.realpath);

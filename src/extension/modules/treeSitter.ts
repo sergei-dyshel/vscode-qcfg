@@ -13,7 +13,6 @@ import {
   check,
   checkNotNull,
 } from '../../library/exception';
-import type { SyntaxNode, SyntaxTree } from '../../library/syntax';
 import { lazyValue } from '../../library/tsUtils';
 import { RangeDecorator } from '../utils/decoration';
 import { setStatusBarErrorBackground } from '../utils/statusBar';
@@ -26,6 +25,8 @@ import { Modules } from './module';
 import { SyntaxTrees } from './syntaxTree';
 import { revealSelection, swapRanges } from './textUtils';
 import { getActiveTextEditor, WhenContext } from './utils';
+import type { SyntaxNode, SyntaxTree } from '../../library/treeSitter';
+import { TreeSitter } from '../../library/treeSitter';
 
 const WHEN_CLAUSE = 'qcfgTreeMode';
 
@@ -52,7 +53,7 @@ class SelectedNodes {
     public end: SyntaxNode,
     public isReversed = false,
   ) {
-    assert(start.parent === end.parent);
+    assert(TreeSitter.sameNode(start.parent, end.parent));
     assert(start.parent !== null);
   }
 
@@ -87,11 +88,11 @@ class SelectedNodes {
   }
 
   get isSingle() {
-    return this.start === this.end;
+    return TreeSitter.sameNode(this.start, this.end);
   }
 
   get single() {
-    if (this.start === this.end) return this.start;
+    if (this.isSingle) return this.start;
     return undefined;
   }
 }

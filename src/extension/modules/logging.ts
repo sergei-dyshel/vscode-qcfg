@@ -1,4 +1,3 @@
-import type * as treeSitter from 'tree-sitter';
 import type {
   ExtensionContext,
   OutputChannel,
@@ -31,6 +30,7 @@ import {
   registerSyncCommandWrapped,
 } from './exception';
 import { Modules } from './module';
+import type { SyntaxNode, TreeSitter } from '../../library/treeSitter';
 
 /**
  * Show log output panel
@@ -91,12 +91,12 @@ function stringifyVscode(x: object): string | undefined {
   }
   if ('row' in x && 'column' in x) {
     // treeSitter.Point
-    const point = x as treeSitter.Point;
+    const point = x as TreeSitter.Point;
     return `(${point.row},${point.column})`;
   }
   if ('type' in x && 'startPosition' in x && 'endPosition' in x) {
     // treeSitter.SyntaxNode
-    const node = x as treeSitter.SyntaxNode;
+    const node = x as SyntaxNode;
     return `<${node.type} ${str(node.range)}>`;
   }
   return undefined;

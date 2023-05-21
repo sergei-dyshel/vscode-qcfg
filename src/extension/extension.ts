@@ -1,6 +1,5 @@
 // these modify prototypes of objects, must be imported first
 import '../library/stringPrototype';
-import '../library/syntax';
 import '../library/tsUtils';
 import './utils/locationPrototype';
 import './utils/positionPrototype';
@@ -17,6 +16,9 @@ import { stringify as str } from '../library/stringify';
 import { Modules } from './modules/module';
 import { registerAllCommands, verifyCommandsJson } from './utils/commands';
 import { setExtensionContext } from './utils/extensionContext';
+import { TreeSitter } from '../library/treeSitter';
+import * as nodejs from '../library/nodejs';
+import { handleAsyncStd } from './modules/exception';
 
 export async function activate(context: ExtensionContext) {
   console.log('Extension activating');
@@ -34,6 +36,17 @@ export async function activate(context: ExtensionContext) {
   log.info(`Activated ${str(Modules.fileNames())}`);
 
   log.info('Extension path', context.extensionPath);
+
+  handleAsyncStd(
+    TreeSitter.init(
+      nodejs.path.join(
+        context.extensionPath,
+        'node_modules',
+        'web-tree-sitter',
+      ),
+      nodejs.path.join(context.extensionPath, 'tree-sitter'),
+    ),
+  );
 
   log.info('Global storage path', context.globalStorageUri.fsPath);
   if (context.storageUri)
