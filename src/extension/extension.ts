@@ -30,13 +30,6 @@ export async function activate(context: ExtensionContext) {
 
   setExtensionContext(context);
 
-  await Modules.activateAll(context);
-  context.subscriptions.push(...registerAllCommands());
-
-  log.info(`Activated ${str(Modules.fileNames())}`);
-
-  log.info('Extension path', context.extensionPath);
-
   handleAsyncStd(
     TreeSitter.init(
       nodejs.path.join(
@@ -47,6 +40,13 @@ export async function activate(context: ExtensionContext) {
       nodejs.path.join(context.extensionPath, 'tree-sitter'),
     ),
   );
+
+  await Modules.activateAll(context);
+  context.subscriptions.push(...registerAllCommands());
+
+  log.info(`Activated ${str(Modules.fileNames())}`);
+
+  log.info('Extension path', context.extensionPath);
 
   log.info('Global storage path', context.globalStorageUri.fsPath);
   if (context.storageUri)
