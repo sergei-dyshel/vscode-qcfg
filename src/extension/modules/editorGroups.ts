@@ -39,12 +39,10 @@ async function focusEditorBeside(syncPosition: boolean) {
     default:
       return;
   }
-  const visible = editor.visibleRanges[0];
-  const pos = editor.selection.active;
-  const doc = editor.document;
-  const newEditor = await window.showTextDocument(doc, newColumn);
-  newEditor.selection = new Selection(pos, pos);
-  newEditor.revealRange(visible, TextEditorRevealType.InCenter);
+  await window.showTextDocument(editor.document, {
+    viewColumn: newColumn,
+    selection: editor.selection,
+  });
 }
 
 type DirectionArg = 'up' | 'down' | 'left' | 'right';
