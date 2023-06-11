@@ -1,11 +1,12 @@
 // noinspection JSUnusedAssignment
 
-import type {
+import {
   CompletionList,
   ExtensionContext,
   TextDocument,
   TextEditor,
   TextEditorEdit,
+  TextEditorRevealType,
 } from 'vscode';
 import {
   commands,
@@ -34,6 +35,7 @@ import {
 } from './textUtils';
 import { getActiveTextEditor, getCursorWordContext } from './utils';
 import { fileExists } from '../../library/fileUtils';
+import { UserCommands } from '../../library/userCommands';
 
 export function expandSelectionLinewise() {
   const editor = getActiveTextEditor();
@@ -255,6 +257,25 @@ async function executeCompletionItemProvider() {
   );
   console.info(complList);
 }
+
+UserCommands.register(
+  {
+    command: 'qcfg.editor.revealAtTop',
+    title: 'Reveal selection at top',
+    callback: () => {
+      const editor = getActiveTextEditor();
+      editor.revealRange(editor.selection, TextEditorRevealType.AtTop);
+    },
+  },
+  {
+    command: 'qcfg.editor.revealInCenter',
+    title: 'Reveal selection in center',
+    callback: () => {
+      const editor = getActiveTextEditor();
+      editor.revealRange(editor.selection, TextEditorRevealType.InCenter);
+    },
+  },
+);
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(

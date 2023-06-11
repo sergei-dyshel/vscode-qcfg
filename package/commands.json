@@ -27,6 +27,16 @@
         "title": "Syg"
       },
       {
+        "command": "qcfg.editor.revealAtTop",
+        "category": "qcfg",
+        "title": "Reveal selection at top"
+      },
+      {
+        "command": "qcfg.editor.revealInCenter",
+        "category": "qcfg",
+        "title": "Reveal selection in center"
+      },
+      {
         "command": "qcfg.historyWrap.quickOpen",
         "category": "qcfg",
         "title": "Go to file..."

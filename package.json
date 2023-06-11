@@ -314,6 +314,16 @@
         "title": "qcfg: Select previous text edit"
       },
       {
+        "command": "qcfg.editor.revealAtTop",
+        "category": "qcfg",
+        "title": "Reveal selection at top"
+      },
+      {
+        "command": "qcfg.editor.revealInCenter",
+        "category": "qcfg",
+        "title": "Reveal selection in center"
+      },
+      {
         "command": "qcfg.errors.toggleMessages",
         "title": "qcfg: Toggle displaying qcfg errors as messages"
       },
