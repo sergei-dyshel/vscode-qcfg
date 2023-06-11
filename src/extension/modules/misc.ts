@@ -14,6 +14,7 @@ import { Modules } from './module';
 import { executeSubprocess } from './subprocess';
 import { getActiveTextEditor } from './utils';
 import { realPath } from '../../library/fileUtils';
+import { setTimeoutPromise } from '../../library/nodeUtils';
 
 function openOrCreateTerminal(name: string, cwd: string) {
   for (const term of window.terminals) {
@@ -83,6 +84,8 @@ async function autoOpenRealPath(editor: TextEditor | undefined) {
     return;
   const path = await realPath(uri.fsPath);
   if (path === uri.fsPath) return;
+  // give some time to editor to jump to some location
+  await setTimeoutPromise(200 /* ms */);
   await window.showTextDocument(Uri.file(path), {
     selection: getActiveTextEditor().selection,
   });
