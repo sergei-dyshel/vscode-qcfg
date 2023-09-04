@@ -57,6 +57,11 @@
         "title": "Go to Symbol in Workspace..."
       },
       {
+        "command": "qcfg.goToCharacterPosition",
+        "category": "qcfg",
+        "title": "Go to character position"
+      },
+      {
         "command": "qcfg.perf.dumpHistograms",
         "category": "qcfg",
         "title": "Dump performance histograms"

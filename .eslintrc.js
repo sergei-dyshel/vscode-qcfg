@@ -230,6 +230,7 @@ const config = {
       warn,
       { onlyIfContainsSeparator: true },
     ],
+    radix: off,
   },
 };
 

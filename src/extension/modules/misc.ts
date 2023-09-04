@@ -1,4 +1,4 @@
-import type { ExtensionContext, TextEditor } from 'vscode';
+import { ExtensionContext, Selection, TextEditor } from 'vscode';
 import { TabInputTextDiff } from 'vscode';
 import { commands, Uri, window, workspace } from 'vscode';
 import { log } from '../../library/logging';
@@ -15,6 +15,7 @@ import { executeSubprocess } from './subprocess';
 import { getActiveTextEditor } from './utils';
 import { realPath } from '../../library/fileUtils';
 import { setTimeoutPromise } from '../../library/nodeUtils';
+import { UserCommands } from '../../library/userCommands';
 
 function openOrCreateTerminal(name: string, cwd: string) {
   for (const term of window.terminals) {
@@ -115,5 +116,27 @@ function activate(context: ExtensionContext) {
     registerAsyncCommandWrapped('qcfg.openRealPath', openRealPath),
   );
 }
+
+async function goToCharacterPosition() {
+  const editor = getActiveTextEditor();
+  const offset = await window.showInputBox({
+    title: 'Enter character offset',
+    prompt: 'Enter number',
+    validateInput: (value) =>
+      Number.isNaN(Number.parseInt(value))
+        ? 'Value is not a number'
+        : undefined,
+  });
+  if (!offset) return;
+  const cursor = editor.document.positionAt(Number.parseInt(offset));
+  editor.selection = new Selection(cursor, cursor);
+  editor.revealRange(editor.selection);
+}
+
+UserCommands.register({
+  command: 'qcfg.goToCharacterPosition',
+  title: 'Go to character position',
+  callback: goToCharacterPosition,
+});
 
 Modules.register(activate);

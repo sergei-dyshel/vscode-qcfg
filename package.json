@@ -37,7 +37,8 @@
     "fix": "gts fix",
     "prepare": "npm run compile",
     "pretest": "npm run compile",
-    "posttest": "npm run check"
+    "posttest": "npm run check",
+    "generate-commands": "make commands"
   },
   "dependencies": {
     "@rushstack/ts-command-line": "^4.7.6",
@@ -356,6 +357,11 @@
       {
         "command": "qcfg.git.weblinks",
         "title": "qcfg: Git - Web links"
+      },
+      {
+        "command": "qcfg.goToCharacterPosition",
+        "category": "qcfg",
+        "title": "Go to character position"
       },
       {
         "command": "qcfg.goToDefinition",
