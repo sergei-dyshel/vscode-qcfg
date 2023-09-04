@@ -22,7 +22,6 @@
     }
   ],
   "typescript.tsdk": "node_modules/typescript/lib",
-  "workbench.colorTheme": "Default Dark+ Experimental",
   "qcfg.tasks": {
     "build": {
       "command": "make build",
@@ -38,5 +37,6 @@
     "Format all typescript sources": "npx prettier --write src/**/*.ts",
     "Reload all windows": "q-vscode-cli -i all reload"
   },
-  "task.allowAutomaticTasks": "on"
+  "task.allowAutomaticTasks": "on",
+  "window.autoDetectColorScheme": true
 }
