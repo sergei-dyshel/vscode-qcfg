@@ -687,6 +687,11 @@
         "title": "qcfg: Show syntax tree in side panel"
       },
       {
+        "command": "qcfg.syntaxTree.verify",
+        "category": "qcfg",
+        "title": "Verify syntax tree"
+      },
+      {
         "command": "qcfg.tasks.build.default",
         "category": "qcfg",
         "title": "Run default build task"

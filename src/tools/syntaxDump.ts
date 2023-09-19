@@ -95,9 +95,8 @@ class Cli extends CommandLineParser {
 
     this.filename = this.filenameParam.value!;
     this.language = this.languageParam.value ?? detectLanguage(this.filename);
-    this.tree = TreeSitter.parse(
+    this.tree = TreeSitter.language(this.language).parse(
       nodejs.fs.readFileSync(this.filename).toString(),
-      this.language,
     );
     return super.onExecute();
   }

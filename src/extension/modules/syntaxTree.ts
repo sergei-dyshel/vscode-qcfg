@@ -12,12 +12,19 @@ import { Logger } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
 import { Timer } from '../../library/nodeUtils';
 import { DefaultMap } from '../../library/tsUtils';
-import { PromiseContext } from './async';
+import { mapAsync } from './async';
 import { NumRange } from './documentUtils';
-import { handleStd, listenWrapped } from './exception';
+import { handleErrors, handleStd, listenWrapped } from './exception';
 import { Modules } from './module';
-import type { SyntaxNode, SyntaxTree } from '../../library/treeSitter';
+import type {
+  SyntaxNode,
+  SyntaxTree,
+  SyntaxTreeEdit,
+} from '../../library/treeSitter';
 import { TreeSitter } from '../../library/treeSitter';
+import { assert, assertNotNull } from '../../library/exception';
+import { UserCommands } from '../../library/userCommands';
+import { getActiveTextEditor } from './utils';
 
 const UPDATE_DELAY_MS = 1000;
 
@@ -37,7 +44,7 @@ declare module 'web-tree-sitter' {
 }
 
 export namespace SyntaxTrees {
-  export async function get(document: TextDocument): Promise<SyntaxTree> {
+  export function get(document: TextDocument): SyntaxTree {
     checkDocumentSupported(document);
     return trees.get(document).get();
   }
@@ -111,79 +118,102 @@ class DocumentContext {
     this.log = new Logger({
       instance: nodejs.path.parse(document.fileName).name,
     });
+    this.language = TreeSitter.language(document.languageId);
   }
 
   private tree?: SyntaxTree;
-  private promiseContext?: PromiseContext<SyntaxTree>;
   private readonly timer: Timer = new Timer();
   private readonly log: Logger;
-  private isUpdating = false;
+  private readonly language: TreeSitter.Language;
 
-  async update() {
-    if (this.isUpdating) return;
-    this.isUpdating = true;
-    for (;;) {
-      try {
-        const version = this.document.version;
-        if (version === this.tree?.version) break;
-        // TODO: make using previous tree configurable (may crash)
-        const start = Date.now();
-        await TreeSitter.loadLanguage(this.document.languageId);
-        this.tree = TreeSitter.parse(
-          this.document.getText(),
-          this.document.languageId,
-        );
-        patchSyntaxNodePrototype(this.tree.rootNode);
-        const end = Date.now();
-        this.log.debug(
-          `Parsing took ${(end - start) / 1000} seconds (version ${version})`,
-        );
-        if (version === this.document.version) {
-          this.tree.version = version;
-          emmiter.fire({ document: this.document, tree: this.tree });
-          if (this.promiseContext) {
-            this.promiseContext.resolve(this.tree);
-            this.promiseContext = undefined;
-          }
-          break;
-        }
-      } catch (err: unknown) {
-        this.log.error(err);
-        this.tree = undefined;
-        if (this.promiseContext) this.promiseContext.reject(err as Error);
-        this.promiseContext = undefined;
-        this.isUpdating = false;
-        throw err;
-      }
-    }
-    this.isUpdating = false;
+  get isUpToDate() {
+    return this.tree && this.tree.version === this.document.version;
   }
 
-  onDocumentUpdated() {
+  updateTree() {
+    if (this.tree?.version === this.document.version) return;
+    if (this.language.isLoading) {
+      this.log.debug('Language is still loading');
+      this.scheduleUpdate();
+      return;
+    }
+    const incremental = this.tree !== undefined;
+    const version = this.document.version;
+    const start = Date.now();
+    this.tree = this.language.parse(this.document.getText(), {
+      prevTree: this.tree,
+    });
+    patchSyntaxNodePrototype(this.tree.rootNode);
+    const end = Date.now();
+    this.log.debug(
+      `${incremental ? 'Incremental' : 'Full'} parsing took ${
+        (end - start) / 1000
+      } seconds (version ${version})`,
+    );
+
+    this.tree.version = version;
+    emmiter.fire({ document: this.document, tree: this.tree });
+  }
+
+  applyChanges(changes: readonly vscode.TextDocumentContentChangeEvent[]) {
+    assertNotNull(this.tree);
+    for (const change of changes) {
+      const newOffset = change.rangeOffset + change.text.length;
+      const delta: SyntaxTreeEdit = {
+        startIndex: change.rangeOffset,
+        oldEndIndex: change.rangeOffset + change.rangeLength,
+        newEndIndex: newOffset,
+        startPosition: asPoint(change.range.start),
+        oldEndPosition: asPoint(change.range.end),
+        newEndPosition: asPoint(this.document.positionAt(newOffset)),
+      };
+      this.tree.edit(delta);
+    }
+  }
+
+  onDocumentUpdated(
+    changes: readonly vscode.TextDocumentContentChangeEvent[],
+    scheduleUpdate = false,
+  ) {
+    if (!this.tree) return;
+    if (changes.length === 0) return;
+    this.applyChanges(changes);
+    this.log.trace(
+      `Edited tree with ${changes.length} changes, tree version ${this.tree.version}, document version ${this.document.version}`,
+    );
+    if (scheduleUpdate) this.scheduleUpdate();
+  }
+
+  scheduleUpdate() {
     this.timer.setTimeout(UPDATE_DELAY_MS, () => {
-      handleStd(async () => this.update());
+      handleStd(() => {
+        this.updateTree();
+      });
     });
   }
 
-  invalidate() {
-    this.tree = undefined;
+  get(): SyntaxTree {
+    if (!this.isUpToDate) this.updateTree();
+    return this.tree!;
   }
 
-  async get(): Promise<SyntaxTree> {
-    if (this.timer.isSet || this.isUpdating) {
-      if (!this.promiseContext) this.promiseContext = new PromiseContext();
-      return this.promiseContext.promise;
-    }
-    if (this.tree) return this.tree;
-    this.promiseContext = new PromiseContext();
-    handleStd(async () => this.update());
-    return this.promiseContext.promise;
+  verify() {
+    assertNotNull(this.tree);
+    const fullTree = this.language.parse(this.document.getText());
+    assert(
+      this.tree.rootNode.compare(fullTree.rootNode),
+      'Parsed trees are not equal',
+    );
   }
 }
 
 const trees = new DefaultMap<TextDocument, DocumentContext>(
   (document) => new DocumentContext(document),
 );
+
+function asPoint(pos: Position): TreeSitter.Point {
+  return { row: pos.line, column: pos.character };
+}
 
 function checkDocumentSupported(document: TextDocument) {
   if (!SyntaxTrees.isDocumentSupported(document))
@@ -194,20 +224,35 @@ function checkDocumentSupported(document: TextDocument) {
 
 function onDidChangeTextDocument(event: TextDocumentChangeEvent) {
   const document = event.document;
-  if (
-    (window.activeTextEditor &&
-      window.activeTextEditor.document === document &&
-      SyntaxTrees.isDocumentSupported(document)) ||
-    trees.has(document)
-  )
-    trees.get(document).onDocumentUpdated();
+  const scheduleUpdate = window.activeTextEditor?.document === document;
+  if (SyntaxTrees.isDocumentSupported(document))
+    trees.get(document).onDocumentUpdated(event.contentChanges, scheduleUpdate);
 }
 
 function onDidChangeActiveTextEditor(editor: TextEditor | undefined) {
   if (!editor) return;
   const document = editor.document;
-  if (SyntaxTrees.isDocumentSupported(document) || trees.has(document))
-    trees.get(document).onDocumentUpdated();
+  if (SyntaxTrees.isDocumentSupported(document))
+    trees.get(document).scheduleUpdate();
+}
+
+function onDidChangeVisibleTextEditors(editors: readonly TextEditor[]) {
+  void mapAsync(
+    editors,
+    handleErrors(async (editor: TextEditor) => {
+      const languageId = editor.document.languageId;
+      if (!TreeSitter.languageSupported(languageId)) return;
+      const language = TreeSitter.language(languageId);
+      if (language.didLoad || language.isLoading) return;
+      try {
+        await language.load();
+      } catch (err) {
+        throw new Error(
+          `Loading tree-sitter language "${languageId} failed: ${String(err)}`,
+        );
+      }
+    }),
+  );
 }
 
 function activate(context: ExtensionContext) {
@@ -220,7 +265,25 @@ function activate(context: ExtensionContext) {
       window.onDidChangeActiveTextEditor,
       onDidChangeActiveTextEditor,
     ),
+    listenWrapped(
+      window.onDidChangeVisibleTextEditors,
+      onDidChangeVisibleTextEditors,
+    ),
+    listenWrapped(workspace.onDidCloseTextDocument, (doc) => {
+      trees.delete(doc);
+    }),
   );
+
+  onDidChangeVisibleTextEditors(window.visibleTextEditors);
+  onDidChangeActiveTextEditor(window.activeTextEditor);
 }
+
+UserCommands.register({
+  command: 'qcfg.syntaxTree.verify',
+  title: 'Verify syntax tree',
+  callback: () => {
+    trees.get(getActiveTextEditor().document).verify();
+  },
+});
 
 Modules.register(activate);

@@ -230,6 +230,8 @@ const config = {
       warn,
       { onlyIfContainsSeparator: true },
     ],
+
+    'no-void': [warn, { allowAsStatement: true }],
     radix: off,
   },
 };

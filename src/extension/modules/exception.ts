@@ -158,7 +158,7 @@ export function handleAsyncStd(promise: unknown): void {
 /**
  * Call async function and handle sync/async errors
  */
-export function handleStd(func: () => Promise<void>): void {
+export function handleStd(func: () => unknown): void {
   try {
     handleAsyncStd(func());
   } catch (err: unknown) {

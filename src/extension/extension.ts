@@ -18,7 +18,6 @@ import { registerAllCommands, verifyCommandsJson } from './utils/commands';
 import { setExtensionContext } from './utils/extensionContext';
 import { TreeSitter } from '../library/treeSitter';
 import * as nodejs from '../library/nodejs';
-import { handleAsyncStd } from './modules/exception';
 
 export async function activate(context: ExtensionContext) {
   console.log('Extension activating');
@@ -30,15 +29,9 @@ export async function activate(context: ExtensionContext) {
 
   setExtensionContext(context);
 
-  handleAsyncStd(
-    TreeSitter.init(
-      nodejs.path.join(
-        context.extensionPath,
-        'node_modules',
-        'web-tree-sitter',
-      ),
-      nodejs.path.join(context.extensionPath, 'tree-sitter'),
-    ),
+  await TreeSitter.init(
+    nodejs.path.join(context.extensionPath, 'node_modules', 'web-tree-sitter'),
+    nodejs.path.join(context.extensionPath, 'tree-sitter'),
   );
 
   await Modules.activateAll(context);

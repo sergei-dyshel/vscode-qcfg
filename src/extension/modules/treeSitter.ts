@@ -285,7 +285,7 @@ export async function enterMode() {
   );
 
   const { document, selection } = editor;
-  const tree = await SyntaxTrees.get(document);
+  const tree = SyntaxTrees.get(document);
   const selectedNodes = inferSelectedNodes(tree.rootNode, selection);
   assertNotNull(selectedNodes, 'Could not infer tree nodes from selection');
   context = {
