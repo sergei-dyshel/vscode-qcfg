@@ -1,23 +1,13 @@
 import type { ExtensionContext } from 'vscode';
-import {
-  commands,
-  Selection,
-  TextEditorRevealType,
-  ViewColumn,
-  window,
-} from 'vscode';
+import { commands, Selection, TextEditorRevealType, window } from 'vscode';
 import { registerAsyncCommandWrapped } from './exception';
 import { Modules } from './module';
 import { getActiveTextEditor } from './utils';
 
 async function focusEditorBeside(syncPosition: boolean) {
-  const editor = getActiveTextEditor();
-  const columns = new Set<ViewColumn>();
-  for (const visEditor of window.visibleTextEditors)
-    if (visEditor.viewColumn) columns.add(visEditor.viewColumn);
-  switch (columns.size) {
+  switch (window.tabGroups.all.length) {
     case 0:
-      throw new Error('No editors opened');
+      throw new Error('No tab groups opened');
     case 1:
       return splitEditorToDirection('right');
     case 2:
@@ -28,19 +18,15 @@ async function focusEditorBeside(syncPosition: boolean) {
   if (!syncPosition) {
     return commands.executeCommand('workbench.action.focusNextGroup');
   }
-  let newColumn: ViewColumn;
-  switch (editor.viewColumn) {
-    case ViewColumn.One:
-      newColumn = ViewColumn.Two;
-      break;
-    case ViewColumn.Two:
-      newColumn = ViewColumn.One;
-      break;
-    default:
-      return;
-  }
-  await window.showTextDocument(editor.document, {
-    viewColumn: newColumn,
+  const tabGroup = (() => {
+    for (const group of window.tabGroups.all) {
+      if (group !== window.tabGroups.activeTabGroup) return group;
+    }
+    throw new Error("Shouldn't get here");
+  })();
+  const editor = getActiveTextEditor();
+  await window.showTextDocument(getActiveTextEditor().document, {
+    viewColumn: tabGroup.viewColumn,
     selection: editor.selection,
   });
 }
