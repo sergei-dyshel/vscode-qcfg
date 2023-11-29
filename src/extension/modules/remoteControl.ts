@@ -71,7 +71,7 @@ async function handleCmd(cmd: string) {
     log.info(`"${folder}" does not correspond to this workspace's folder`);
     return;
   }
-  await focusWindow();
+  // await focusWindow();
 
   switch (opcode) {
     case 'open':
