@@ -5,6 +5,7 @@ import { assert, assertNotNull, check } from '../../library/exception';
 import { log, Logger } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
 import { diffArrays } from '../../library/tsUtils';
+import { UserCommands } from '../../library/userCommands';
 import {
   Ccls,
   CclsCallHierarchyProvider,
@@ -12,6 +13,7 @@ import {
 } from '../utils/ccls';
 import type { Clangd } from '../utils/clangd';
 import { ClangdTypeHierarchyProvider } from '../utils/clangd';
+import { getConfiguration } from '../utils/configuration';
 import { ConditionalResource } from '../utils/disposable';
 import {
   c2pConverter,
@@ -27,7 +29,8 @@ import type { LocationGroup } from './locationTree';
 import { setPanelLocationGroups } from './locationTree';
 import { Modules } from './module';
 import { searchWithCommand } from './search';
-import { getActiveTextEditor } from './utils';
+import { executeSubprocess } from './subprocess';
+import { currentWorkspaceFolder, getActiveTextEditor } from './utils';
 
 export function isAnyLangClientRunning(): boolean {
   return ALL_CLIENTS.map((wrapper) => wrapper.isClientRunning).some(Boolean);
@@ -162,10 +165,12 @@ class LanguageClientWrapper {
 
   async restart() {
     if (this.isExtensionActive) return this.runRestartCmd();
+    this.log.info('Extension not active');
   }
 
   async refresh() {
     if (this.isClientRunning) return this.runRefreshCmd();
+    this.log.info('Language client not running');
   }
 
   async refreshOrRestart() {
@@ -213,6 +218,16 @@ class ClangdWrapper extends LanguageClientWrapper {
     return this.restart();
   }
 
+  protected override async runRefreshCmd() {
+    const cmd = getConfiguration().get('qcfg.clangd.restartCommand');
+    if (cmd) {
+      return executeSubprocess(cmd, {
+        cwd: currentWorkspaceFolder()?.uri.fsPath,
+      }).ignoreResult();
+    }
+    return this.runRestartCmd();
+  }
+
   // eslint-disable-next-line class-methods-use-this
   override async runRestartCmd() {
     return commands.executeCommand('clangd.restart').ignoreResult();
@@ -232,7 +247,7 @@ export const clangdWrapper = new ClangdWrapper();
 const ALL_CLIENTS = [cclsWrapper, clangdWrapper];
 
 async function refreshLangClients() {
-  return mapAsync(ALL_CLIENTS, async (wrapper) => wrapper.refreshOrRestart());
+  return mapAsync(ALL_CLIENTS, async (wrapper) => wrapper.refresh());
 }
 
 async function restartLangClients() {
@@ -428,5 +443,11 @@ function activate(context: ExtensionContext) {
     ),
   );
 }
+
+UserCommands.register({
+  command: 'qcfg.clangd.refresh',
+  title: 'Refresh clangd',
+  callback: async () => clangdWrapper.refresh(),
+});
 
 Modules.register(activate);

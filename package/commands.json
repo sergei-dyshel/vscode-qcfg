@@ -2,6 +2,11 @@
   "contributes": {
     "commands": [
       {
+        "command": "qcfg.clangd.refresh",
+        "category": "qcfg",
+        "title": "Refresh clangd"
+      },
+      {
         "command": "qcfg.tasks.build.last",
         "category": "qcfg",
         "title": "Run last build task"

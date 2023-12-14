@@ -137,6 +137,13 @@
           "description": "C/C++ language clients are remote (over SSH)",
           "default": false
         },
+        "qcfg.clangd.restartCommand": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Custom command for restarting clangd (e.g. kill server)"
+        },
         "qcfg.clangd.typeHierarchy": {
           "type": "boolean",
           "description": "Add clangd provider for type hierarchy",

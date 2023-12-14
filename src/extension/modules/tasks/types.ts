@@ -374,7 +374,7 @@ export class TerminalTask extends BaseQcfgTask {
     const term = this.taskRun.terminal;
     if (success && params.flags && params.flags.includes(Cfg.Flag.REINDEX)) {
       // avoid circular dependency
-      executeCommandHandled('qcfg.langClient.refreshOrRestart');
+      executeCommandHandled('qcfg.langClient.refresh');
     }
     if (
       !success &&

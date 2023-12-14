@@ -275,6 +275,11 @@
         "title": "qcfg: Clangd - dump AST"
       },
       {
+        "command": "qcfg.clangd.refresh",
+        "category": "qcfg",
+        "title": "Refresh clangd"
+      },
+      {
         "command": "qcfg.codeActions.autoFixFile",
         "title": "qcfg: Choose and apply quick fixes for current file"
       },
@@ -2523,6 +2528,13 @@
           "type": "boolean",
           "description": "C/C++ language clients are remote (over SSH)",
           "default": false
+        },
+        "qcfg.clangd.restartCommand": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Custom command for restarting clangd (e.g. kill server)"
         },
         "qcfg.clangd.typeHierarchy": {
           "type": "boolean",

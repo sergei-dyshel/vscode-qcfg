@@ -122,6 +122,11 @@ export namespace Config {
     'qcfg.langClient.remote': boolean;
 
     /**
+     * Custom command for restarting clangd (e.g. kill server)
+     */
+    'qcfg.clangd.restartCommand': string[];
+
+    /**
      * Add clangd provider for type hierarchy
      * @default true
      */
