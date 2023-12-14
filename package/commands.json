@@ -2,9 +2,29 @@
   "contributes": {
     "commands": [
       {
+        "command": "qcfg.editor.revealAtTop",
+        "category": "qcfg",
+        "title": "Reveal selection at top"
+      },
+      {
+        "command": "qcfg.editor.revealInCenter",
+        "category": "qcfg",
+        "title": "Reveal selection in center"
+      },
+      {
         "command": "qcfg.clangd.refresh",
         "category": "qcfg",
         "title": "Refresh clangd"
+      },
+      {
+        "command": "qcfg.langClient.rebuildIndex",
+        "category": "qcfg",
+        "title": "Rebuild index for language clients"
+      },
+      {
+        "command": "qcfg.langClient.reindexVisibleFiles",
+        "category": "qcfg",
+        "title": "C/C++ language servers - reindex visible files"
       },
       {
         "command": "qcfg.tasks.build.last",
@@ -30,16 +50,6 @@
         "command": "qcfg.syg",
         "category": "qcfg",
         "title": "Syg"
-      },
-      {
-        "command": "qcfg.editor.revealAtTop",
-        "category": "qcfg",
-        "title": "Reveal selection at top"
-      },
-      {
-        "command": "qcfg.editor.revealInCenter",
-        "category": "qcfg",
-        "title": "Reveal selection in center"
       },
       {
         "command": "qcfg.historyWrap.quickOpen",

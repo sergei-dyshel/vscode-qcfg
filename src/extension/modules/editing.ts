@@ -71,6 +71,26 @@ async function surroundWith(args: unknown[]) {
   console.log('Selection:', editor.selection);
 }
 
+/**
+ * Cause file to appear as dirty without changing it
+ */
+export async function touchDocument(editor: TextEditor) {
+  await editor.edit(
+    (builder) => {
+      builder.insert(editor.document.positionAt(0), ' ');
+    },
+    { undoStopBefore: false, undoStopAfter: false },
+  );
+  await editor.edit(
+    (builder) => {
+      builder.delete(
+        new Range(editor.document.positionAt(0), editor.document.positionAt(1)),
+      );
+    },
+    { undoStopBefore: false, undoStopAfter: false },
+  );
+}
+
 function swapCursorAndAnchor(editor: TextEditor) {
   editor.selections = editor.selections.map((sel) => sel.reverse());
 }

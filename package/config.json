@@ -149,6 +149,22 @@
           "description": "Add clangd provider for type hierarchy",
           "default": true
         },
+        "qcfg.clangd.clearCacheCommand": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Command to clear clangd cache",
+          "default": ["rm", "-rf", ".cache/clangd"]
+        },
+        "qcfg.ccls.clearCacheCommand": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Command to clear ccls cache",
+          "default": ["rm", "-rf", ".ccls-cache"]
+        },
         "qcfg.ccls.typeHierarchy": {
           "type": "boolean",
           "description": "Add ccls provider for type hierarchy",

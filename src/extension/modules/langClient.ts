@@ -1,4 +1,5 @@
-import type { ExtensionContext, Position, Range, TextDocument } from 'vscode';
+import { ExtensionContext, Position, Range, TextDocument } from 'vscode';
+import { window } from 'vscode';
 import { commands, extensions, languages, Location, Uri } from 'vscode';
 import * as client from 'vscode-languageclient';
 import { assert, assertNotNull, check } from '../../library/exception';
@@ -24,6 +25,7 @@ import {
 } from '../utils/langClientConv';
 import { PersistentStringQuickPick } from '../utils/quickPickPersistent';
 import { mapAsync } from './async';
+import { touchDocument } from './editing';
 import { registerAsyncCommandWrapped } from './exception';
 import type { LocationGroup } from './locationTree';
 import { setPanelLocationGroups } from './locationTree';
@@ -49,7 +51,7 @@ interface LanguageClientAPI {
   isRunning: () => boolean;
 }
 
-class LanguageClientWrapper {
+abstract class LanguageClientWrapper {
   private readonly log: Logger;
 
   constructor(public name: string, readonly extentsionId: string) {
@@ -182,11 +184,18 @@ class LanguageClientWrapper {
     if (this.isClientRunning) return this.client!.stop();
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function, class-methods-use-this
-  protected async runRefreshCmd(): Promise<void> {}
+  async rebuildIndex() {
+    await executeSubprocess(this.getClearCacheCmd(), {
+      cwd: currentWorkspaceFolder()?.uri.fsPath,
+    });
+    await this.refresh();
+  }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function, class-methods-use-this
-  protected async runRestartCmd(): Promise<void> {}
+  protected abstract runRefreshCmd(): Promise<void>;
+
+  protected abstract runRestartCmd(): Promise<void>;
+
+  protected abstract getClearCacheCmd(): string[];
 }
 
 class CclsWrapper extends LanguageClientWrapper {
@@ -206,6 +215,11 @@ class CclsWrapper extends LanguageClientWrapper {
 
   async searchAssignments(uri: Uri, position: Position) {
     return this.getReferences(uri, position, { role: Ccls.RefRole.ASSIGNMENT });
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  protected override getClearCacheCmd() {
+    return getConfiguration().getNotNull('qcfg.ccls.clearCacheCommand');
   }
 }
 
@@ -229,8 +243,13 @@ class ClangdWrapper extends LanguageClientWrapper {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  override async runRestartCmd() {
+  protected override async runRestartCmd() {
     return commands.executeCommand('clangd.restart').ignoreResult();
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  protected override getClearCacheCmd() {
+    return getConfiguration().getNotNull('qcfg.clangd.clearCacheCommand');
   }
 
   async getAST(uri: Uri, range: Range) {
@@ -444,10 +463,36 @@ function activate(context: ExtensionContext) {
   );
 }
 
-UserCommands.register({
-  command: 'qcfg.clangd.refresh',
-  title: 'Refresh clangd',
-  callback: async () => clangdWrapper.refresh(),
-});
+UserCommands.register(
+  {
+    command: 'qcfg.clangd.refresh',
+    title: 'Refresh clangd',
+    callback: async () => clangdWrapper.refresh(),
+  },
+  {
+    command: 'qcfg.langClient.rebuildIndex',
+    title: 'Rebuild index for language clients',
+    callback: async () =>
+      mapAsync(ALL_CLIENTS, async (wrapper) =>
+        wrapper.rebuildIndex(),
+      ).ignoreResult(),
+  },
+  {
+    command: 'qcfg.langClient.reindexVisibleFiles',
+    title: 'C/C++ language servers - reindex visible files',
+    callback: async () => {
+      const visibleDocuments = new Map(
+        window.visibleTextEditors.map((editor) => [editor.document, editor]),
+      );
+      await mapAsync(
+        [...visibleDocuments.entries()],
+        async ([document, editor]) => {
+          await touchDocument(editor);
+          await document.save();
+        },
+      );
+    },
+  },
+);
 
 Modules.register(activate);

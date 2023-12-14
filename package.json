@@ -426,12 +426,22 @@
         "title": "qcfg: Compare language clients on current symbol"
       },
       {
+        "command": "qcfg.langClient.rebuildIndex",
+        "category": "qcfg",
+        "title": "Rebuild index for language clients"
+      },
+      {
         "command": "qcfg.langClient.refresh",
         "title": "qcfg: Refresh language clients"
       },
       {
         "command": "qcfg.langClient.refreshOrRestart",
         "title": "qcfg: Refresh or restart language clients"
+      },
+      {
+        "command": "qcfg.langClient.reindexVisibleFiles",
+        "category": "qcfg",
+        "title": "C/C++ language servers - reindex visible files"
       },
       {
         "command": "qcfg.langClient.restart",
@@ -2540,6 +2550,30 @@
           "type": "boolean",
           "description": "Add clangd provider for type hierarchy",
           "default": true
+        },
+        "qcfg.clangd.clearCacheCommand": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Command to clear clangd cache",
+          "default": [
+            "rm",
+            "-rf",
+            ".cache/clangd"
+          ]
+        },
+        "qcfg.ccls.clearCacheCommand": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Command to clear ccls cache",
+          "default": [
+            "rm",
+            "-rf",
+            ".ccls-cache"
+          ]
         },
         "qcfg.ccls.typeHierarchy": {
           "type": "boolean",

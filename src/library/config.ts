@@ -133,6 +133,18 @@ export namespace Config {
     'qcfg.clangd.typeHierarchy': boolean;
 
     /**
+     * Command to clear clangd cache
+     * @default ["rm", "-rf", ".cache/clangd"]
+     */
+    'qcfg.clangd.clearCacheCommand': string[];
+
+    /**
+     * Command to clear ccls cache
+     * @default ["rm", "-rf", ".ccls-cache"]
+     */
+    'qcfg.ccls.clearCacheCommand': string[];
+
+    /**
      * Add ccls provider for type hierarchy
      * @default true
      */
