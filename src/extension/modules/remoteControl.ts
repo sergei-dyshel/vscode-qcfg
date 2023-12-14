@@ -8,7 +8,6 @@ import { parseNumber } from '../../library/stringUtils';
 import { handleAsyncStd, handleErrors } from './exception';
 import { Modules } from './module';
 import { openRemoteFileViaSsh } from './sshFs';
-import { focusWindow } from './windowState';
 import { fileExists } from '../../library/fileUtils';
 
 // eslint-disable-next-line import/no-mutable-exports
