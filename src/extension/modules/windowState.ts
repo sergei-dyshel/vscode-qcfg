@@ -57,21 +57,10 @@ async function tryGetActiveWindowId() {
   return Number(result.stdout);
 }
 
-async function windowStateChanged(state: WindowState) {
+function windowStateChanged(state: WindowState) {
   currentState = state;
   const msg = state.focused ? 'Focused' : 'Unfocused';
   log.trace(msg);
-  if (state.focused) {
-    const newWindowId = await tryGetActiveWindowId();
-    if (newWindowId !== windowId) {
-      if (!windowId) {
-        log.info(`Current window id: ${newWindowId}`);
-      } else {
-        log.info(`Current window id changed ${windowId} => ${newWindowId}`);
-      }
-      windowId = newWindowId;
-    }
-  }
 }
 
 async function getInitialWindowId() {
