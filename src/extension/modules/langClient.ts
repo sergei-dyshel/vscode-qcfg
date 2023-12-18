@@ -1,4 +1,4 @@
-import { ExtensionContext, Position, Range, TextDocument } from 'vscode';
+import type { ExtensionContext, Position, Range, TextDocument } from 'vscode';
 import { window } from 'vscode';
 import { commands, extensions, languages, Location, Uri } from 'vscode';
 import * as client from 'vscode-languageclient';
@@ -219,7 +219,11 @@ class CclsWrapper extends LanguageClientWrapper {
 
   // eslint-disable-next-line class-methods-use-this
   protected override getClearCacheCmd() {
-    return getConfiguration().getNotNull('qcfg.ccls.clearCacheCommand');
+    return getConfiguration().get('qcfg.ccls.clearCacheCommand', [
+      'rm',
+      '-rf',
+      '.ccls-cache',
+    ]);
   }
 }
 
@@ -249,7 +253,12 @@ class ClangdWrapper extends LanguageClientWrapper {
 
   // eslint-disable-next-line class-methods-use-this
   protected override getClearCacheCmd() {
-    return getConfiguration().getNotNull('qcfg.clangd.clearCacheCommand');
+    // no -rf - we want command to fail if directory not present
+    return getConfiguration().get('qcfg.clangd.clearCacheCommand', [
+      'rm',
+      '-r',
+      '.cache/clangd',
+    ]);
   }
 
   async getAST(uri: Uri, range: Range) {

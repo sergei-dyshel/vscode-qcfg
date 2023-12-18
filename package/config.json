@@ -154,16 +154,14 @@
           "items": {
             "type": "string"
           },
-          "description": "Command to clear clangd cache",
-          "default": ["rm", "-rf", ".cache/clangd"]
+          "description": "Command to clear clangd cache"
         },
         "qcfg.ccls.clearCacheCommand": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "Command to clear ccls cache",
-          "default": ["rm", "-rf", ".ccls-cache"]
+          "description": "Command to clear ccls cache"
         },
         "qcfg.ccls.typeHierarchy": {
           "type": "boolean",
