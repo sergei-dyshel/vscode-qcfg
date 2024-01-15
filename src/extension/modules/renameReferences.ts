@@ -8,6 +8,7 @@ import { executeReferenceProvider } from './search';
 import { revealSelection } from './textUtils';
 import { getActiveTextEditor } from './utils';
 import { log } from '../../library/logging';
+import { dedupeLocations, resolveLocations } from './savedSearch';
 
 async function renameReferences(needsConfirmation: boolean) {
   const editor = getActiveTextEditor();
@@ -27,8 +28,10 @@ async function renameReferences(needsConfirmation: boolean) {
   });
   if (!newName) return;
 
+  await resolveLocations(locations);
+  const dedupedLocations = dedupeLocations(locations);
   const edit = new WorkspaceEdit();
-  for (const location of locations) {
+  for (const location of dedupedLocations) {
     let word: string;
     try {
       const doc = await workspace.openTextDocument(location.uri);

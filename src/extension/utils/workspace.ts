@@ -1,6 +1,7 @@
-import type { Uri, WorkspaceFolder } from 'vscode';
+import { Uri, WorkspaceFolder } from 'vscode';
 import { FileSystemError, workspace } from 'vscode';
 import { filterAsync } from '../modules/async';
+import * as nodejs from './../../library/nodejs';
 
 export async function uriExists(uri: Uri) {
   try {
@@ -27,4 +28,19 @@ export function getWorkspaceRoot(): string | undefined {
   const folders = workspace.workspaceFolders;
   if (!folders || folders.isEmpty) return undefined;
   return folders[0].uri.fsPath;
+}
+
+/**
+ * If uri is symlink to another file in workspace, resolve it
+ *
+ * Works for local filesystem only
+ */
+export async function workspaceResolveSymlink(uri: Uri) {
+  if (uri.scheme !== 'file') return uri;
+  if (!(await uriExists(uri))) return uri;
+  let path = uri.fsPath;
+  path = await nodejs.fsPromises.realpath(path);
+
+  const newUri = Uri.file(path);
+  return workspace.getWorkspaceFolder(newUri) ? newUri : uri;
 }

@@ -1,4 +1,10 @@
-import type { ExtensionContext, Location, Uri } from 'vscode';
+import {
+  workspace,
+  type ExtensionContext,
+  type Location,
+  type Uri,
+  FileType,
+} from 'vscode';
 import { DisposableHolder } from '../../library/disposable';
 import { check, checkNotNull } from '../../library/exception';
 import { QuickPickLocations } from '../utils/quickPick';
@@ -15,11 +21,18 @@ import { Modules } from './module';
 import { getActiveTextEditor, getCurrentLocation } from './utils';
 import { log } from '../../library/logging';
 import { stringify as str } from '../../library/stringify';
+import { workspaceResolveSymlink } from '../utils/workspace';
 
 const MAX_SAVED_SEARCHES = 20;
 
 export function dedupeLocations(locations: Location[]): Location[] {
   return locations.uniq((loc1, loc2) => loc1.range.isEqual(loc2.range));
+}
+
+export async function resolveLocations(locations: Location[]) {
+  return mapAsync(locations, async (loc) => {
+    loc.uri = await workspaceResolveSymlink(loc.uri);
+  }).ignoreResult();
 }
 
 export async function saveAndPeekSearch(
@@ -31,6 +44,7 @@ export async function saveAndPeekSearch(
   if (locations.length === 0) {
     return;
   }
+  await resolveLocations(locations);
   locations = dedupeLocations(locations);
   if (locations.length > 1) {
     lastName = name;
