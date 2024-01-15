@@ -7,6 +7,7 @@ import { Modules } from './module';
 import { executeReferenceProvider } from './search';
 import { revealSelection } from './textUtils';
 import { getActiveTextEditor } from './utils';
+import { log } from '../../library/logging';
 
 async function renameReferences(needsConfirmation: boolean) {
   const editor = getActiveTextEditor();
@@ -28,8 +29,14 @@ async function renameReferences(needsConfirmation: boolean) {
 
   const edit = new WorkspaceEdit();
   for (const location of locations) {
-    const doc = await workspace.openTextDocument(location.uri);
-    const word = doc.getText(location.range);
+    let word: string;
+    try {
+      const doc = await workspace.openTextDocument(location.uri);
+      word = doc.getText(location.range);
+    } catch (err) {
+      log.error(`Failed to open document ${location.uri}: ${err}`);
+      continue;
+    }
     let invalid = false;
     if (word !== name) invalid = true;
     const label = invalid
