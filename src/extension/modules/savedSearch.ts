@@ -13,6 +13,8 @@ import { LiveLocation, LiveLocationArray } from './liveLocation';
 import { setPanelLocations } from './locationTree';
 import { Modules } from './module';
 import { getActiveTextEditor, getCurrentLocation } from './utils';
+import { log } from '../../library/logging';
+import { stringify as str } from '../../library/stringify';
 
 const MAX_SAVED_SEARCHES = 20;
 
@@ -32,7 +34,7 @@ export async function saveAndPeekSearch(
   locations = dedupeLocations(locations);
   if (locations.length > 1) {
     lastName = name;
-    await setLastLocations(locations);
+    locations = await setLastLocations(locations);
     savedSearches.unshift({
       name,
       func,
@@ -55,10 +57,17 @@ export async function saveAndPeekSearch(
 
 async function setLastLocations(locations: Location[]) {
   const newLocs = new LiveLocationArray();
+  const filteredLocs: Location[] = [];
   await mapAsync(locations, async (loc) => {
-    newLocs.push(await LiveLocation.fromLocation(loc));
+    try {
+      newLocs.push(await LiveLocation.fromLocation(loc));
+      filteredLocs.push(loc);
+    } catch (err) {
+      log.error(`Failed to create live location from ${str(loc)}: ${err}`);
+    }
   });
   lastLocations.set(newLocs);
+  return filteredLocs;
 }
 
 function calcNumFiles(locations: Location[]): number {
