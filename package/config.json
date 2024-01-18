@@ -461,7 +461,8 @@
             ]
           },
           "description": "Dictionary of tasks",
-          "default": {}
+          "default": {},
+          "scope": "resource"
         },
         "qcfg.todo.keywords": {
           "type": "array",
