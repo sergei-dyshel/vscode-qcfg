@@ -16,7 +16,7 @@ import type {
   BaseTask,
   FetchInfo,
   ParamsSource,
-} from './tasks/types';
+} from './taskTypes';
 import {
   ConditionError,
   isFolderTask,
@@ -30,7 +30,7 @@ import {
   TerminalTask,
   ValidationError,
   VscodeTask,
-} from './tasks/types';
+} from './taskTypes';
 import { currentWorkspaceFolder } from './utils';
 
 import Cfg = Config.Tasks;

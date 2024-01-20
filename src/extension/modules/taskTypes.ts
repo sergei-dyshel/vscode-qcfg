@@ -17,42 +17,35 @@ import {
   window,
   workspace,
 } from 'vscode';
-import { Config } from '../../../library/config';
-import { log, LogLevel } from '../../../library/logging';
-import * as nodejs from '../../../library/nodejs';
-import { baseName, stripExt } from '../../../library/pathUtils';
+import { Config } from '../../library/config';
+import { log, LogLevel } from '../../library/logging';
+import * as nodejs from '../../library/nodejs';
+import { baseName, stripExt } from '../../library/pathUtils';
 import {
   expandTemplateLiteral,
   TemplateLiteralError,
-} from '../../../library/stringUtils';
-import { concatArrays } from '../../../library/tsUtils';
-import { getDocumentWorkspaceFolder } from '../../utils/document';
-import {
-  getFolderSettingsPath,
-  getGlobalSettingsPath,
-} from '../../utils/paths';
-import type { BaseQuickPickItem } from '../../utils/quickPick';
-import { QuickPickButtons } from '../../utils/quickPick';
-import { mapAsync, mapAsyncSequential } from '../async';
-import { executeCommandHandled } from '../exception';
-import { peekLocations } from '../fileUtils';
-import { editJsonPath } from '../json';
-import { showOsNotification } from '../osNotification';
+} from '../../library/stringUtils';
+import { concatArrays } from '../../library/tsUtils';
+import { getDocumentWorkspaceFolder } from '../utils/document';
+import { getFolderSettingsPath, getGlobalSettingsPath } from '../utils/paths';
+import type { BaseQuickPickItem } from '../utils/quickPick';
+import { QuickPickButtons } from '../utils/quickPick';
+import { mapAsync, mapAsyncSequential } from './async';
+import { executeCommandHandled } from './exception';
+import { peekLocations } from './fileUtils';
+import { editJsonPath } from './json';
+import { showOsNotification } from './osNotification';
 import {
   findPatternInParsedLocations,
   ParseLocationFormat,
   parseLocations,
-} from '../parseLocations';
-import * as remoteControl from '../remoteControl';
-import { saveAndPeekSearch } from '../savedSearch';
-import { searchInFiles } from '../search';
-import { ExecResult, Subprocess } from '../subprocess';
-import {
-  TaskCancelledError,
-  TaskConfilictPolicy,
-  TaskRun,
-} from '../taskRunner';
-import { currentWorkspaceFolder, getCursorWordContext } from '../utils';
+} from './parseLocations';
+import * as remoteControl from './remoteControl';
+import { saveAndPeekSearch } from './savedSearch';
+import { searchInFiles } from './search';
+import { ExecResult, Subprocess } from './subprocess';
+import { TaskCancelledError, TaskConfilictPolicy, TaskRun } from './taskRunner';
+import { currentWorkspaceFolder, getCursorWordContext } from './utils';
 
 import Cfg = Config.Tasks;
 
