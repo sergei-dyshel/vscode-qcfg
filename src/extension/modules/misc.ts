@@ -1,4 +1,5 @@
-import { ExtensionContext, Selection, TextEditor } from 'vscode';
+import type { ExtensionContext, TextEditor } from 'vscode';
+import { Selection } from 'vscode';
 import { TabInputTextDiff } from 'vscode';
 import { commands, Uri, window, workspace } from 'vscode';
 import { log } from '../../library/logging';

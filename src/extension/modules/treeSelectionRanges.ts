@@ -2,7 +2,7 @@ import type { ExtensionContext, Position, Range, TextDocument } from 'vscode';
 import { languages, SelectionRange } from 'vscode';
 import { assertNotNull } from '../../library/exception';
 import { log } from '../../library/logging';
-import { handleErrorsAsync } from './exception';
+import { handleErrors } from './exception';
 import { Modules } from './module';
 import { SyntaxTrees } from './syntaxTree';
 import { trimInner } from './textUtils';
@@ -44,18 +44,15 @@ function computeSelectionRange(
   return topSelRange;
 }
 
-async function provideSelectionRanges(
-  document: TextDocument,
-  positions: Position[],
-) {
-  const tree = await SyntaxTrees.get(document);
+function provideSelectionRanges(document: TextDocument, positions: Position[]) {
+  const tree = SyntaxTrees.get(document);
   return positions.map((pos) => computeSelectionRange(document, tree, pos));
 }
 
 function activate(extContext: ExtensionContext) {
   extContext.subscriptions.push(
     languages.registerSelectionRangeProvider(TreeSitter.supportedLanguages(), {
-      provideSelectionRanges: handleErrorsAsync(provideSelectionRanges),
+      provideSelectionRanges: handleErrors(provideSelectionRanges),
     }),
   );
 }

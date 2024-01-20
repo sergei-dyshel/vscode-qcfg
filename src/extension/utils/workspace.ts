@@ -1,7 +1,8 @@
-import { Uri, WorkspaceFolder } from 'vscode';
+import type { WorkspaceFolder } from 'vscode';
+import { Uri } from 'vscode';
 import { FileSystemError, workspace } from 'vscode';
 import { filterAsync } from '../modules/async';
-import * as nodejs from './../../library/nodejs';
+import * as nodejs from '../../library/nodejs';
 
 export async function uriExists(uri: Uri) {
   try {

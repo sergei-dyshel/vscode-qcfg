@@ -1,13 +1,13 @@
 // noinspection JSUnusedAssignment
 
-import {
+import type {
   CompletionList,
   ExtensionContext,
   TextDocument,
   TextEditor,
   TextEditorEdit,
-  TextEditorRevealType,
 } from 'vscode';
+import { TextEditorRevealType } from 'vscode';
 import {
   commands,
   ConfigurationTarget,

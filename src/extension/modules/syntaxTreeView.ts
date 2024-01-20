@@ -24,14 +24,14 @@ import type { SyntaxNode } from '../../library/treeSitter';
 const ELLIPSIZE_LEN = 20;
 
 const treeProvider: TreeProvider = {
-  async getTrees(): Promise<SyntaxTreeViewNode[] | undefined> {
+  getTrees() {
     const editor = window.activeTextEditor;
     if (!editor || !SyntaxTrees.isDocumentSupported(editor.document)) {
       currentRoot = undefined;
       return [];
     }
     const document = editor.document;
-    const tree = await SyntaxTrees.get(document);
+    const tree = SyntaxTrees.get(document);
     if (!currentRoot || currentRoot.syntaxNode !== tree.rootNode) {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       if (rootCache.has(document)) currentRoot = rootCache.get(document)!;
