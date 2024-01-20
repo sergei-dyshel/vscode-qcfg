@@ -1,10 +1,4 @@
-import {
-  workspace,
-  type ExtensionContext,
-  type Location,
-  type Uri,
-  FileType,
-} from 'vscode';
+import { type ExtensionContext, type Location, type Uri } from 'vscode';
 import { DisposableHolder } from '../../library/disposable';
 import { check, checkNotNull } from '../../library/exception';
 import { QuickPickLocations } from '../utils/quickPick';
