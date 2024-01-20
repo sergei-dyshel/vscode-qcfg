@@ -32,6 +32,7 @@
     "tsc-compile": "tsc -p .",
     "webpack-watch": "webpack --mode none --watch",
     "test": "npm run compile && node ./node_modules/vscode/bin/test",
+    "lint": "eslint . --color --ext .ts,.tsx",
     "check": "gts check",
     "clean": "gts clean",
     "fix": "gts fix",
