@@ -45,3 +45,8 @@ export async function workspaceResolveSymlink(uri: Uri) {
   const newUri = Uri.file(path);
   return workspace.getWorkspaceFolder(newUri) ? newUri : uri;
 }
+
+/** Wheather current workspace has multiple workspace folder */
+export function isMultiFolderWorkspace() {
+  return workspace.workspaceFolders && workspace.workspaceFolders.length > 1;
+}

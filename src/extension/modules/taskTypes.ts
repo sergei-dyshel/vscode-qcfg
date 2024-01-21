@@ -48,6 +48,7 @@ import { TaskCancelledError, TaskConfilictPolicy, TaskRun } from './taskRunner';
 import { currentWorkspaceFolder, getCursorWordContext } from './utils';
 
 import Cfg = Config.Tasks;
+import { isMultiFolderWorkspace } from '../utils/workspace';
 
 /** Source of task definition (workspace, folder etc.) */
 export interface ParamsSource {
@@ -56,7 +57,10 @@ export interface ParamsSource {
 }
 
 export interface FetchInfo {
+  /** Task label as defined in params or when calling programmatically */
   label: string;
+
+  /** Origin of task (whether its from workspace or not, which folder etc.) */
   source: ParamsSource;
 }
 
@@ -64,6 +68,8 @@ export function isFolderTask(params: Cfg.BaseTaskParams) {
   return (
     params.type === Cfg.TaskType.SEARCH ||
     params.folders !== undefined ||
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+    params.flags?.includes(Cfg.Flag.BUILD) ||
     params.flags?.includes(Cfg.Flag.FOLDER)
   );
 }
@@ -150,7 +156,8 @@ export class ConditionError extends ValidationError {
 }
 
 export abstract class BaseTask {
-  constructor(public folderText?: string) {}
+  /** One or multiple folders to run task in */
+  folderText?: string;
 
   abstract run(): Promise<void>;
   abstract isBuild(): boolean;
@@ -188,7 +195,7 @@ export abstract class BaseTask {
   }
 
   toPersistentLabel() {
-    return this.fullName();
+    return this.fullName() + (this.folderText ? ' ' + this.folderText : '');
   }
 }
 
@@ -199,8 +206,7 @@ export class VscodeTask extends BaseTask {
       task.scope &&
       task.scope !== TaskScope.Global &&
       task.scope !== TaskScope.Workspace &&
-      workspace.workspaceFolders &&
-      workspace.workspaceFolders.length > 1
+      isMultiFolderWorkspace()
     ) {
       this.folderText = task.scope.name;
     }
@@ -224,7 +230,7 @@ export class VscodeTask extends BaseTask {
     return this.task.isBackground;
   }
 
-  fullName() {
+  protected override fullName() {
     const task = this.task;
     let fullName = task.name;
     if (task.source && task.source !== 'Workspace')
@@ -313,7 +319,7 @@ export class TerminalTask extends BaseQcfgTask {
     context: TaskContext,
   ) {
     super(params, info);
-    if (isFolderTask(params)) {
+    if (isFolderTask(params) && isMultiFolderWorkspace()) {
       this.folderText = context.workspaceFolder!.name;
     }
     this.params = params;
@@ -456,7 +462,7 @@ export class ProcessTask extends BaseQcfgTask {
     context: TaskContext,
   ) {
     super(params, info);
-    if (params.flags?.includes(Cfg.Flag.FOLDER)) {
+    if (params.flags?.includes(Cfg.Flag.FOLDER) && isMultiFolderWorkspace()) {
       this.folderText = context.workspaceFolder!.name;
     }
     this.command = context.substitute(params.command);

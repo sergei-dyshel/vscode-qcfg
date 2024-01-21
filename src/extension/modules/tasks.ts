@@ -192,13 +192,15 @@ class TaskGenerator<P extends Cfg.BaseTaskParams> {
     if (validContexts.length === 1)
       tasks.push(await this.createTask(validContexts[0]));
     else {
-      const currentFolder = currentWorkspaceFolder();
       for (const context of validContexts) {
-        if (context.workspaceFolder === currentFolder)
+        const srcFolder = this.info.source.folder;
+        if (!srcFolder || srcFolder === context.workspaceFolder)
           tasks.push(await this.createTask(context));
       }
-      // eslint-disable-next-line new-cap
-      tasks.push(new this.multi(this.params, this.info, validContexts));
+      if (this.params.flags?.includes(Cfg.Flag.MULTI)) {
+        // eslint-disable-next-line new-cap
+        tasks.push(new this.multi(this.params, this.info, validContexts));
+      }
     }
     return tasks;
   }

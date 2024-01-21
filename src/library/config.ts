@@ -228,7 +228,20 @@ export namespace Config {
       CLEAR = 'clear',
       AUTO_RESTART = 'autoRestart',
       REINDEX = 'reindex',
+
+      /**
+       * Build task.
+       *
+       * Build tasks are also always folder tasks.
+       */
       BUILD = 'build',
+
+      /**
+       * Multi-folder task.
+       *
+       * Running such task will run the task in all folders where it's applicable.
+       */
+      MULTI = 'multi',
 
       /** Notify on failure */
       NOTIFY_ON_FAILURE = 'notifyOnFailure',
