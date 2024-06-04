@@ -20,7 +20,7 @@ import {
 import { Config } from '../../library/config';
 import { log, LogLevel } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
-import { baseName, stripExt } from '../../library/pathUtils';
+import { baseName, dirName, stripExt } from '../../library/pathUtils';
 import {
   expandTemplateLiteral,
   TemplateLiteralError,
@@ -81,7 +81,8 @@ export function isFolderTask(params: Cfg.BaseTaskParams) {
 export class TaskContext {
   constructor(folder?: WorkspaceFolder) {
     const editor = window.activeTextEditor;
-    this.workspaceFolder = folder ?? currentWorkspaceFolder();
+    const curWorkspaceFolder = currentWorkspaceFolder();
+    this.workspaceFolder = folder ?? curWorkspaceFolder;
     if (editor) {
       const document = editor.document;
       this.fileName = document.fileName;
@@ -100,12 +101,16 @@ export class TaskContext {
       }
       this.vars['stripExt'] = stripExt;
       this.vars['baseName'] = baseName;
+      this.vars['dirName'] = dirName;
       if (this.workspaceFolder) {
         this.vars['workspaceFolder'] = this.workspaceFolder.uri.fsPath;
         this.vars['relativeFile'] = nodejs.path.relative(
           this.vars['workspaceFolder'],
           document.fileName,
         );
+      }
+      if (curWorkspaceFolder) {
+        this.vars['curWorkspaceFolder'] = curWorkspaceFolder.uri.fsPath;
       }
     }
     if (workspace.workspaceFolders)
