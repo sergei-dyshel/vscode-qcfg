@@ -7,7 +7,7 @@ const PACKAGE_JSON = 'package.json';
 
 const commands: ExtensionJSON.Command[] = [];
 const keybindings: ExtensionJSON.KeyBinding[] = [];
-const configuration: Record<string, unknown> = {};
+let configuration: Record<string, unknown> = {};
 
 for (const file of nodejs.process.argv.slice(2)) {
   const jsonText = nodejs.fs.readFileSync(file).toString();
@@ -32,7 +32,11 @@ for (const file of nodejs.process.argv.slice(2)) {
 }
 
 commands.sort((cmd1, cmd2) => defaultCompare(cmd1.command, cmd2.command));
+keybindings.sort((kb1, kb2) => defaultCompare(kb1.key, kb2.key));
 keybindings.sort((kb1, kb2) => defaultCompare(kb1.command, kb2.command));
+configuration = Object.fromEntries(
+  Object.entries(configuration).sort((e1, e2) => defaultCompare(e1[0], e2[0])),
+);
 
 const oldText = nodejs.fs.readFileSync(PACKAGE_JSON).toString();
 

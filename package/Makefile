@@ -1,6 +1,3 @@
-json_merger := npx json-merger --pretty \
-	--error-on-file-not-found --error-on-ref-not-found --output
-
 $(d)/relativeJumps.json: src/tools/generateRelativeJumps.ts
 	npx ts-node $< >$@
 
