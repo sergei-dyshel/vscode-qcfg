@@ -23,7 +23,7 @@ generate: package.json $(TASKS_SCHEMA)
 
 compile:
 	$(make) generate
-	webpack --mode none --env DEBUG
+	npx webpack --mode none --env DEBUG
 	$(make) check
 
 install:
@@ -51,7 +51,7 @@ install_cli:
 prepublish:
 	$(make) generate
 	[[ -z "$$NO_VERSION" ]] && npm version patch --allow-same-version || true
-	webpack --mode production
+	npx webpack --mode production
 	$(make) check
 	$(make) cli
 
