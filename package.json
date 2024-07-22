@@ -96,7 +96,7 @@
     "eslint-plugin-only-warn": "^1.0.3",
     "eslint-plugin-react": "^7.30.0",
     "eslint-plugin-react-hooks": "^4.5.0",
-    "eslint-plugin-sonarjs": "^0.13.0",
+    "eslint-plugin-sonarjs": "^0.18.0",
     "eslint-plugin-unicorn": "^43.0.1",
     "gts": "^3.0.2",
     "ifdef-loader": "^2.1.5",
