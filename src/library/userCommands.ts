@@ -1,4 +1,4 @@
-import type { ExtensionJSON } from './extensionManifest';
+import type { ExtensionJSON } from "./extensionManifest";
 
 export namespace UserCommands {
   export type Keybinding =
@@ -32,7 +32,7 @@ export namespace UserCommands {
     for (const cmd of all) {
       json.contributes!.commands!.push({
         command: cmd.command,
-        category: 'qcfg',
+        category: "qcfg",
         title: cmd.title,
       });
       if (cmd.keybinding) {
@@ -46,11 +46,11 @@ export namespace UserCommands {
   }
 
   function generateKeybinding(binding: Keybinding) {
-    const key = typeof binding === 'string' ? binding : binding.key;
-    const when = typeof binding === 'string' ? undefined : binding.when;
+    const key = typeof binding === "string" ? binding : binding.key;
+    const when = typeof binding === "string" ? undefined : binding.when;
     return {
-      key: key.replaceAll('cmd+', 'ctrl+'),
-      mac: key.replaceAll('ctrl+', 'cmd+'),
+      key: key.replaceAll("cmd+", "ctrl+"),
+      mac: key.replaceAll("ctrl+", "cmd+"),
       when,
     };
   }

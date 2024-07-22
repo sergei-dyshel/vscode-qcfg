@@ -1,4 +1,4 @@
-import * as minimatch from 'minimatch';
+import * as minimatch from "minimatch";
 
 export function fileMatch(
   filename: string,

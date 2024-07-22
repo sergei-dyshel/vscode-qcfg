@@ -1,6 +1,6 @@
-import * as callsites from 'callsites';
-import * as sourceMapSupport from 'source-map-support';
-import * as nodejs from './nodejs';
+import * as callsites from "callsites";
+import * as sourceMapSupport from "source-map-support";
+import * as nodejs from "./nodejs";
 
 sourceMapSupport.install();
 
@@ -12,7 +12,7 @@ export function getCallsite(frame: number) {
     column: site.getColumnNumber()!,
   };
   // strip everything before last '.' (happens for callbacks)
-  let funcName = site.getFunctionName() ?? '';
+  let funcName = site.getFunctionName() ?? "";
   const m = /\.?([^.]+)$/.exec(funcName);
   if (m) funcName = m[1];
   const tsPos = sourceMapSupport.mapSourcePosition(jsPos);
@@ -21,7 +21,7 @@ export function getCallsite(frame: number) {
   let filename = base;
   if (dir) {
     const dirbase = nodejs.path.basename(dir);
-    if (dirbase !== 'src') filename = nodejs.path.join(dirbase, base);
+    if (dirbase !== "src") filename = nodejs.path.join(dirbase, base);
   }
   return {
     location: `${filename}:${tsPos.line}:${tsPos.column}`,

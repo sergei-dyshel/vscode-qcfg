@@ -1,5 +1,5 @@
-import { formatMessage } from './stringify';
-import type { AnyFunction } from './templateTypes';
+import { formatMessage } from "./stringify";
+import type { AnyFunction } from "./templateTypes";
 
 export function assert(
   condition: boolean | undefined | null,
@@ -21,7 +21,7 @@ export function notNull<T>(val: T, ...args: unknown[]): NonNullable<T> {
 }
 
 export function abort(...args: unknown[]): never {
-  throw new Error(formatMessage(args, 'Assertion failed'));
+  throw new Error(formatMessage(args, "Assertion failed"));
 }
 
 export function assertNull<T>(val: T | undefined | null, ...args: unknown[]) {
@@ -44,12 +44,13 @@ export function assertInstanceOf<T extends B, B>(
 export class CheckError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'CheckError';
+    this.name = "CheckError";
   }
 }
 
 /**
- * Throw non-critical exception which results in non-disruptive message in status bar.
+ * Throw non-critical exception which results in non-disruptive message in
+ * status bar.
  */
 export function check(condition: boolean, message: string): asserts condition {
   if (!condition) throw new CheckError(message);
@@ -66,7 +67,8 @@ export function checkNotNull<T>(
 }
 
 /**
- *  Wrap sync or async function with exception handler (both sync and async exception)
+ * Wrap sync or async function with exception handler (both sync and async
+ * exception)
  */
 export function wrapWithErrorHandler<T extends AnyFunction, R>(
   func: T,

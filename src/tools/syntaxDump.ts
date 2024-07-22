@@ -3,23 +3,26 @@ import type {
   CommandLineIntegerParameter,
   CommandLineStringParameter,
   ICommandLineActionOptions,
-} from '@rushstack/ts-command-line';
+} from "@rushstack/ts-command-line";
 import {
   CommandLineAction,
   CommandLineParser,
-} from '@rushstack/ts-command-line';
-import { LogLevel, registerLogHandler } from '../library/logging';
-import { StreamHandler } from '../library/loggingHandlers';
-import * as nodejs from '../library/nodejs';
-import type { SyntaxTree } from '../library/treeSitter';
-import { TreeSitter } from '../library/treeSitter';
+} from "@rushstack/ts-command-line";
+import { LogLevel, registerLogHandler } from "../library/logging";
+import { StreamHandler } from "../library/loggingHandlers";
+import * as nodejs from "../library/nodejs";
+import type { SyntaxTree } from "../library/treeSitter";
+import { TreeSitter } from "../library/treeSitter";
 
 const KNOWN_EXTENSIONS: Record<string, string[]> = {
-  go: ['.go'],
+  go: [".go"],
 };
 
 abstract class CliAction extends CommandLineAction {
-  constructor(protected cli: Cli, options: ICommandLineActionOptions) {
+  constructor(
+    protected cli: Cli,
+    options: ICommandLineActionOptions,
+  ) {
     super(options);
   }
 }
@@ -27,9 +30,9 @@ abstract class CliAction extends CommandLineAction {
 class TreeAction extends CliAction {
   constructor(cli: Cli) {
     super(cli, {
-      actionName: 'tree',
-      summary: 'Dump syntax tree',
-      documentation: 'Parse file syntax tree and dump it in JSON format',
+      actionName: "tree",
+      summary: "Dump syntax tree",
+      documentation: "Parse file syntax tree and dump it in JSON format",
     });
   }
 
@@ -57,40 +60,40 @@ class Cli extends CommandLineParser {
 
   constructor() {
     super({
-      toolFilename: 'syntaxDump',
-      toolDescription: 'Dump file syntax tree in various formats',
+      toolFilename: "syntaxDump",
+      toolDescription: "Dump file syntax tree in various formats",
     });
     this.addAction(new TreeAction(this));
   }
 
   protected override onDefineParameters() {
     this.languageParam = this.defineChoiceParameter({
-      parameterLongName: '--language',
-      parameterShortName: '-l',
-      description: 'Language of provided source file',
+      parameterLongName: "--language",
+      parameterShortName: "-l",
+      description: "Language of provided source file",
       alternatives: [...TreeSitter.supportedLanguages()],
     });
 
     this.filenameParam = this.defineStringParameter({
-      parameterLongName: '--filename',
-      parameterShortName: '-f',
-      description: 'File name to parse',
-      argumentName: 'FILENAME',
+      parameterLongName: "--filename",
+      parameterShortName: "-f",
+      description: "File name to parse",
+      argumentName: "FILENAME",
       required: true,
     });
     this.verbose = this.defineIntegerParameter({
-      parameterLongName: '--verbose',
-      parameterShortName: '-v',
-      argumentName: 'LEVEL',
-      description: 'Log verbosity level',
+      parameterLongName: "--verbose",
+      parameterShortName: "-v",
+      argumentName: "LEVEL",
+      description: "Log verbosity level",
       defaultValue: 0,
     });
   }
 
   protected override async onExecute() {
-    const handler = new StreamHandler('stderr', process.stderr);
+    const handler = new StreamHandler("stderr", process.stderr);
     handler.level = LogLevel.NOTICE - this.verbose.value!;
-    handler.formatOptions = { preset: 'short' };
+    handler.formatOptions = { preset: "short" };
     registerLogHandler(handler);
 
     this.filename = this.filenameParam.value!;

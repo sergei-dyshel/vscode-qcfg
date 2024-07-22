@@ -1,4 +1,4 @@
-import * as nodejs from './nodejs';
+import * as nodejs from "./nodejs";
 
 export const mkdir = nodejs.util.promisify(nodejs.fs.mkdir);
 

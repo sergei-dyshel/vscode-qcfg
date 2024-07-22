@@ -1,14 +1,14 @@
-import * as tsj from 'ts-json-schema-generator';
-import type { ExtensionJSON } from '../library/extensionManifest';
-import type { Config } from '../library/config';
+import * as tsj from "ts-json-schema-generator";
+import type { Config } from "../library/config";
+import type { ExtensionJSON } from "../library/extensionManifest";
 
 export function generateConfig() {
   const config: tsj.Config = {
-    path: 'src/library/config.ts',
-    tsconfig: 'tsconfig.json',
-    type: 'Config.All',
+    path: "src/library/config.ts",
+    tsconfig: "tsconfig.json",
+    type: "Config.All",
     topRef: false,
-    expose: 'none',
+    expose: "none",
     strictTuples: true,
   };
 
@@ -18,7 +18,7 @@ export function generateConfig() {
 
   const properties = schema.properties! as unknown as Config.All;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (properties['qcfg.tasks'] as any).scope = 'resource';
+  (properties["qcfg.tasks"] as any).scope = "resource";
 
   const pkg: ExtensionJSON.Manifest = {
     contributes: {

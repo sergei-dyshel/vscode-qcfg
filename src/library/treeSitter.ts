@@ -1,10 +1,10 @@
-import * as nodejs from './nodejs';
-import Parser from 'web-tree-sitter';
-import { readDirectory } from './fileUtils';
-import { assert, assertNotNull } from './exception';
-import { perfTimerify } from './performance';
-import { log } from './logging';
-import { AsyncLazy } from './lazy';
+import Parser from "web-tree-sitter";
+import { assert, assertNotNull } from "./exception";
+import { readDirectory } from "./fileUtils";
+import { AsyncLazy } from "./lazy";
+import { log } from "./logging";
+import * as nodejs from "./nodejs";
+import { perfTimerify } from "./performance";
 
 export type SyntaxNode = Parser.SyntaxNode;
 export type SyntaxTree = Parser.Tree;
@@ -12,7 +12,7 @@ export type SyntaxTreeEdit = Parser.Edit;
 
 const MAX_PARSE_TIMEOUT_MS = 5000; // 5 seconds
 
-declare module 'web-tree-sitter' {
+declare module "web-tree-sitter" {
   class SyntaxNode {}
   interface SyntaxNode {
     readonly nodeType: SyntaxNode.Type;
@@ -28,26 +28,26 @@ declare module 'web-tree-sitter' {
 
   namespace SyntaxNode {
     export type Type =
-      | 'identifier'
-      | 'declaration'
-      | 'function_definition'
-      | 'decorated_definition'
-      | 'class_definition'
-      | 'preproc_include'
-      | 'system_lib_string'
-      | 'string_literal'
-      | 'scoped_identifier'
-      | 'namespace_identifier'
-      | 'function_declarator'
-      | 'number_literal'
-      | 'type_qualifier'
-      | 'primitive_type'
-      | 'type_identifier'
-      | 'template_type'
-      | 'scoped_type_identifier'
-      | 'type_descriptor'
-      | 'object' // typescript
-      | 'storage_class_specifier';
+      | "identifier"
+      | "declaration"
+      | "function_definition"
+      | "decorated_definition"
+      | "class_definition"
+      | "preproc_include"
+      | "system_lib_string"
+      | "string_literal"
+      | "scoped_identifier"
+      | "namespace_identifier"
+      | "function_declarator"
+      | "number_literal"
+      | "type_qualifier"
+      | "primitive_type"
+      | "type_identifier"
+      | "template_type"
+      | "scoped_type_identifier"
+      | "type_descriptor"
+      | "object" // typescript
+      | "storage_class_specifier";
   }
 }
 
@@ -93,8 +93,8 @@ export namespace TreeSitter {
   }
 
   /**
-   * Tree-Sitter WASM binding create new node on each function/property call
-   * so direct comparison is not possible
+   * Tree-Sitter WASM binding create new node on each function/property call so
+   * direct comparison is not possible
    */
   export function sameNode(
     node1: SyntaxNode | undefined | null,
@@ -141,7 +141,7 @@ const languages: Record<string, TreeSitter.Language> = {};
 async function createParser(language: string) {
   const start = Date.now();
   const lang = await Parser.Language.load(
-    nodejs.path.join(langRoot!, language + '.wasm'),
+    nodejs.path.join(langRoot!, language + ".wasm"),
   );
   log.info(
     `Loading language "${language}" took ${
@@ -158,7 +158,7 @@ function treeSitterParse(text: string, parser: Parser, prevTree?: SyntaxTree) {
     // using TSInput function gives much worse performance
     return parser.parse(text, prevTree);
   } catch (err) {
-    throw new Error('TreeSitter: ' + String(err));
+    throw new Error("TreeSitter: " + String(err));
   }
 }
 
@@ -169,30 +169,30 @@ function patchSyntaxNodePrototype(node: Parser.SyntaxNode) {
 
   // without cast to any, TS interprets condition as "always true"
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if ('nodeType' in (prototype as any)) return;
+  if ("nodeType" in (prototype as any)) return;
 
-  Object.defineProperty(prototype, 'nodeType', {
+  Object.defineProperty(prototype, "nodeType", {
     get() {
       const this_ = this as SyntaxNode;
       return this_.type as Parser.SyntaxNode.Type;
     },
   });
 
-  Object.defineProperty(prototype, 'nextNamedSiblingSafe', {
+  Object.defineProperty(prototype, "nextNamedSiblingSafe", {
     get(): SyntaxNode {
       const this_ = this as SyntaxNode;
       return this_.nextNamedSibling ?? this_;
     },
   });
 
-  Object.defineProperty(prototype, 'previousNamedSiblingSafe', {
+  Object.defineProperty(prototype, "previousNamedSiblingSafe", {
     get(): SyntaxNode {
       const this_ = this as SyntaxNode;
       return this_.previousNamedSibling ?? this_;
     },
   });
 
-  Object.defineProperty(prototype, 'isLeaf', {
+  Object.defineProperty(prototype, "isLeaf", {
     get(): boolean {
       const this_ = this as SyntaxNode;
       return this_.childCount === 0;

@@ -1,6 +1,6 @@
-import * as nodejs from './nodejs';
-import { log } from './logging';
-import type { AnyFunction } from './templateTypes';
+import { log } from "./logging";
+import * as nodejs from "./nodejs";
+import type { AnyFunction } from "./templateTypes";
 
 const histograms: Record<string, nodejs.perf_hooks.RecordableHistogram> = {};
 
@@ -13,12 +13,12 @@ export function perfTimerify<T extends AnyFunction>(fn: T): T {
 }
 
 export function startPerfObserver() {
-  log.info('Starting performance observer');
+  log.info("Starting performance observer");
   const obs = new nodejs.perf_hooks.PerformanceObserver((list) => {
     const entry = list.getEntries()[0];
     log.debug(`Function "${entry.name}" took ${entry.duration.toFixed(2)} ms`);
   });
-  obs.observe({ entryTypes: ['function'] });
+  obs.observe({ entryTypes: ["function"] });
 }
 
 export function dumpPerfHistograms() {
@@ -32,7 +32,7 @@ export function dumpPerfHistograms() {
       p100: histogram.max,
     } as const)
       .map(([key, value]) => `${key} ${(value / 1000000).toFixed(2)} ms`)
-      .join(', ');
+      .join(", ");
     log.info(`${name}: ${data}`);
   }
 }

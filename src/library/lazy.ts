@@ -38,13 +38,13 @@ export class AsyncLazy<T> {
       if (this.err) throw this.err;
       return this.value!;
     }
-    if (this.isRunning) throw new Error('Lazy evaluation is still running');
-    throw new Error('Lazy evaluation did not start yet');
+    if (this.isRunning) throw new Error("Lazy evaluation is still running");
+    throw new Error("Lazy evaluation did not start yet");
   }
 
   get error() {
     if (this.didRun) return this.err;
-    if (this.isRunning) throw new Error('Lazy evaluation is still running');
-    throw new Error('Lazy evaluation did not start yet');
+    if (this.isRunning) throw new Error("Lazy evaluation is still running");
+    throw new Error("Lazy evaluation did not start yet");
   }
 }

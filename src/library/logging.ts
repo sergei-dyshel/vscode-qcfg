@@ -1,7 +1,7 @@
-import { enumUtil } from './enum';
-import { getCallsite } from './sourceMap';
-import { formatMessage } from './stringify';
-import { filterNonNull } from './tsUtils';
+import { enumUtil } from "./enum";
+import { getCallsite } from "./sourceMap";
+import { formatMessage } from "./stringify";
+import { filterNonNull } from "./tsUtils";
 
 export enum LogLevel {
   TRACE = 1,
@@ -74,7 +74,7 @@ export class Logger {
     if (options) {
       this.instance = options.instance;
       const comps = filterNonNull([options.parent?.name, options.name]);
-      if (!comps.isEmpty) this.name = comps.join('.');
+      if (!comps.isEmpty) this.name = comps.join(".");
     }
   }
 
@@ -147,7 +147,7 @@ export const log = new Logger();
 export type LogFilter = (record: LogRecord) => boolean | undefined;
 
 export interface LogFormatOptions {
-  preset: 'all' | 'short';
+  preset: "all" | "short";
 }
 
 /**
@@ -179,28 +179,28 @@ const handlers: LogHandler[] = [];
 
 function getDate(): string {
   const date = new Date();
-  const dateStr = date.toLocaleTimeString('en-US', {
+  const dateStr = date.toLocaleTimeString("en-US", {
     hour12: false,
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
   });
-  const ms = String(date.getMilliseconds()).padStart(3, '0');
-  return dateStr + '.' + ms;
+  const ms = String(date.getMilliseconds()).padStart(3, "0");
+  return dateStr + "." + ms;
 }
 
 function formatLogRecord(record: LogRecord, opts?: LogFormatOptions): string {
   const parts: string[] = [];
-  const all = !opts || opts.preset === 'all';
+  const all = !opts || opts.preset === "all";
   if (all) parts.push(record.date);
   parts.push(LogLevels.toString(record.level), record.location);
-  if (all) parts.push(record.function + '()');
+  if (all) parts.push(record.function + "()");
   if (all && record.name) parts.push(`[${record.name}]`);
   if (record.instance) {
     const instance =
-      typeof record.instance === 'string' ? record.instance : record.instance();
+      typeof record.instance === "string" ? record.instance : record.instance();
     parts.push(`{${instance}}`);
   }
   parts.push(record.message);
-  return parts.join(' ');
+  return parts.join(" ");
 }

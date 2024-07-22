@@ -1,5 +1,5 @@
-import { Disposable } from 'vscode';
-import { assert } from './exception';
+import { Disposable } from "vscode";
+import { assert } from "./exception";
 
 export interface DisposableLike {
   dispose: () => unknown;
@@ -43,15 +43,15 @@ export class DisposableCollection implements DisposableLike {
 }
 
 /**
- * Array with new push operation which returns `Disposable`
- * which can be used to remove the item from array.
+ * Array with new push operation which returns `Disposable` which can be used to
+ * remove the item from array.
  */
 export class ArrayOfDisposables<T> extends Array<T> {
   pushDisposable(item: T, onDispose?: () => void): DisposableLike {
     this.push(item);
     return {
       dispose: () => {
-        assert(this.removeFirst(item), 'Can not find callback on dispose');
+        assert(this.removeFirst(item), "Can not find callback on dispose");
         if (onDispose) onDispose();
       },
     };

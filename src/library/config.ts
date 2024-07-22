@@ -1,5 +1,6 @@
 /**
  * Must be self-contained, e.g. do not import other modules
+ *
  * @module
  */
 
@@ -12,165 +13,189 @@ export namespace Config {
   export interface All {
     /**
      * Number of steps by which to auto-resize active editor
+     *
      * @default 1
      */
-    'qcfg.autoResize.steps': number;
+    "qcfg.autoResize.steps": number;
 
     /**
      * Whether auto-resize enabled
+     *
      * @default false
      */
-    'qcfg.autoResize.enabled': boolean;
+    "qcfg.autoResize.enabled": boolean;
 
     /**
      * Mapping for alternate (header/source) switch.
      *
      * For each extension specify list of alternative extension.
-     * @default {}
+     *
+     * @default { }
      */
-    'qcfg.alternate.mapping': Record<string, string[]>;
+    "qcfg.alternate.mapping": Record<string, string[]>;
 
     /**
      * AutoSync enabled on start
+     *
      * @default false
      */
-    'qcfg.autoSync.enabled': boolean;
+    "qcfg.autoSync.enabled": boolean;
 
     /** AutoSync command */
-    'qcfg.autoSync.command': string;
+    "qcfg.autoSync.command": string;
 
     /** Open preview automatically when opening markdown documents */
-    'qcfg.autoMarkdownPreview': boolean;
+    "qcfg.autoMarkdownPreview": boolean;
 
     /** Workspace folder name for creating new notes */
-    'qcfg.newNote.folder': string;
+    "qcfg.newNote.folder": string;
 
     /** Path of notes directory relative to workspace folder root */
-    'qcfg.newNote.path': string;
+    "qcfg.newNote.path": string;
 
     /**
      * List of rules to open current line in Git Web UI
-     * @default []
+     *
+     * @default [ ]
      */
-    'qcfg.git.web': Git.Entry[];
+    "qcfg.git.web": Git.Entry[];
 
     /**
      * Per-workspace/folder setting to set it as default remote server
+     *
      * @default false
      */
-    'qcfg.remote.setDefault': boolean;
+    "qcfg.remote.setDefault": boolean;
 
     /**
      * Use gtags as workspace symbols provider
+     *
      * @default false
      */
-    'qcfg.gtags.workspaceSymbols': boolean;
+    "qcfg.gtags.workspaceSymbols": boolean;
 
     /**
      * Use gtags hover symbol provider
+     *
      * @default false
      */
-    'qcfg.gtags.hover': boolean;
+    "qcfg.gtags.hover": boolean;
 
     /**
      * Default timeout (in milliseconds) for notifications
+     *
      * @default 3000
      */
-    'qcfg.notification.timeoutMs': number;
+    "qcfg.notification.timeoutMs": number;
 
     /**
-     * Global configuration directory for vscode-qcfg specific features (defaults to HOME directory)
+     * Global configuration directory for vscode-qcfg specific features
+     * (defaults to HOME directory)
+     *
      * @default "~"
      */
-    'qcfg.configDir.global': string;
+    "qcfg.configDir.global": string;
 
     /**
-     * Workspace configuration direcotry for vsdode-qcfg specific features, relative to workspace file's directory or the only folder by default
+     * Workspace configuration direcotry for vsdode-qcfg specific features,
+     * relative to workspace file's directory or the only folder by default
+     *
      * @default "."
      */
-    'qcfg.configDir.workspace': string;
+    "qcfg.configDir.workspace": string;
 
     /**
      * Whether do show per-file diagnostic counts in statusbar
-     * @scope language-overridable
+     *
      * @default true
+     * @scope language-overridable
      */
-    'qcfg.fileDiagnostics.show': boolean;
+    "qcfg.fileDiagnostics.show": boolean;
 
     /**
      * Exclude diagnostics whose message matches this pattern
+     *
      * @scope language-overridable
      */
-    'qcfg.fileDiagnostics.excludeMessage': string;
+    "qcfg.fileDiagnostics.excludeMessage": string;
 
     /**
      * Exclude diagnostics whose source matches this pattern
+     *
      * @scope language-overridable
      */
-    'qcfg.fileDiagnostics.excludeSource': string;
+    "qcfg.fileDiagnostics.excludeSource": string;
 
     /**
      * Exclude diagnostics whose code matches any of these
+     *
      * @scope language-overridable
      */
-    'qcfg.fileDiagnostics.excludeCodes': Array<number | string>;
+    "qcfg.fileDiagnostics.excludeCodes": Array<number | string>;
 
     /**
      * C/C++ language clients are remote (over SSH)
+     *
      * @default false
      */
-    'qcfg.langClient.remote': boolean;
+    "qcfg.langClient.remote": boolean;
 
     /**
      * Custom command for restarting clangd (e.g. kill server)
      */
-    'qcfg.clangd.restartCommand': string[];
+    "qcfg.clangd.restartCommand": string[];
 
     /**
      * Add clangd provider for type hierarchy
+     *
      * @default true
      */
-    'qcfg.clangd.typeHierarchy': boolean;
+    "qcfg.clangd.typeHierarchy": boolean;
 
     /**
      * Command to clear clangd cache
      */
-    'qcfg.clangd.clearCacheCommand': string[];
+    "qcfg.clangd.clearCacheCommand": string[];
 
     /**
      * Command to clear ccls cache
      */
-    'qcfg.ccls.clearCacheCommand': string[];
+    "qcfg.ccls.clearCacheCommand": string[];
 
     /**
      * Add ccls provider for type hierarchy
+     *
      * @default true
      */
-    'qcfg.ccls.typeHierarchy': boolean;
+    "qcfg.ccls.typeHierarchy": boolean;
 
     /**
      * Add ccls provider for call hierarchy
+     *
      * @default true
      */
-    'qcfg.ccls.callHierarchy': boolean;
+    "qcfg.ccls.callHierarchy": boolean;
 
     /**
      * Array of configuration rules per file type, name etc.
-     * @default []
+     *
+     * @default [ ]
      */
-    'qcfg.configRules': ConfigRules.Rule[];
+    "qcfg.configRules": ConfigRules.Rule[];
 
     /**
      * Dictionary of tasks
-     * @default {}
+     *
+     * @default { }
      */
-    'qcfg.tasks': Tasks.ConfParamsSet;
+    "qcfg.tasks": Tasks.ConfParamsSet;
 
     /**
      * List of TODO keywords
-     * @default []
+     *
+     * @default [ ]
      */
-    'qcfg.todo.keywords': string[];
+    "qcfg.todo.keywords": string[];
   }
 
   export namespace Git {
@@ -209,59 +234,60 @@ export namespace Config {
 
   export namespace Tasks {
     export enum Reveal {
-      FOCUS = 'focus',
-      YES = 'yes',
-      NO = 'no',
+      FOCUS = "focus",
+      YES = "yes",
+      NO = "no",
     }
 
     export enum EndAction {
-      NONE = 'none',
-      AUTO = 'auto',
-      HIDE = 'hide',
-      DISPOSE = 'dispose',
-      SHOW = 'show',
-      NOTIFY = 'notify',
+      NONE = "none",
+      AUTO = "auto",
+      HIDE = "hide",
+      DISPOSE = "dispose",
+      SHOW = "show",
+      NOTIFY = "notify",
     }
 
     export enum Flag {
-      DEDICATED_PANEL = 'dedicatedPanel',
-      CLEAR = 'clear',
-      AUTO_RESTART = 'autoRestart',
-      REINDEX = 'reindex',
+      DEDICATED_PANEL = "dedicatedPanel",
+      CLEAR = "clear",
+      AUTO_RESTART = "autoRestart",
+      REINDEX = "reindex",
 
       /**
        * Build task.
        *
        * Build tasks are also always folder tasks.
        */
-      BUILD = 'build',
+      BUILD = "build",
 
       /**
        * Multi-folder task.
        *
-       * Running such task will run the task in all folders where it's applicable.
+       * Running such task will run the task in all folders where it's
+       * applicable.
        */
-      MULTI = 'multi',
+      MULTI = "multi",
 
       /** Notify on failure */
-      NOTIFY_ON_FAILURE = 'notifyOnFailure',
+      NOTIFY_ON_FAILURE = "notifyOnFailure",
 
       /** Task is hidden when from pick list, i.e. can be run only directly */
-      HIDDEN = 'hidden',
+      HIDDEN = "hidden",
 
       /** Task applies to any workspace folder (i.e. not current dir/file) */
-      FOLDER = 'folder',
+      FOLDER = "folder",
 
       // Search specific flags
-      REGEX = 'regex',
-      WORD = 'word',
-      CASE = 'case',
+      REGEX = "regex",
+      WORD = "word",
+      CASE = "case",
     }
 
     export enum TaskType {
-      PROCESS = 'process',
-      TERMINAL = 'terminal',
-      SEARCH = 'search',
+      PROCESS = "process",
+      TERMINAL = "terminal",
+      SEARCH = "search",
     }
 
     export type BaseProcessTaskFlag = Flag.BUILD | Flag.FOLDER | Flag.HIDDEN;
@@ -282,7 +308,8 @@ export namespace Config {
 
       /**
        * Workspace folders in which this task is valid
-       * @default []
+       *
+       * @default [ ]
        */
       folders?: string[];
     }
@@ -292,19 +319,21 @@ export namespace Config {
       cwd?: string;
       /**
        * Expected process exit codes
-       * @default []
+       *
+       * @default [ ]
        */
       exitCodes?: number[];
     }
 
     // only to add auto-complete suggestions to schema
-    type KnownProblemMatcher = 'gcc-relative' | 'gcc-absolute';
+    type KnownProblemMatcher = "gcc-relative" | "gcc-absolute";
 
     export interface TerminalTaskParams extends BaseProcessTaskParams {
       type: TaskType.TERMINAL;
 
       /**
        * Reveal terminal when running
+       *
        * @default "yes"
        */
       reveal?: Reveal;
@@ -320,7 +349,7 @@ export namespace Config {
       onFailure?: EndAction;
 
       /**
-       * @default []
+       * @default [ ]
        */
       problemMatchers?:
         | string
@@ -340,8 +369,8 @@ export namespace Config {
     }
 
     export enum LocationFormat {
-      VIMGREP = 'vimgrep',
-      GTAGS = 'gtags',
+      VIMGREP = "vimgrep",
+      GTAGS = "gtags",
     }
 
     export interface ParseOutput {
@@ -352,7 +381,10 @@ export namespace Config {
     export interface ProcessTaskParams extends BaseProcessTaskParams {
       type: TaskType.PROCESS;
 
-      /** Extract locations from output using predefined format or custom regular expression */
+      /**
+       * Extract locations from output using predefined format or custom regular
+       * expression
+       */
       parseOutput?: ParseOutput;
 
       flags?: BaseProcessTaskFlag[];

@@ -1,9 +1,9 @@
-import * as jsonc from 'jsonc-parser';
-import * as nodejs from '../library/nodejs';
+import * as jsonc from "jsonc-parser";
+import * as nodejs from "../library/nodejs";
 
 const path = process.argv[2];
 
-const text = nodejs.fs.readFileSync(path, 'utf8');
+const text = nodejs.fs.readFileSync(path, "utf8");
 // const parsed = jsonc.parseTree(text);
 
 const origin = JSON.parse(jsonc.stripComments(text)) as KeyBinding[];
@@ -13,7 +13,7 @@ interface KeyBinding {
 
 const result = origin.map((binding) => {
   const key = binding.key;
-  const newKey = key.replace('ctrl+', 'cmd+');
+  const newKey = key.replace("ctrl+", "cmd+");
   binding.key = newKey;
   return binding;
 });

@@ -1,6 +1,6 @@
 // TODO: rename to string.ts
 
-import { memoizeWithExc } from './memoize';
+import { memoizeWithExc } from "./memoize";
 
 export function parseNumber(s: string): number;
 export function parseNumber(s: string | undefined): number | undefined;
@@ -11,21 +11,21 @@ export function parseNumber(
 ): number | undefined {
   if (s === undefined) return default_;
   const num = Number(s);
-  if (Number.isNaN(num) || s === '') throw new Error(`${s} is not a number`);
+  if (Number.isNaN(num) || s === "") throw new Error(`${s} is not a number`);
   return num;
 }
 
 export function buildFuzzyPattern(query: string): string {
-  const goodChars = query.replace(/\W/g, '');
-  return [...goodChars].join('.*');
+  const goodChars = query.replace(/\W/g, "");
+  return [...goodChars].join(".*");
 }
 
 export function fuzzyMatch(text: string, query: string): boolean {
-  return text.search(new RegExp(buildFuzzyPattern(query), 'i')) !== -1;
+  return text.search(new RegExp(buildFuzzyPattern(query), "i")) !== -1;
 }
 
 export function buildAbbrevPattern(query: string): string {
-  const goodChars = query.replace(/\W/g, '');
+  const goodChars = query.replace(/\W/g, "");
   const midPattern = [...goodChars]
     .map((ch) => {
       if (/[A-Za-z]/.test(ch)) {
@@ -40,8 +40,8 @@ export function buildAbbrevPattern(query: string): string {
       }
       return `.*${ch}`;
     })
-    .join('');
-  return '^' + midPattern + '.*';
+    .join("");
+  return "^" + midPattern + ".*";
 }
 
 export function abbrevMatch(text: string, query: string): boolean {
@@ -60,22 +60,22 @@ export function splitWithRemainder(
       result.push(str);
       break;
     }
-    if (match[0].length === 0) throw new Error('Empty match inside split');
+    if (match[0].length === 0) throw new Error("Empty match inside split");
     result.push(str.slice(0, Math.max(0, match.index)));
     str = str.slice(Math.max(0, match.index + match[0].length));
     limit -= 1;
   }
-  if (str !== '' || result.isEmpty) result.push(str);
+  if (str !== "" || result.isEmpty) result.push(str);
   return result;
 }
 
 export function escapeRegExp(str: string) {
   // from https://stackoverflow.com/a/1144788/5531098
-  return str.replace(/([.*+?^=!:${}()|[\]/\\])/g, '\\$1');
+  return str.replace(/([.*+?^=!:${}()|[\]/\\])/g, "\\$1");
 }
 
 export function replaceAll(str: string, find: string, replace: string) {
-  return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
+  return str.replace(new RegExp(escapeRegExp(find), "g"), replace);
 }
 
 export function ellipsize(
@@ -84,7 +84,7 @@ export function ellipsize(
   options?: { delimiter?: string },
 ): string {
   if (str.length <= maxLen) return str;
-  const delimiter = options?.delimiter ?? '...';
+  const delimiter = options?.delimiter ?? "...";
   const left = Math.ceil(maxLen / 2);
   const right = maxLen - left;
   return str.slice(0, left) + delimiter + str.slice(str.length - right);
@@ -102,14 +102,15 @@ export function expandTemplate(
     if (!sub) {
       if (throwWhenNotExist)
         throw new TemplateError(`Could not substitute var "${varname}"`);
-      return '';
+      return "";
     }
     return sub;
   });
 }
 
 /**
- * Thrown by {@link expandTemplateLiteral} in case of template literal compiling/expanding error
+ * Thrown by {@link expandTemplateLiteral} in case of template literal
+ * compiling/expanding error
  */
 export class TemplateLiteralError extends Error {}
 
@@ -120,7 +121,7 @@ function buildTemplateFunction(keys: string[], template: string) {
     // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
     return new Function(
       ...keys,
-      'return `' + JSON.stringify(template).slice(1, -1) + '`;',
+      "return `" + JSON.stringify(template).slice(1, -1) + "`;",
     );
   } catch (err) {
     if (err instanceof SyntaxError)
@@ -159,4 +160,4 @@ export function expandTemplateLiteral(
 export {
   camelCase as convCamelCase,
   kebabCase as convKebabCase,
-} from 'case-anything';
+} from "case-anything";

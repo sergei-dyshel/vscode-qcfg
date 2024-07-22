@@ -4,34 +4,34 @@ import type {
   CommandLineIntegerParameter,
   CommandLineStringParameter,
   ICommandLineActionOptions,
-} from '@rushstack/ts-command-line';
+} from "@rushstack/ts-command-line";
 import {
   CommandLineAction,
   CommandLineParser,
-} from '@rushstack/ts-command-line';
-import { abort, assert } from '../library/exception';
-import { LogLevel, registerLogHandler } from '../library/logging';
-import { StreamHandler } from '../library/loggingHandlers';
-import * as nodejs from '../library/nodejs';
-import type { IdentifiedClient } from '../library/remoteClient';
-import { MultiClient } from '../library/remoteClient';
-import { parseNumber } from '../library/stringUtils';
-import './webpackDefines';
+} from "@rushstack/ts-command-line";
+import { abort, assert } from "../library/exception";
+import { LogLevel, registerLogHandler } from "../library/logging";
+import { StreamHandler } from "../library/loggingHandlers";
+import * as nodejs from "../library/nodejs";
+import type { IdentifiedClient } from "../library/remoteClient";
+import { MultiClient } from "../library/remoteClient";
+import { parseNumber } from "../library/stringUtils";
+import "./webpackDefines";
 
 /** Logic to select server for running command */
 enum Instance {
   /** Not specified, will cause exception if not overriden */
-  UNDEFINED = 'undefined',
+  UNDEFINED = "undefined",
   /** Choose server with workspace folder matching provided or current folder */
-  FOLDER = 'folder',
+  FOLDER = "folder",
   /** Like {@linkcode FOLDER} but otherwise like {@linkcode DEFAULT} */
-  FOLDER_OR_DEFAULT = 'folder_or_default',
+  FOLDER_OR_DEFAULT = "folder_or_default",
   /** Choose default server */
-  DEFAULT = 'default',
+  DEFAULT = "default",
   /** Any server */
-  ANY = 'any',
+  ANY = "any",
   /** Run on all servers */
-  ALL = 'all',
+  ALL = "all",
 }
 
 /** Base class for all subcommands */
@@ -62,7 +62,7 @@ abstract class CliAction extends CommandLineAction {
         );
         break;
       case Instance.UNDEFINED:
-        abort('Must specify instance for this command');
+        abort("Must specify instance for this command");
         break;
       default:
         this.client = this.cli.getClient(this.cli.instance);
@@ -77,10 +77,10 @@ class IdentifyAction extends CliAction {
     super(
       cli,
       {
-        actionName: 'identify',
-        summary: 'Identify servers',
+        actionName: "identify",
+        summary: "Identify servers",
         documentation:
-          'Query all servers and return basic information on each one',
+          "Query all servers and return basic information on each one",
       },
       {
         autoInstance: Instance.ALL,
@@ -96,12 +96,12 @@ class IdentifyAction extends CliAction {
     await super.onExecute();
     console.log(this.cli.multiClient.clients);
 
-    if (this.client) console.log('Selected client:', this.client.info);
-    else console.log('No client selected');
+    if (this.client) console.log("Selected client:", this.client.info);
+    else console.log("No client selected");
 
     const defaultClient = this.cli.multiClient.getDefault();
-    if (defaultClient) console.log('Default client:', defaultClient.info);
-    else console.log('No default client');
+    if (defaultClient) console.log("Default client:", defaultClient.info);
+    else console.log("No default client");
   }
 }
 
@@ -110,10 +110,10 @@ class ReloadAction extends CliAction {
     super(
       cli,
       {
-        actionName: 'reload',
-        summary: 'Reload window',
+        actionName: "reload",
+        summary: "Reload window",
         documentation:
-          'Runs workbench.action.reloadWindow command with delay of 1 second',
+          "Runs workbench.action.reloadWindow command with delay of 1 second",
       },
       {
         autoInstance: Instance.FOLDER,
@@ -128,8 +128,8 @@ class ReloadAction extends CliAction {
   override async onExecute() {
     await super.onExecute();
     await (this.cli.instance === Instance.ALL
-      ? this.cli.multiClient.sendNoResult('reloadWindow', {})
-      : this.client!.sendNoResult('reloadWindow', {}));
+      ? this.cli.multiClient.sendNoResult("reloadWindow", {})
+      : this.client!.sendNoResult("reloadWindow", {}));
   }
 }
 
@@ -138,18 +138,18 @@ class CommandAction extends CliAction {
 
   constructor(cli: Cli) {
     super(cli, {
-      actionName: 'command',
-      summary: 'Run arbitrary vscode command',
-      documentation: 'Excecute command by ID',
+      actionName: "command",
+      summary: "Run arbitrary vscode command",
+      documentation: "Excecute command by ID",
     });
   }
 
   override onDefineParameters() {
     this.name = this.defineStringParameter({
-      parameterShortName: '-n',
-      parameterLongName: '--name',
-      description: 'Command name',
-      argumentName: 'NAME',
+      parameterShortName: "-n",
+      parameterLongName: "--name",
+      description: "Command name",
+      argumentName: "NAME",
       required: true,
     });
   }
@@ -157,10 +157,10 @@ class CommandAction extends CliAction {
   override async onExecute() {
     await super.onExecute();
     await (this.cli.instance === Instance.ALL
-      ? this.cli.multiClient.sendNoResult('executeCommand', {
+      ? this.cli.multiClient.sendNoResult("executeCommand", {
           name: this.name.value!,
         })
-      : this.client!.sendNoResult('executeCommand', {
+      : this.client!.sendNoResult("executeCommand", {
           name: this.name.value!,
         }));
   }
@@ -175,9 +175,9 @@ class OpenFileAction extends CliAction {
     super(
       cli,
       {
-        actionName: 'open',
-        summary: 'Open file',
-        documentation: 'Open file in given instance',
+        actionName: "open",
+        summary: "Open file",
+        documentation: "Open file in given instance",
       },
       {
         autoInstance: Instance.FOLDER,
@@ -187,24 +187,24 @@ class OpenFileAction extends CliAction {
 
   override onDefineParameters() {
     this.fileParam = this.defineStringParameter({
-      parameterLongName: '--file',
-      parameterShortName: '-f',
+      parameterLongName: "--file",
+      parameterShortName: "-f",
       description:
-        'File path, absolute or relative to --folder, may be in format of location FILE_NAME:LINE[:COL]',
-      argumentName: 'FILE_NAME',
+        "File path, absolute or relative to --folder, may be in format of location FILE_NAME:LINE[:COL]",
+      argumentName: "FILE_NAME",
       required: true,
     });
     this.lineParam = this.defineIntegerParameter({
-      parameterLongName: '--line',
-      parameterShortName: '-l',
-      description: 'Line number',
-      argumentName: 'LINE',
+      parameterLongName: "--line",
+      parameterShortName: "-l",
+      description: "Line number",
+      argumentName: "LINE",
     });
     this.columnParam = this.defineIntegerParameter({
-      parameterLongName: '--column',
-      parameterShortName: '-c',
-      description: 'Column number',
-      argumentName: 'COLUMN',
+      parameterLongName: "--column",
+      parameterShortName: "-c",
+      description: "Column number",
+      argumentName: "COLUMN",
     });
   }
 
@@ -213,11 +213,11 @@ class OpenFileAction extends CliAction {
     const absfile = nodejs.path.resolve(this.cli.folder, this.fileParam.value!);
     assert(
       this.cli.instance !== Instance.ALL,
-      'Can not open file in ALL clients',
+      "Can not open file in ALL clients",
     );
-    const [path, line = undefined, col = undefined] = absfile.split(':');
+    const [path, line = undefined, col = undefined] = absfile.split(":");
     assert(nodejs.fs.existsSync(path), `File "${path}" does not exist`);
-    return this.client!.send('openFile', {
+    return this.client!.send("openFile", {
       path,
       line: this.lineParam.value ?? parseNumber(line),
       column: this.columnParam.value ?? parseNumber(col),
@@ -232,9 +232,9 @@ class OpenFolderAction extends CliAction {
     super(
       cli,
       {
-        actionName: 'open-folder',
-        summary: 'Open folder',
-        documentation: 'Open folder or workspace',
+        actionName: "open-folder",
+        summary: "Open folder",
+        documentation: "Open folder or workspace",
       },
       {
         autoInstance: Instance.ANY,
@@ -244,10 +244,10 @@ class OpenFolderAction extends CliAction {
 
   override onDefineParameters() {
     this.pathParam = this.defineStringParameter({
-      parameterLongName: '--path',
-      parameterShortName: '-p',
-      description: 'Folder of workspace path',
-      argumentName: 'PATH',
+      parameterLongName: "--path",
+      parameterShortName: "-p",
+      description: "Folder of workspace path",
+      argumentName: "PATH",
       required: true,
     });
   }
@@ -255,7 +255,7 @@ class OpenFolderAction extends CliAction {
   override async onExecute() {
     await super.onExecute();
     const absPath = nodejs.path.resolve(process.cwd(), this.pathParam.value!);
-    return this.client!.send('openFolder', {
+    return this.client!.send("openFolder", {
       path: absPath,
     });
   }
@@ -268,9 +268,9 @@ class OpenSshAction extends CliAction {
     super(
       cli,
       {
-        actionName: 'open-ssh',
-        summary: 'Open file via SSH',
-        documentation: 'Open file via SSH in given instance',
+        actionName: "open-ssh",
+        summary: "Open file via SSH",
+        documentation: "Open file via SSH in given instance",
       },
       {
         autoInstance: Instance.FOLDER_OR_DEFAULT,
@@ -280,10 +280,10 @@ class OpenSshAction extends CliAction {
 
   override onDefineParameters() {
     this.fileParam = this.defineStringParameter({
-      parameterLongName: '--file',
-      parameterShortName: '-f',
-      description: 'File path in format HOST:PATH',
-      argumentName: 'FILE_NAME',
+      parameterLongName: "--file",
+      parameterShortName: "-f",
+      description: "File path in format HOST:PATH",
+      argumentName: "FILE_NAME",
       required: true,
     });
   }
@@ -292,9 +292,9 @@ class OpenSshAction extends CliAction {
     await super.onExecute();
     assert(
       this.cli.instance !== Instance.ALL,
-      'Can not open file in ALL clients',
+      "Can not open file in ALL clients",
     );
-    return this.client!.send('openSsh', {
+    return this.client!.send("openSsh", {
       path: this.fileParam.value!,
     });
   }
@@ -311,29 +311,29 @@ class Cli extends CommandLineParser {
 
   constructor() {
     super({
-      toolFilename: 'q-vscode-cli',
+      toolFilename: "q-vscode-cli",
       toolDescription: `Control vscode remotely, version: ${globalThis.PACKAGE_VERSION}`,
     });
     this.verbose = this.defineIntegerParameter({
-      parameterLongName: '--verbose',
-      parameterShortName: '-v',
-      argumentName: 'LEVEL',
-      description: 'Log verbosity level',
+      parameterLongName: "--verbose",
+      parameterShortName: "-v",
+      argumentName: "LEVEL",
+      description: "Log verbosity level",
       defaultValue: 0,
     });
     this.instanceParam = this.defineChoiceParameter({
-      parameterLongName: '--instance',
-      parameterShortName: '-i',
-      description: 'Choose instance to send command to',
+      parameterLongName: "--instance",
+      parameterShortName: "-i",
+      description: "Choose instance to send command to",
       alternatives: [Instance.FOLDER, Instance.DEFAULT].map((x) =>
         x.toLowerCase(),
       ),
     });
     this.folderParam = this.defineStringParameter({
-      parameterLongName: '--folder',
-      parameterShortName: '-F',
-      description: 'Find instance by workspace folder',
-      argumentName: 'FOLDER',
+      parameterLongName: "--folder",
+      parameterShortName: "-F",
+      description: "Find instance by workspace folder",
+      argumentName: "FOLDER",
     });
     this.addAction(new OpenFileAction(this));
     this.addAction(new OpenFolderAction(this));
@@ -353,11 +353,11 @@ class Cli extends CommandLineParser {
       case Instance.FOLDER:
         return (
           this.multiClient.findByFolder(this.folder) ??
-          abort('Could not find server with workspace folder', this.folder)
+          abort("Could not find server with workspace folder", this.folder)
         );
       case Instance.DEFAULT:
         return (
-          this.multiClient.getDefault() ?? abort('No server was set as default')
+          this.multiClient.getDefault() ?? abort("No server was set as default")
         );
       case Instance.FOLDER_OR_DEFAULT:
         return (
@@ -373,14 +373,14 @@ class Cli extends CommandLineParser {
   }
 
   protected override async onExecute() {
-    const handler = new StreamHandler('stderr', process.stderr);
+    const handler = new StreamHandler("stderr", process.stderr);
     handler.level = LogLevel.NOTICE - this.verbose.value!;
-    handler.formatOptions = { preset: 'short' };
+    handler.formatOptions = { preset: "short" };
     registerLogHandler(handler);
 
     this.multiClient = await MultiClient.connect();
     if (this.multiClient.clients.isEmpty) {
-      throw new Error('No servers found (vscode not running');
+      throw new Error("No servers found (vscode not running");
     }
 
     this.instance = (this.instanceParam.value ??

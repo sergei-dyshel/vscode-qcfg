@@ -3,20 +3,20 @@
 /* eslint-disable import/no-extraneous-dependencies */
 // @ts-check
 
-import CircularDependencyPlugin from 'circular-dependency-plugin';
-import path from 'node:path';
-import type webpack from 'webpack';
-import { DefinePlugin } from 'webpack';
+import CircularDependencyPlugin from "circular-dependency-plugin";
+import path from "node:path";
+import type webpack from "webpack";
+import { DefinePlugin } from "webpack";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const generateConfig = (env: any): webpack.Configuration => ({
-  target: 'node', // vscode extensions run in a Node.js-context 📖 ->
+  target: "node", // vscode extensions run in a Node.js-context 📖 ->
   // https://webpack.js.org/configuration/node/
   context: __dirname,
   entry: {
-    extension: './src/extension/extension.ts',
-    remoteCli: './src/tools/remoteCli.ts',
-    syntaxDump: './src/tools/syntaxDump.ts',
+    extension: "./src/extension/extension.ts",
+    remoteCli: "./src/tools/remoteCli.ts",
+    syntaxDump: "./src/tools/syntaxDump.ts",
   },
   plugins: [
     new CircularDependencyPlugin({
@@ -26,24 +26,24 @@ const generateConfig = (env: any): webpack.Configuration => ({
       failOnError: true,
     }),
     new DefinePlugin({
-      PACKAGE_VERSION: JSON.stringify(require('./package.json').version),
+      PACKAGE_VERSION: JSON.stringify(require("./package.json").version),
     }),
   ],
   output: {
     // the bundle is stored in the 'dist' folder (check package.json), 📖 ->
     // https://webpack.js.org/configuration/output/
-    path: path.resolve(__dirname, 'dist'),
-    filename: '[name].js',
-    libraryTarget: 'commonjs2',
-    devtoolModuleFilenameTemplate: '../[resource-path]',
+    path: path.resolve(__dirname, "dist"),
+    filename: "[name].js",
+    libraryTarget: "commonjs2",
+    devtoolModuleFilenameTemplate: "../[resource-path]",
   },
-  devtool: 'source-map',
+  devtool: "source-map",
   optimization: {
     minimize: false,
     mangleExports: false,
     concatenateModules: false,
-    chunkIds: 'named',
-    moduleIds: 'named',
+    chunkIds: "named",
+    moduleIds: "named",
     removeAvailableModules: false,
     removeEmptyChunks: false,
     flagIncludedChunks: false,
@@ -53,21 +53,21 @@ const generateConfig = (env: any): webpack.Configuration => ({
   },
   externals: [
     {
-      vscode: 'commonjs vscode', // the vscode-module is created on-the-fly and must
+      vscode: "commonjs vscode", // the vscode-module is created on-the-fly and must
 
       // be excluded. Add other modules that cannot be
       // webpack'ed, 📖 ->
       // https://webpack.js.org/configuration/externals/
     },
-    '../package',
+    "../package",
     // these 2 trigger "Module not found" warning in webpack (deps of "ws")
-    'bufferutil',
-    'utf-8-validate',
+    "bufferutil",
+    "utf-8-validate",
   ],
   resolve: {
     // support reading TypeScript and JavaScript files, 📖 ->
     // https://github.com/TypeStrong/ts-loader
-    extensions: ['.ts', '.js'],
+    extensions: [".ts", ".js"],
   },
   module: {
     // becaues of `typescript-collections`
@@ -79,16 +79,16 @@ const generateConfig = (env: any): webpack.Configuration => ({
         exclude: [/node_modules/],
         use: [
           {
-            loader: 'ts-loader',
+            loader: "ts-loader",
             options: {
               compilerOptions: {
-                module: 'es2020', // override `tsconfig.json` so that TypeScript
+                module: "es2020", // override `tsconfig.json` so that TypeScript
                 // emits native JavaScript modules.
                 noUnusedLocals: false,
               },
             },
           },
-          { loader: 'ifdef-loader', options: { DEBUG: env?.DEBUG } },
+          { loader: "ifdef-loader", options: { DEBUG: env?.DEBUG } },
         ],
       },
     ],

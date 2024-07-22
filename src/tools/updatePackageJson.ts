@@ -1,14 +1,14 @@
-import { defaultCompare } from '../library/compare';
-import type { ExtensionJSON } from '../library/extensionManifest';
-import { globSync } from '../library/fileUtils';
-import { JsoncEditor } from '../library/json';
-import * as nodejs from '../library/nodejs';
-import { generateCommands } from './generateCommands';
-import { generateConfig } from './generateConfig';
-import { generateMacTermBindings } from './generateMacTermBindings';
-import { generateRelativeJumps } from './generateRelativeJumps';
+import { defaultCompare } from "../library/compare";
+import type { ExtensionJSON } from "../library/extensionManifest";
+import { globSync } from "../library/fileUtils";
+import { JsoncEditor } from "../library/json";
+import * as nodejs from "../library/nodejs";
+import { generateCommands } from "./generateCommands";
+import { generateConfig } from "./generateConfig";
+import { generateMacTermBindings } from "./generateMacTermBindings";
+import { generateRelativeJumps } from "./generateRelativeJumps";
 
-const PACKAGE_JSON = 'package.json';
+const PACKAGE_JSON = "package.json";
 
 async function main() {
   const commands: ExtensionJSON.Command[] = [];
@@ -17,14 +17,14 @@ async function main() {
 
   const manifests: ExtensionJSON.Manifest[] = [];
 
-  for (const file of globSync('package/*.json')) {
+  for (const file of globSync("package/*.json")) {
     const jsonText = nodejs.fs.readFileSync(file).toString();
     const json = JSON.parse(jsonText) as ExtensionJSON.Manifest;
     if (!json.contributes) {
       throw new Error(`No contribution points in ${file}`);
     }
     for (const key of Object.keys(json.contributes)) {
-      if (!['keybindings', 'commands', 'configuration'].includes(key)) {
+      if (!["keybindings", "commands", "configuration"].includes(key)) {
         throw new Error(`Unexpected contribution point "${key}" in ${file}`);
       }
     }
@@ -67,30 +67,30 @@ async function main() {
     insertSpaces: true,
   };
 
-  editor.modify(['contributes', 'commands'], commands);
-  editor.modify(['contributes', 'keybindings'], keybindings);
-  editor.modify(['contributes', 'configuration', 'properties'], configuration);
+  editor.modify(["contributes", "commands"], commands);
+  editor.modify(["contributes", "keybindings"], keybindings);
+  editor.modify(["contributes", "configuration", "properties"], configuration);
 
   nodejs.fs.writeFileSync(PACKAGE_JSON, editor.text);
 
   const oldJson = JSON.parse(oldText) as ExtensionJSON.Manifest;
   const newJson = JSON.parse(editor.text) as ExtensionJSON.Manifest;
   console.log(
-    'Number of commands changed from',
+    "Number of commands changed from",
     oldJson.contributes!.commands!.length,
-    'to',
+    "to",
     newJson.contributes!.commands!.length,
   );
   console.log(
-    'Number of keybindings changed from',
+    "Number of keybindings changed from",
     oldJson.contributes!.keybindings!.length,
-    'to',
+    "to",
     newJson.contributes!.keybindings!.length,
   );
   console.log(
-    'Number of configuration properties changed from',
+    "Number of configuration properties changed from",
     Object.keys(oldJson.contributes!.configuration!.properties).length,
-    'to',
+    "to",
     Object.keys(newJson.contributes!.configuration!.properties).length,
   );
 }

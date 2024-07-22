@@ -1,7 +1,7 @@
-import * as nodejs from './nodejs';
+import * as nodejs from "./nodejs";
 
 export function isSubPath(path: string, subpath: string) {
-  return !nodejs.path.relative(path, subpath).startsWith('..');
+  return !nodejs.path.relative(path, subpath).startsWith("..");
 }
 
 export function stripExt(filename: string) {

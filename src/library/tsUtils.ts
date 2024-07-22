@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 
-import { MultiDictionary } from 'typescript-collections';
-import { defaultCompare } from './compare';
+import { MultiDictionary } from "typescript-collections";
+import { defaultCompare } from "./compare";
 
 const emptyRegExp = /(?:)/;
 
@@ -101,8 +101,8 @@ export function arraySlice<T>(
  */
 export function numberToBitArray(x: number): Array<0 | 1> {
   return [...x.toString(2)].reverse().map((bit) => {
-    if (bit === '0') return 0;
-    if (bit === '1') return 1;
+    if (bit === "0") return 0;
+    if (bit === "1") return 1;
     throw new Error(
       `Invalid character in binary representation of ${x}: ${bit}`,
     );
@@ -110,8 +110,8 @@ export function numberToBitArray(x: number): Array<0 | 1> {
 }
 
 /**
- * Takes function that does not accept undefined argument and returns
- * function that accepts it and returns undefined in that case
+ * Takes function that does not accept undefined argument and returns function
+ * that accepts it and returns undefined in that case
  */
 export function propagateUndefined<T, Q>(
   f: (x: T) => Q,
@@ -159,8 +159,8 @@ export function filterNonNull<T>(array: Array<T | null | undefined>): T[] {
 /**
  * Map array with optional exception handler.
  *
- * When function application results in exception,
- * it's handled by optional **handler**.
+ * When function application results in exception, it's handled by optional
+ * **handler**.
  *
  * If handler returns values it will be added to result.
  */
@@ -250,7 +250,7 @@ export class NumberIterator implements IterableIterator<number> {
     private readonly end: number,
     private readonly step: number,
   ) {
-    if (this.step === 0) throw new Error('Can not iterate with step 0');
+    if (this.step === 0) throw new Error("Can not iterate with step 0");
     this.cur = start;
   }
 
@@ -325,13 +325,13 @@ declare global {
     /**
      * Minimum element of array.
      *
-     * @param cmd see {@linkcode max}
+     * @param cmd See {@linkcode max}
      */
     min: (cmp?: (x: T, y: T) => number) => T | undefined;
     /**
      * Maximum element of array.
      *
-     * @param cmd returns negative if `x < y`, 0 if `x === y` and positive if `x > y`
+     * @param cmd Returns negative if `x < y`, 0 if `x === y` and positive if `x  > Y`
      */
     max: (cmp?: (x: T, y: T) => number) => T | undefined;
     equals: (that: T[], eq?: (x: T, y: T) => boolean) => boolean;
@@ -377,18 +377,18 @@ declare global {
      *
      * `mode` determines how to act when there is no exact match.
      *
-     * In `left` mode return LARGEST `i` so that `a[i] <= x`.
-     * If already `a[0] > x`, return `0`.
+     * In `left` mode return LARGEST `i` so that `a[i] <= x`. If already `a[0] >
+     * x`, return `0`.
      *
-     * In `right` mode return SMALLEST `i` so that `a[i] >= x`.
-     * If already `a[n-1] < x`, return `n`.
+     * In `right` mode return SMALLEST `i` so that `a[i] >= x`. If already
+     * `a[n-1] < x`, return `n`.
      *
      * XXX: currently unused
      */
     binarySearch: (
       value: T,
       compare?: CompareFunc<T>,
-      mode?: 'left' | 'right',
+      mode?: "left" | "right",
     ) => number;
   }
 
@@ -406,7 +406,7 @@ Array.prototype.binarySearch = function <T>(
   this: T[],
   value: T,
   compare = numberCompare,
-  mode: 'left' | 'right' = 'right',
+  mode: "left" | "right" = "right",
 ): number {
   let left = 0;
   let right = this.length;
@@ -414,7 +414,7 @@ Array.prototype.binarySearch = function <T>(
     const mid = Math.floor((left + right) / 2);
     const cmp = compare(this[mid], value);
 
-    if (mode === 'left') {
+    if (mode === "left") {
       if (cmp > 0) right = mid;
       left = mid + 1;
     } else {
@@ -491,7 +491,7 @@ Array.prototype.iter = function <T>(
   end?: number,
   step?: number,
 ) {
-  if (step === 0) throw new Error('Can not have zero step');
+  if (step === 0) throw new Error("Can not have zero step");
   return new ArrayIterator<T>(
     this,
     new NumberIterator(
@@ -588,14 +588,14 @@ Array.prototype.clear = function <T>(this: T[]) {
   this.splice(0, this.length);
 };
 
-Object.defineProperty(Array.prototype, 'top', {
+Object.defineProperty(Array.prototype, "top", {
   get<T>(): T | undefined {
     if (this.length > 0) return this[this.length - 1];
     return undefined;
   },
 });
 
-Object.defineProperty(Array.prototype, 'isEmpty', {
+Object.defineProperty(Array.prototype, "isEmpty", {
   get(): boolean {
     return this.length === 0;
   },
@@ -603,7 +603,10 @@ Object.defineProperty(Array.prototype, 'isEmpty', {
 
 /** Mapping with default values */
 export class DefaultMap<K, V> extends Map<K, V> {
-  /** `factory` - either default value and function that receives key and returns a value */
+  /**
+   * `factory` - either default value and function that receives key and returns
+   * a value
+   */
   constructor(protected readonly factory: V | ((key: K) => V)) {
     super();
   }

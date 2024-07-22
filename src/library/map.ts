@@ -14,13 +14,13 @@ export interface MapLike<K, V> {
 /**
  * Similar to {@link MapLike} but `get()` always returns a value.
  */
-export type DefaultMapLike<K, V> = Omit<MapLike<K, V>, 'get'> & {
+export type DefaultMapLike<K, V> = Omit<MapLike<K, V>, "get"> & {
   get: (key: K) => V;
 };
 
 /**
- * Allows mapping from arbitrary type by providing an adapter -
- * function that converts from given key type to key type that works with {@link Map}
+ * Allows mapping from arbitrary type by providing an adapter - function that
+ * converts from given key type to key type that works with {@link Map}
  */
 export class MapAdapter<K, V, A> implements MapLike<K, V> {
   private readonly map: Map<A, V>;

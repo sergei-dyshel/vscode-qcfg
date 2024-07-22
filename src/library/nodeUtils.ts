@@ -1,4 +1,4 @@
-import * as nodejs from './nodejs';
+import * as nodejs from "./nodejs";
 
 export const setTimeoutPromise = nodejs.util.promisify(setTimeout);
 export const setImmediatePromise = nodejs.util.promisify(setImmediate);

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { DefaultMapAdapter } from './map';
+import { DefaultMapAdapter } from "./map";
 
 /**
  * Memoize values returned by function.
@@ -26,8 +26,9 @@ export function memoizeWithExc<E, V, F extends (...args: any[]) => V>(
 /**
  * Like {@link memoize} but also remembers thrown exceptions of given type.
  *
- * If memoized function threw exception for certain combination of arguments, next time it's
- * called with these arguments the saved exception will be thrown automatically.
+ * If memoized function threw exception for certain combination of arguments,
+ * next time it's called with these arguments the saved exception will be thrown
+ * automatically.
  */
 export function memoizeWithExc<E, V>(
   exc: new () => E,

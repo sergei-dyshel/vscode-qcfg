@@ -1,14 +1,14 @@
-import * as jayson from 'jayson/promise';
+import * as jayson from "jayson/promise";
 /* TODO: use import type with TS 3.8 */
 import type {
   IdentifyResult,
   RemoteProtocol,
-} from '../extension/modules/remoteServer';
-import { log, Logger } from './logging';
-import * as nodejs from './nodejs';
-import { stringify } from './stringify';
-import type { FirstParameter } from './templateTypes';
-import { filterNonNull } from './tsUtils';
+} from "../extension/modules/remoteServer";
+import { Logger, log } from "./logging";
+import * as nodejs from "./nodejs";
+import { stringify } from "./stringify";
+import type { FirstParameter } from "./templateTypes";
+import { filterNonNull } from "./tsUtils";
 
 const START_PORT = 7890;
 
@@ -23,7 +23,7 @@ export class RemoteClient {
   protected log: Logger;
 
   constructor(protected tcpPort: number) {
-    this.log = new Logger({ instance: 'port=' + tcpPort.toString() });
+    this.log = new Logger({ instance: "port=" + tcpPort.toString() });
     this._client = jayson.Client.tcp({
       port: tcpPort,
     });
@@ -43,12 +43,12 @@ export class RemoteClient {
         .request(k, arg)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .then((res: any) => {
-          if ('error' in res) {
-            this.log.error('Received error', res.error);
+          if ("error" in res) {
+            this.log.error("Received error", res.error);
             throw new Error(stringify(res.error));
           }
-          if ('result' in res) {
-            this.log.debug('Received result', res.result);
+          if ("result" in res) {
+            this.log.debug("Received result", res.result);
             return res.result;
           }
           return undefined;
@@ -84,7 +84,7 @@ export class IdentifiedClient extends RemoteClient {
 
   static async connect(tcpPort: number): Promise<IdentifiedClient> {
     const client = new IdentifiedClient(tcpPort);
-    client.info = await client.send('identify', {});
+    client.info = await client.send("identify", {});
     if (client.info.workspaceName)
       client.log.instance = client.info.workspaceName;
     return client;
@@ -97,7 +97,7 @@ export class IdentifiedClient extends RemoteClient {
 export class MultiClient {
   private constructor(public clients: IdentifiedClient[]) {
     log.info(
-      'Connected clients: ',
+      "Connected clients: ",
       nodejs.util.inspect(clients, { breakLength: 1024 }),
     );
   }

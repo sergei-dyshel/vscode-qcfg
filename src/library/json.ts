@@ -1,4 +1,4 @@
-import * as jsonc from 'jsonc-parser';
+import * as jsonc from "jsonc-parser";
 
 /**
  * Wrapper over `jsonc-parser` to edit JSONC files
