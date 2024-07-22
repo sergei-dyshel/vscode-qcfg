@@ -1,7 +1,6 @@
 import { enumUtil } from './enum';
 import { getCallsite } from './sourceMap';
-import { formatMessage, stringify as str } from './stringify';
-import { formatString } from './stringUtils';
+import { formatMessage } from './stringify';
 import { filterNonNull } from './tsUtils';
 
 export enum LogLevel {
@@ -83,32 +82,16 @@ export class Logger {
     this.logImpl(level, 3, formatMessage(args));
   }
 
-  logStr(level: LogLevel, fmt: string, ...args: unknown[]) {
-    this.logImpl(level, 3, formatMessageStr(fmt, args));
-  }
-
   trace(...args: unknown[]) {
     this.logInternal(LogLevel.TRACE, args);
-  }
-
-  traceStr(fmt: string, ...args: unknown[]) {
-    this.logStrInternal(LogLevel.TRACE, fmt, args);
   }
 
   debug(...args: unknown[]) {
     this.logInternal(LogLevel.DEBUG, args);
   }
 
-  debugStr(fmt: string, ...args: unknown[]) {
-    this.logStrInternal(LogLevel.DEBUG, fmt, args);
-  }
-
   info(...args: unknown[]) {
     this.logInternal(LogLevel.INFO, args);
-  }
-
-  infoStr(fmt: string, ...args: unknown[]) {
-    this.logStrInternal(LogLevel.INFO, fmt, args);
   }
 
   notice(...args: unknown[]) {
@@ -134,10 +117,6 @@ export class Logger {
 
   private logInternal(level: LogLevel, args: unknown[]) {
     this.logImpl(level, 4, formatMessage(args));
-  }
-
-  private logStrInternal(level: LogLevel, fmt: string, args: unknown[]) {
-    this.logImpl(level, 4, formatMessageStr(fmt, args));
   }
 
   private logImpl(logLevel: LogLevel, callDepth: number, message: string) {
@@ -197,15 +176,6 @@ export abstract class TextLogHandler implements LogHandler {
 //
 
 const handlers: LogHandler[] = [];
-
-function formatMessageStr(fmt: string, args: unknown[]) {
-  const normalizedArgs = args.map((arg) =>
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    typeof arg === 'object' ? str(arg) : (arg as any),
-  );
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-  return formatString(fmt, ...normalizedArgs);
-}
 
 function getDate(): string {
   const date = new Date();

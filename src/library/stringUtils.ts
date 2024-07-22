@@ -1,9 +1,6 @@
 // TODO: rename to string.ts
 
-import * as stringFormat from 'string-format';
 import { memoizeWithExc } from './memoize';
-
-export const formatString = stringFormat.default;
 
 export function parseNumber(s: string): number;
 export function parseNumber(s: string | undefined): number | undefined;

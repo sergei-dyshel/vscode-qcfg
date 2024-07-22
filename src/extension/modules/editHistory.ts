@@ -18,7 +18,6 @@ import {
 import { CheckError, checkNotNull } from '../../library/exception';
 import { Logger } from '../../library/logging';
 import * as nodejs from '../../library/nodejs';
-import { formatString } from '../../library/stringUtils';
 import { DefaultMap } from '../../library/tsUtils';
 import { NumRange } from './documentUtils';
 import { listenWrapped, registerSyncCommandWrapped } from './exception';
@@ -94,10 +93,10 @@ class DocumentHistory {
     if (this.index === 0) throw new CheckError('No backward  history');
     if (this.index === this.ranges.length) this.savedSelection = selection;
     this.index -= 1;
-    this.log.debugStr(
-      'Going backward, ({} more backward items, {} forward items)',
-      this.index,
-      this.ranges.length - this.index,
+    this.log.debug(
+      `Going backward, (${this.index} more backward items, ${
+        this.ranges.length - this.index
+      } forward items)`,
     );
     return this.currentSelection()!;
   }
@@ -111,10 +110,10 @@ class DocumentHistory {
       this.savedSelection = undefined;
       return selection;
     }
-    this.log.debugStr(
-      'Going forward, ({} more backward items, {} forward items)',
-      this.index,
-      this.ranges.length - this.index,
+    this.log.debug(
+      `Going forward, (${this.index} more backward items, ${
+        this.ranges.length - this.index
+      } forward items`,
     );
     return this.currentSelection()!;
   }
@@ -159,9 +158,7 @@ function endHistoryNavigation() {
 
 function startHistoryNavigation(docHistory: DocumentHistory) {
   lastDocHistory = docHistory;
-  status.text = formatString(
-    `edit ${docHistory.current} / ${docHistory.length}`,
-  );
+  status.text = `edit ${docHistory.current} / ${docHistory.length}`;
   status.show();
 }
 

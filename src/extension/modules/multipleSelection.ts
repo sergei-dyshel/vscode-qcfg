@@ -39,12 +39,8 @@ function updateMark(editor: TextEditor, index: number) {
   editor.setDecorations(decorationType(), [range]);
   editor.revealRange(range);
   handleAsyncStd(WhenContext.set(CONTEXT));
-  log.debugStr(
-    '{}: marking selection #{} out of {}, range {}',
-    editor,
-    index,
-    selections.length,
-    range,
+  log.debug(
+    `${editor}: marking selection #${index} out of ${selections.length}, range ${range}`,
   );
 }
 

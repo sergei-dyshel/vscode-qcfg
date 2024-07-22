@@ -90,12 +90,7 @@ export class Subprocess {
       instance: `pid=${this.process.pid}`,
     });
     const cwd = options?.cwd ?? process.cwd();
-    this.log.logStr(
-      this.logLevel,
-      'started command "{}" in cwd "{}"',
-      command,
-      cwd,
-    );
+    this.log.log(this.logLevel, `started command "${command}" in cwd "${cwd}"`);
     this.promise = new Promise<ExecResult>((resolve, reject) => {
       this.waitingContext = { resolve, reject };
     });

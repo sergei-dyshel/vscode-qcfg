@@ -254,11 +254,8 @@ function activate(_: ExtensionContext) {
   /// #if DEBUG
   sequentialAsyncByDefault = true;
   /// #endif
-  log.infoStr(
-    'Async mapping is {} by default',
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    sequentialAsyncByDefault ? 'SEQUENTIAL' : 'PARALLEL',
-  );
+  const seqStr = sequentialAsyncByDefault ? 'SEQUENTIAL' : 'PARALLEL';
+  log.info(`Async mapping is ${seqStr} by default`);
 }
 
 Modules.register(activate);

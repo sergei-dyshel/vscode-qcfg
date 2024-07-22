@@ -33,7 +33,7 @@ function computeSelectionRange(
     node = node.parent;
   }
 
-  log.traceStr('Syntax-based selection range for {}: {}', position, ranges);
+  log.trace(`Syntax-based selection range for ${position}: ${ranges}`);
 
   const topSelRange = new SelectionRange(position.asRange);
   let selRange = topSelRange;
