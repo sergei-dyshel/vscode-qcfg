@@ -23,7 +23,6 @@
   ],
   "typescript.tsdk": "node_modules/typescript/lib",
   "qcfg.tasks": {
-    "Format all typescript sources": "npx prettier --write src/**/*.ts",
     "Reload all windows": "q-vscode-cli -i all reload"
   },
   "task.allowAutomaticTasks": "on",
