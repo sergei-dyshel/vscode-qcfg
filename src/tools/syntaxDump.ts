@@ -34,7 +34,7 @@ class TreeAction extends CliAction {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function,class-methods-use-this
-  onDefineParameters() {}
+  override onDefineParameters() {}
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async onExecute() {
@@ -63,7 +63,7 @@ class Cli extends CommandLineParser {
     this.addAction(new TreeAction(this));
   }
 
-  protected onDefineParameters() {
+  protected override onDefineParameters() {
     this.languageParam = this.defineChoiceParameter({
       parameterLongName: '--language',
       parameterShortName: '-l',

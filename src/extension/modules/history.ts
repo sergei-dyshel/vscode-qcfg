@@ -26,7 +26,7 @@ const MAX_HISTORY_SIZE = 20;
  * @param onlyWhenChanged Only update history if there was a jump.
  */
 export async function updateHistory<T>(
-  jump: Promise<T>,
+  jump: Thenable<T>,
   options?: {
     column?: ViewColumn;
     onlyWhenChanged?: boolean;

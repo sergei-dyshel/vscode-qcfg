@@ -9,14 +9,14 @@ async function focusEditorBeside(syncPosition: boolean) {
     case 0:
       throw new Error('No tab groups opened');
     case 1:
-      return splitEditorToDirection('right');
+      await splitEditorToDirection('right');
     case 2:
       break;
     default:
       throw new Error('There is more than 2 editor groups');
   }
   if (!syncPosition) {
-    return commands.executeCommand('workbench.action.focusNextGroup');
+    await commands.executeCommand('workbench.action.focusNextGroup');
   }
   const tabGroup = (() => {
     for (const group of window.tabGroups.all) {

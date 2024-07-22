@@ -56,7 +56,7 @@ export class NotificationMessage implements DisposableLike {
     this.cancel();
   }
 
-  private readonly promise: Promise<void>;
+  private readonly promise: Thenable<void>;
   private resolveCancel!: () => void;
   private readonly cancelPromise: Promise<void>;
   private progress!: Progress<{

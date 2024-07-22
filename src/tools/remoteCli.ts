@@ -90,7 +90,7 @@ class IdentifyAction extends CliAction {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  onDefineParameters() {}
+  override onDefineParameters() {}
 
   override async onExecute() {
     await super.onExecute();
@@ -123,7 +123,7 @@ class ReloadAction extends CliAction {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  onDefineParameters() {}
+  override onDefineParameters() {}
 
   override async onExecute() {
     await super.onExecute();
@@ -144,7 +144,7 @@ class CommandAction extends CliAction {
     });
   }
 
-  onDefineParameters() {
+  override onDefineParameters() {
     this.name = this.defineStringParameter({
       parameterShortName: '-n',
       parameterLongName: '--name',
@@ -185,7 +185,7 @@ class OpenFileAction extends CliAction {
     );
   }
 
-  onDefineParameters() {
+  override onDefineParameters() {
     this.fileParam = this.defineStringParameter({
       parameterLongName: '--file',
       parameterShortName: '-f',
@@ -242,7 +242,7 @@ class OpenFolderAction extends CliAction {
     );
   }
 
-  onDefineParameters() {
+  override onDefineParameters() {
     this.pathParam = this.defineStringParameter({
       parameterLongName: '--path',
       parameterShortName: '-p',
@@ -278,7 +278,7 @@ class OpenSshAction extends CliAction {
     );
   }
 
-  onDefineParameters() {
+  override onDefineParameters() {
     this.fileParam = this.defineStringParameter({
       parameterLongName: '--file',
       parameterShortName: '-f',
@@ -344,7 +344,7 @@ class Cli extends CommandLineParser {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  protected onDefineParameters(): void {}
+  protected override onDefineParameters(): void {}
 
   getClient(
     instance: Exclude<Instance, Instance.UNDEFINED | Instance.ALL>,

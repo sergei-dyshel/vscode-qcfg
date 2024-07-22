@@ -162,6 +162,7 @@ async function swapWithMark() {
     );
     return markAndCopySelection();
   }
+  return undefined;
 }
 
 function invalidateMark() {

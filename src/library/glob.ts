@@ -3,7 +3,7 @@ import * as minimatch from 'minimatch';
 export function fileMatch(
   filename: string,
   pattern: string,
-  options?: minimatch.IOptions,
+  options?: minimatch.MinimatchOptions,
 ): boolean {
-  return minimatch.default(filename, pattern, options);
+  return minimatch.minimatch(filename, pattern, options);
 }
