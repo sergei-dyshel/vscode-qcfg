@@ -1,19 +1,16 @@
 /* eslint-disable unicorn/prefer-top-level-await */
+import { globSync } from '../library/fileUtils';
 import * as nodejs from '../library/nodejs';
 import { UserCommands } from '../library/userCommands';
 
-const jsonPath = nodejs.process.argv[2];
+export async function generateCommands() {
+  const modules = globSync('src/extension/modules/*.ts');
 
-const modules = nodejs.process.argv.slice(3);
+  await Promise.all(
+    modules.map(
+      async (module) => import(nodejs.path.join(nodejs.process.cwd(), module)),
+    ),
+  );
 
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
-Promise.all(
-  modules.map(
-    async (module) => import(nodejs.path.join(nodejs.process.cwd(), module)),
-  ),
-).then(() => {
-  const json = UserCommands.generateJson();
-  nodejs.fs.writeFileSync(jsonPath, JSON.stringify(json, undefined, 2));
-  console.log(`Written ${jsonPath}`);
-  console.log(`${json.contributes!.commands!.length} commands`);
-});
+  return UserCommands.generateJson();
+}

@@ -14,7 +14,7 @@ import type { ExtensionContext } from 'vscode';
 import { log } from '../library/logging';
 import { stringify as str } from '../library/stringify';
 import { Modules } from './modules/module';
-import { registerAllCommands, verifyCommandsJson } from './utils/commands';
+import { registerAllCommands } from './utils/commands';
 import { setExtensionContext } from './utils/extensionContext';
 import { TreeSitter } from '../library/treeSitter';
 import * as nodejs from '../library/nodejs';
@@ -46,8 +46,6 @@ export async function activate(context: ExtensionContext) {
     log.info('Workspace storage path', context.storageUri.fsPath);
 
   // history.activate(context);
-
-  await verifyCommandsJson();
 }
 
 // this method is called when your extension is deactivated

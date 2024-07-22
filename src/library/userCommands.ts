@@ -1,9 +1,6 @@
 import type { ExtensionJSON } from './extensionManifest';
-import * as nodejs from './nodejs';
 
 export namespace UserCommands {
-  export const JSON_PATH = nodejs.path.join('package', 'commands.json');
-
   export type Keybinding =
     | {
         key: string;

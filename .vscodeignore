@@ -6,7 +6,6 @@
 !plistOld.language-configuration.json
 !syntaxes
 !LICENSE
-!package/commands.json
 !tree-sitter/*.wasm
 !node_modules/web-tree-sitter/tree-sitter.wasm
 
