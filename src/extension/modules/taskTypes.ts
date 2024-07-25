@@ -4,7 +4,7 @@ import type {
   TaskDefinition,
   TextSearchQuery,
   WorkspaceFolder,
-} from 'vscode';
+} from "vscode";
 import {
   commands,
   ShellExecution,
@@ -16,39 +16,39 @@ import {
   Uri,
   window,
   workspace,
-} from 'vscode';
-import { Config } from '../../library/config';
-import { log, LogLevel } from '../../library/logging';
-import * as nodejs from '../../library/nodejs';
-import { baseName, dirName, stripExt } from '../../library/pathUtils';
+} from "vscode";
+import { Config } from "../../library/config";
+import { log, LogLevel } from "../../library/logging";
+import * as nodejs from "../../library/nodejs";
+import { baseName, dirName, stripExt } from "../../library/pathUtils";
 import {
   expandTemplateLiteral,
   TemplateLiteralError,
-} from '../../library/stringUtils';
-import { concatArrays } from '../../library/tsUtils';
-import { getDocumentWorkspaceFolder } from '../utils/document';
-import { getFolderSettingsPath, getGlobalSettingsPath } from '../utils/paths';
-import type { BaseQuickPickItem } from '../utils/quickPick';
-import { QuickPickButtons } from '../utils/quickPick';
-import { mapAsync, mapAsyncSequential } from './async';
-import { executeCommandHandled } from './exception';
-import { peekLocations } from './fileUtils';
-import { editJsonPath } from './json';
-import { showOsNotification } from './osNotification';
+} from "../../library/stringUtils";
+import { concatArrays } from "../../library/tsUtils";
+import { getDocumentWorkspaceFolder } from "../utils/document";
+import { getFolderSettingsPath, getGlobalSettingsPath } from "../utils/paths";
+import type { BaseQuickPickItem } from "../utils/quickPick";
+import { QuickPickButtons } from "../utils/quickPick";
+import { isMultiFolderWorkspace } from "../utils/workspace";
+import { mapAsync, mapAsyncSequential } from "./async";
+import { executeCommandHandled } from "./exception";
+import { peekLocations } from "./fileUtils";
+import { editJsonPath } from "./json";
+import { showOsNotification } from "./osNotification";
 import {
   findPatternInParsedLocations,
   ParseLocationFormat,
   parseLocations,
-} from './parseLocations';
-import * as remoteControl from './remoteControl';
-import { saveAndPeekSearch } from './savedSearch';
-import { searchInFiles } from './search';
-import { ExecResult, Subprocess } from './subprocess';
-import { TaskCancelledError, TaskConfilictPolicy, TaskRun } from './taskRunner';
-import { currentWorkspaceFolder, getCursorWordContext } from './utils';
+} from "./parseLocations";
+import * as remoteControl from "./remoteControl";
+import { saveAndPeekSearch } from "./savedSearch";
+import { searchInFiles } from "./search";
+import { ExecResult, Subprocess } from "./subprocess";
+import { TaskCancelledError, TaskConfilictPolicy, TaskRun } from "./taskRunner";
+import { currentWorkspaceFolder, getCursorWordContext } from "./utils";
 
 import Cfg = Config.Tasks;
-import { isMultiFolderWorkspace } from '../utils/workspace';
 
 /** Source of task definition (workspace, folder etc.) */
 export interface ParamsSource {
@@ -75,8 +75,8 @@ export function isFolderTask(params: Cfg.BaseTaskParams) {
 }
 
 /**
- * Context of running task, considering specific workspace folder,
- * current file, line, selected text etc.
+ * Context of running task, considering specific workspace folder, current file,
+ * line, selected text etc.
  */
 export class TaskContext {
   constructor(folder?: WorkspaceFolder) {
@@ -86,37 +86,37 @@ export class TaskContext {
     if (editor) {
       const document = editor.document;
       this.fileName = document.fileName;
-      this.vars['file'] = this.fileName;
+      this.vars["file"] = this.fileName;
       if (!editor.selection.isEmpty)
-        this.vars['selectedText'] = document.getText(editor.selection);
+        this.vars["selectedText"] = document.getText(editor.selection);
       if (editor.selection.isEmpty)
-        this.vars['lineNumber'] = String(editor.selection.active.line + 1);
+        this.vars["lineNumber"] = String(editor.selection.active.line + 1);
       if (!editor.selection.isEmpty) {
-        this.vars['cursorWord'] = document.getText(editor.selection);
+        this.vars["cursorWord"] = document.getText(editor.selection);
       } else {
         const wordCtx = getCursorWordContext();
         if (wordCtx) {
-          this.vars['cursorWord'] = wordCtx.word;
+          this.vars["cursorWord"] = wordCtx.word;
         }
       }
-      this.vars['stripExt'] = stripExt;
-      this.vars['baseName'] = baseName;
-      this.vars['dirName'] = dirName;
+      this.vars["stripExt"] = stripExt;
+      this.vars["baseName"] = baseName;
+      this.vars["dirName"] = dirName;
       if (this.workspaceFolder) {
-        this.vars['workspaceFolder'] = this.workspaceFolder.uri.fsPath;
-        this.vars['relativeFile'] = nodejs.path.relative(
-          this.vars['workspaceFolder'],
+        this.vars["workspaceFolder"] = this.workspaceFolder.uri.fsPath;
+        this.vars["relativeFile"] = nodejs.path.relative(
+          this.vars["workspaceFolder"],
           document.fileName,
         );
       }
       if (curWorkspaceFolder) {
-        this.vars['curWorkspaceFolder'] = curWorkspaceFolder.uri.fsPath;
+        this.vars["curWorkspaceFolder"] = curWorkspaceFolder.uri.fsPath;
       }
     }
     if (workspace.workspaceFolders)
-      this.vars['allWorkspaceFolders'] = workspace.workspaceFolders
+      this.vars["allWorkspaceFolders"] = workspace.workspaceFolders
         .map((wf) => wf.uri.fsPath)
-        .join(' ');
+        .join(" ");
   }
 
   substitute(text: string): string {
@@ -156,7 +156,7 @@ export class TaskVarSubstituteError extends ValidationError {
 
 export class ConditionError extends ValidationError {
   constructor(message: string) {
-    super('Condition check failed: ' + message);
+    super("Condition check failed: " + message);
   }
 }
 
@@ -174,16 +174,16 @@ export abstract class BaseTask {
   protected abstract title(): string;
 
   protected prefixTags(): string {
-    let res = '';
-    res += this.isFromWorkspace() ? '$(home)' : '     ';
-    res += '      ';
+    let res = "";
+    res += this.isFromWorkspace() ? "$(home)" : "     ";
+    res += "      ";
     return res;
   }
 
   protected suffixTags(): string[] {
     const tags: string[] = [];
-    if (this.isBuild()) tags.push('$(tools)');
-    if (this.isBackground()) tags.push('$(clock)');
+    if (this.isBuild()) tags.push("$(tools)");
+    if (this.isBackground()) tags.push("$(clock)");
     return tags;
   }
 
@@ -195,12 +195,12 @@ export abstract class BaseTask {
       item.description = this.folderText;
     }
     const tags = this.suffixTags();
-    if (!tags.isEmpty) item.label += '      ' + tags.join('  ');
+    if (!tags.isEmpty) item.label += "      " + tags.join("  ");
     return item;
   }
 
   toPersistentLabel() {
-    return this.fullName() + (this.folderText ? ' ' + this.folderText : '');
+    return this.fullName() + (this.folderText ? " " + this.folderText : "");
   }
 }
 
@@ -228,7 +228,7 @@ export class VscodeTask extends BaseTask {
   }
 
   protected override isFromWorkspace() {
-    return this.task.source === 'Workspace';
+    return this.task.source === "Workspace";
   }
 
   protected isBackground() {
@@ -238,7 +238,7 @@ export class VscodeTask extends BaseTask {
   protected override fullName() {
     const task = this.task;
     let fullName = task.name;
-    if (task.source && task.source !== 'Workspace')
+    if (task.source && task.source !== "Workspace")
       fullName = `${task.source}: ${fullName}`;
     return fullName;
   }
@@ -278,11 +278,11 @@ export abstract class BaseQcfgTask extends BaseTask {
   }
 
   protected fullName() {
-    return 'qcfg: ' + this.info.label;
+    return "qcfg: " + this.info.label;
   }
 
   protected title() {
-    return 'qcfg: ' + (this.params.title ?? this.info.label);
+    return "qcfg: " + (this.params.title ?? this.info.label);
   }
 
   isBuild() {
@@ -298,7 +298,7 @@ export abstract class BaseQcfgTask extends BaseTask {
     return item;
   }
 
-  /** Go to  */
+  /** Go to */
   private editParams(): Promise<void> | void {
     let settings: string;
     const source = this.info.source;
@@ -306,9 +306,9 @@ export abstract class BaseQcfgTask extends BaseTask {
     else if (source.workspace) settings = workspace.workspaceFile!.fsPath;
     else settings = getGlobalSettingsPath();
 
-    const jsonPath = ['qcfg.tasks', this.info.label];
+    const jsonPath = ["qcfg.tasks", this.info.label];
     if (source.workspace) {
-      jsonPath.unshift('settings');
+      jsonPath.unshift("settings");
     }
     return editJsonPath(Uri.file(settings), jsonPath);
   }
@@ -328,7 +328,7 @@ export class TerminalTask extends BaseQcfgTask {
       this.folderText = context.workspaceFolder!.name;
     }
     this.params = params;
-    const def: TaskDefinition = { type: 'qcfg', task: params };
+    const def: TaskDefinition = { type: "qcfg", task: params };
     const flags: Cfg.Flag[] = params.flags ?? [];
 
     const scope = context.workspaceFolder ?? TaskScope.Global;
@@ -341,7 +341,7 @@ export class TerminalTask extends BaseQcfgTask {
       def,
       scope,
       info.label,
-      'qcfg',
+      "qcfg",
       shellExec,
       params.problemMatchers ?? [],
     );
@@ -378,7 +378,7 @@ export class TerminalTask extends BaseQcfgTask {
     const term = this.taskRun.terminal;
     if (success && params.flags && params.flags.includes(Cfg.Flag.REINDEX)) {
       // avoid circular dependency
-      executeCommandHandled('qcfg.langClient.refresh');
+      executeCommandHandled("qcfg.langClient.refresh");
     }
     if (
       !success &&
@@ -412,7 +412,7 @@ export class TerminalTask extends BaseQcfgTask {
       case Cfg.EndAction.DISPOSE:
         if (window.activeTerminal === term) {
           term.dispose();
-          await commands.executeCommand('workbench.action.closePanel');
+          await commands.executeCommand("workbench.action.closePanel");
         } else {
           term.dispose();
         }
@@ -445,7 +445,7 @@ export class TerminalMultiTask extends BaseQcfgTask {
     );
     this.folderText = folderContexts
       .map((context) => context.workspaceFolder!.name)
-      .join(', ');
+      .join(", ");
   }
 
   async run() {
@@ -493,7 +493,7 @@ export class ProcessTask extends BaseQcfgTask {
 
   async getLocations(): Promise<Location[]> {
     if (this.parseFormat === undefined)
-      throw new Error('Output parsing not defined for this task');
+      throw new Error("Output parsing not defined for this task");
     const output = await this.runAndGetOutput();
     const locations = parseLocations(output, this.cwd, this.parseFormat);
     if (this.parseTag) {
@@ -517,7 +517,7 @@ export class ProcessTask extends BaseQcfgTask {
         log.warn(
           `Task "${this.info.label}" failed with code ${err.code} signal ${err.signal}`,
         );
-        return '';
+        return "";
       }
       throw err;
     }
@@ -550,7 +550,7 @@ export class ProcessMultiTask extends BaseQcfgTask {
     );
     this.folderText = folderContexts
       .map((context) => context.workspaceFolder!.name)
-      .join(', ');
+      .join(", ");
     if (params.parseOutput) {
       this.parseOutput = true;
     }
@@ -590,11 +590,11 @@ export class SearchMultiTask extends BaseQcfgTask {
     super(params, info);
     this.folderText = folderContexts
       .map((context) => context.workspaceFolder!.name)
-      .join(', ');
+      .join(", ");
 
     this.folders = folderContexts.map((context) => {
       if (!context.workspaceFolder)
-        throw new Error('Search task can only be defined for workspace folder');
+        throw new Error("Search task can only be defined for workspace folder");
       return context.workspaceFolder;
     });
     const flags = params.flags ?? [];

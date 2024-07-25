@@ -1,10 +1,10 @@
-import type { TextDocument, WorkspaceFolder } from 'vscode';
-import { Location, Position, Range, Uri, workspace } from 'vscode';
-import * as nodejs from '../../library/nodejs';
-import { concatArrays, filterNonNull } from '../../library/tsUtils';
-import { mapAsync } from './async';
-import { Subprocess } from './subprocess';
-import { offsetPosition } from './textUtils';
+import type { TextDocument, WorkspaceFolder } from "vscode";
+import { Location, Position, Range, Uri, workspace } from "vscode";
+import * as nodejs from "../../library/nodejs";
+import { concatArrays, filterNonNull } from "../../library/tsUtils";
+import { mapAsync } from "./async";
+import { Subprocess } from "./subprocess";
+import { offsetPosition } from "./textUtils";
 
 const VIMGREP_PARSE_REGEX =
   /^(?<file>.+?):(?<line>\d+)(:(?<column>\d+))?(: (?<text>.*))?$/;
@@ -46,11 +46,11 @@ export function parseLocation(
   const match = regex.exec(line);
   if (!match) return;
   const groups = match.groups!;
-  if (!groups['file']) return;
-  const column = !groups['column'] ? 1 : Number(groups['column']);
+  if (!groups["file"]) return;
+  const column = !groups["column"] ? 1 : Number(groups["column"]);
   return new Location(
-    Uri.file(nodejs.path.resolve(base, groups['file'])),
-    new Position(Number(groups['line']) - 1, column - 1),
+    Uri.file(nodejs.path.resolve(base, groups["file"])),
+    new Position(Number(groups["line"]) - 1, column - 1),
   );
 }
 
@@ -74,8 +74,8 @@ export function findInRange(
 }
 
 /**
- * If parsed location is only a position, try to expand it to non-empty
- * range by searching the tag inside
+ * If parsed location is only a position, try to expand it to non-empty range by
+ * searching the tag inside
  */
 export function adjustRangeInParsedPosition(
   document: TextDocument,

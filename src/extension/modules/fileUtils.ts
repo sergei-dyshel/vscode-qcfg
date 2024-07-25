@@ -1,31 +1,45 @@
-import * as tempy from 'tempy';
-import type { Location, Uri, ViewColumn, WorkspaceFolder } from 'vscode';
+import * as tempy from "tempy";
+import type { Location, Uri, ViewColumn, WorkspaceFolder } from "vscode";
 import {
-  commands,
   Position,
   Range,
   Selection,
+  commands,
   window,
   workspace,
-} from 'vscode';
-import type { DisposableLike } from '../../library/disposable';
-import { assertNotNull, assertNull } from '../../library/exception';
-import { log } from '../../library/logging';
-import * as nodejs from '../../library/nodejs';
-import { documentRangePreview } from '../utils/document';
-import { QuickPickLocations } from '../utils/quickPick';
-import { getActiveTextEditor } from './utils';
-import type Watcher from 'watcher';
-import type { WatcherOptions } from 'watcher/dist/types';
-import { fileExists } from '../../library/fileUtils';
+} from "vscode";
+import type { default as Watcher } from "watcher" with { "resolution-mode": "require" };
+import type { DisposableLike } from "../../library/disposable";
+import { assertNotNull, assertNull } from "../../library/exception";
+import { fileExists } from "../../library/fileUtils";
+import { log } from "../../library/logging";
+import * as nodejs from "../../library/nodejs";
+import { documentRangePreview } from "../utils/document";
+import { QuickPickLocations } from "../utils/quickPick";
+import { getActiveTextEditor } from "./utils";
+
+// exported from watcher/dist/types
+type WatcherOptions = {
+  debounce?: number;
+  depth?: number;
+  limit?: number;
+  ignoreInitial?: boolean;
+  native?: boolean;
+  persistent?: boolean;
+  pollingInterval?: number;
+  pollingTimeout?: number;
+  recursive?: boolean;
+  renameDetection?: boolean;
+  renameTimeout?: number;
+};
 
 export function getTempFile() {
   return tempy.file();
 }
 
 export function expandHome(path: string): string {
-  if (path.startsWith('~/')) {
-    return nodejs.path.join(process.env['HOME']!, path.slice(2));
+  if (path.startsWith("~/")) {
+    return nodejs.path.join(process.env["HOME"]!, path.slice(2));
   }
   return path;
 }
@@ -33,7 +47,7 @@ export function expandHome(path: string): string {
 export function getWorkspaceFolderByName(
   name: string,
 ): WorkspaceFolder | undefined {
-  assertNotNull(workspace.workspaceFolders, 'No workspace folders');
+  assertNotNull(workspace.workspaceFolders, "No workspace folders");
   for (const folder of workspace.workspaceFolders) {
     if (folder.name === name) return folder;
   }
@@ -52,8 +66,8 @@ export async function existsInRoot(
 }
 
 /**
- * Show peek dialog in case of multiple location or jump to the only
- * location (optionally search for tag in the line)
+ * Show peek dialog in case of multiple location or jump to the only location
+ * (optionally search for tag in the line)
  */
 export async function peekLocations(locations: Location[]) {
   if (locations.length === 1) {
@@ -65,7 +79,7 @@ export async function peekLocations(locations: Location[]) {
   }
   const editor = getActiveTextEditor();
   await commands.executeCommand(
-    'editor.action.showReferences',
+    "editor.action.showReferences",
     editor.document.uri,
     editor.selection.active,
     locations,
@@ -107,7 +121,7 @@ export async function openTagLocation(
     : editor.document;
 
   if (options.tag) {
-    assertNull(options.column, 'Can not specify tag and column together');
+    assertNull(options.column, "Can not specify tag and column together");
     assertNotNull(options.line, 'Can not specify "tag" without "line"');
     const lineText = document.lineAt(line0);
     col0 = lineText.text.indexOf(options.tag);
@@ -146,7 +160,7 @@ export class FileWatcher implements DisposableLike {
     private readonly path: string,
     private readonly callback: (event: FileWatcherEvent) => unknown,
   ) {
-    this.watcher.on('all', this.onEvent.bind(this));
+    this.watcher.on("all", this.onEvent.bind(this));
   }
 
   static async create(
@@ -154,7 +168,7 @@ export class FileWatcher implements DisposableLike {
     callback: (event: FileWatcherEvent) => unknown,
     options?: WatcherOptions,
   ) {
-    const module = await import('watcher');
+    const module = await import("watcher");
     const watcher = new module.default(path, {
       persistent: true,
       ignoreInitial: true,
@@ -165,13 +179,13 @@ export class FileWatcher implements DisposableLike {
 
   private onEvent(eventName: string) {
     switch (eventName) {
-      case 'change':
+      case "change":
         this.callback(FileWatcherEvent.CHANGED);
         return;
-      case 'add':
+      case "add":
         this.callback(FileWatcherEvent.CREATED);
         return;
-      case 'unlink':
+      case "unlink":
         this.callback(FileWatcherEvent.DELETED);
         return;
       default:

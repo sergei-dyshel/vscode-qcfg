@@ -1,22 +1,22 @@
-import type { ExtensionContext, Task, WorkspaceFolder } from 'vscode';
-import { commands, TaskGroup, tasks as vstasks, workspace } from 'vscode';
-import { Config } from '../../library/config';
-import { globAsync } from '../../library/fileUtils';
-import { fileMatch } from '../../library/glob';
-import { log } from '../../library/logging';
-import { concatArrays, mapObjectToArray } from '../../library/tsUtils';
-import { UserCommands } from '../../library/userCommands';
-import { getConfiguration } from '../utils/configuration';
-import { PersistentGenericQuickPick } from '../utils/quickPickPersistent';
-import { getValidWorkspaceFolders } from '../utils/workspace';
-import { filterAsync, mapSomeAsync, MAP_UNDEFINED } from './async';
-import { Modules } from './module';
+import type { ExtensionContext, Task, WorkspaceFolder } from "vscode";
+import { commands, TaskGroup, tasks as vstasks, workspace } from "vscode";
+import { Config } from "../../library/config";
+import { globAsync } from "../../library/fileUtils";
+import { fileMatch } from "../../library/glob";
+import { log } from "../../library/logging";
+import { concatArrays, mapObjectToArray } from "../../library/tsUtils";
+import { UserCommands } from "../../library/userCommands";
+import { getConfiguration } from "../utils/configuration";
+import { PersistentGenericQuickPick } from "../utils/quickPickPersistent";
+import { getValidWorkspaceFolders } from "../utils/workspace";
+import { filterAsync, MAP_UNDEFINED, mapSomeAsync } from "./async";
+import { Modules } from "./module";
 import type {
   BaseQcfgTask,
   BaseTask,
   FetchInfo,
   ParamsSource,
-} from './taskTypes';
+} from "./taskTypes";
 import {
   ConditionError,
   isFolderTask,
@@ -30,8 +30,8 @@ import {
   TerminalTask,
   ValidationError,
   VscodeTask,
-} from './taskTypes';
-import { currentWorkspaceFolder } from './utils';
+} from "./taskTypes";
+import { currentWorkspaceFolder } from "./utils";
 
 import Cfg = Config.Tasks;
 
@@ -60,11 +60,11 @@ export async function runTaskAndGetLocations(
   const task = await createTask(fetchedParams, options);
   if (task instanceof ProcessTask) return task.getLocations();
   if (task instanceof ProcessMultiTask) return task.getLocations();
-  throw new Error('Expected to create a process task');
+  throw new Error("Expected to create a process task");
 }
 
 interface TaskRunOptions {
-  folder?: 'all' | WorkspaceFolder;
+  folder?: "all" | WorkspaceFolder;
 }
 
 //
@@ -114,9 +114,9 @@ function handleValidationError(
   // eslint-disable-next-line no-nested-ternary
   const contextStr = context
     ? context.workspaceFolder
-      ? 'folder ' + context.workspaceFolder.name
-      : 'current context'
-    : 'multiple folders';
+      ? "folder " + context.workspaceFolder.name
+      : "current context"
+    : "multiple folders";
   if (err instanceof ValidationError)
     log.debug(
       `Error validating task "${label}" for ${contextStr}: ${err.message}`,
@@ -291,12 +291,12 @@ let lastBuildTask: BaseTask | undefined;
 
 async function runDefaultBuildTask() {
   const qcfgTasks = await fetchQcfgTasks();
-  for (const task of qcfgTasks) if (task.label === 'build') return task.run();
+  for (const task of qcfgTasks) if (task.label === "build") return task.run();
   const allTasks = await vstasks.fetchTasks();
   for (const task of allTasks)
     if (task.group === TaskGroup.Build)
       return commands
-        .executeCommand('workbench.action.tasks.build')
+        .executeCommand("workbench.action.tasks.build")
         .ignoreResult();
 }
 
@@ -309,7 +309,7 @@ async function runLastBuildTask() {
 }
 
 function expandParamsOrCmd(paramsOrCmd: Cfg.Params | string): Cfg.Params {
-  return typeof paramsOrCmd === 'string'
+  return typeof paramsOrCmd === "string"
     ? { command: paramsOrCmd, type: Cfg.TaskType.TERMINAL }
     : paramsOrCmd;
 }
@@ -318,7 +318,7 @@ async function fetchVscodeTasksChecked(): Promise<Task[]> {
   try {
     return await vstasks.fetchTasks();
   } catch (err: unknown) {
-    log.error('Error fetching vscode tasks: ', err);
+    log.error("Error fetching vscode tasks: ", err);
     return [];
   }
 }
@@ -333,7 +333,7 @@ async function showTasks() {
   const qp = new PersistentGenericQuickPick(
     (item) => item.toQuickPickItem(),
     (item) => item.toPersistentLabel(),
-    'tasks',
+    "tasks",
     allTasks,
   );
   const anyTask = await qp.select();
@@ -350,7 +350,7 @@ async function createTask(
   const { fetchInfo, params } = fetchedParams;
   const { label } = fetchInfo;
   if (options?.folder) {
-    if (options.folder === 'all') {
+    if (options.folder === "all") {
       if (isFolderTask(params)) {
         const folders = (await getValidWorkspaceFolders()) ?? [];
         if (folders.isEmpty)
@@ -401,7 +401,7 @@ function combineParamsWithSource(
 }
 
 function fetchAllParams() {
-  const inspect = getConfiguration().inspect('qcfg.tasks');
+  const inspect = getConfiguration().inspect("qcfg.tasks");
   // when just folder is opened `inspect` will return its config value
   // as `workspaceValue` so we throw it away as we populate tasks from folders
   // separately
@@ -410,7 +410,7 @@ function fetchAllParams() {
     : {};
   const allTasks: FetchedParams[] = [];
   for (const folder of workspace.workspaceFolders ?? []) {
-    const inspectFolder = getConfiguration(folder).inspect('qcfg.tasks');
+    const inspectFolder = getConfiguration(folder).inspect("qcfg.tasks");
     allTasks.push(
       ...combineParamsWithSource(inspectFolder?.workspaceFolderValue, {
         folder,
@@ -426,7 +426,7 @@ function fetchAllParams() {
 
 function registerTaskCommand(
   ...cmds: Array<
-    Omit<UserCommands.Command, 'callback'> & {
+    Omit<UserCommands.Command, "callback"> & {
       task: {
         name: string;
         options?: TaskRunOptions;
@@ -446,26 +446,26 @@ function registerTaskCommand(
 
 UserCommands.register(
   {
-    command: 'qcfg.tasks.build.last',
-    title: 'Run last build task',
+    command: "qcfg.tasks.build.last",
+    title: "Run last build task",
     keybinding: {
-      key: 'cmd+k cmd+b',
+      key: "cmd+k cmd+b",
     },
     callback: runLastBuildTask,
   },
   {
-    command: 'qcfg.tasks.show',
-    title: 'Show list of tasks',
+    command: "qcfg.tasks.show",
+    title: "Show list of tasks",
     keybinding: {
-      key: 'alt+t',
+      key: "alt+t",
     },
     callback: showTasks,
   },
   {
-    command: 'qcfg.tasks.build.default',
-    title: 'Run default build task',
+    command: "qcfg.tasks.build.default",
+    title: "Run default build task",
     keybinding: {
-      key: 'cmd+k cmd+shift+b',
+      key: "cmd+k cmd+shift+b",
     },
     callback: runDefaultBuildTask,
   },
@@ -473,24 +473,24 @@ UserCommands.register(
 
 registerTaskCommand(
   {
-    command: 'qcfg.jump2line',
-    title: 'Jump to line',
-    keybinding: 'cmd+k cmd+l',
+    command: "qcfg.jump2line",
+    title: "Jump to line",
+    keybinding: "cmd+k cmd+l",
     task: {
-      name: 'jump2line',
+      name: "jump2line",
       options: {
-        folder: 'all',
+        folder: "all",
       },
     },
   },
   {
-    command: 'qcfg.syg',
-    title: 'Syg',
-    keybinding: 'alt+s',
+    command: "qcfg.syg",
+    title: "Syg",
+    keybinding: "alt+s",
     task: {
-      name: 'syg',
+      name: "syg",
       options: {
-        folder: 'all',
+        folder: "all",
       },
     },
   },

@@ -1,21 +1,21 @@
-import type { Range, SymbolInformation, Uri } from 'vscode';
+import { enumUtil } from "@sergei-dyshel/typescript/enum";
+import type { StringKeyOf } from "@sergei-dyshel/typescript/types";
+import type { Range, SymbolInformation, Uri } from "vscode";
 import {
-  commands,
   DocumentSymbol,
   SymbolKind,
   ThemeColor,
   ThemeIcon,
-} from 'vscode';
-import type { StringKeyOf } from '../../library/enum';
-import { enumUtil } from '../../library/enum';
-import { assert } from '../../library/exception';
-import { convCamelCase, convKebabCase } from '../../library/stringUtils';
+  commands,
+} from "vscode";
+import { assert } from "../../library/exception";
+import { convCamelCase, convKebabCase } from "../../library/stringUtils";
 
 const symbolKindUtil = enumUtil(
   SymbolKind as unknown as Record<StringKeyOf<SymbolKind>, number>,
 );
 
-declare module 'vscode' {
+declare module "vscode" {
   // eslint-disable-next-line @typescript-eslint/no-shadow
   export namespace SymbolKind {
     function stringKey(kind: SymbolKind): string;
@@ -51,12 +51,12 @@ export async function executeDocumentSymbolProvider(
   // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
   return commands.executeCommand<
     DocumentSymbol[] | SymbolInformation[] | undefined
-  >('vscode.executeDocumentSymbolProvider', uri);
+  >("vscode.executeDocumentSymbolProvider", uri);
 }
 
 /**
- * Same as {@link executeDocumentSymbolProvider} but assert
- * that specifically array {@link DocumentSymbol} and not {@link SymbolInformation} was returned;
+ * Same as {@link executeDocumentSymbolProvider} but assert that specifically
+ * array {@link DocumentSymbol} and not {@link SymbolInformation} was returned;
  */
 export async function retrieveDocumentSymbols(
   uri: Uri,
@@ -66,7 +66,7 @@ export async function retrieveDocumentSymbols(
     return results as DocumentSymbol[] | undefined;
   assert(
     isDocumentSymbol(results[0]),
-    'Unsupported: Document symbol provider returned SymbolInformation',
+    "Unsupported: Document symbol provider returned SymbolInformation",
   );
   return results as DocumentSymbol[];
 }
@@ -98,7 +98,7 @@ export function convSymInfoToDocSymbol(
  *
  * Symbol will have filled chain of {@link DocumentSymbol.parent}.
  *
- * @param parent used internally in nested recursive call
+ * @param parent Used internally in nested recursive call
  */
 export function getContainingSymbol(
   range: Range,
@@ -116,7 +116,7 @@ export function getContainingSymbol(
   return undefined;
 }
 
-declare module 'vscode' {
+declare module "vscode" {
   // eslint-disable-next-line @typescript-eslint/no-shadow
   export interface DocumentSymbol {
     /**
@@ -145,7 +145,7 @@ export function qualifiedName(
     includeNamespace?: boolean;
   },
 ): string {
-  const sep = ['c', 'cpp'].includes(languageId) ? '::' : '.';
+  const sep = ["c", "cpp"].includes(languageId) ? "::" : ".";
   return !sym.parent ||
     (sym.parent.kind === SymbolKind.Namespace && !options?.includeNamespace)
     ? sym.name

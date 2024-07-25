@@ -1,5 +1,5 @@
-import * as readline from 'node:readline';
-import * as shellQuote from 'shell-quote';
+import * as readline from "node:readline";
+import * as shellQuote from "shell-quote";
 import type {
   CancellationToken,
   ExtensionContext,
@@ -8,7 +8,7 @@ import type {
   QuickPickItem,
   TextDocument,
   WorkspaceSymbolProvider,
-} from 'vscode';
+} from "vscode";
 import {
   commands,
   Hover,
@@ -20,43 +20,43 @@ import {
   Uri,
   window,
   workspace,
-} from 'vscode';
-import { Config } from '../../library/config';
-import { assert, assertNotNull } from '../../library/exception';
-import { log, Logger } from '../../library/logging';
-import * as nodejs from '../../library/nodejs';
+} from "vscode";
+import { Config } from "../../library/config";
+import { assert, assertNotNull } from "../../library/exception";
+import { fileExists } from "../../library/fileUtils";
+import { log, Logger } from "../../library/logging";
+import * as nodejs from "../../library/nodejs";
 import {
   buildAbbrevPattern,
   buildFuzzyPattern,
   parseNumber,
   splitWithRemainder,
-} from '../../library/stringUtils';
-import { getConfiguration } from '../utils/configuration';
-import { PromiseQueue } from './async';
-import { ConfigSectionWatcher } from './configWatcher';
+} from "../../library/stringUtils";
+import { getConfiguration } from "../utils/configuration";
+import { PromiseQueue } from "./async";
+import { ConfigSectionWatcher } from "./configWatcher";
 import {
   handleAsyncStd,
   handleErrors,
   registerAsyncCommandWrapped,
-} from './exception';
-import { wrapWithHistoryUpdate } from './history';
-import { isAnyLangClientRunning } from './langClient';
-import { Modules } from './module';
-import * as saveAll from './saveAll';
-import * as subprocess from './subprocess';
-import { runTaskAndGetLocations } from './tasks';
-import { getActiveTextEditor } from './utils';
-import { fileExists } from '../../library/fileUtils';
-import { openTagLocation } from './fileUtils';
+} from "./exception";
+import { openTagLocation } from "./fileUtils";
+import { wrapWithHistoryUpdate } from "./history";
+import { isAnyLangClientRunning } from "./langClient";
+import { Modules } from "./module";
+import * as saveAll from "./saveAll";
+import * as subprocess from "./subprocess";
+import { runTaskAndGetLocations } from "./tasks";
+import { getActiveTextEditor } from "./utils";
 
-const GTAGS_CHECK = 'gtags check';
+const GTAGS_CHECK = "gtags check";
 
 async function findGtagsDir(dir: string) {
   for (;;) {
-    if (await fileExists(nodejs.path.join(dir, 'GTAGS'))) {
+    if (await fileExists(nodejs.path.join(dir, "GTAGS"))) {
       return dir;
     }
-    if (dir === '/') {
+    if (dir === "/") {
       return undefined;
     }
     dir = nodejs.path.dirname(dir);
@@ -77,7 +77,7 @@ async function onSaveAll(docs: saveAll.DocumentsInFolder) {
   const docPathsStr = shellQuote.quote(docPaths);
 
   log.debug(`Gtags on ${docPathsStr} in "${docs.folder.name}"`);
-  const cmd = 'gtags-update.sh ' + docPathsStr;
+  const cmd = "gtags-update.sh " + docPathsStr;
   try {
     await subprocess.executeSubprocess(cmd, { cwd: gtagsDir });
   } catch (err: unknown) {
@@ -92,13 +92,13 @@ async function updateDB() {
 
     if (!gtagsDir) continue;
     try {
-      const res = await subprocess.executeSubprocess('q-gtags -c', {
+      const res = await subprocess.executeSubprocess("q-gtags -c", {
         cwd: gtagsDir,
         allowedCodes: [0, 2],
         statusBarMessage: GTAGS_CHECK,
       });
       if (res.code === 2)
-        await window.showInformationMessage('gtags db regenerated');
+        await window.showInformationMessage("gtags db regenerated");
     } catch (err: unknown) {
       await window.showErrorMessage(
         `gtags db check failed: ${(err as Error).message}`,
@@ -120,7 +120,7 @@ namespace WorkspaceGtags {
   let currentQeury: string;
   let currentItems: Item[];
   let limitReached = false;
-  const logger = new Logger({ name: 'workspaceGtags', parent: rootLogger });
+  const logger = new Logger({ name: "workspaceGtags", parent: rootLogger });
   let regexp: RegExp;
 
   export async function run() {
@@ -134,7 +134,7 @@ namespace WorkspaceGtags {
     quickPick.onDidChangeValue(handleErrors(onNewQuery));
     quickPick.onDidAccept(handleErrors(onDidAccept));
     quickPick.show();
-    onNewQuery('');
+    onNewQuery("");
   }
 
   function onHide() {
@@ -164,7 +164,7 @@ namespace WorkspaceGtags {
   function onNewQuery(query: string) {
     logger.debug(`New query: "${query}"`);
     currentQeury = query;
-    regexp = new RegExp(buildFuzzyPattern(query), 'i');
+    regexp = new RegExp(buildFuzzyPattern(query), "i");
     if (query.startsWith(searchedQuery) && !limitReached) {
       currentItems = searchResults.filter((item) => regexp.test(item.label));
       logger.debug(
@@ -179,7 +179,7 @@ namespace WorkspaceGtags {
 
   function abortSearch() {
     if (searchProcess) {
-      logger.debug('Aborting search');
+      logger.debug("Aborting search");
       reader.close();
       searchProcess.stdout!.destroy();
       searchProcess.kill();
@@ -199,21 +199,21 @@ namespace WorkspaceGtags {
     const pattern = buildFuzzyPattern(query);
     logger.debug(`Searching pattern "${pattern}"`);
     searchProcess = nodejs.child_process.spawn(
-      'global',
-      ['-i', '-n', '-x', '-d', pattern + '.*'],
+      "global",
+      ["-i", "-n", "-x", "-d", pattern + ".*"],
       spawnOptions,
     );
     reader = readline.createInterface(searchProcess.stdout!);
-    reader.on('line', onLine);
-    reader.on('close', () => {
+    reader.on("line", onLine);
+    reader.on("close", () => {
       logger.debug(
         `Search yielded ${searchResults.length} results, ${currentItems.length} results are filtered`,
       );
       if (searchResults.isEmpty) updateItems();
     });
-    searchProcess.on('exit', (code, signal) => {
+    searchProcess.on("exit", (code, signal) => {
       logger.debug(`Search process exited with code ${code} signal ${signal}`);
-      if (code || (signal && signal !== 'SIGTERM' && signal !== 'SIGPIPE')) {
+      if (code || (signal && signal !== "SIGTERM" && signal !== "SIGPIPE")) {
         handleAsyncStd(
           window.showErrorMessage(
             `gtags (pattern: ${pattern} exited with code ${code} signal ${signal}`,
@@ -286,7 +286,7 @@ function tag2Symbol(tag: TagInfo, gtagsDir: string): SymbolInformation {
   return new SymbolInformation(
     tag.name,
     SymbolKind.Variable,
-    '',
+    "",
     new Location(fullpath, location),
   );
 }
@@ -294,14 +294,14 @@ function tag2Symbol(tag: TagInfo, gtagsDir: string): SymbolInformation {
 const gtagsGlobalSymbolsProvider: WorkspaceSymbolProvider = {
   async provideWorkspaceSymbols(query: string, token: CancellationToken) {
     const editor = getActiveTextEditor();
-    if (!getConfiguration().get('qcfg.gtags.workspaceSymbols')) {
+    if (!getConfiguration().get("qcfg.gtags.workspaceSymbols")) {
       return;
     }
 
     const gtagsDir = await findGtagsDir(editor.document.fileName);
     assertNotNull(gtagsDir);
     const tags = await searchGtags(
-      'globalSymbols',
+      "globalSymbols",
       query,
       buildAbbrevPattern(query),
       gtagsDir,
@@ -327,15 +327,15 @@ async function searchGtags(
     parent: rootLogger,
     instance: query,
   });
-  logger.debug('Started');
+  logger.debug("Started");
   token.onCancellationRequested(() => {
-    logger.debug('Cancelled');
+    logger.debug("Cancelled");
     proc.kill();
   });
   const result = await proc.wait();
   if (token.isCancellationRequested) return [];
-  const lines = result.stdout.split('\n');
-  const tags = lines.filter((line) => line !== '').map(parseLine);
+  const lines = result.stdout.split("\n");
+  const tags = lines.filter((line) => line !== "").map(parseLine);
   logger.debug(`Returned ${lines.length} results`);
   return tags;
 }
@@ -345,23 +345,23 @@ async function searchDefinition(
   gtagsDir: string,
 ): Promise<TagInfo[]> {
   const result = await subprocess.executeSubprocess(
-    ['global', '-d', '-x', '-n', query],
+    ["global", "-d", "-x", "-n", query],
     { cwd: gtagsDir },
   );
-  const lines = result.stdout.split('\n');
-  return lines.filter((line) => line !== '').map(parseLine);
+  const lines = result.stdout.split("\n");
+  return lines.filter((line) => line !== "").map(parseLine);
 }
 
 async function openDefinition() {
   const editor = getActiveTextEditor();
   const gtagsDir = await findGtagsDir(editor.document.fileName);
-  assertNotNull(gtagsDir, 'GTAGS not found');
-  assert(editor.selection.isEmpty, 'Selection is not empty');
+  assertNotNull(gtagsDir, "GTAGS not found");
+  assert(editor.selection.isEmpty, "Selection is not empty");
   const wordRange = editor.document.getWordRangeAtPosition(
     editor.selection.active,
   );
   const range = wordRange;
-  assertNotNull(range, 'Not on word');
+  assertNotNull(range, "Not on word");
   const word = editor.document.getText(range);
   const tags = await searchDefinition(word, gtagsDir);
   assert(tags.length > 0, `No definitions found for ${word}`);
@@ -375,7 +375,7 @@ async function openDefinition() {
   }
   const locations = tags.map((tag) => tagToLocation(tag, gtagsDir));
   await commands.executeCommand(
-    'editor.action.showReferences',
+    "editor.action.showReferences",
     editor.document.uri,
     editor.selection.active,
     locations,
@@ -385,21 +385,21 @@ async function openDefinition() {
 export async function getGtagsDefinitionsInWorkspace() {
   const params: Config.Tasks.Params = {
     // eslint-disable-next-line no-template-curly-in-string
-    command: 'global -d -x -n ${cursorWord}',
+    command: "global -d -x -n ${cursorWord}",
     type: Config.Tasks.TaskType.PROCESS,
     // eslint-disable-next-line no-template-curly-in-string
     parseOutput: {
       format: Config.Tasks.LocationFormat.GTAGS,
       // eslint-disable-next-line no-template-curly-in-string
-      tag: '\\b${cursorWord}\\b',
+      tag: "\\b${cursorWord}\\b",
     },
     flags: [Config.Tasks.Flag.FOLDER],
-    when: { fileExists: 'GTAGS' },
+    when: { fileExists: "GTAGS" },
   };
-  return runTaskAndGetLocations('gtags_def', params, { folder: 'all' });
+  return runTaskAndGetLocations("gtags_def", params, { folder: "all" });
 }
 
-const gtagsHoverEnabled = new ConfigSectionWatcher('qcfg.gtags.hover');
+const gtagsHoverEnabled = new ConfigSectionWatcher("qcfg.gtags.hover");
 
 class GtagsHoverProvider implements HoverProvider {
   provideHover = handleErrors(this.provideHoverImpl.bind(this));
@@ -413,21 +413,21 @@ class GtagsHoverProvider implements HoverProvider {
     if (!gtagsHoverEnabled.value) return;
 
     switch (document.languageId) {
-      case 'cpp':
-      case 'c':
+      case "cpp":
+      case "c":
         if (isAnyLangClientRunning()) return;
         break;
-      case 'typescript':
-      case 'lua':
+      case "typescript":
+      case "lua":
         return;
     }
-    if (document.fileName.startsWith('extension-output')) return;
+    if (document.fileName.startsWith("extension-output")) return;
     const gtagsDir = await findGtagsDir(document.fileName);
     if (!gtagsDir) return;
     const range = document.getWordRangeAtPosition(position);
     if (!range) return;
     const tag = document.getText(range);
-    const tags = await searchGtags('hover', tag, tag, gtagsDir, token);
+    const tags = await searchGtags("hover", tag, tag, gtagsDir, token);
     if (tags.length === 0 || tags.length > 1) return;
     return new Hover({
       language: document.languageId,
@@ -437,19 +437,19 @@ class GtagsHoverProvider implements HoverProvider {
 }
 
 function activate(context: ExtensionContext) {
-  const queue = new PromiseQueue('gtags');
+  const queue = new PromiseQueue("gtags");
   handleAsyncStd(queue.add(updateDB, GTAGS_CHECK));
   setInterval(() => {
     handleAsyncStd(queue.add(updateDB, GTAGS_CHECK));
   }, 30_000);
   context.subscriptions.push(
-    saveAll.onEvent(queue.queued(onSaveAll, 'save all')),
+    saveAll.onEvent(queue.queued(onSaveAll, "save all")),
     languages.registerWorkspaceSymbolProvider(gtagsGlobalSymbolsProvider),
-    registerAsyncCommandWrapped('qcfg.gtags.definition', openDefinition),
+    registerAsyncCommandWrapped("qcfg.gtags.definition", openDefinition),
     gtagsHoverEnabled.register(),
-    languages.registerHoverProvider('*', new GtagsHoverProvider()),
+    languages.registerHoverProvider("*", new GtagsHoverProvider()),
     registerAsyncCommandWrapped(
-      'qcfg.gtags.workspace',
+      "qcfg.gtags.workspace",
       wrapWithHistoryUpdate(WorkspaceGtags.run),
     ),
   );

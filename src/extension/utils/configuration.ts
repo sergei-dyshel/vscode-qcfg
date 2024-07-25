@@ -1,7 +1,7 @@
-import type { ConfigurationScope, WorkspaceConfiguration } from 'vscode';
-import { workspace } from 'vscode';
-import type { Config } from '../../library/config';
-import { assertNotNull } from '../../library/exception';
+import type { ConfigurationScope, WorkspaceConfiguration } from "vscode";
+import { workspace } from "vscode";
+import type { Config } from "../../library/config";
+import { assertNotNull } from "../../library/exception";
 
 /**
  * Configuration section, predefined in {@link Config.All}
@@ -11,9 +11,9 @@ export type ConfigSection = keyof Config.All;
 export type ConfigValue<S extends ConfigSection> = Config.All[S];
 
 /**
- * Type-safe version of {@link `workspace.getConfiguration`}. The returned
- * object allow getting/setting only sections from `Config.All`
- * but automatically deduces value type from section.
+ * Type-safe version of {@link `workspace.getConfiguration`}. The returned object
+ * allow getting/setting only sections from `Config.All` but automatically
+ * deduces value type from section.
  */
 export function getConfiguration<S extends ConfigSection>(
   scope?: ConfigurationScope,

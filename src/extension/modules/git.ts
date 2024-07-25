@@ -1,20 +1,18 @@
-import type { ExtensionContext, TextEditor } from 'vscode';
-import { env, Uri, window } from 'vscode';
-import type { Config } from '../../library/config';
-import { assert, assertNotNull } from '../../library/exception';
-import { log } from '../../library/logging';
-import * as nodejs from '../../library/nodejs';
-import { isSubPath } from '../../library/pathUtils';
-import { expandTemplate } from '../../library/stringUtils';
-import { getConfiguration } from '../utils/configuration';
-import { PersistentGenericQuickPick } from '../utils/quickPickPersistent';
-import { registerAsyncCommandWrapped } from './exception';
-import { Modules } from './module';
-import { getActiveTextEditor } from './utils';
-import type { SimpleGit } from 'simple-git';
-import simpleGit from 'simple-git';
-import { dirName } from '../../library/pathUtils';
-import { splitWithRemainder } from '../../library/stringUtils';
+import type { SimpleGit } from "simple-git";
+import simpleGit from "simple-git";
+import type { ExtensionContext, TextEditor } from "vscode";
+import { env, Uri, window } from "vscode";
+import type { Config } from "../../library/config";
+import { assert, assertNotNull } from "../../library/exception";
+import { log } from "../../library/logging";
+import * as nodejs from "../../library/nodejs";
+import { dirName, isSubPath } from "../../library/pathUtils";
+import { expandTemplate, splitWithRemainder } from "../../library/stringUtils";
+import { getConfiguration } from "../utils/configuration";
+import { PersistentGenericQuickPick } from "../utils/quickPickPersistent";
+import { registerAsyncCommandWrapped } from "./exception";
+import { Modules } from "./module";
+import { getActiveTextEditor } from "./utils";
 
 const SHORT_SHA_LEN = 7;
 
@@ -53,9 +51,9 @@ async function getInfo(editor: TextEditor) {
   const line = editor.selection.active.line + 1;
   const fileDir = dirName(document.uri.fsPath);
   const git = simpleGit(fileDir);
-  const workdir = await git.revparse(['--show-toplevel']);
+  const workdir = await git.revparse(["--show-toplevel"]);
   await git.cwd(workdir);
-  const hash = await git.revparse('HEAD');
+  const hash = await git.revparse("HEAD");
 
   const file = nodejs.path.relative(workdir, document.fileName);
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -67,14 +65,14 @@ async function getInfo(editor: TextEditor) {
     shortHash: hash.slice(0, SHORT_SHA_LEN),
   };
   try {
-    const branch = await git.revparse(['--abbrev-ref', 'HEAD']);
-    if (branch !== 'HEAD') {
+    const branch = await git.revparse(["--abbrev-ref", "HEAD"]);
+    if (branch !== "HEAD") {
       info.branch = { name: branch };
       try {
         const upstream = await git.revparse([
-          '--abbrev-ref',
-          '--symbolic-full-name',
-          '@{u}',
+          "--abbrev-ref",
+          "--symbolic-full-name",
+          "@{u}",
         ]);
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
         const [remoteName, remoteBranch] = splitWithRemainder(
@@ -92,7 +90,7 @@ async function getInfo(editor: TextEditor) {
     // eslint-disable-next-line no-empty
   } catch {}
   try {
-    info.origin = await getRemoteInfo(git, 'origin');
+    info.origin = await getRemoteInfo(git, "origin");
     // eslint-disable-next-line no-empty
   } catch {}
   return info;
@@ -107,8 +105,8 @@ async function dump() {
 }
 
 async function showWebLinks() {
-  const config = getConfiguration().getNotNull('qcfg.git.web');
-  assert(config.length > 0, 'Git web links not configured');
+  const config = getConfiguration().getNotNull("qcfg.git.web");
+  assert(config.length > 0, "Git web links not configured");
 
   const editor = getActiveTextEditor();
   const document = editor.document;
@@ -171,7 +169,7 @@ async function showWebLinks() {
       label: link.title,
     }),
     (link) => link.tag,
-    'web_links',
+    "web_links",
     uniqLinks,
   );
   const selectedLink = await qp.select();
@@ -183,8 +181,8 @@ async function showWebLinks() {
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
-    registerAsyncCommandWrapped('qcfg.git.dump', dump),
-    registerAsyncCommandWrapped('qcfg.git.weblinks', showWebLinks),
+    registerAsyncCommandWrapped("qcfg.git.dump", dump),
+    registerAsyncCommandWrapped("qcfg.git.weblinks", showWebLinks),
   );
 }
 

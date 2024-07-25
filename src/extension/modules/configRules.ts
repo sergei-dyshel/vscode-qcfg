@@ -1,8 +1,8 @@
-import type { TextDocument } from 'vscode';
-import { Uri, workspace } from 'vscode';
-import { Config } from '../../library/config';
-import { fileMatch } from '../../library/glob';
-import { mapNonNull } from '../../library/tsUtils';
+import type { TextDocument } from "vscode";
+import { Uri, workspace } from "vscode";
+import { Config } from "../../library/config";
+import { fileMatch } from "../../library/glob";
+import { mapNonNull } from "../../library/tsUtils";
 
 import Cfg = Config.ConfigRules;
 
@@ -41,7 +41,7 @@ function gatherRules(documentOrUri: TextDocument | Uri) {
   const uri = documentOrUri instanceof Uri ? documentOrUri : documentOrUri.uri;
   const folder = workspace.getWorkspaceFolder(uri);
   const config = workspace.getConfiguration(undefined, folder);
-  const allConfigs = config.inspect('qcfg.configRules');
+  const allConfigs = config.inspect("qcfg.configRules");
   const rules: Cfg.Rule[] = [];
 
   for (const scope of [
