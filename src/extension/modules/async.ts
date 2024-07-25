@@ -128,24 +128,15 @@ export async function mapAsyncSequential<V, R>(
   return result;
 }
 
-declare global {
-  /**
-   * Map set keys to values asyncronously and return key -> value map
-   */
-  interface Set<T> {
-    mapAsync: <V>(func: (k: T) => Thenable<V>) => Promise<Map<T, V>>;
-  }
-}
-
 // eslint-disable-next-line @typescript-eslint/unbound-method
-Set.prototype.mapAsync = async function <K, V>(
-  this: Set<K>,
+export async function setMapAsync<K, V>(
+  set: Set<K>,
   func: (k: K) => Thenable<V>,
 ): Promise<Map<K, V>> {
-  const keys = [...this.values()];
+  const keys = [...set.values()];
   const values = await mapAsync(keys, func);
   return new Map<K, V>(izip(keys, values));
-};
+}
 
 export class MapUndefined {}
 

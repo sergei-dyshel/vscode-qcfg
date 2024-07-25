@@ -13,7 +13,7 @@ import {
   StatusBarAlignment,
   window,
 } from "vscode";
-import { DefaultMap, isEmptyRegExp } from "../../library/tsUtils";
+import { DefaultMap, isEmptyRegExp, mapModify } from "../../library/tsUtils";
 import { setStatusBarBackground } from "../utils/statusBar";
 import { ConfigurationWatcher } from "./configWatcher";
 import { registerDocumentUriDict } from "./documentCache";
@@ -83,7 +83,7 @@ function countDiags(document: TextDocument) {
           : diag.code.value;
       if (excludeCodes.includes(code)) continue;
     }
-    diagsBySev.modify(diag.severity, (n) => n + 1);
+    mapModify(diagsBySev, diag.severity, (n) => n + 1);
   }
 
   return {

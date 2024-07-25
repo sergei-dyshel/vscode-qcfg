@@ -16,6 +16,7 @@ import { log } from "../../library/logging";
 import * as nodejs from "../../library/nodejs";
 import { documentRangePreview } from "../utils/document";
 import { QuickPickLocations } from "../utils/quickPick";
+import { setMapAsync } from "./async";
 import { getActiveTextEditor } from "./utils";
 
 // exported from watcher/dist/types
@@ -87,9 +88,10 @@ export async function peekLocations(locations: Location[]) {
 }
 
 export async function quickPickLocations(locations: readonly Location[]) {
-  const documents = await new Set<Uri>(
-    locations.map((loc) => loc.uri),
-  ).mapAsync((uri) => workspace.openTextDocument(uri));
+  const documents = await setMapAsync(
+    new Set<Uri>(locations.map((loc) => loc.uri)),
+    (uri) => workspace.openTextDocument(uri),
+  );
 
   const qp = new QuickPickLocations<Location>(
     (loc) => ({

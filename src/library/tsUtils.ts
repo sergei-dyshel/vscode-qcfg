@@ -392,11 +392,6 @@ declare global {
     ) => number;
   }
 
-  interface Map<K, V> {
-    keySet: () => Set<K>;
-    modify: (key: K, fn: (value: V | undefined) => V) => void;
-  }
-
   interface Promise<T> {
     ignoreResult: () => Promise<void>;
   }
@@ -618,12 +613,6 @@ export class DefaultMap<K, V> extends Map<K, V> {
     this.set(key, val);
     return val;
   }
-
-  override modify: (
-    this: DefaultMap<K, V>,
-    key: K,
-    fn: (value: V) => V,
-  ) => void = Map.prototype.modify;
 }
 
 export function zipArrays<T1, T2>(
@@ -633,19 +622,23 @@ export function zipArrays<T1, T2>(
   return a.map((k, i) => [k, b[i]]);
 }
 
-Map.prototype.keySet = function <K, V>(this: Map<K, V>): Set<K> {
-  const keys = new Set<K>();
-  for (const key of this.keys()) keys.add(key);
-  return keys;
-};
-
-Map.prototype.modify = function <K, V>(
-  this: Map<K, V>,
+export function mapModify<K, V>(
+  map: DefaultMap<K, V>,
+  key: K,
+  fn: (value: V) => V,
+): void;
+export function mapModify<K, V>(
+  map: Map<K, V>,
+  key: K,
+  fn: (value: V | undefined) => V,
+): void;
+export function mapModify<K, V>(
+  map: Map<K, V>,
   key: K,
   fn: (value: V | undefined) => V,
 ) {
-  this.set(key, fn(this.get(key)));
-};
+  map.set(key, fn(map.get(key)));
+}
 
 Promise.prototype.ignoreResult = async function <T>(
   this: Promise<T>,
