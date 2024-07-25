@@ -30,7 +30,7 @@ export async function activate(context: ExtensionContext) {
   setExtensionContext(context);
 
   await TreeSitter.init(
-    nodejs.path.join(context.extensionPath, "node_modules", "web-tree-sitter"),
+    nodejs.path.join(context.extensionPath, "tree-sitter"),
     nodejs.path.join(context.extensionPath, "tree-sitter"),
   );
 
