@@ -1,4 +1,4 @@
-import { enumUtil } from "./enum";
+import { enumUtil } from "@sergei-dyshel/typescript/enum";
 import { getCallsite } from "./sourceMap";
 import { formatMessage } from "./stringify";
 import { filterNonNull } from "./tsUtils";

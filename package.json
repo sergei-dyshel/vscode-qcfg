@@ -51,6 +51,7 @@
   "dependencies": {
     "@rushstack/ts-command-line": "^4.7.6",
     "@sergei-dyshel/typescript": "*",
+    "@sergei-dyshel/vscode": "*",
     "callsites": "^3.1.0",
     "case-anything": "^2.1.10",
     "glob": "^7.1.6",
