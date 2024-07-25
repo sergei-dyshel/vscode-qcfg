@@ -49,6 +49,7 @@
     "generate-module-imports": "./scripts/generate-module-imports.sh src/extension/modules src/extension/allModules.ts"
   },
   "dependencies": {
+    "@buzz-dee/typescript-collections": "^2.0.3",
     "@rushstack/ts-command-line": "^4.7.6",
     "@sergei-dyshel/typescript": "*",
     "@sergei-dyshel/vscode": "*",
@@ -68,7 +69,6 @@
     "sprintf-js": "^1.1.2",
     "tempy": "^1.0.0",
     "ts-enum-util": "^4.0.2",
-    "typescript-collections": "^1.3.3",
     "vscode-languageclient": "^6.1.3",
     "watcher": "^2.2.2",
     "web-tree-sitter": "^0.20.8"

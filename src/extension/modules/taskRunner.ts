@@ -1,4 +1,4 @@
-import { Dictionary } from 'typescript-collections';
+import { Dictionary } from "@buzz-dee/typescript-collections";
 import type {
   ExtensionContext,
   StatusBarItem,

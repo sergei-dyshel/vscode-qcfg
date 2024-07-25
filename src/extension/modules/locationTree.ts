@@ -1,4 +1,4 @@
-import { MultiDictionary } from 'typescript-collections';
+import { MultiDictionary } from "@buzz-dee/typescript-collections";
 import type { ExtensionContext, Location, TextDocument } from "vscode";
 import { ThemeIcon, Uri, window, workspace } from "vscode";
 import { assert, assertInstanceOf } from "../../library/exception";

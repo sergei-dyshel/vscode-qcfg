@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 
-import { MultiDictionary } from "typescript-collections";
+import { MultiDictionary } from "@buzz-dee/typescript-collections";
 import { defaultCompare } from "./compare";
 
 const emptyRegExp = /(?:)/;

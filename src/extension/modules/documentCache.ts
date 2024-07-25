@@ -1,4 +1,4 @@
-import { Dictionary } from 'typescript-collections';
+import { Dictionary } from "@buzz-dee/typescript-collections";
 import type { ExtensionContext, TextDocument, Uri } from "vscode";
 import { workspace } from "vscode";
 import { log } from "../../library/logging";
