@@ -1,15 +1,18 @@
 /* eslint-disable no-extend-native */
 /* eslint-disable @typescript-eslint/unbound-method */
-interface String {
-  /**
-   * Search first occurence of pattern and return the match's [start, length]
-   */
-  searchFirst: (pattern: string | RegExp) => [number, number] | undefined;
 
-  /**
-   * Replace dashes by underscores
-   */
-  dashesToUnderscores: () => string;
+declare global {
+  interface String {
+    /**
+     * Search first occurence of pattern and return the match's [start, length]
+     */
+    searchFirst: (pattern: string | RegExp) => [number, number] | undefined;
+
+    /**
+     * Replace dashes by underscores
+     */
+    dashesToUnderscores: () => string;
+  }
 }
 
 String.prototype.searchFirst = function (

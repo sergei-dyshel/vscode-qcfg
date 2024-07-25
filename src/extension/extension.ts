@@ -1,4 +1,4 @@
-// these modify prototypes of objects, must be imported first
+// these modify prototypes of bultin classes, must be imported first
 import "../library/stringPrototype";
 import "../library/tsUtils";
 import "./utils/locationPrototype";

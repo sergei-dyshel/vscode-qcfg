@@ -1,3 +1,10 @@
+// these modify prototypes of bultin classes, must be imported first
+import "../extension/utils/locationPrototype";
+import "../extension/utils/positionPrototype";
+import "../extension/utils/rangePrototype";
+import "../extension/utils/uriPrototype";
+import "../library/stringPrototype";
+
 import { defaultCompare } from "../library/compare";
 import type { ExtensionJSON } from "../library/extensionManifest";
 import { globSync } from "../library/fileUtils";
