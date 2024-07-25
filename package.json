@@ -26,7 +26,8 @@
   "license": "MIT",
   "main": "./dist/extension",
   "scripts": {
-    "update-package-json": "npm run generate-module-imports && ./ts-node-mock-vscode src/tools/updatePackageJson.ts && npx prettier --write package.json",
+    "update-package-json-ts-node": "node --enable-source-maps -r ts-node/register -r @sergei-dyshel/vscode/mock-register src/tools/updatePackageJson.ts",
+    "update-package-json": "npx build-cmd -v -r --vscode-mock src/tools/updatePackageJson.ts",
     "vscode:prepublish": "npm run build",
     "watch": "tsc --watch --noEmit",
     "compile": "tsc --noEmit",

@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-
-exec ts-node -P tsconfig.mock.json -r tsconfig-paths/register --files "$@"
