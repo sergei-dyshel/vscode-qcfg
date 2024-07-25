@@ -1,235 +1,44 @@
-/**
- * Must be self-contained, e.g. do not import other modules
- *
- * @module
- */
+import { dedent } from "@sergei-dyshel/typescript/string";
+import { zod } from "@sergei-dyshel/typescript/zod";
 
 export namespace Config {
-  /**
-   * Collection of all configuration sections and corresponding value types.
-   *
-   * Used for auto-generation of `configuration` section of `package.json`.
-   */
-  export interface All {
-    /**
-     * Number of steps by which to auto-resize active editor
-     *
-     * @default 1
-     */
-    "qcfg.autoResize.steps": number;
-
-    /**
-     * Whether auto-resize enabled
-     *
-     * @default false
-     */
-    "qcfg.autoResize.enabled": boolean;
-
-    /**
-     * Mapping for alternate (header/source) switch.
-     *
-     * For each extension specify list of alternative extension.
-     *
-     * @default { }
-     */
-    "qcfg.alternate.mapping": Record<string, string[]>;
-
-    /**
-     * AutoSync enabled on start
-     *
-     * @default false
-     */
-    "qcfg.autoSync.enabled": boolean;
-
-    /** AutoSync command */
-    "qcfg.autoSync.command": string;
-
-    /** Open preview automatically when opening markdown documents */
-    "qcfg.autoMarkdownPreview": boolean;
-
-    /** Workspace folder name for creating new notes */
-    "qcfg.newNote.folder": string;
-
-    /** Path of notes directory relative to workspace folder root */
-    "qcfg.newNote.path": string;
-
-    /**
-     * List of rules to open current line in Git Web UI
-     *
-     * @default [ ]
-     */
-    "qcfg.git.web": Git.Entry[];
-
-    /**
-     * Per-workspace/folder setting to set it as default remote server
-     *
-     * @default false
-     */
-    "qcfg.remote.setDefault": boolean;
-
-    /**
-     * Use gtags as workspace symbols provider
-     *
-     * @default false
-     */
-    "qcfg.gtags.workspaceSymbols": boolean;
-
-    /**
-     * Use gtags hover symbol provider
-     *
-     * @default false
-     */
-    "qcfg.gtags.hover": boolean;
-
-    /**
-     * Default timeout (in milliseconds) for notifications
-     *
-     * @default 3000
-     */
-    "qcfg.notification.timeoutMs": number;
-
-    /**
-     * Global configuration directory for vscode-qcfg specific features
-     * (defaults to HOME directory)
-     *
-     * @default "~"
-     */
-    "qcfg.configDir.global": string;
-
-    /**
-     * Workspace configuration direcotry for vsdode-qcfg specific features,
-     * relative to workspace file's directory or the only folder by default
-     *
-     * @default "."
-     */
-    "qcfg.configDir.workspace": string;
-
-    /**
-     * Whether do show per-file diagnostic counts in statusbar
-     *
-     * @default true
-     * @scope language-overridable
-     */
-    "qcfg.fileDiagnostics.show": boolean;
-
-    /**
-     * Exclude diagnostics whose message matches this pattern
-     *
-     * @scope language-overridable
-     */
-    "qcfg.fileDiagnostics.excludeMessage": string;
-
-    /**
-     * Exclude diagnostics whose source matches this pattern
-     *
-     * @scope language-overridable
-     */
-    "qcfg.fileDiagnostics.excludeSource": string;
-
-    /**
-     * Exclude diagnostics whose code matches any of these
-     *
-     * @scope language-overridable
-     */
-    "qcfg.fileDiagnostics.excludeCodes": Array<number | string>;
-
-    /**
-     * C/C++ language clients are remote (over SSH)
-     *
-     * @default false
-     */
-    "qcfg.langClient.remote": boolean;
-
-    /**
-     * Custom command for restarting clangd (e.g. kill server)
-     */
-    "qcfg.clangd.restartCommand": string[];
-
-    /**
-     * Add clangd provider for type hierarchy
-     *
-     * @default true
-     */
-    "qcfg.clangd.typeHierarchy": boolean;
-
-    /**
-     * Command to clear clangd cache
-     */
-    "qcfg.clangd.clearCacheCommand": string[];
-
-    /**
-     * Command to clear ccls cache
-     */
-    "qcfg.ccls.clearCacheCommand": string[];
-
-    /**
-     * Add ccls provider for type hierarchy
-     *
-     * @default true
-     */
-    "qcfg.ccls.typeHierarchy": boolean;
-
-    /**
-     * Add ccls provider for call hierarchy
-     *
-     * @default true
-     */
-    "qcfg.ccls.callHierarchy": boolean;
-
-    /**
-     * Array of configuration rules per file type, name etc.
-     *
-     * @default [ ]
-     */
-    "qcfg.configRules": ConfigRules.Rule[];
-
-    /**
-     * Dictionary of tasks
-     *
-     * @default { }
-     */
-    "qcfg.tasks": Tasks.ConfParamsSet;
-
-    /**
-     * List of TODO keywords
-     *
-     * @default [ ]
-     */
-    "qcfg.todo.keywords": string[];
-  }
-
   export namespace Git {
-    export interface Link {
-      /** Description of Web link */
-      title: string;
-      /** Web url */
-      url: string;
-    }
+    export const linkSchema = zod.object({
+      title: zod.string().describe("Description of Web link"),
+      url: zod.string().describe("Web url"),
+    });
 
-    export interface Entry {
-      /** List of remote patterns */
-      remotes: string[];
-      /** Description of Web link */
-      links: Link[];
-    }
+    export const entrySchema = zod.object({
+      remotes: zod.array(zod.string()).describe("List of remote patterns"),
+      links: zod.array(linkSchema).describe("Description of Web link"),
+    });
+
+    export type Link = zod.infer<typeof linkSchema>;
+    export type Entry = zod.infer<typeof entrySchema>;
   }
 
   export namespace ConfigRules {
-    export type QuickFixCodeActionsConfig = Array<string | [string, number]>;
+    export const quickFixCodeActionsConfigSchema = zod.array(
+      zod.union([zod.string(), zod.tuple([zod.string(), zod.number()])]),
+    );
 
-    export interface RuleConfig {
-      /** TODO: add docs */
-      quickFixCodeActions?: QuickFixCodeActionsConfig;
-    }
+    export const ruleConfigSchema = zod.object({
+      quickFixCodeActions: quickFixCodeActionsConfigSchema.optional(),
+    });
 
-    export interface Rule extends Condition, RuleConfig {}
+    export const conditionSchema = zod.object({
+      glob: zod
+        .string()
+        .optional()
+        .describe("Glob pattern to match against file name."),
+      language: zod.string().optional().describe("Language ID of file"),
+    });
 
-    export interface Condition {
-      /** Glob pattern to match against file name. */
-      glob?: string;
-      /** Language ID of file */
-      language?: string;
-    }
+    export const ruleSchema = conditionSchema.merge(ruleConfigSchema);
+
+    export type Condition = zod.infer<typeof conditionSchema>;
+    export type RuleConfig = zod.infer<typeof ruleConfigSchema>;
+    export type Rule = zod.infer<typeof ruleSchema>;
   }
 
   export namespace Tasks {
@@ -239,6 +48,8 @@ export namespace Config {
       NO = "no",
     }
 
+    const revealSchema = zod.nativeEnum(Reveal);
+
     export enum EndAction {
       NONE = "none",
       AUTO = "auto",
@@ -247,6 +58,8 @@ export namespace Config {
       SHOW = "show",
       NOTIFY = "notify",
     }
+
+    const endActionSchema = zod.nativeEnum(EndAction);
 
     export enum Flag {
       DEDICATED_PANEL = "dedicatedPanel",
@@ -284,124 +97,305 @@ export namespace Config {
       CASE = "case",
     }
 
+    const flagHiddenSchema = zod
+      .literal(Flag.HIDDEN)
+      .describe(
+        "Task is hidden when from pick list, i.e. can be run only directly",
+      );
+
+    const flagBuildSchema = zod.literal(Flag.BUILD).describe(dedent`
+        Build task.
+
+        Build tasks are also always folder tasks.
+      `);
+
+    const flagFolderSchema = zod
+      .literal(Flag.FOLDER)
+      .describe(
+        "Task applies to any workspace folder (i.e. not current dir/file)",
+      );
+
+    const flagNotifyOnFailureSchema = zod
+      .literal(Flag.NOTIFY_ON_FAILURE)
+      .describe("Notify on failure");
+    const flagSchema = zod.union([
+      zod.literal(Flag.DEDICATED_PANEL),
+      zod.literal(Flag.CLEAR),
+      zod.literal(Flag.AUTO_RESTART),
+      zod.literal(Flag.REINDEX),
+      flagBuildSchema,
+      zod.literal(Flag.MULTI).describe(dedent`
+        Multi-folder task.
+
+        Running such task will run the task in all folders where it's
+        applicable.
+      `),
+      flagNotifyOnFailureSchema,
+      flagHiddenSchema,
+      flagFolderSchema,
+      zod.literal(Flag.REGEX).describe("Current file matches glob pattern"),
+      zod.literal(Flag.WORD).describe("Current file matches glob pattern"),
+      zod.literal(Flag.CASE).describe("Current file matches glob pattern"),
+    ]);
+
     export enum TaskType {
       PROCESS = "process",
       TERMINAL = "terminal",
       SEARCH = "search",
     }
 
-    export type BaseProcessTaskFlag = Flag.BUILD | Flag.FOLDER | Flag.HIDDEN;
+    export const typeSchema = zod.nativeEnum(TaskType);
 
-    interface When {
-      /** File exists of given glob pattern */
-      fileExists?: string;
+    const baseProcessTaskFlagSchema = zod.union([
+      flagBuildSchema,
+      flagFolderSchema,
+      flagHiddenSchema,
+    ]);
 
-      /** Current file matches glob pattern */
-      fileMatches?: string;
-    }
+    const whenSchema = zod.object({
+      fileExists: zod
+        .string()
+        .optional()
+        .describe("File exists of given glob pattern"),
+      fileMatches: zod
+        .string()
+        .optional()
+        .describe("Current file matches glob pattern"),
+    });
 
-    export interface BaseTaskParams {
-      title?: string;
-      type: TaskType;
-      when?: When;
-      flags?: Flag[];
+    const baseTaskParamsSchema = zod.object({
+      title: zod.string().optional(),
+      type: typeSchema,
+      when: whenSchema.optional(),
+      flags: zod.array(flagSchema).optional(),
+      folders: zod
+        .array(zod.string())
+        .default([])
+        .optional()
+        .describe("Workspace folders in which this task is valid"),
+    });
 
-      /**
-       * Workspace folders in which this task is valid
-       *
-       * @default [ ]
-       */
-      folders?: string[];
-    }
+    export type BaseTaskParams = zod.infer<typeof baseTaskParamsSchema>;
 
-    export interface BaseProcessTaskParams extends BaseTaskParams {
-      command: string;
-      cwd?: string;
-      /**
-       * Expected process exit codes
-       *
-       * @default [ ]
-       */
-      exitCodes?: number[];
-    }
+    const baseProcessTaskParamsSchema = baseTaskParamsSchema.extend({
+      command: zod.string(),
+      cwd: zod.string().optional(),
+      exitCodes: zod
+        .array(zod.number())
+        .default([])
+        .optional()
+        .describe("Expected process exit codes"),
+    });
+
+    export type BaseProcessTaskParams = zod.infer<
+      typeof baseProcessTaskParamsSchema
+    >;
 
     // only to add auto-complete suggestions to schema
-    type KnownProblemMatcher = "gcc-relative" | "gcc-absolute";
+    const knownProblemMatcherSchema = zod.enum([
+      "gcc-relative",
+      "gcc-absolute",
+    ]);
 
-    export interface TerminalTaskParams extends BaseProcessTaskParams {
-      type: TaskType.TERMINAL;
+    const terminalTaskParamsSchema = baseProcessTaskParamsSchema.extend({
+      type: zod.literal(TaskType.TERMINAL),
+      reveal: revealSchema
+        .default(Reveal.YES)
+        .optional()
+        .describe("Reveal terminal when running"),
+      onSuccess: endActionSchema.default(EndAction.AUTO).optional(),
+      onFailure: endActionSchema.default(EndAction.AUTO).optional(),
+      problemMatchers: zod
+        .union([
+          zod.string(),
+          knownProblemMatcherSchema,
+          zod.array(zod.union([zod.string(), knownProblemMatcherSchema])),
+        ])
+        .default([])
+        .optional(),
+      flags: zod
+        .array(
+          zod.union([
+            ...baseProcessTaskFlagSchema.options,
+            zod.literal(Flag.CLEAR),
+            zod.literal(Flag.DEDICATED_PANEL),
+            zod.literal(Flag.REINDEX),
+            zod.literal(Flag.AUTO_RESTART),
+            flagNotifyOnFailureSchema,
+          ]),
+        )
+        .optional(),
+    });
 
-      /**
-       * Reveal terminal when running
-       *
-       * @default "yes"
-       */
-      reveal?: Reveal;
-
-      /**
-       * @default "auto"
-       */
-      onSuccess?: EndAction;
-
-      /**
-       * @default "auto"
-       */
-      onFailure?: EndAction;
-
-      /**
-       * @default [ ]
-       */
-      problemMatchers?:
-        | string
-        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-        | KnownProblemMatcher
-        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-        | Array<string | KnownProblemMatcher>;
-
-      flags?: Array<
-        | BaseProcessTaskFlag
-        | Flag.CLEAR
-        | Flag.DEDICATED_PANEL
-        | Flag.REINDEX
-        | Flag.AUTO_RESTART
-        | Flag.NOTIFY_ON_FAILURE
-      >;
-    }
+    export type TerminalTaskParams = zod.infer<typeof terminalTaskParamsSchema>;
 
     export enum LocationFormat {
       VIMGREP = "vimgrep",
       GTAGS = "gtags",
     }
 
-    export interface ParseOutput {
-      format: LocationFormat;
-      tag?: string;
-    }
+    const locationFormatSchema = zod.nativeEnum(LocationFormat);
 
-    export interface ProcessTaskParams extends BaseProcessTaskParams {
-      type: TaskType.PROCESS;
+    const ParseOutputSchema = zod.object({
+      format: locationFormatSchema,
+      tag: zod.string().optional(),
+    });
 
-      /**
-       * Extract locations from output using predefined format or custom regular
-       * expression
-       */
-      parseOutput?: ParseOutput;
+    const processTaskParamsSchema = baseProcessTaskParamsSchema.extend({
+      type: zod.literal(TaskType.PROCESS),
+      parseOutput: ParseOutputSchema.optional().describe(
+        "Extract locations from output using predefined format or custom regular expression",
+      ),
+      flags: zod.array(baseProcessTaskFlagSchema).optional(),
+    });
 
-      flags?: BaseProcessTaskFlag[];
-    }
+    export type ProcessTaskParams = zod.infer<typeof processTaskParamsSchema>;
 
-    export interface SearchTaskParams extends BaseTaskParams {
-      type: TaskType.SEARCH;
-      query: string;
-      searchTitle?: string;
-      flags?: Array<Flag.HIDDEN | Flag.REGEX | Flag.WORD | Flag.CASE>;
-    }
+    const searchTaskParamsSchema = baseTaskParamsSchema.extend({
+      type: zod.literal(TaskType.SEARCH),
+      query: zod.string(),
+      searchTitle: zod.string().optional(),
+      flags: zod
+        .array(
+          zod.union([
+            flagHiddenSchema,
+            zod.literal(Flag.REGEX),
+            zod.literal(Flag.WORD),
+            zod.literal(Flag.CASE),
+          ]),
+        )
+        .optional(),
+    });
 
-    export type Params =
-      | TerminalTaskParams
-      | ProcessTaskParams
-      | SearchTaskParams;
+    export type SearchTaskParams = zod.infer<typeof searchTaskParamsSchema>;
 
-    export type ConfParamsSet = Record<string, Params | string>;
+    const paramsSchema = zod.union([
+      terminalTaskParamsSchema,
+      processTaskParamsSchema,
+      searchTaskParamsSchema,
+    ]);
+
+    export type Params = zod.infer<typeof paramsSchema>;
+
+    export const confParamsSetSchema = zod.record(
+      zod.string(),
+      zod.union([zod.string(), paramsSchema]),
+    );
+
+    export type ConfParamsSet = zod.infer<typeof confParamsSetSchema>;
   }
+
+  export const allSchema = zod.object({
+    "qcfg.autoResize.steps": zod
+      .number()
+      .default(1)
+      .describe("Number of steps by which to auto-resize active editor"),
+    "qcfg.autoResize.enabled": zod
+      .boolean()
+      .default(false)
+      .describe("Whether auto-resize enabled"),
+    "qcfg.alternate.mapping": zod
+      .record(zod.string(), zod.array(zod.string()))
+      .default({})
+      .describe("Mapping for alternate (header/source) switch."),
+    "qcfg.autoSync.enabled": zod
+      .boolean()
+      .default(false)
+      .describe("AutoSync enabled on start"),
+    "qcfg.autoSync.command": zod.string().describe("AutoSync command."),
+    "qcfg.autoMarkdownPreview": zod
+      .boolean()
+      .describe("Open preview automatically when opening markdown documents."),
+    "qcfg.newNote.folder": zod
+      .string()
+      .describe("Workspace folder name for creating new notes."),
+    "qcfg.newNote.path": zod
+      .string()
+      .describe("Path of notes directory relative to workspace folder root"),
+    "qcfg.git.web": zod
+      .array(Git.entrySchema)
+      .default([])
+      .describe("List of rules to open current line in Git Web UI."),
+    "qcfg.remote.setDefault": zod
+      .boolean()
+      .default(false)
+      .describe(
+        "Per-workspace/folder setting to set it as default remote server",
+      ),
+    "qcfg.gtags.workspaceSymbols": zod
+      .boolean()
+      .default(false)
+      .describe("Use gtags as workspace symbols provider"),
+    "qcfg.gtags.hover": zod
+      .boolean()
+      .default(false)
+      .describe("Use gtags hover symbol provider"),
+    "qcfg.notification.timeoutMs": zod
+      .number()
+      .default(3000)
+      .describe("Default timeout (in milliseconds) for notifications"),
+    "qcfg.configDir.global": zod
+      .string()
+      .default("~")
+      .describe(
+        "Global configuration directory for vscode-qcfg specific features (defaults to HOME directory)",
+      ),
+    "qcfg.configDir.workspace": zod
+      .string()
+      .default(".")
+      .describe(
+        "Workspace configuration direcotry for vsdode-qcfg specific features,relative to workspace file's directory or the only folder by default",
+      ),
+    "qcfg.fileDiagnostics.show": zod
+      .boolean()
+      .default(true)
+      .describe("Whether do show per-file diagnostic counts in statusbar"),
+    "qcfg.fileDiagnostics.excludeMessage": zod
+      .string()
+      .describe("Exclude diagnostics whose message matches this pattern"),
+    "qcfg.fileDiagnostics.excludeSource": zod
+      .string()
+      .describe("Exclude diagnostics whose source matches this pattern"),
+    "qcfg.fileDiagnostics.excludeCodes": zod
+      .array(zod.union([zod.number(), zod.string()]))
+      .describe("Exclude diagnostics whose code matches any of these"),
+    "qcfg.langClient.remote": zod
+      .boolean()
+      .default(false)
+      .describe("C/C++ language clients are remote (over SSH)"),
+    "qcfg.clangd.restartCommand": zod
+      .array(zod.string())
+      .describe("Custom command for restarting clangd (e.g. kill server)"),
+    "qcfg.clangd.typeHierarchy": zod
+      .boolean()
+      .default(true)
+      .describe("Add clangd provider for type hierarchy"),
+    "qcfg.clangd.clearCacheCommand": zod
+      .array(zod.string())
+      .describe("Command to clear clangd cache"),
+    "qcfg.ccls.clearCacheCommand": zod
+      .array(zod.string())
+      .describe("Command to clear ccls cache"),
+    "qcfg.ccls.typeHierarchy": zod
+      .boolean()
+      .default(true)
+      .describe("Add ccls provider for type hierarchy"),
+    "qcfg.ccls.callHierarchy": zod
+      .boolean()
+      .default(true)
+      .describe("Add ccls provider for call hierarchy"),
+    "qcfg.configRules": zod
+      .array(ConfigRules.ruleSchema)
+      .default([])
+      .describe("Array of configuration rules per file type, name etc."),
+    "qcfg.tasks": Tasks.confParamsSetSchema
+      .default({})
+      .describe("Dictionary of tasks"),
+    "qcfg.todo.keywords": zod
+      .array(zod.string())
+      .default([])
+      .describe("List of TODO keywords"),
+  });
+
+  export type All = zod.infer<typeof allSchema>;
 }

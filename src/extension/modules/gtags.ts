@@ -383,7 +383,7 @@ async function openDefinition() {
 }
 
 export async function getGtagsDefinitionsInWorkspace() {
-  const params: Config.Tasks.Params = {
+  const params: Config.Tasks.ProcessTaskParams = {
     // eslint-disable-next-line no-template-curly-in-string
     command: "global -d -x -n ${cursorWord}",
     type: Config.Tasks.TaskType.PROCESS,

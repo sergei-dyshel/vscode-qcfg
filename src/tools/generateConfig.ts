@@ -1,29 +1,17 @@
-import * as tsj from "ts-json-schema-generator";
-import type { Config } from "../library/config";
+import zodToJsonSchema from "zod-to-json-schema";
+import { Config } from "../library/config";
 import type { ExtensionJSON } from "../library/extensionManifest";
 
 export function generateConfig() {
-  const config: tsj.Config = {
-    path: "src/library/config.ts",
-    tsconfig: "tsconfig.json",
-    type: "Config.All",
-    topRef: false,
-    expose: "none",
-    strictTuples: true,
-  };
-
-  const generator = tsj.createGenerator(config);
-
-  const schema = generator.createSchema(config.type);
-
-  const properties = schema.properties! as unknown as Config.All;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (properties["qcfg.tasks"] as any).scope = "resource";
+  const schema = zodToJsonSchema(Config.allSchema, { $refStrategy: "none" });
+  const properties = (schema as any).properties;
+  properties["qcfg.tasks"].scope = "resource";
 
   const pkg: ExtensionJSON.Manifest = {
     contributes: {
       configuration: {
-        properties: schema.properties!,
+        title: "Qcfg configuration",
+        properties,
       },
     },
   };

@@ -44,7 +44,7 @@ export namespace ExtensionJSON {
       keybindings?: KeyBinding[];
       themes?: Theme[];
       languages?: Language[];
-      configuration?: { properties: Record<string, unknown> };
+      configuration?: { title?: string; properties: Record<string, unknown> };
       commands?: Command[];
     };
   }
