@@ -103,7 +103,7 @@
     "ifdef-loader": "^2.1.5",
     "ts-json-schema-generator": "^2.3.0",
     "ts-loader": "^9.3.0",
-    "ts-node": "^10.9.1",
+    "ts-node": "^10.9.2",
     "ts-prune": "^0.8.4",
     "ts-unused-exports": "^6.2.4",
     "tsconfig-paths": "^4.0.0",
