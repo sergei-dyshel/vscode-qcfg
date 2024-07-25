@@ -1,16 +1,16 @@
 import { MultiDictionary } from 'typescript-collections';
-import type { ExtensionContext, Location, TextDocument } from 'vscode';
-import { ThemeIcon, Uri, window, workspace } from 'vscode';
-import { assert, assertInstanceOf } from '../../library/exception';
-import * as nodejs from '../../library/nodejs';
-import { stringify as str } from '../../library/stringify';
-import { documentRangePreview } from '../utils/document';
-import { mapSomeAsyncAndZip } from './async';
-import { handleAsyncStd } from './exception';
-import { LiveLocation } from './liveLocation';
-import { Modules } from './module';
-import type { TreeNode, TreeProvider } from './treeView';
-import { QcfgTreeView, StaticTreeNode } from './treeView';
+import type { ExtensionContext, Location, TextDocument } from "vscode";
+import { ThemeIcon, Uri, window, workspace } from "vscode";
+import { assert, assertInstanceOf } from "../../library/exception";
+import * as nodejs from "../../library/nodejs";
+import { stringify as str } from "../../library/stringify";
+import { documentRangePreview } from "../utils/document";
+import { mapSomeAsyncAndZip } from "./async";
+import { handleAsyncStd } from "./exception";
+import { LiveLocation } from "./liveLocation";
+import { Modules } from "./module";
+import type { TreeNode, TreeProvider } from "./treeView";
+import { QcfgTreeView, StaticTreeNode } from "./treeView";
 
 /** Populate location side panel with given locations */
 export async function setPanelLocations(
@@ -117,7 +117,7 @@ namespace TreeBuilder {
       insert(tree, components, file);
       return;
     }
-    throw new Error('Invalid type of tree');
+    throw new Error("Invalid type of tree");
   }
 
   export function buildDirHierarchy(
@@ -126,7 +126,7 @@ namespace TreeBuilder {
   ): StaticTreeNode[] {
     const forest = build(files);
     compress(forest);
-    return convertToHierarchy(forest, '', options).map((root) => {
+    return convertToHierarchy(forest, "", options).map((root) => {
       root.provider = locationTreeProvider;
       return root;
     });
@@ -137,7 +137,7 @@ namespace TreeBuilder {
     for (const file of files) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const components = file.fsPath.split(nodejs.path.sep);
-      if (components[0] === '') components.shift();
+      if (components[0] === "") components.shift();
       insert(forest, components, file);
     }
     return forest;
@@ -166,7 +166,7 @@ namespace TreeBuilder {
     for (const [subpath, tree] of forest) {
       if (tree instanceof FileNode) nodes.push(tree);
       else {
-        const absSubpath = prefix === '' ? nodejs.path.sep + subpath : subpath;
+        const absSubpath = prefix === "" ? nodejs.path.sep + subpath : subpath;
         const newPrefix = nodejs.path.join(prefix, absSubpath);
         const dirNode = new DirNode(newPrefix, absSubpath, options);
         dirNode.addChildren(convertToHierarchy(tree, newPrefix, options));
@@ -206,7 +206,7 @@ class DirNode extends UriNode {
 
 class FileNode extends UriNode {
   constructor(uri: Uri, options: LocationTreeOptions) {
-    super(uri, '', options);
+    super(uri, "", options);
     this.treeItem.iconPath = ThemeIcon.File;
     this.setExpanded();
   }
@@ -220,7 +220,7 @@ class LocationNode extends StaticTreeNode {
   ) {
     if (loc.range.isEmpty) {
       // empty range
-      super('');
+      super("");
     } else {
       const [label, start, end] = documentRangePreview(document, loc.range);
       super({
@@ -259,7 +259,7 @@ const locationTreeProvider: TreeProvider = {
     return currentMessage;
   },
   getTitle() {
-    return 'locations';
+    return "locations";
   },
   removeNode(node_: TreeNode) {
     const node = node_ as StaticTreeNode;
@@ -297,4 +297,4 @@ function activate(_: ExtensionContext) {
 Modules.register(activate);
 
 let currentTrees: StaticTreeNode[] | undefined;
-let currentMessage = '';
+let currentMessage = "";

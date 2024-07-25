@@ -8,15 +8,15 @@ import type {
   TaskProcessEndEvent,
   TaskProcessStartEvent,
   Terminal,
-} from 'vscode';
-import { tasks, TaskScope, window } from 'vscode';
-import type { DisposableLike } from '../../library/disposable';
-import { assert } from '../../library/exception';
-import { log, Logger } from '../../library/logging';
-import { MessageDialog } from '../utils/messageDialog';
-import { executeCommandHandled, listenWrapped } from './exception';
-import { Modules } from './module';
-import { registerSyncTemporaryCommand } from './utils';
+} from "vscode";
+import { tasks, TaskScope, window } from "vscode";
+import type { DisposableLike } from "../../library/disposable";
+import { assert } from "../../library/exception";
+import { log, Logger } from "../../library/logging";
+import { MessageDialog } from "../utils/messageDialog";
+import { executeCommandHandled, listenWrapped } from "./exception";
+import { Modules } from "./module";
+import { registerSyncTemporaryCommand } from "./utils";
 
 export enum State {
   INITIALIZED,
@@ -54,16 +54,15 @@ class TaskDescriptor {
 }
 
 /**
- * What to do when there is already running
- * task with same @TaskDescriptor.
+ * What to do when there is already running task with same @TaskDescriptor.
  */
 export enum TaskConfilictPolicy {
   /** Abort current task */
-  ABORT_CURRENT = 'Abort current',
+  ABORT_CURRENT = "Abort current",
   /** Queue current task after the one currently running */
-  WAIT = 'Wait',
+  WAIT = "Wait",
   /** Cancel currently runninig task and run this task instead */
-  CANCEL_PREVIOUS = 'Cancel previous',
+  CANCEL_PREVIOUS = "Cancel previous",
 }
 
 export class TaskRun {
@@ -80,7 +79,7 @@ export class TaskRun {
   constructor(public task: Task) {
     this.state = State.INITIALIZED;
     this.log = new Logger({
-      name: 'taskRun',
+      name: "taskRun",
       parent: log,
       instance: task.name,
     });
@@ -118,16 +117,16 @@ export class TaskRun {
     }
     allRuns.setValue(this.desc, this);
     this.state = State.EXECUTED;
-    this.log.debug('Executing');
+    this.log.debug("Executing");
     try {
       this.execution = await tasks.executeTask(this.task);
     } catch (err: unknown) {
-      this.log.debug('executeTask failed: ', err);
+      this.log.debug("executeTask failed: ", err);
       allRuns.remove(this.desc);
       return;
     }
     this.state = State.RUNNING;
-    this.log.debug('Started');
+    this.log.debug("Started");
   }
 
   async wait(): Promise<void> {
@@ -145,7 +144,7 @@ export class TaskRun {
       this.state === State.RUNNING || this.state === State.PROCESS_STARTED,
       `Can not cancel task in state ${State[this.state]}`,
     );
-    this.log.info('Cancelled');
+    this.log.info("Cancelled");
     this.cancelled = true;
     this.execution!.terminate();
     try {
@@ -200,13 +199,13 @@ export class TaskRun {
         self.task.scope !== TaskScope.Global &&
         self.task.scope !== TaskScope.Workspace
           ? `$(tools)${self.task.name} (${self.task.scope.name})`
-          : '$(tools)' + self.task.name;
+          : "$(tools)" + self.task.name;
       self.status.command = command;
       self.statusCmdDisposable = disposable;
       self.status.show();
     }
     if (self.terminal && window.activeTerminal === self.terminal) {
-      executeCommandHandled('workbench.action.terminal.scrollToBottom');
+      executeCommandHandled("workbench.action.terminal.scrollToBottom");
     }
   }
 
@@ -216,10 +215,10 @@ export class TaskRun {
     self.state = State.DONE;
     if (self.waitingContext) {
       if (self.cancelled) {
-        self.log.debug('Ended (cancelled)');
+        self.log.debug("Ended (cancelled)");
         self.waitingContext.reject(new TaskCancelledError(self.task.name));
       } else {
-        self.log.debug('Ended');
+        self.log.debug("Ended");
         self.waitingContext.resolve();
       }
     }
@@ -245,7 +244,7 @@ export class TaskCancelledError extends Error {
     super(`Task ${taskName} was cancelled`);
   }
 
-  override name = 'TaskCancelledError';
+  override name = "TaskCancelledError";
 }
 
 function activate(context: ExtensionContext) {

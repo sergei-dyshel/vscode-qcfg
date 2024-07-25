@@ -1,9 +1,9 @@
 import { Dictionary } from 'typescript-collections';
-import type { ExtensionContext, TextDocument, Uri } from 'vscode';
-import { workspace } from 'vscode';
-import { log } from '../../library/logging';
-import { listenWrapped } from './exception';
-import { Modules } from './module';
+import type { ExtensionContext, TextDocument, Uri } from "vscode";
+import { workspace } from "vscode";
+import { log } from "../../library/logging";
+import { listenWrapped } from "./exception";
+import { Modules } from "./module";
 
 export function registerDocumentUriDict<V>(dict: Dictionary<Uri, V>) {
   uriDicts.push(dict as Dictionary<Uri, unknown>);
@@ -16,22 +16,22 @@ const openDocuments = new Dictionary<Uri, TextDocument>();
 const uriDicts: Array<Dictionary<Uri, unknown>> = [];
 
 function filterUri(uri: Uri) {
-  const SCHEMES = ['git', 'gitfs', 'output', 'vscode'];
+  const SCHEMES = ["git", "gitfs", "output", "vscode"];
   return SCHEMES.includes(uri.scheme);
 }
 
 function onDidOpenTextDocument(document: TextDocument) {
   if (filterUri(document.uri)) return;
-  log.trace('Opened text document ', document);
+  log.trace("Opened text document ", document);
   if (openDocuments.containsKey(document.uri)) {
-    log.warn('Opened duplicate text document', document);
+    log.warn("Opened duplicate text document", document);
   }
   openDocuments.setValue(document.uri, document);
 }
 
 function onDidCloseTextDocument(document: TextDocument) {
   if (filterUri(document.uri)) return;
-  log.trace('Closed text document ', document);
+  log.trace("Closed text document ", document);
   openDocuments.remove(document.uri);
   for (const map of uriDicts) map.remove(document.uri);
 }

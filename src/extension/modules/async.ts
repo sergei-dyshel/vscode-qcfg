@@ -1,9 +1,9 @@
-import type { ExtensionContext } from 'vscode';
-import { assertNotNull } from '../../library/exception';
-import { log, Logger } from '../../library/logging';
-import type { AsyncFunction, PromiseType } from '../../library/templateTypes';
-import { concatArrays, izip, zipArrays } from '../../library/tsUtils';
-import { Modules } from './module';
+import type { ExtensionContext } from "vscode";
+import { assertNotNull } from "../../library/exception";
+import { log, Logger } from "../../library/logging";
+import type { AsyncFunction, PromiseType } from "../../library/templateTypes";
+import { concatArrays, izip, zipArrays } from "../../library/tsUtils";
+import { Modules } from "./module";
 
 type Callback = () => Promise<void>;
 type Resolve = () => void;
@@ -14,7 +14,7 @@ export class PromiseQueue {
 
   constructor(name: string) {
     this.log = new Logger({
-      name: 'PromiseQueue',
+      name: "PromiseQueue",
       instance: name,
     });
   }
@@ -156,8 +156,8 @@ export class MapUndefined {}
 export const MAP_UNDEFINED = new MapUndefined();
 
 /**
- * Map array through function and filter out those returned {@link MAP_UNDEFINED}.
- * Return array of [value, mapped value] pairs.
+ * Map array through function and filter out those returned
+ * {@link MAP_UNDEFINED}. Return array of [value, mapped value] pairs.
  */
 export async function mapSomeAsyncAndZip<V, R>(
   arr: readonly V[],
@@ -254,7 +254,7 @@ function activate(_: ExtensionContext) {
   /// #if DEBUG
   sequentialAsyncByDefault = true;
   /// #endif
-  const seqStr = sequentialAsyncByDefault ? 'SEQUENTIAL' : 'PARALLEL';
+  const seqStr = sequentialAsyncByDefault ? "SEQUENTIAL" : "PARALLEL";
   log.info(`Async mapping is ${seqStr} by default`);
 }
 
