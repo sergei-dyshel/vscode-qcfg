@@ -1,3 +1,5 @@
+import "../../library/stringPrototype";
+
 import type { TextDocument, WorkspaceFolder } from "vscode";
 import { Location, Position, Range, Uri, workspace } from "vscode";
 import * as nodejs from "../../library/nodejs";

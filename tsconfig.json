@@ -1,11 +1,11 @@
 {
   "compilerOptions": {
     // https://stackoverflow.com/questions/59787574/typescript-tsconfig-settings-for-node-js-12/59787575#59787575
-    "target": "ESNext",
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "target": "ES2023",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "outDir": "out",
-    "lib": ["ESNext"],
+    "lib": ["es2023"],
     // TODO: try to remove in future versions
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
@@ -19,5 +19,8 @@
     "noImplicitReturns": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true
+  },
+  "ts-node": {
+    "files": true
   }
 }

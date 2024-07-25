@@ -70,9 +70,6 @@ const generateConfig = (env: any): webpack.Configuration => ({
     extensions: [".ts", ".js"],
   },
   module: {
-    // becaues of `typescript-collections`
-    noParse: [/.*umd\.js/, /.*\.md$/],
-
     rules: [
       {
         test: /\.ts$/,
@@ -82,8 +79,6 @@ const generateConfig = (env: any): webpack.Configuration => ({
             loader: "ts-loader",
             options: {
               compilerOptions: {
-                module: "es2020", // override `tsconfig.json` so that TypeScript
-                // emits native JavaScript modules.
                 noUnusedLocals: false,
               },
             },

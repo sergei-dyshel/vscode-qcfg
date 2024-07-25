@@ -19,13 +19,10 @@ import { Modules } from "./modules/module";
 import { registerAllCommands } from "./utils/commands";
 import { setExtensionContext } from "./utils/extensionContext";
 
+import "./allModules";
+
 export async function activate(context: ExtensionContext) {
   console.log("Extension activating");
-
-  // eslint-disable-next-line unicorn/prefer-module
-  const modulesCtx = require.context("./modules", false /* deep */, /.*\.ts$/);
-  // eslint-disable-next-line unicorn/no-array-for-each
-  modulesCtx.keys().forEach(modulesCtx);
 
   setExtensionContext(context);
 
