@@ -18,7 +18,7 @@ import { generateRelativeJumps } from "./generateRelativeJumps";
 
 const PACKAGE_JSON = "package.json";
 
-async function main() {
+function main() {
   const commands: ExtensionJSON.Command[] = [];
   const keybindings: ExtensionJSON.KeyBinding[] = [];
   let configuration: Record<string, unknown> = {};
@@ -40,7 +40,7 @@ async function main() {
   }
 
   manifests.push(
-    await generateCommands(),
+    generateCommands(),
     generateConfig(),
     generateMacTermBindings(),
     generateRelativeJumps(),

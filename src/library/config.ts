@@ -133,9 +133,9 @@ export namespace Config {
       flagNotifyOnFailureSchema,
       flagHiddenSchema,
       flagFolderSchema,
-      zod.literal(Flag.REGEX).describe("Current file matches glob pattern"),
-      zod.literal(Flag.WORD).describe("Current file matches glob pattern"),
-      zod.literal(Flag.CASE).describe("Current file matches glob pattern"),
+      zod.literal(Flag.REGEX),
+      zod.literal(Flag.WORD),
+      zod.literal(Flag.CASE),
     ]);
 
     export enum TaskType {

@@ -13,7 +13,9 @@ export type SyntaxTreeEdit = Parser.Edit;
 const MAX_PARSE_TIMEOUT_MS = 5000; // 5 seconds
 
 declare module "web-tree-sitter" {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
   class SyntaxNode {}
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
   interface SyntaxNode {
     readonly nodeType: SyntaxNode.Type;
     readonly isLeaf: boolean;

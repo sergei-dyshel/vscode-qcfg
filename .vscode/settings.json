@@ -26,5 +26,6 @@
     "Reload all windows": "q-vscode-cli -i all reload"
   },
   "task.allowAutomaticTasks": "on",
-  "window.autoDetectColorScheme": true
+  "window.autoDetectColorScheme": true,
+  "eslint.useFlatConfig": false
 }

@@ -1,2 +1,4 @@
 vscode.proposed.*.d.ts
 .eslintrc.js
+out/*
+dist/*

@@ -534,13 +534,13 @@ export class QuickPickLocations<T> extends QuickPickWrapper<
     const editor = getActiveTextEditor();
     const selection = editor.selection;
     const selected = await super.select();
-    if (!selected) {
-      await window.showTextDocument(editor.document, { selection });
-    } else {
+    if (selected) {
       const rawSelected = this.rawSelectedItems[0];
       await window.showTextDocument(rawSelected.location.uri, {
         selection: rawSelected.location.range,
       });
+    } else {
+      await window.showTextDocument(editor.document, { selection });
     }
     return selected;
   }

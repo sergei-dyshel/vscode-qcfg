@@ -130,7 +130,7 @@ class OutputChannelHandler extends TextLogHandler {
     const envLevel = LogLevels.fromString(
       process.env['VSCODE_QCFG_LOGLEVEL'] ?? 'info',
     );
-    this.level = envLevel !== undefined ? envLevel : LogLevel.INFO;
+    this.level = envLevel === undefined ? LogLevel.INFO : envLevel;
     /// #if DEBUG
     this.level = LogLevel.DEBUG;
     /// #endif

@@ -61,9 +61,9 @@ async function location2Call(
   if (!symbols) return undefined;
   const symbol = getContainingSymbol(location.range, symbols);
   if (!symbol) return undefined;
-  return symbol.kind !== SymbolKind.Null
-    ? new SymbolCallHierarchyItem(location.uri, symbol, languageId)
-    : undefined;
+  return symbol.kind === SymbolKind.Null
+    ? undefined
+    : new SymbolCallHierarchyItem(location.uri, symbol, languageId);
 }
 
 class AdhocCallHierarchyProvider implements CallHierarchyProvider {

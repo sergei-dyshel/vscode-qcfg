@@ -93,8 +93,8 @@ async function demoGenericQuickPick() {
     log.debug('activated', val);
   };
   const selected = await qp.select();
-  if (!selected) log.debug('cancelled');
-  else log.debug('selected', selected);
+  if (selected) {log.debug('selected', selected);}
+  else {log.debug('cancelled');}
 }
 
 async function demoStringHistory() {

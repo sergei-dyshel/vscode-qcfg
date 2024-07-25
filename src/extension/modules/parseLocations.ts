@@ -49,7 +49,7 @@ export function parseLocation(
   if (!match) return;
   const groups = match.groups!;
   if (!groups["file"]) return;
-  const column = !groups["column"] ? 1 : Number(groups["column"]);
+  const column = groups["column"] ? Number(groups["column"]) : 1;
   return new Location(
     Uri.file(nodejs.path.resolve(base, groups["file"])),
     new Position(Number(groups["line"]) - 1, column - 1),

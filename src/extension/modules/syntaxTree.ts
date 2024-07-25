@@ -1,34 +1,33 @@
-// eslint-disable-next-line @typescript-eslint/no-duplicate-imports
+import type * as vscode from "vscode";
 import type {
   Event,
   ExtensionContext,
   TextDocument,
   TextDocumentChangeEvent,
   TextEditor,
-} from 'vscode';
-import type * as vscode from 'vscode';
-import { EventEmitter, Position, Range, window, workspace } from 'vscode';
-import { Logger } from '../../library/logging';
-import * as nodejs from '../../library/nodejs';
-import { Timer } from '../../library/nodeUtils';
-import { DefaultMap } from '../../library/tsUtils';
-import { mapAsync } from './async';
-import { NumRange } from './documentUtils';
-import { handleErrors, handleStd, listenWrapped } from './exception';
-import { Modules } from './module';
+} from "vscode";
+import { EventEmitter, Position, Range, window, workspace } from "vscode";
+import { assert, assertNotNull } from "../../library/exception";
+import { Logger } from "../../library/logging";
+import * as nodejs from "../../library/nodejs";
+import { Timer } from "../../library/nodeUtils";
 import type {
   SyntaxNode,
   SyntaxTree,
   SyntaxTreeEdit,
-} from '../../library/treeSitter';
-import { TreeSitter } from '../../library/treeSitter';
-import { assert, assertNotNull } from '../../library/exception';
-import { UserCommands } from '../../library/userCommands';
-import { getActiveTextEditor } from './utils';
+} from "../../library/treeSitter";
+import { TreeSitter } from "../../library/treeSitter";
+import { DefaultMap } from "../../library/tsUtils";
+import { UserCommands } from "../../library/userCommands";
+import { mapAsync } from "./async";
+import { NumRange } from "./documentUtils";
+import { handleErrors, handleStd, listenWrapped } from "./exception";
+import { Modules } from "./module";
+import { getActiveTextEditor } from "./utils";
 
 const UPDATE_DELAY_MS = 1000;
 
-declare module 'web-tree-sitter' {
+declare module "web-tree-sitter" {
   // eslint-disable-next-line @typescript-eslint/no-shadow
   interface SyntaxNode {
     readonly offsetRange: NumRange;
@@ -69,9 +68,9 @@ function patchSyntaxNodePrototype(node: SyntaxNode) {
   const prototype = TreeSitter.syntaxNodePrototype(node);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if ('offsetRange' in (prototype as any)) return;
+  if ("offsetRange" in (prototype as any)) return;
 
-  Object.defineProperty(prototype, 'offsetRange', {
+  Object.defineProperty(prototype, "offsetRange", {
     get(): NumRange {
       const this_ = this as SyntaxNode;
       /* XXX: use memoization package? (e.g. memoizee) */
@@ -81,7 +80,7 @@ function patchSyntaxNodePrototype(node: SyntaxNode) {
     },
   });
 
-  Object.defineProperty(prototype, 'range', {
+  Object.defineProperty(prototype, "range", {
     get(): Range {
       const this_ = this as SyntaxNode;
       if (!this.range_) this.range_ = new Range(this_.start, this_.end);
@@ -89,7 +88,7 @@ function patchSyntaxNodePrototype(node: SyntaxNode) {
     },
   });
 
-  Object.defineProperty(prototype, 'start', {
+  Object.defineProperty(prototype, "start", {
     get(): Position {
       const this_ = this as SyntaxNode;
       if (!this.start_)
@@ -101,7 +100,7 @@ function patchSyntaxNodePrototype(node: SyntaxNode) {
     },
   });
 
-  Object.defineProperty(prototype, 'end', {
+  Object.defineProperty(prototype, "end", {
     get(): Position {
       const this_ = this as SyntaxNode;
       if (!this.end_)
@@ -133,7 +132,7 @@ class DocumentContext {
   updateTree() {
     if (this.tree?.version === this.document.version) return;
     if (this.language.isLoading) {
-      this.log.debug('Language is still loading');
+      this.log.debug("Language is still loading");
       this.scheduleUpdate();
       return;
     }
@@ -146,7 +145,7 @@ class DocumentContext {
     patchSyntaxNodePrototype(this.tree.rootNode);
     const end = Date.now();
     this.log.debug(
-      `${incremental ? 'Incremental' : 'Full'} parsing took ${
+      `${incremental ? "Incremental" : "Full"} parsing took ${
         (end - start) / 1000
       } seconds (version ${version})`,
     );
@@ -202,7 +201,7 @@ class DocumentContext {
     const fullTree = this.language.parse(this.document.getText());
     assert(
       this.tree.rootNode.compare(fullTree.rootNode),
-      'Parsed trees are not equal',
+      "Parsed trees are not equal",
     );
   }
 }
@@ -279,8 +278,8 @@ function activate(context: ExtensionContext) {
 }
 
 UserCommands.register({
-  command: 'qcfg.syntaxTree.verify',
-  title: 'Verify syntax tree',
+  command: "qcfg.syntaxTree.verify",
+  title: "Verify syntax tree",
   callback: () => {
     trees.get(getActiveTextEditor().document).verify();
   },

@@ -91,13 +91,13 @@ export class TaskContext {
         this.vars["selectedText"] = document.getText(editor.selection);
       if (editor.selection.isEmpty)
         this.vars["lineNumber"] = String(editor.selection.active.line + 1);
-      if (!editor.selection.isEmpty) {
-        this.vars["cursorWord"] = document.getText(editor.selection);
-      } else {
+      if (editor.selection.isEmpty) {
         const wordCtx = getCursorWordContext();
         if (wordCtx) {
           this.vars["cursorWord"] = wordCtx.word;
         }
+      } else {
+        this.vars["cursorWord"] = document.getText(editor.selection);
       }
       this.vars["stripExt"] = stripExt;
       this.vars["baseName"] = baseName;
@@ -348,9 +348,9 @@ export class TerminalTask extends BaseQcfgTask {
     this.task.presentationOptions = {
       focus: params.reveal === Cfg.Reveal.FOCUS,
       reveal:
-        params.reveal !== Cfg.Reveal.NO
-          ? TaskRevealKind.Always
-          : TaskRevealKind.Never,
+        params.reveal === Cfg.Reveal.NO
+          ? TaskRevealKind.Never
+          : TaskRevealKind.Always,
       panel: flags.includes(Cfg.Flag.DEDICATED_PANEL)
         ? TaskPanelKind.Dedicated
         : TaskPanelKind.Shared,

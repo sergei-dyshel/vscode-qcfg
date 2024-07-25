@@ -149,11 +149,11 @@ export function mapNonNull<T, V>(
   return array
     .map(func)
     .filter((x) => x !== null && x !== undefined)
-    .map((x) => x!);
+    .map((x) => x);
 }
 
 export function filterNonNull<T>(array: Array<T | null | undefined>): T[] {
-  return array.filter((x) => x !== null && x !== undefined).map((x) => x!);
+  return array.filter((x) => x !== null && x !== undefined).map((x) => x);
 }
 
 /**
@@ -195,7 +195,7 @@ export function concatArrays<T>(...arrays: T[][]): T[] {
 }
 
 export function concatNonNullArrays<T>(...arrays: Array<T[] | undefined>): T[] {
-  const nonNullArrays = arrays.filter((x) => x !== undefined) as T[][];
+  const nonNullArrays = arrays.filter((x) => x !== undefined);
   return concatArrays(...nonNullArrays);
 }
 
@@ -331,7 +331,8 @@ declare global {
     /**
      * Maximum element of array.
      *
-     * @param cmd Returns negative if `x < y`, 0 if `x === y` and positive if `x  > Y`
+     * @param cmd Returns negative if `x < y`, 0 if `x === y` and positive if `x
+     *   > Y`
      */
     max: (cmp?: (x: T, y: T) => number) => T | undefined;
     equals: (that: T[], eq?: (x: T, y: T) => boolean) => boolean;
@@ -441,10 +442,10 @@ Array.prototype.uniq = function <T>(
 
 Array.prototype.group = function <T>(this: T[], func: (x: T, y: T) => boolean) {
   return this.reduce<T[][]>((prev: T[][], cur: T) => {
-    if (prev.length === 0 || !func(prev[prev.length - 1][0], cur)) {
+    if (prev.length === 0 || !func(prev.at(-1)![0], cur)) {
       prev.push([cur]);
     } else {
-      prev[prev.length - 1].push(cur);
+      prev.at(-1)!.push(cur);
     }
     return prev;
   }, []);
@@ -536,10 +537,12 @@ Array.prototype.allIndexesOf = function <T>(
   const inds: number[] = [];
   for (;;) {
     const ind = this.indexOf(searchElement, fromIndex);
-    if (ind !== -1) {
+    if (ind === -1) {
+      break;
+    } else {
       inds.push(ind);
       fromIndex = ind + 1;
-    } else break;
+    }
   }
   return inds;
 };
@@ -585,7 +588,7 @@ Array.prototype.clear = function <T>(this: T[]) {
 
 Object.defineProperty(Array.prototype, "top", {
   get<T>(): T | undefined {
-    if (this.length > 0) return this[this.length - 1];
+    if (this.length > 0) return this.at(-1);
     return undefined;
   },
 });

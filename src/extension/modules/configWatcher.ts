@@ -143,9 +143,9 @@ export class ConfigSectionWatcher<
         const config = this.getConfiguration();
         this.oldValue = this.value;
         this.value = config.get(section);
-        if (!this.initialized)
-          log.info(`${section}: initial value is`, this.value);
-        else log.info(`${section}: value changed to`, this.value);
+        if (this.initialized)
+          {log.info(`${section}: value changed to`, this.value);}
+        else {log.info(`${section}: initial value is`, this.value);}
         if (callback) return callback();
       },
       { noLogChange: true, ...options },

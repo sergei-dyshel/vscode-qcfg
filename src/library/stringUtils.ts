@@ -16,7 +16,7 @@ export function parseNumber(
 }
 
 export function buildFuzzyPattern(query: string): string {
-  const goodChars = query.replace(/\W/g, "");
+  const goodChars = query.replaceAll(/\W/g, "");
   return [...goodChars].join(".*");
 }
 
@@ -25,7 +25,7 @@ export function fuzzyMatch(text: string, query: string): boolean {
 }
 
 export function buildAbbrevPattern(query: string): string {
-  const goodChars = query.replace(/\W/g, "");
+  const goodChars = query.replaceAll(/\W/g, "");
   const midPattern = [...goodChars]
     .map((ch) => {
       if (/[A-Za-z]/.test(ch)) {
@@ -71,11 +71,11 @@ export function splitWithRemainder(
 
 export function escapeRegExp(str: string) {
   // from https://stackoverflow.com/a/1144788/5531098
-  return str.replace(/([.*+?^=!:${}()|[\]/\\])/g, "\\$1");
+  return str.replaceAll(/([.*+?^=!:${}()|[\]/\\])/g, String.raw`\$1`);
 }
 
 export function replaceAll(str: string, find: string, replace: string) {
-  return str.replace(new RegExp(escapeRegExp(find), "g"), replace);
+  return str.replaceAll(new RegExp(escapeRegExp(find), "g"), replace);
 }
 
 export function ellipsize(
@@ -97,7 +97,7 @@ export function expandTemplate(
   substitute: Record<string, string | undefined>,
   throwWhenNotExist = false,
 ): string {
-  return text.replace(/\${([a-zA-Z\d]+)}/g, (_, varname: string) => {
+  return text.replaceAll(/\${([a-zA-Z\d]+)}/g, (_, varname: string) => {
     const sub = substitute[varname];
     if (!sub) {
       if (throwWhenNotExist)

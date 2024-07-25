@@ -4,6 +4,7 @@ import type { ExtensionJSON } from "../library/extensionManifest";
 
 export function generateConfig() {
   const schema = zodToJsonSchema(Config.allSchema, { $refStrategy: "none" });
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
   const properties = (schema as any).properties;
   properties["qcfg.tasks"].scope = "resource";
 
@@ -11,6 +12,7 @@ export function generateConfig() {
     contributes: {
       configuration: {
         title: "Qcfg configuration",
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         properties,
       },
     },

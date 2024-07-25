@@ -47,12 +47,12 @@ const protocol = {
     column?: number;
   }): Promise<void> {
     const selection =
-      arg.line !== undefined
-        ? new Position(
+      arg.line === undefined
+        ? undefined
+        : new Position(
             arg.line - 1,
             (arg.column ?? 1) - 1,
-          ).asRange.asSelection()
-        : undefined;
+          ).asRange.asSelection();
     await focusWindow();
     await window
       .showTextDocument(Uri.file(arg.path), { selection })

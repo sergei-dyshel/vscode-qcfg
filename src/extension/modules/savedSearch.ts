@@ -156,7 +156,7 @@ async function rerunLastSearch() {
 const savedSearches: SavedSearch[] = [];
 
 let lastName: string | undefined;
-let lastLocations = new DisposableHolder<LiveLocationArray>();
+const lastLocations = new DisposableHolder<LiveLocationArray>();
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(

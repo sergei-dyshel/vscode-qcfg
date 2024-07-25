@@ -227,11 +227,11 @@ namespace WorkspaceGtags {
     if (searchResults.length === LIMIT) {
       logger.debug(`Reached limit of ${LIMIT}`);
       abortSearch();
-      if (currentQeury !== searchedQuery) {
+      if (currentQeury === searchedQuery) {
+        limitReached = true;
+      } else {
         logger.debug(`Restarting search with new query ${currentQeury}`);
         startSearch(currentQeury);
-      } else {
-        limitReached = true;
       }
       return;
     }

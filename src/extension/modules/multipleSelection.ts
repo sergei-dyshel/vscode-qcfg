@@ -2,24 +2,25 @@ import type {
   ExtensionContext,
   TextEditor,
   TextEditorSelectionChangeEvent,
-} from 'vscode';
-import { window } from 'vscode';
-import { log } from '../../library/logging';
-import { lazyValue } from '../../library/tsUtils';
+} from "vscode";
+import { window } from "vscode";
+import { log } from "../../library/logging";
+import { stringify } from "../../library/stringify";
+import { lazyValue } from "../../library/tsUtils";
 import {
   handleAsyncStd,
   listenWrapped,
   registerSyncCommandWrapped,
-} from './exception';
-import { Modules } from './module';
-import { getActiveTextEditor, WhenContext } from './utils';
+} from "./exception";
+import { Modules } from "./module";
+import { getActiveTextEditor, WhenContext } from "./utils";
 
-const CONTEXT = 'qcfgMultipleSelectionsMarker';
+const CONTEXT = "qcfgMultipleSelectionsMarker";
 
 const selectionIndex = new Map<TextEditor, number>();
 const decorationType = lazyValue(() =>
   window.createTextEditorDecorationType({
-    outline: '2px solid white',
+    outline: "2px solid white",
   }),
 );
 
@@ -32,7 +33,7 @@ function clearMark(editor: TextEditor) {
 function updateMark(editor: TextEditor, index: number) {
   const selections = editor.selections;
   if (index < 0 || index >= selections.length)
-    throw new Error('Invalid selection index');
+    throw new Error("Invalid selection index");
   selectionIndex.set(editor, index);
   const range = selections[index];
   editor.setDecorations(decorationType(), []);
@@ -40,7 +41,7 @@ function updateMark(editor: TextEditor, index: number) {
   editor.revealRange(range);
   handleAsyncStd(WhenContext.set(CONTEXT));
   log.debug(
-    `${editor}: marking selection #${index} out of ${selections.length}, range ${range}`,
+    `${stringify(editor)}: marking selection #${index} out of ${selections.length}, range ${range}`,
   );
 }
 
@@ -75,12 +76,12 @@ function moveMark(down: boolean) {
   const selections = editor.selections;
   if (selections.length === 1) return;
   const index = selectionIndex.get(editor);
-  if (index !== undefined) {
+  if (index === undefined) {
+    updateMark(editor, down ? 0 : selections.length - 1);
+  } else {
     let newIndex = (index + (down ? 1 : -1)) % selections.length;
     if (newIndex === -1) newIndex = selections.length - 1;
     updateMark(editor, newIndex);
-  } else {
-    updateMark(editor, down ? 0 : selections.length - 1);
   }
 }
 
@@ -94,16 +95,16 @@ function activate(context: ExtensionContext) {
   context.subscriptions.push(
     listenWrapped(window.onDidChangeTextEditorSelection, onSelectionChanged),
     registerSyncCommandWrapped(
-      'qcfg.multipleSelection.unselectMarked',
+      "qcfg.multipleSelection.unselectMarked",
       unselectMarked,
     ),
-    registerSyncCommandWrapped('qcfg.multipleSelection.moveMarkDown', () => {
+    registerSyncCommandWrapped("qcfg.multipleSelection.moveMarkDown", () => {
       moveMark(true /* down */);
     }),
-    registerSyncCommandWrapped('qcfg.multipleSelection.moveMarkUp', () => {
+    registerSyncCommandWrapped("qcfg.multipleSelection.moveMarkUp", () => {
       moveMark(false /* up */);
     }),
-    registerSyncCommandWrapped('qcfg.multipleSelection.resetToMark', () => {
+    registerSyncCommandWrapped("qcfg.multipleSelection.resetToMark", () => {
       resetToMark();
     }),
   );

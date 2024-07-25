@@ -3,6 +3,6 @@ import { UserCommands } from "../library/userCommands";
 
 import "../extension/allModules";
 
-export async function generateCommands() {
+export function generateCommands() {
   return UserCommands.generateJson();
 }

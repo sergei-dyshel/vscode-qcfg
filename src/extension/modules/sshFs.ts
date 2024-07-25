@@ -36,7 +36,7 @@ function encodeUri(host: string, path: string) {
     scheme: SCHEME,
     authority: host,
     path: '/' + path,
-    query: !path.startsWith('/') ? 'home' : undefined,
+    query: path.startsWith('/') ? undefined : 'home',
   });
 }
 
@@ -73,7 +73,7 @@ const sshFsProvider: FileSystemProvider = {
       host,
       `/usr/bin/stat  --printf "%F\\n%W\\n%Y\\n%s" ${path}`,
     ]);
-    const attrs = result.stdout.split('\\n');
+    const attrs = result.stdout.split(String.raw`\n`);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const type: FileType = (
       {
@@ -82,7 +82,7 @@ const sshFsProvider: FileSystemProvider = {
         'symbolik link': FileType.SymbolicLink,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any
-    )[attrs[0]]!;
+    )[attrs[0]];
     const ctime = attrs[1] === '?' ? 0 : (attrs[1] as unknown as number);
     const mtime = attrs[2] === '?' ? 0 : (attrs[1] as unknown as number);
     const size =
