@@ -31,6 +31,7 @@ import {
 } from './exception';
 import { Modules } from './module';
 import type { SyntaxNode, TreeSitter } from '../../library/treeSitter';
+import { extensionDebug } from '../utils/extensionContext';
 
 /**
  * Show log output panel
@@ -186,11 +187,8 @@ function activate(context: ExtensionContext) {
     ),
   );
 
-  /// #if DEBUG
-  log.info('DEBUG mode');
-  /// #else
-  log.info('PRODUCTION mode');
-  /// #endif
+  const mode = extensionDebug() ? "DEBUG" : "PRODUCTION";
+  log.info(`${mode} mode`);
   log.info(
     `Logging to output panel on ${LogLevels.toString(
       outputHandler.level,
