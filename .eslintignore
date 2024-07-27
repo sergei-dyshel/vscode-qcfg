@@ -1,4 +1,5 @@
 vscode.proposed.*.d.ts
 .eslintrc.js
+prettier.config.js
 out/*
 dist/*
