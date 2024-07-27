@@ -1,11 +1,14 @@
-import type { TextDocument, TextDocumentContentChangeEvent } from 'vscode';
-import { Position, Range } from 'vscode';
-import { assert } from '../../library/exception';
-import { maxNumber, minNumber } from '../../library/tsUtils';
+import type { TextDocument, TextDocumentContentChangeEvent } from "vscode";
+import { Position, Range } from "vscode";
+import { assert } from "../../library/exception";
+import { maxNumber, minNumber } from "../../library/tsUtils";
 
 export class NumRange {
-  constructor(readonly start: number, readonly end: number) {
-    assert(start <= end, 'start > end');
+  constructor(
+    readonly start: number,
+    readonly end: number,
+  ) {
+    assert(start <= end, "start > end");
   }
 
   get length() {
@@ -43,7 +46,7 @@ export class NumRange {
   }
 
   contains(that: NumRange | number): boolean {
-    if (typeof that === 'number') return this.start <= that && that <= this.end;
+    if (typeof that === "number") return this.start <= that && that <= this.end;
     return this.contains(that.start) && this.contains(that.end);
   }
 

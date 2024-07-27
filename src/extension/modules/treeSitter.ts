@@ -5,44 +5,44 @@ import type {
   TextDocumentChangeEvent,
   TextEditor,
   TextEditorSelectionChangeEvent,
-} from 'vscode';
-import { Range, window, workspace } from 'vscode';
+} from "vscode";
+import { Range, window, workspace } from "vscode";
 import {
   assert,
   assertNotNull,
   check,
   checkNotNull,
-} from '../../library/exception';
-import { lazyValue } from '../../library/tsUtils';
-import { RangeDecorator } from '../utils/decoration';
-import { setStatusBarErrorBackground } from '../utils/statusBar';
+} from "../../library/exception";
+import type { SyntaxNode, SyntaxTree } from "../../library/treeSitter";
+import { TreeSitter } from "../../library/treeSitter";
+import { lazyValue } from "../../library/tsUtils";
+import { RangeDecorator } from "../utils/decoration";
+import { setStatusBarErrorBackground } from "../utils/statusBar";
 import {
   listenAsyncWrapped,
   registerAsyncCommandWrapped,
   registerSyncCommandWrapped,
-} from './exception';
-import { Modules } from './module';
-import { SyntaxTrees } from './syntaxTree';
-import { revealSelection, swapRanges } from './textUtils';
-import { getActiveTextEditor, WhenContext } from './utils';
-import type { SyntaxNode, SyntaxTree } from '../../library/treeSitter';
-import { TreeSitter } from '../../library/treeSitter';
+} from "./exception";
+import { Modules } from "./module";
+import { SyntaxTrees } from "./syntaxTree";
+import { revealSelection, swapRanges } from "./textUtils";
+import { getActiveTextEditor, WhenContext } from "./utils";
 
-const WHEN_CLAUSE = 'qcfgTreeMode';
+const WHEN_CLAUSE = "qcfgTreeMode";
 
 const siblingDecorator = lazyValue(() =>
   RangeDecorator.bracketStyle({
     // TODO: use color conversion lib, candidates (both are typed):
     // https://www.npmjs.com/package/color-string
     // https://www.npmjs.com/package/color-convert
-    color: 'rgba(255, 255, 255, 0.50)',
+    color: "rgba(255, 255, 255, 0.50)",
     width: 2,
   }),
 );
 
 const parentDecorator = lazyValue(() =>
   RangeDecorator.bracketStyle({
-    color: 'rgba(255, 255, 0, 0.50)',
+    color: "rgba(255, 255, 0, 0.50)",
     width: 2,
   }),
 );
@@ -163,13 +163,13 @@ function parseDirection(direction: string): {
   terminal: boolean;
 } {
   switch (direction) {
-    case 'first':
+    case "first":
       return { reversed: true, terminal: true };
-    case 'last':
+    case "last":
       return { reversed: false, terminal: true };
-    case 'left':
+    case "left":
       return { reversed: true, terminal: false };
-    case 'right':
+    case "right":
       return { reversed: false, terminal: false };
     default:
       throw new Error(`Invalid direction: ${direction}`);
@@ -183,7 +183,7 @@ function selectSibling(direction: string) {
   const { single, start, end } = selectedNodes;
   if (single) {
     const sibling = getSibling(single, reversed, terminal);
-    check(sibling !== single, 'Can not go in this direction');
+    check(sibling !== single, "Can not go in this direction");
     selectedNodes.start = sibling;
     selectedNodes.end = sibling;
     history.clear();
@@ -200,12 +200,12 @@ function selectSibling(direction: string) {
 }
 
 async function moveSelection(direction: string) {
-  const reversed = direction === 'left';
+  const reversed = direction === "left";
   validateContext(context);
   const { editor, selectedNodes } = context;
   const active = reversed ? selectedNodes.start : selectedNodes.end;
   const sibling = adjacentSibling(active, reversed);
-  check(sibling !== active, 'Can not move in this direction');
+  check(sibling !== active, "Can not move in this direction");
   await exitMode();
   await swapRanges(editor, sibling.range, selectedNodes.range);
   await enterMode();
@@ -237,7 +237,7 @@ function extendSelection(direction: string) {
   assertNotNull(context?.selectedNodes);
   const { selectedNodes, history } = context;
   const newActive = getSibling(selectedNodes.active, reversed, terminal);
-  check(newActive !== selectedNodes.active, 'Can not extend in this direction');
+  check(newActive !== selectedNodes.active, "Can not extend in this direction");
   context.selectedNodes = SelectedNodes.directed(
     selectedNodes.anchor,
     newActive,
@@ -247,22 +247,22 @@ function extendSelection(direction: string) {
 }
 
 const LIST_PARENT_TYPES = new Set([
-  'statement_block',
-  'arguments',
-  'formal_paremeters',
-  'array',
-  'program',
-  'module',
-  'preproc_if',
+  "statement_block",
+  "arguments",
+  "formal_paremeters",
+  "array",
+  "program",
+  "module",
+  "preproc_if",
   // 'function_definition', // only in python
-  'compound_statement',
-  'field_declaration_list',
-  'declaration_list',
-  'translation_unit',
-  'parameter_list',
-  'argument_list',
-  'binary_expression',
-  'source_file',
+  "compound_statement",
+  "field_declaration_list",
+  "declaration_list",
+  "translation_unit",
+  "parameter_list",
+  "argument_list",
+  "binary_expression",
+  "source_file",
 ]);
 
 function isListParent(node: SyntaxNode) {
@@ -281,13 +281,13 @@ export async function enterMode() {
   const editor = getActiveTextEditor();
   check(
     editor.selections.length === 1,
-    'Tree mode does not support multiple selections',
+    "Tree mode does not support multiple selections",
   );
 
   const { document, selection } = editor;
   const tree = SyntaxTrees.get(document);
   const selectedNodes = inferSelectedNodes(tree.rootNode, selection);
-  assertNotNull(selectedNodes, 'Could not infer tree nodes from selection');
+  assertNotNull(selectedNodes, "Could not infer tree nodes from selection");
   context = {
     editor,
     tree,
@@ -360,7 +360,7 @@ function selectParent() {
   validateContext(context);
   check(
     context.selectedNodes.parent !== context.tree.rootNode,
-    'Can not select root node',
+    "Can not select root node",
   );
   context.history.push(context.selectedNodes);
   selectNodeAndDecorate(context.selectedNodes.parent);
@@ -373,7 +373,7 @@ function selectParentListItem() {
   while (node && !isListItem(node)) {
     node = node.parent;
   }
-  checkNotNull(node, 'Could not find parent list item');
+  checkNotNull(node, "Could not find parent list item");
   context.history.push(context.selectedNodes);
   selectNodeAndDecorate(node);
 }
@@ -386,9 +386,9 @@ function shrink() {
     return;
   }
   const node = context.selectedNodes.single;
-  checkNotNull(node, 'Multiple nodes selected');
+  checkNotNull(node, "Multiple nodes selected");
   const firstChild = node.firstNamedChild;
-  checkNotNull(firstChild, 'Selected node has no children');
+  checkNotNull(firstChild, "Selected node has no children");
   selectNodeAndDecorate(firstChild);
 }
 
@@ -403,9 +403,9 @@ function reverseSelection() {
 let status: StatusBarItem | undefined;
 
 function activate(extContext: ExtensionContext) {
-  status = window.createStatusBarItem('qcfgTreeMode');
-  status.name = 'qcfg: Tree mode';
-  status.text = 'Tree mode';
+  status = window.createStatusBarItem("qcfgTreeMode");
+  status.name = "qcfg: Tree mode";
+  status.text = "Tree mode";
   setStatusBarErrorBackground(status);
 
   extContext.subscriptions.push(
@@ -417,24 +417,24 @@ function activate(extContext: ExtensionContext) {
       workspace.onDidChangeTextDocument,
       async (_: TextDocumentChangeEvent) => exitMode(),
     ),
-    registerAsyncCommandWrapped('qcfg.treeMode.enter', enterMode),
+    registerAsyncCommandWrapped("qcfg.treeMode.enter", enterMode),
     registerSyncCommandWrapped(
-      'qcfg.treeMode.reverseSelection',
+      "qcfg.treeMode.reverseSelection",
       reverseSelection,
     ),
-    registerAsyncCommandWrapped('qcfg.treeMode.exit', exitMode),
-    registerSyncCommandWrapped('qcfg.treeMode.selectParent', selectParent),
-    registerSyncCommandWrapped('qcfg.treeMode.shrink', shrink),
+    registerAsyncCommandWrapped("qcfg.treeMode.exit", exitMode),
+    registerSyncCommandWrapped("qcfg.treeMode.selectParent", selectParent),
+    registerSyncCommandWrapped("qcfg.treeMode.shrink", shrink),
     registerSyncCommandWrapped(
-      'qcfg.treeMode.selectParentListItem',
+      "qcfg.treeMode.selectParentListItem",
       selectParentListItem,
     ),
-    registerSyncCommandWrapped('qcfg.treeMode.selectSibling', selectSibling),
+    registerSyncCommandWrapped("qcfg.treeMode.selectSibling", selectSibling),
     registerSyncCommandWrapped(
-      'qcfg.treeMode.extendSelection',
+      "qcfg.treeMode.extendSelection",
       extendSelection,
     ),
-    registerAsyncCommandWrapped('qcfg.treeMode.moveSelection', moveSelection),
+    registerAsyncCommandWrapped("qcfg.treeMode.moveSelection", moveSelection),
   );
 }
 

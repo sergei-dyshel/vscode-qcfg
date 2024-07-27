@@ -1,7 +1,7 @@
-import * as vscode from 'vscode';
-import { log } from '../../library/logging';
-import { parseNumber } from '../../library/stringUtils';
-import * as remoteControl from './remoteControl';
+import * as vscode from "vscode";
+import { log } from "../../library/logging";
+import { parseNumber } from "../../library/stringUtils";
+import * as remoteControl from "./remoteControl";
 
 let nextId = 0;
 
@@ -19,7 +19,7 @@ export class TerminalProcess {
     this.genId = nextId;
     nextId += 1;
     const fullCmd =
-      typeof command === 'string' ? ['/bin/bash', '-c', command] : command;
+      typeof command === "string" ? ["/bin/bash", "-c", command] : command;
     const shellArgs = [
       remoteControl.port.toString(),
       this.genId.toString(),
@@ -30,7 +30,7 @@ export class TerminalProcess {
       shellArgs,
       env: options ? options.env : undefined,
       cwd: options ? options.cwd : undefined,
-      shellPath: '/home/sergei/qyron-config/scripts/vscode-run-in-terminal.sh',
+      shellPath: "/home/sergei/qyron-config/scripts/vscode-run-in-terminal.sh",
     };
     this.terminal = vscode.window.createTerminal(opts);
     TerminalProcess.activeProcesses.push(this);

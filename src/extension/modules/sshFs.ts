@@ -4,18 +4,18 @@ import type {
   FileChangeEvent,
   FileStat,
   FileSystemProvider,
-} from 'vscode';
-import { EventEmitter, FileType, Uri, window, workspace } from 'vscode';
-import { assert } from '../../library/exception';
-import { handleErrorsAsync } from './exception';
-import { getTempFile } from './fileUtils';
-import { Modules } from './module';
-import { runSubprocessAndWait } from './subprocess';
+} from "vscode";
+import { EventEmitter, FileType, Uri, window, workspace } from "vscode";
+import { assert } from "../../library/exception";
+import { handleErrorsAsync } from "./exception";
+import { getTempFile } from "./fileUtils";
+import { Modules } from "./module";
+import { runSubprocessAndWait } from "./subprocess";
 
-const SCHEME = 'qsshfs';
+const SCHEME = "qsshfs";
 
 export async function openRemoteFileViaSsh(hostPath: string) {
-  const [host, path] = hostPath.split(':');
+  const [host, path] = hostPath.split(":");
   const uri = encodeUri(host, path);
   await window.showTextDocument(uri);
 }
@@ -32,17 +32,17 @@ class WatchedFile {
 const watchedFiles: WatchedFile[] = [];
 
 function encodeUri(host: string, path: string) {
-  return Uri.parse('').with({
+  return Uri.parse("").with({
     scheme: SCHEME,
     authority: host,
-    path: '/' + path,
-    query: path.startsWith('/') ? undefined : 'home',
+    path: "/" + path,
+    query: path.startsWith("/") ? undefined : "home",
   });
 }
 
 function decodeUri(uri: Uri) {
   assert(uri.scheme === SCHEME);
-  const path = uri.query === 'home' ? uri.path.slice(1) : uri.path;
+  const path = uri.query === "home" ? uri.path.slice(1) : uri.path;
   return [uri.authority, path];
 }
 
@@ -61,7 +61,7 @@ const sshFsProvider: FileSystemProvider = {
     watchedFiles.push(new WatchedFile(uri));
     return {
       dispose() {
-        throw new Error('unimplemented');
+        throw new Error("unimplemented");
       },
     };
   },
@@ -69,7 +69,7 @@ const sshFsProvider: FileSystemProvider = {
   async stat(uri: Uri): Promise<FileStat> {
     const [host, path] = decodeUri(uri);
     const result = await runSubprocessAndWait([
-      'ssh',
+      "ssh",
       host,
       `/usr/bin/stat  --printf "%F\\n%W\\n%Y\\n%s" ${path}`,
     ]);
@@ -77,14 +77,14 @@ const sshFsProvider: FileSystemProvider = {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const type: FileType = (
       {
-        'regular file': FileType.File,
+        "regular file": FileType.File,
         directory: FileType.Directory,
-        'symbolik link': FileType.SymbolicLink,
+        "symbolik link": FileType.SymbolicLink,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any
     )[attrs[0]];
-    const ctime = attrs[1] === '?' ? 0 : (attrs[1] as unknown as number);
-    const mtime = attrs[2] === '?' ? 0 : (attrs[1] as unknown as number);
+    const ctime = attrs[1] === "?" ? 0 : (attrs[1] as unknown as number);
+    const mtime = attrs[2] === "?" ? 0 : (attrs[1] as unknown as number);
     const size =
       type === FileType.Directory ? 0 : (attrs[3] as unknown as number);
 
@@ -94,16 +94,16 @@ const sshFsProvider: FileSystemProvider = {
   readDirectory(
     _uri: Uri,
   ): Array<[string, FileType]> | Thenable<Array<[string, FileType]>> {
-    throw new Error('unimplementd');
+    throw new Error("unimplementd");
   },
 
   createDirectory(_uri: Uri): void | Thenable<void> {
-    throw new Error('unimplemented');
+    throw new Error("unimplemented");
   },
 
   readFile: handleErrorsAsync(async (uri: Uri): Promise<Uint8Array> => {
     const temp = getTempFile();
-    await runSubprocessAndWait(['scp', uriToArg(uri), temp]);
+    await runSubprocessAndWait(["scp", uriToArg(uri), temp]);
     return workspace.fs.readFile(Uri.file(temp));
   }),
 
@@ -114,11 +114,11 @@ const sshFsProvider: FileSystemProvider = {
   ): Promise<void> {
     const temp = getTempFile();
     await workspace.fs.writeFile(Uri.file(temp), content);
-    await runSubprocessAndWait(['scp', temp, uriToArg(uri)]);
+    await runSubprocessAndWait(["scp", temp, uriToArg(uri)]);
   },
 
   delete(_uri: Uri, _options: { recursive: boolean }): void | Thenable<void> {
-    throw new Error('unimplemented');
+    throw new Error("unimplemented");
   },
 
   rename(
@@ -126,7 +126,7 @@ const sshFsProvider: FileSystemProvider = {
     _newUri: Uri,
     _options: { overwrite: boolean },
   ): void | Thenable<void> {
-    throw new Error('unimplemented');
+    throw new Error("unimplemented");
   },
 };
 

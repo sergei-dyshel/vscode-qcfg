@@ -6,7 +6,7 @@ import type {
   TextDocumentContentChangeEvent,
   TextEditor,
   TextEditorSelectionChangeEvent,
-} from 'vscode';
+} from "vscode";
 import {
   Location,
   Range,
@@ -14,17 +14,17 @@ import {
   StatusBarAlignment,
   window,
   workspace,
-} from 'vscode';
-import { CheckError, checkNotNull } from '../../library/exception';
-import { Logger } from '../../library/logging';
-import * as nodejs from '../../library/nodejs';
-import { DefaultMap } from '../../library/tsUtils';
-import { NumRange } from './documentUtils';
-import { listenWrapped, registerSyncCommandWrapped } from './exception';
-import { LiveRange } from './liveLocation';
-import { Modules } from './module';
-import { offsetPosition } from './textUtils';
-import { getActiveTextEditor } from './utils';
+} from "vscode";
+import { CheckError, checkNotNull } from "../../library/exception";
+import { Logger } from "../../library/logging";
+import * as nodejs from "../../library/nodejs";
+import { DefaultMap } from "../../library/tsUtils";
+import { NumRange } from "./documentUtils";
+import { listenWrapped, registerSyncCommandWrapped } from "./exception";
+import { LiveRange } from "./liveLocation";
+import { Modules } from "./module";
+import { offsetPosition } from "./textUtils";
+import { getActiveTextEditor } from "./utils";
 
 const HISTORY_SIZE = 20;
 
@@ -43,7 +43,7 @@ class DocumentHistory {
 
   constructor(private readonly document: TextDocument) {
     const base = nodejs.path.parse(document.fileName).base;
-    this.log = new Logger({ name: 'DocumentHistory', instance: base });
+    this.log = new Logger({ name: "DocumentHistory", instance: base });
   }
 
   get length() {
@@ -76,7 +76,7 @@ class DocumentHistory {
     this.ranges.push(lrange);
     if (this.ranges.length > HISTORY_SIZE) this.ranges.shift();
     this.resetIndex();
-    this.log.trace('Pushing', lrange);
+    this.log.trace("Pushing", lrange);
   }
 
   currentSelection(): Selection | undefined {
@@ -90,7 +90,7 @@ class DocumentHistory {
   }
 
   goBackward(selection: Selection): Selection {
-    if (this.index === 0) throw new CheckError('No backward  history');
+    if (this.index === 0) throw new CheckError("No backward  history");
     if (this.index === this.ranges.length) this.savedSelection = selection;
     this.index -= 1;
     this.log.debug(
@@ -103,7 +103,7 @@ class DocumentHistory {
 
   goForward(): Selection {
     if (this.index === this.ranges.length)
-      throw new CheckError('No more forward history');
+      throw new CheckError("No more forward history");
     this.index += 1;
     if (this.index === this.ranges.length) {
       const selection = this.savedSelection!;
@@ -128,7 +128,7 @@ const history = new DefaultMap<TextDocument, DocumentHistory>(
 function onDidChangeTextDocument(event: TextDocumentChangeEvent) {
   const document = event.document;
   const changes = event.contentChanges;
-  if (document.fileName.startsWith('extension-output')) return;
+  if (document.fileName.startsWith("extension-output")) return;
   if (changes.isEmpty || changes.length > 1) return;
   const docHistory = history.get(document);
   docHistory.processTextChange(changes[0]);
@@ -137,7 +137,7 @@ function onDidChangeTextDocument(event: TextDocumentChangeEvent) {
 
 function onDidChangeTextEditorSelection(event: TextEditorSelectionChangeEvent) {
   const document = event.textEditor.document;
-  if (document.fileName.startsWith('extension-output')) return;
+  if (document.fileName.startsWith("extension-output")) return;
   if (!history.has(document)) return;
   const docHistory = history.get(document);
   const historySelection = docHistory.currentSelection();
@@ -189,14 +189,14 @@ function goLastEdit() {
   const document = editor.document;
   const docHistory = history.get(document);
   const lastEdit = docHistory.lastEditLocation;
-  checkNotNull(lastEdit, 'No edits were done yet');
+  checkNotNull(lastEdit, "No edits were done yet");
   editor.selection = new Selection(lastEdit.range.start, lastEdit.range.start);
   editor.revealRange(lastEdit.range);
 }
 
 function activate(context: ExtensionContext) {
   status = window.createStatusBarItem(StatusBarAlignment.Right);
-  status.color = 'yellow';
+  status.color = "yellow";
   context.subscriptions.push(
     status,
     listenWrapped(workspace.onDidChangeTextDocument, onDidChangeTextDocument),
@@ -208,9 +208,9 @@ function activate(context: ExtensionContext) {
       window.onDidChangeActiveTextEditor,
       onDidChangeActiveTextEditor,
     ),
-    registerSyncCommandWrapped('qcfg.edit.previous', goBackward),
-    registerSyncCommandWrapped('qcfg.edit.next', goForward),
-    registerSyncCommandWrapped('qcfg.edit.lastLocation', goLastEdit),
+    registerSyncCommandWrapped("qcfg.edit.previous", goBackward),
+    registerSyncCommandWrapped("qcfg.edit.next", goForward),
+    registerSyncCommandWrapped("qcfg.edit.lastLocation", goLastEdit),
   );
 }
 

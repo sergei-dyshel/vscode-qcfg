@@ -1,11 +1,12 @@
-import { extensions, workspace } from 'vscode';
-import type { DisposableLike } from '../../library/disposable';
-import { Logger } from '../../library/logging';
-import { listenWrapped } from '../modules/exception';
-import type { ConfigSection } from './configuration';
+import { extensions, workspace } from "vscode";
+import type { DisposableLike } from "../../library/disposable";
+import { Logger } from "../../library/logging";
+import { listenWrapped } from "../modules/exception";
+import type { ConfigSection } from "./configuration";
 
 /**
- * Automatically create/dispose resorcuce when on configuration/ changes, extensions loading/unloading etc.
+ * Automatically create/dispose resorcuce when on configuration/ changes,
+ * extensions loading/unloading etc.
  */
 export class ConditionalResource implements DisposableLike {
   private readonly extListener?: DisposableLike;
@@ -62,13 +63,13 @@ export class ConditionalResource implements DisposableLike {
 
     if (this.resource) return;
     this.resource = this.createFunc();
-    this.log.debug('created');
+    this.log.debug("created");
   }
 
   private disposeResource() {
     if (this.resource) {
       this.resource.dispose();
-      this.log.debug('disposed');
+      this.log.debug("disposed");
     }
   }
 }

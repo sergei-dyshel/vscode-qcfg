@@ -4,25 +4,25 @@ import type {
   SemanticTokensLegend,
   TextDocument,
   Uri,
-} from 'vscode';
-import { commands, Position, Range } from 'vscode';
-import { log } from '../../library/logging';
-import { arraySlice, numberToBitArray } from '../../library/tsUtils';
-import { registerAsyncCommandWrapped } from './exception';
-import { showLog } from './logging';
-import { Modules } from './module';
-import { getActiveTextEditor } from './utils';
+} from "vscode";
+import { commands, Position, Range } from "vscode";
+import { log } from "../../library/logging";
+import { arraySlice, numberToBitArray } from "../../library/tsUtils";
+import { registerAsyncCommandWrapped } from "./exception";
+import { showLog } from "./logging";
+import { Modules } from "./module";
+import { getActiveTextEditor } from "./utils";
 
 async function provideDocumentSemanticTokensLegend(uri: Uri) {
   return commands.executeCommand<SemanticTokensLegend>(
-    'vscode.provideDocumentSemanticTokensLegend',
+    "vscode.provideDocumentSemanticTokensLegend",
     uri,
   );
 }
 
 async function provideDocumentSemanticTokens(uri: Uri) {
   return commands.executeCommand<SemanticTokens>(
-    'vscode.provideDocumentSemanticTokens',
+    "vscode.provideDocumentSemanticTokens",
     uri,
   );
 }
@@ -110,7 +110,7 @@ function decodeAllTokens(
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
     registerAsyncCommandWrapped(
-      'qcfg.semanticHighlight.dump',
+      "qcfg.semanticHighlight.dump",
       dumpSemanticTokens,
     ),
   );

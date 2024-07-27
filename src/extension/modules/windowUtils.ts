@@ -1,8 +1,8 @@
-import type { StatusBarItem, TextEditor, ThemeColor, ViewColumn } from 'vscode';
-import { window } from 'vscode';
-import { Timer } from '../../library/nodeUtils';
-import { setStatusBarErrorBackground } from '../utils/statusBar';
-import { handleAsyncStd } from './exception';
+import type { StatusBarItem, TextEditor, ThemeColor, ViewColumn } from "vscode";
+import { window } from "vscode";
+import { Timer } from "../../library/nodeUtils";
+import { setStatusBarErrorBackground } from "../utils/statusBar";
+import { handleAsyncStd } from "./exception";
 
 const DEFAULT_TIMEOUT_MS = 3000;
 

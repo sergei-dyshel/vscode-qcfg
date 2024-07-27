@@ -1,8 +1,8 @@
-import type { TextEditor, ViewColumn } from 'vscode';
-import { Location, Range, window } from 'vscode';
-import { defaultCompare } from '../../library/compare';
+import type { TextEditor, ViewColumn } from "vscode";
+import { Location, Range, window } from "vscode";
+import { defaultCompare } from "../../library/compare";
 
-declare module 'vscode' {
+declare module "vscode" {
   // eslint-disable-next-line @typescript-eslint/no-shadow
   export namespace Location {
     function compare(loc1: Location, loc2: Location): number;
@@ -53,7 +53,7 @@ Location.prototype.toString = function (this: Location) {
   return `${this.uri}:${this.range}`;
 };
 
-Object.defineProperty(Location.prototype, 'startLocation', {
+Object.defineProperty(Location.prototype, "startLocation", {
   get() {
     const this_ = this as Location;
     return new Location(this_.uri, this_.range.start);

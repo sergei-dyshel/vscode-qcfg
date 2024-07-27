@@ -2,17 +2,17 @@ import type {
   ExtensionContext,
   StatusBarItem,
   TextDocumentChangeEvent,
-} from 'vscode';
-import { window, workspace } from 'vscode';
-import { MessageDialog } from '../utils/messageDialog';
+} from "vscode";
+import { window, workspace } from "vscode";
+import { MessageDialog } from "../utils/messageDialog";
 import {
   handleAsyncStd,
   listenWrapped,
   registerAsyncCommandWrapped,
-} from './exception';
-import { Modules } from './module';
+} from "./exception";
+import { Modules } from "./module";
 
-const MEMENTO_KEY = 'qcfgIsReadOnly';
+const MEMENTO_KEY = "qcfgIsReadOnly";
 
 let status: StatusBarItem;
 let context: ExtensionContext;
@@ -41,7 +41,7 @@ function onDidChangeTextDocument(_: TextDocumentChangeEvent) {
   handleAsyncStd(
     MessageDialog.showModal(
       MessageDialog.ERROR,
-      'Current workspace is marked as READ-ONLY',
+      "Current workspace is marked as READ-ONLY",
       [],
     ),
   );
@@ -50,12 +50,12 @@ function onDidChangeTextDocument(_: TextDocumentChangeEvent) {
 function activate(extContext: ExtensionContext) {
   context = extContext;
   status = window.createStatusBarItem();
-  status.color = 'red';
-  status.text = '$(circle-slash)$(circle-slash)$(circle-slash)';
+  status.color = "red";
+  status.text = "$(circle-slash)$(circle-slash)$(circle-slash)";
   updateStatus();
 
   context.subscriptions.push(
-    registerAsyncCommandWrapped('qcfg.toggleReadOnly', toggle),
+    registerAsyncCommandWrapped("qcfg.toggleReadOnly", toggle),
     listenWrapped(workspace.onDidChangeTextDocument, onDidChangeTextDocument),
   );
 }

@@ -1,16 +1,16 @@
-import type { ExtensionContext } from 'vscode';
-import { commands } from 'vscode';
-import { registerAsyncCommandWrapped } from './exception';
-import { Modules } from './module';
-import { trimBrackets, trimWhitespace } from './textUtils';
-import { getActiveTextEditor } from './utils';
+import type { ExtensionContext } from "vscode";
+import { commands } from "vscode";
+import { registerAsyncCommandWrapped } from "./exception";
+import { Modules } from "./module";
+import { trimBrackets, trimWhitespace } from "./textUtils";
+import { getActiveTextEditor } from "./utils";
 
 async function smartSelectExpand() {
-  return commands.executeCommand('editor.action.smartSelect.expand');
+  return commands.executeCommand("editor.action.smartSelect.expand");
 }
 
 async function smartSelectShrink() {
-  return commands.executeCommand('editor.action.smartSelect.shrink');
+  return commands.executeCommand("editor.action.smartSelect.shrink");
 }
 
 async function expandFaster() {
@@ -46,8 +46,8 @@ async function shrinkFaster() {
 
 function activate(extContext: ExtensionContext) {
   extContext.subscriptions.push(
-    registerAsyncCommandWrapped('qcfg.expandSelectionFaster', expandFaster),
-    registerAsyncCommandWrapped('qcfg.shrinkSelectionFaster', shrinkFaster),
+    registerAsyncCommandWrapped("qcfg.expandSelectionFaster", expandFaster),
+    registerAsyncCommandWrapped("qcfg.shrinkSelectionFaster", shrinkFaster),
   );
 }
 

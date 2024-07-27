@@ -1,9 +1,9 @@
-import * as vscode from 'vscode';
-import { Uri } from 'vscode';
-import { assertNotNull } from '../../library/exception';
-import { log } from '../../library/logging';
-import * as fileUtils from './fileUtils';
-import { Modules } from './module';
+import * as vscode from "vscode";
+import { Uri } from "vscode";
+import { assertNotNull } from "../../library/exception";
+import { log } from "../../library/logging";
+import * as fileUtils from "./fileUtils";
+import { Modules } from "./module";
 
 export interface DocumentsInFolder {
   folder: vscode.WorkspaceFolder;
@@ -26,7 +26,7 @@ function emit() {
 function onDidSaveTextDocument(document: vscode.TextDocument) {
   const uri = document.uri;
   const realUri =
-    uri.scheme === 'file' ? Uri.file(fileUtils.realPathSync(uri.fsPath)) : uri;
+    uri.scheme === "file" ? Uri.file(fileUtils.realPathSync(uri.fsPath)) : uri;
   const wsFolder = vscode.workspace.getWorkspaceFolder(realUri);
   if (!wsFolder) {
     log.debug(`Saved file ${realUri} is not in workspace`);

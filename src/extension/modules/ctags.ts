@@ -3,28 +3,28 @@ import type {
   DocumentSymbolProvider,
   ExtensionContext,
   TextDocument,
-} from 'vscode';
-import { DocumentSymbol, languages, Location, SymbolKind } from 'vscode';
-import { Logger } from '../../library/logging';
-import { getDocumentRoot } from '../utils/document';
-import { registerAsyncCommandWrapped, stdErrorHandler } from './exception';
-import { getGtagsDefinitionsInWorkspace } from './gtags';
-import { isAnyLangClientRunning } from './langClient';
-import { Modules } from './module';
-import { adjustRangeInParsedPosition } from './parseLocations';
-import { saveAndPeekSearch } from './savedSearch';
-import * as subprocess from './subprocess';
-import { getCursorWordContext } from './utils';
+} from "vscode";
+import { DocumentSymbol, languages, Location, SymbolKind } from "vscode";
+import { Logger } from "../../library/logging";
+import { getDocumentRoot } from "../utils/document";
+import { registerAsyncCommandWrapped, stdErrorHandler } from "./exception";
+import { getGtagsDefinitionsInWorkspace } from "./gtags";
+import { isAnyLangClientRunning } from "./langClient";
+import { Modules } from "./module";
+import { adjustRangeInParsedPosition } from "./parseLocations";
+import { saveAndPeekSearch } from "./savedSearch";
+import * as subprocess from "./subprocess";
+import { getCursorWordContext } from "./utils";
 
 const C_KINDS =
-  'm' /* struct members  */ +
-  'p' /* prototypes */ +
-  'x'; /* extern variables  */
+  "m" /* struct members  */ +
+  "p" /* prototypes */ +
+  "x"; /* extern variables  */
 
 const CPP_KINDS =
-  'A' /* namespace aliases */ +
-  'U' /* using namespace */ +
-  'N'; /* using scope::symbol */
+  "A" /* namespace aliases */ +
+  "U" /* using namespace */ +
+  "N"; /* using scope::symbol */
 
 interface LanguageConfig {
   ctagsLang?: string;
@@ -32,16 +32,16 @@ interface LanguageConfig {
 }
 
 const languageConfigs: Record<string, LanguageConfig | undefined> = {
-  c: { kinds: '+' + C_KINDS },
-  cpp: { ctagsLang: 'c++', kinds: '+' + C_KINDS + CPP_KINDS },
+  c: { kinds: "+" + C_KINDS },
+  cpp: { ctagsLang: "c++", kinds: "+" + C_KINDS + CPP_KINDS },
   python: {},
   go: {},
   javascript: {},
   json: {},
   lua: {},
-  makefile: { ctagsLang: 'make' },
+  makefile: { ctagsLang: "make" },
   markdown: {},
-  shellscript: { ctagsLang: 'sh' },
+  shellscript: { ctagsLang: "sh" },
   typescript: {},
   yaml: {},
 };
@@ -96,26 +96,26 @@ async function getTags(
     : [];
   const proc = new subprocess.Subprocess(
     [
-      'ctags',
-      '--sort=no',
+      "ctags",
+      "--sort=no",
       `--language-force=${lang}`,
-      '--output-format=json',
-      '--fields=*',
+      "--output-format=json",
+      "--fields=*",
       ...kindsArg,
       relativePath,
     ],
     { cwd: workspaceFolder.uri.fsPath, maxBuffer: 1 * 1024 * 1024 },
   );
-  log.trace('Started');
+  log.trace("Started");
   if (token)
     token.onCancellationRequested(() => {
-      log.trace('Cancelled');
+      log.trace("Cancelled");
       proc.kill();
     });
   const result = await proc.wait();
   if (token?.isCancellationRequested) return [];
-  const lines = result.stdout.split('\n');
-  const tags = lines.filter((line) => line !== '').map(parseLine);
+  const lines = result.stdout.split("\n");
+  const tags = lines.filter((line) => line !== "").map(parseLine);
   log.trace(`Returned ${lines.length} results`);
   return tags;
 }
@@ -131,7 +131,7 @@ export async function getDocumentSymbolsFromCtags(
 function tag2Symbol(tag: TagInfo, document: TextDocument): DocumentSymbol {
   let pattern: RegExp | string = tag.name;
   try {
-    pattern = new RegExp('\\b' + tag.name + '\\b');
+    pattern = new RegExp("\\b" + tag.name + "\\b");
   } catch {
     // tag.name is not alhpa-numberic literal
   }
@@ -141,7 +141,7 @@ function tag2Symbol(tag: TagInfo, document: TextDocument): DocumentSymbol {
     pattern,
   );
   const kind = ctagsToVscodeKind[tag.kind] ?? SymbolKind.File;
-  return new DocumentSymbol(tag.name, tag.scope ?? '', kind, range, range);
+  return new DocumentSymbol(tag.name, tag.scope ?? "", kind, range, range);
 }
 
 function parseLine(line: string): TagInfo {
@@ -154,13 +154,13 @@ const documentSymbolProvider: DocumentSymbolProvider = {
     token: CancellationToken,
   ): Promise<DocumentSymbol[] | undefined> {
     switch (document.languageId) {
-      case 'cpp':
-      case 'c':
+      case "cpp":
+      case "c":
         if (isAnyLangClientRunning()) return;
         break;
-      case 'typescript':
+      case "typescript":
         return;
-      case 'go':
+      case "go":
         return;
     }
     try {
@@ -196,9 +196,9 @@ async function getGtagsCtagsDefinitions() {
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
-    languages.registerDocumentSymbolProvider('*', documentSymbolProvider),
+    languages.registerDocumentSymbolProvider("*", documentSymbolProvider),
     registerAsyncCommandWrapped(
-      'qcfg.search.GtagsCtagsDefinition',
+      "qcfg.search.GtagsCtagsDefinition",
       getGtagsCtagsDefinitions,
     ),
   );

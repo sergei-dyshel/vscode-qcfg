@@ -1,14 +1,17 @@
-import * as jsoncParser from 'jsonc-parser';
-import { Selection, Uri, window, workspace } from 'vscode';
-import * as nodejs from '../../library/nodejs';
-import { documentText } from './documentUtils';
+import * as jsoncParser from "jsonc-parser";
+import { Selection, Uri, window, workspace } from "vscode";
+import * as nodejs from "../../library/nodejs";
+import { documentText } from "./documentUtils";
 
 interface JsonParseOptions extends jsoncParser.ParseOptions {
   forbidErrors?: boolean;
 }
 
 class JsonParseError extends Error {
-  constructor(message: string, public errors: jsoncParser.ParseError[]) {
+  constructor(
+    message: string,
+    public errors: jsoncParser.ParseError[],
+  ) {
     super(message);
   }
 }
@@ -18,7 +21,7 @@ export function parseJson(text: string, options?: JsonParseOptions) {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const json = jsoncParser.parse(text, errors, options);
   if (errors.length > 0 && options && options.forbidErrors)
-    throw new JsonParseError('Errors occured while parsing JSON', errors);
+    throw new JsonParseError("Errors occured while parsing JSON", errors);
   return json;
 }
 
@@ -49,7 +52,7 @@ export async function editJsonPath(uri: Uri, path: jsoncParser.JSONPath) {
   });
   const node = jsoncParser.findNodeAtLocation(tree, path);
   if (!node) {
-    const pathStr = path.join('/');
+    const pathStr = path.join("/");
     throw new Error(`Could not find ${pathStr} in ${uri}`);
   }
   const anchor = document.positionAt(node.offset);

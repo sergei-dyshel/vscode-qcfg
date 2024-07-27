@@ -8,36 +8,36 @@ import type {
   TreeViewOptions,
   TreeViewSelectionChangeEvent,
   TreeViewVisibilityChangeEvent,
-} from 'vscode';
+} from "vscode";
 import {
   EventEmitter,
   TreeItem,
   TreeItemCollapsibleState,
   window,
-} from 'vscode';
-import { assert, assertNotNull } from '../../library/exception';
-import { log } from '../../library/logging';
-import { callIfNonNull } from '../../library/tsUtils';
+} from "vscode";
+import { assert, assertNotNull } from "../../library/exception";
+import { log } from "../../library/logging";
+import { callIfNonNull } from "../../library/tsUtils";
 import {
   handleErrorsAsync,
   listenWrapped,
   registerAsyncCommandWrapped,
   registerSyncCommandWrapped,
-} from './exception';
-import { Modules } from './module';
+} from "./exception";
+import { Modules } from "./module";
 
-export const TREE_ITEM_REMOVABLE_CONTEXT = 'removable';
+export const TREE_ITEM_REMOVABLE_CONTEXT = "removable";
 
 export function activate(context: ExtensionContext) {
   const opts: TreeViewOptions<TreeNode> = {
     treeDataProvider,
     showCollapseAll: true,
   };
-  treeView = window.createTreeView('qcfgTreeView', opts);
+  treeView = window.createTreeView("qcfgTreeView", opts);
   context.subscriptions.push(
     treeView,
-    registerSyncCommandWrapped('qcfg.treeView.removeNode', removeNode),
-    registerAsyncCommandWrapped('qcfg.treeView.expandNode', expandNode),
+    registerSyncCommandWrapped("qcfg.treeView.removeNode", removeNode),
+    registerAsyncCommandWrapped("qcfg.treeView.expandNode", expandNode),
     listenWrapped(
       treeView.onDidExpandElement,
       (event: TreeViewExpansionEvent<TreeNode>) => {
@@ -152,7 +152,7 @@ export class StaticTreeNode implements TreeNode {
       this.treeItem = new TreeItem(label);
     } else {
       // TreeItem constructor does not accept undefined label but the class it
-      this.treeItem = new TreeItem({ label: '' });
+      this.treeItem = new TreeItem({ label: "" });
       this.treeItem.label = undefined;
     }
   }
@@ -251,8 +251,8 @@ export class StaticTreeNode implements TreeNode {
 
 function treeItemLabelToString(item: TreeItem): string {
   const label = item.label;
-  if (typeof label === 'string') return label;
-  return label?.label ?? '';
+  if (typeof label === "string") return label;
+  return label?.label ?? "";
 }
 
 // eslint-disable-next-line import/export
@@ -295,7 +295,7 @@ const treeDataProvider: TreeDataProvider<TreeNode> = {
   getChildren: handleErrorsAsync(async (node?: TreeNode) => {
     if (node) return node.getChildren();
     if (currentProvider) {
-      log.debug('Refreshing the tree');
+      log.debug("Refreshing the tree");
       return currentProvider.getTrees();
     }
     return undefined;
@@ -310,7 +310,7 @@ function removeNode(...args: any[]) {
   // eslint-disable-next-line @typescript-eslint/unbound-method
   if (!currentProvider.removeNode)
     throw new Error(
-      'TreeProvider with removable nodes must provide removeNode method',
+      "TreeProvider with removable nodes must provide removeNode method",
     );
   currentProvider.removeNode(node);
 }

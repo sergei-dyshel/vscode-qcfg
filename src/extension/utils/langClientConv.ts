@@ -1,10 +1,10 @@
-import type { Location, LocationLink, Position } from 'vscode';
-import { Uri } from 'vscode';
-import * as client from 'vscode-languageclient';
-import { createConverter as createCodeConverter } from 'vscode-languageclient/lib/codeConverter';
-import { createConverter as createProtocolConverter } from 'vscode-languageclient/lib/protocolConverter';
-import { unionizeArrays } from '../../library/tsUtils';
-import { resolveLocationLinks } from './document';
+import type { Location, LocationLink, Position } from "vscode";
+import { Uri } from "vscode";
+import * as client from "vscode-languageclient";
+import { createConverter as createCodeConverter } from "vscode-languageclient/lib/codeConverter";
+import { createConverter as createProtocolConverter } from "vscode-languageclient/lib/protocolConverter";
+import { unionizeArrays } from "../../library/tsUtils";
+import { resolveLocationLinks } from "./document";
 
 /** Converter from vscode types to LSP client */
 export const c2pConverter = createCodeConverter((uri) => uri.toString());
@@ -21,9 +21,12 @@ function p2cLocationLink(loc: client.LocationLink): LocationLink {
   };
 }
 
-/** Convert scalar location or array of location/location links into location array
+/**
+ * Convert scalar location or array of location/location links into location
+ * array
  *
- * Such complex union type is returned by definition/declaration/implementations requests.
+ * Such complex union type is returned by definition/declaration/implementations
+ * requests.
  */
 export function p2cAnyLocations(
   rsp: client.Location | client.Location[] | client.LocationLink[],
@@ -31,7 +34,7 @@ export function p2cAnyLocations(
   if (Array.isArray(rsp))
     return resolveLocationLinks(
       unionizeArrays<client.Location, client.LocationLink>(rsp).map((loc) => {
-        if ('targetRange' in loc) return p2cLocationLink(loc);
+        if ("targetRange" in loc) return p2cLocationLink(loc);
         return p2cConverter.asLocation(loc);
       }),
     );

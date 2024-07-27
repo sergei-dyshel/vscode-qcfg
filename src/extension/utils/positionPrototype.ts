@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-import { Position, Range } from 'vscode';
-import { defaultCompare } from '../../library/compare';
+import { Position, Range } from "vscode";
+import { defaultCompare } from "../../library/compare";
 
-declare module 'vscode' {
+declare module "vscode" {
   // eslint-disable-next-line @typescript-eslint/no-shadow
   export interface Position {
     readonly asRange: Range;
@@ -38,7 +38,7 @@ Position.prototype.withCharacter = function (
   return this.with(undefined, character);
 };
 
-Object.defineProperty(Position.prototype, 'asRange', {
+Object.defineProperty(Position.prototype, "asRange", {
   get() {
     const this_ = this as Position;
     return new Range(this_, this_);

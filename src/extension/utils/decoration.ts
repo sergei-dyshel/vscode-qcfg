@@ -3,9 +3,9 @@ import type {
   TextEditorDecorationType,
   ThemableDecorationRenderOptions,
   ThemeColor,
-} from 'vscode';
-import { Range, window } from 'vscode';
-import { offsetPosition } from '../modules/textUtils';
+} from "vscode";
+import { Range, window } from "vscode";
+import { offsetPosition } from "../modules/textUtils";
 
 export class RangeDecorator {
   left: TextEditorDecorationType;
@@ -40,7 +40,7 @@ export class RangeDecorator {
     return new RangeDecorator(
       { borderWidth: leftWidth, borderRadius: leftRadius },
       { borderWidth: rightWidth, borderRadius: rightRadius },
-      { borderStyle: params.style ?? 'solid', borderColor: params.color },
+      { borderStyle: params.style ?? "solid", borderColor: params.color },
     );
   }
 

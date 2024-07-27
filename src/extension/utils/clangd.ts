@@ -3,15 +3,15 @@ import type {
   Position,
   TextDocument,
   TypeHierarchyProvider,
-} from 'vscode';
-import { TypeHierarchyItem } from 'vscode';
-import * as vsclc from 'vscode-languageclient';
-import { assert } from '../../library/exception';
-import { log } from '../../library/logging';
-import { normalizeArray } from '../../library/tsUtils';
-import { handleErrorsAsync } from '../modules/exception';
-import { BaseLangClientProvider } from './langClientCommon';
-import { c2pConverter, p2cConverter } from './langClientConv';
+} from "vscode";
+import { TypeHierarchyItem } from "vscode";
+import * as vsclc from "vscode-languageclient";
+import { assert } from "../../library/exception";
+import { log } from "../../library/logging";
+import { normalizeArray } from "../../library/tsUtils";
+import { handleErrorsAsync } from "../modules/exception";
+import { BaseLangClientProvider } from "./langClientCommon";
+import { c2pConverter, p2cConverter } from "./langClientConv";
 
 export namespace Clangd {
   export interface ASTNode {
@@ -55,7 +55,7 @@ export namespace Clangd {
       TypeHierarchyParams,
       TypeHierarchyItem | null,
       void
-    >('textDocument/typeHierarchy');
+    >("textDocument/typeHierarchy");
   }
 
   interface ResolveTypeHierarchyItemParams {
@@ -69,7 +69,7 @@ export namespace Clangd {
       ResolveTypeHierarchyItemParams,
       TypeHierarchyItem | null,
       void
-    >('typeHierarchy/resolve');
+    >("typeHierarchy/resolve");
   }
 }
 
@@ -81,7 +81,7 @@ class ClangdTypeHierarchyItem extends TypeHierarchyItem {
     super(
       p2cConverter.asSymbolKind(item.kind),
       item.name,
-      item.detail ?? '',
+      item.detail ?? "",
       p2cConverter.asUri(item.uri),
       p2cConverter.asRange(item.range),
       p2cConverter.asRange(item.selectionRange),
@@ -113,10 +113,10 @@ export class ClangdTypeHierarchyProvider
   ) {
     const cl = this.getClient();
     if (!cl) {
-      log.debug('Clangd not running');
+      log.debug("Clangd not running");
       return undefined;
     }
-    log.debug('running');
+    log.debug("running");
     const item = await cl.sendRequest(
       Clangd.TypeHierarchyRequest.type,
       {

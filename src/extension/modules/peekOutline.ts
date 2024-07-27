@@ -3,14 +3,14 @@ import type {
   ExtensionContext,
   SymbolInformation,
   TextDocument,
-} from 'vscode';
-import { Location, SymbolKind } from 'vscode';
-import { QuickPickLocations } from '../utils/quickPick';
-import { qualifiedName, retrieveDocumentSymbols } from '../utils/symbol';
-import { registerAsyncCommandWrapped } from './exception';
-import { updateHistory } from './history';
-import { Modules } from './module';
-import { getActiveTextEditor } from './utils';
+} from "vscode";
+import { Location, SymbolKind } from "vscode";
+import { QuickPickLocations } from "../utils/quickPick";
+import { qualifiedName, retrieveDocumentSymbols } from "../utils/symbol";
+import { registerAsyncCommandWrapped } from "./exception";
+import { updateHistory } from "./history";
+import { Modules } from "./module";
+import { getActiveTextEditor } from "./utils";
 
 const minLinesInBlock = 10;
 
@@ -106,7 +106,7 @@ async function peekFlatOutline() {
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
-    registerAsyncCommandWrapped('qcfg.peekFlatOutline', peekFlatOutline),
+    registerAsyncCommandWrapped("qcfg.peekFlatOutline", peekFlatOutline),
   );
 }
 

@@ -1,4 +1,4 @@
-import type { ExtensionContext } from 'vscode';
+import type { ExtensionContext } from "vscode";
 
 let extContext: ExtensionContext;
 

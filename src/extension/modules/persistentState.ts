@@ -1,22 +1,22 @@
-import type { ExtensionContext } from 'vscode';
-import { env, FileType, Uri, window, workspace } from 'vscode';
-import { assertNotNull } from '../../library/exception';
-import { mkdir, readFile, writeFile } from '../../library/filesystemNodejs';
-import type { JsonTypes } from '../../library/json';
-import { log } from '../../library/logging';
-import * as nodejs from '../../library/nodejs';
-import { numberCompare } from '../../library/tsUtils';
+import type { ExtensionContext } from "vscode";
+import { env, FileType, Uri, window, workspace } from "vscode";
+import { assertNotNull } from "../../library/exception";
+import { mkdir, readFile, writeFile } from "../../library/filesystemNodejs";
+import type { JsonTypes } from "../../library/json";
+import { log } from "../../library/logging";
+import * as nodejs from "../../library/nodejs";
+import { numberCompare } from "../../library/tsUtils";
 import {
   getMemento,
   getStoragePath,
   PersistentScope,
-} from '../utils/persistentState';
-import { StringQuickPick } from '../utils/quickPick';
-import { PersistentStringQuickPick } from '../utils/quickPickPersistent';
-import { mapAsync, mapSomeAsyncAndZip } from './async';
-import { documentRange } from './documentUtils';
-import { handleAsyncStd, registerCommandWrapped } from './exception';
-import { Modules } from './module';
+} from "../utils/persistentState";
+import { StringQuickPick } from "../utils/quickPick";
+import { PersistentStringQuickPick } from "../utils/quickPickPersistent";
+import { mapAsync, mapSomeAsyncAndZip } from "./async";
+import { documentRange } from "./documentUtils";
+import { handleAsyncStd, registerCommandWrapped } from "./exception";
+import { Modules } from "./module";
 
 const BACKUP_COPIES_TO_KEEP = 100;
 
@@ -30,9 +30,9 @@ async function browsePersistentState(scope: PersistentScope) {
     const activeEditor = window.activeTextEditor;
     const document =
       activeEditor?.document.isUntitled &&
-      activeEditor.document.languageId === 'json'
+      activeEditor.document.languageId === "json"
         ? activeEditor.document
-        : await workspace.openTextDocument({ language: 'json' });
+        : await workspace.openTextDocument({ language: "json" });
     const data = JSON.stringify(memento.get(key), undefined, 4);
     const editor = await window.showTextDocument(document, {
       preserveFocus: true,
@@ -52,7 +52,7 @@ function getBackupJson(scope: PersistentScope) {
 }
 
 function getBackupDir(scope: PersistentScope) {
-  const DIR_NAME = 'persistent-state';
+  const DIR_NAME = "persistent-state";
   const storagePath = getStoragePath(scope);
   assertNotNull(storagePath);
   return nodejs.path.join(storagePath, DIR_NAME);
@@ -63,7 +63,7 @@ async function backupPersistentState(scope: PersistentScope) {
   await mkdir(backupDir, { recursive: true });
   const filename = nodejs.path.join(
     backupDir,
-    new Date().toISOString() + '.json',
+    new Date().toISOString() + ".json",
   );
   const backup = JSON.stringify(getBackupJson(scope), undefined, 4);
   await writeFile(filename, backup);
@@ -94,7 +94,7 @@ async function backupPersistentState(scope: PersistentScope) {
     await mapAsync(filesToDelete, async (path) =>
       workspace.fs.delete(Uri.file(nodejs.path.join(backupDir, path))),
     );
-    log.debug('Deleted old backups', filesToDelete);
+    log.debug("Deleted old backups", filesToDelete);
   }
 }
 
@@ -112,17 +112,17 @@ async function restorePersistentState(scope: PersistentScope) {
   const data = JSON.parse(fileData.toString()) as Record<string, JsonTypes.Any>;
 
   const qp = new PersistentStringQuickPick(
-    'persistent.restoreBackup.' + scope,
+    "persistent.restoreBackup." + scope,
     Object.keys(data),
   );
-  qp.options.title = 'Select keys to restore';
+  qp.options.title = "Select keys to restore";
   qp.options.canSelectMany = true;
   const keys = await qp.selectMany();
   if (!keys) return;
 
   const memento = getMemento(scope);
   for (const key of keys) await memento.update(key, data[key]);
-  log.info('Restored persistent keys', keys);
+  log.info("Restored persistent keys", keys);
 }
 
 async function openStorageDirectory(scope: PersistentScope) {
@@ -134,19 +134,19 @@ async function openStorageDirectory(scope: PersistentScope) {
 function activate(context: ExtensionContext) {
   handleAsyncStd(backupPersistentState(PersistentScope.GLOBAL));
   context.subscriptions.push(
-    registerCommandWrapped('qcfg.persistent.browseGlobal', async () =>
+    registerCommandWrapped("qcfg.persistent.browseGlobal", async () =>
       browsePersistentState(PersistentScope.GLOBAL),
     ),
-    registerCommandWrapped('qcfg.persistent.browseWorkspace', async () =>
+    registerCommandWrapped("qcfg.persistent.browseWorkspace", async () =>
       browsePersistentState(PersistentScope.WORKSPACE),
     ),
-    registerCommandWrapped('qcfg.persistent.backupGlobal', async () =>
+    registerCommandWrapped("qcfg.persistent.backupGlobal", async () =>
       backupPersistentState(PersistentScope.GLOBAL),
     ),
-    registerCommandWrapped('qcfg.persistent.openGlobalStorage', async () =>
+    registerCommandWrapped("qcfg.persistent.openGlobalStorage", async () =>
       openStorageDirectory(PersistentScope.GLOBAL),
     ),
-    registerCommandWrapped('qcfg.persistent.restoreGlobal', async () =>
+    registerCommandWrapped("qcfg.persistent.restoreGlobal", async () =>
       restorePersistentState(PersistentScope.GLOBAL),
     ),
   );

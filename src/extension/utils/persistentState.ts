@@ -1,10 +1,10 @@
-import type { Memento } from 'vscode';
-import type { JsonTypes } from '../../library/json';
-import { extensionContext } from './extensionContext';
+import type { Memento } from "vscode";
+import type { JsonTypes } from "../../library/json";
+import { extensionContext } from "./extensionContext";
 
 export enum PersistentScope {
-  GLOBAL = 'global',
-  WORKSPACE = 'workspace',
+  GLOBAL = "global",
+  WORKSPACE = "workspace",
 }
 
 export interface PersistentStorage<T extends JsonTypes.Any | undefined> {
@@ -27,8 +27,8 @@ export function getStoragePath(scope: PersistentScope) {
 /**
  * Wrapper for reading/writing to persistent storage.
  *
- * NOTE: Can be initialized at any time, but `get/update`
- * are only allowed after extension is activated.
+ * NOTE: Can be initialized at any time, but `get/update` are only allowed after
+ * extension is activated.
  */
 export class PersistentState<T extends JsonTypes.Any | undefined>
   implements PersistentStorage<T>

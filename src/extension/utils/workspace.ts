@@ -1,15 +1,14 @@
-import type { WorkspaceFolder } from 'vscode';
-import { Uri } from 'vscode';
-import { FileSystemError, workspace } from 'vscode';
-import { filterAsync } from '../modules/async';
-import * as nodejs from '../../library/nodejs';
+import type { WorkspaceFolder } from "vscode";
+import { FileSystemError, Uri, workspace } from "vscode";
+import * as nodejs from "../../library/nodejs";
+import { filterAsync } from "../modules/async";
 
 export async function uriExists(uri: Uri) {
   try {
     await workspace.fs.stat(uri);
     return true;
   } catch (err: unknown) {
-    if (err instanceof FileSystemError && err.code === 'FileNotFound')
+    if (err instanceof FileSystemError && err.code === "FileNotFound")
       return false;
     throw err;
   }
@@ -37,7 +36,7 @@ export function getWorkspaceRoot(): string | undefined {
  * Works for local filesystem only
  */
 export async function workspaceResolveSymlink(uri: Uri) {
-  if (uri.scheme !== 'file') return uri;
+  if (uri.scheme !== "file") return uri;
   if (!(await uriExists(uri))) return uri;
   let path = uri.fsPath;
   path = await nodejs.fsPromises.realpath(path);

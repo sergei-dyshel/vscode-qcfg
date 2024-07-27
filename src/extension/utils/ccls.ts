@@ -4,7 +4,7 @@ import type {
   Position,
   TextDocument,
   TypeHierarchyProvider,
-} from 'vscode';
+} from "vscode";
 import {
   CallHierarchyIncomingCall,
   CallHierarchyItem,
@@ -12,14 +12,14 @@ import {
   SymbolKind,
   TypeHierarchyItem,
   workspace,
-} from 'vscode';
-import type { TextDocumentPositionParams } from 'vscode-languageclient';
-import * as client from 'vscode-languageclient';
-import { assert } from '../../library/exception';
-import { log } from '../../library/logging';
-import { handleErrorsAsync, stdErrorHandler } from '../modules/exception';
-import { BaseLangClientProvider } from './langClientCommon';
-import { c2pTextDocumentPosition, p2cConverter } from './langClientConv';
+} from "vscode";
+import type { TextDocumentPositionParams } from "vscode-languageclient";
+import * as client from "vscode-languageclient";
+import { assert } from "../../library/exception";
+import { log } from "../../library/logging";
+import { handleErrorsAsync, stdErrorHandler } from "../modules/exception";
+import { BaseLangClientProvider } from "./langClientCommon";
+import { c2pTextDocumentPosition, p2cConverter } from "./langClientConv";
 
 export namespace Ccls {
   export enum RefRole {
@@ -103,12 +103,12 @@ export class CclsCallHierarchyProvider
   ) {
     const cl = this.getClient();
     if (!cl) {
-      log.debug('ccls not running');
+      log.debug("ccls not running");
       return undefined;
     }
-    log.debug('running');
+    log.debug("running");
     const node = await cl.sendRequest<CallHierarchyNode | undefined>(
-      '$ccls/call',
+      "$ccls/call",
       {
         callType: CallType.ALL,
         callee: true,
@@ -175,7 +175,7 @@ export class CclsCallHierarchyProvider
     callee: boolean,
   ): Promise<CallHierarchyNode> {
     return this.getNonNullClient().sendRequest<CallHierarchyNode>(
-      '$ccls/call',
+      "$ccls/call",
       {
         callType: CallType.ALL,
         callee,
@@ -192,7 +192,8 @@ interface TypeHierarchyNode extends HierarchyNode {
   children: TypeHierarchyNode[];
   kind: number;
 
-  /** If true and children need to be expanded derived will be used, otherwise base will be used. */
+  /** If true and children need to be expanded derived will be used, otherwise
+base will be used. */
   wantsDerived: boolean;
   isBaseLabel?: boolean;
 }
@@ -229,7 +230,7 @@ const CclsTypeHierarchyRequestType = new client.RequestType<
   CclsTypeHierarchyParams,
   TypeHierarchyNode | undefined,
   void
->('$ccls/inheritance');
+>("$ccls/inheritance");
 
 export class CclsTypeHierarchyProvider
   extends BaseLangClientProvider
@@ -242,10 +243,10 @@ export class CclsTypeHierarchyProvider
   ) {
     const cl = this.getClient();
     if (!cl) {
-      log.debug('ccls not running');
+      log.debug("ccls not running");
       return undefined;
     }
-    log.debug('running');
+    log.debug("running");
     const node = await cl.sendRequest(
       CclsTypeHierarchyRequestType,
       {

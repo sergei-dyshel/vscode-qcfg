@@ -1,20 +1,20 @@
-import type { ExtensionContext } from 'vscode';
-import { commands, ConfigurationTarget, Uri, window, workspace } from 'vscode';
-import { assert } from '../../library/exception';
-import { log } from '../../library/logging';
-import { StringQuickPick } from '../utils/quickPick';
+import type { ExtensionContext } from "vscode";
+import { commands, ConfigurationTarget, Uri, window, workspace } from "vscode";
+import { assert } from "../../library/exception";
+import { log } from "../../library/logging";
+import { StringQuickPick } from "../utils/quickPick";
 import {
   handleAsyncStd,
   listenAsyncWrapped,
   registerAsyncCommandWrapped,
-} from './exception';
-import { colorThemeFiles } from './language';
-import { Modules } from './module';
+} from "./exception";
+import { colorThemeFiles } from "./language";
+import { Modules } from "./module";
 
-const SECTION = 'workbench.colorTheme';
-const MEMENTO_PERSIST_KEY = 'qcfg.colors.persistent';
-const MEMENTO_THEME_KEY = 'qcfg.colors.theme';
-const INVALID = 'invalid_theme';
+const SECTION = "workbench.colorTheme";
+const MEMENTO_PERSIST_KEY = "qcfg.colors.persistent";
+const MEMENTO_THEME_KEY = "qcfg.colors.theme";
+const INVALID = "invalid_theme";
 
 let extContext: ExtensionContext;
 
@@ -51,24 +51,24 @@ async function setSettingsTheme(theme: string | undefined) {
 async function selectWorkspaceTheme() {
   await setPersisted(false);
   await window.showWarningMessage(
-    'Clearing workspace theme, persist explicitly again after you choose',
+    "Clearing workspace theme, persist explicitly again after you choose",
   );
   await setSettingsTheme(INVALID);
   assert(
     getSettingsTheme() === INVALID,
-    'Changed config file was not refreshed - symlinked workspace file?',
+    "Changed config file was not refreshed - symlinked workspace file?",
   );
-  await commands.executeCommand('workbench.action.selectTheme');
+  await commands.executeCommand("workbench.action.selectTheme");
 }
 
 async function persistWorkspaceTheme() {
   if (isPersisted()) {
-    await window.showWarningMessage('Already persisted');
+    await window.showWarningMessage("Already persisted");
   }
   const settingsTheme = getSettingsTheme();
   assert(
     settingsTheme !== INVALID && settingsTheme !== undefined,
-    'Workspace theme is not set',
+    "Workspace theme is not set",
   );
   await setPersisted(true);
   await setPersistedTheme(settingsTheme);
@@ -93,7 +93,7 @@ async function onConfigurationChanged() {
 
 async function inspectTheme() {
   const qp = new StringQuickPick(Object.keys(colorThemeFiles));
-  qp.options.title = 'Select theme';
+  qp.options.title = "Select theme";
   const theme = await qp.select();
   if (theme) {
     await window.showTextDocument(Uri.file(colorThemeFiles[theme]!));
@@ -108,10 +108,10 @@ function activate(context: ExtensionContext) {
       workspace.onDidChangeConfiguration,
       onConfigurationChanged,
     ),
-    registerAsyncCommandWrapped('qcfg.colors.select', selectWorkspaceTheme),
-    registerAsyncCommandWrapped('qcfg.colors.persist', persistWorkspaceTheme),
-    registerAsyncCommandWrapped('qcfg.colors.clear', clearWorkspaceTheme),
-    registerAsyncCommandWrapped('qcfg.colors.inspect', inspectTheme),
+    registerAsyncCommandWrapped("qcfg.colors.select", selectWorkspaceTheme),
+    registerAsyncCommandWrapped("qcfg.colors.persist", persistWorkspaceTheme),
+    registerAsyncCommandWrapped("qcfg.colors.clear", clearWorkspaceTheme),
+    registerAsyncCommandWrapped("qcfg.colors.inspect", inspectTheme),
   );
 }
 

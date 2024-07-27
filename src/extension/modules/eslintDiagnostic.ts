@@ -6,13 +6,13 @@ import type {
   Position,
   ProviderResult,
   TextDocument,
-} from 'vscode';
-import { CompletionItem, languages, Range } from 'vscode';
-import { abbrevMatch } from '../../library/stringUtils';
-import { getCompletionPrefix } from './documentUtils';
-import { listenWrapped } from './exception';
-import { Modules } from './module';
-import { offsetPosition } from './textUtils';
+} from "vscode";
+import { CompletionItem, languages, Range } from "vscode";
+import { abbrevMatch } from "../../library/stringUtils";
+import { getCompletionPrefix } from "./documentUtils";
+import { listenWrapped } from "./exception";
+import { Modules } from "./module";
+import { offsetPosition } from "./textUtils";
 
 const eslintRules = new Set<string>();
 
@@ -22,7 +22,7 @@ const CompletionsFromDiagnosticsProvider: CompletionItemProvider = {
     position: Position,
   ): ProviderResult<CompletionItem[] | CompletionList> {
     const prefix = getCompletionPrefix(document, position, /([\w/@-]*)$/);
-    if (prefix === '') return [];
+    if (prefix === "") return [];
     const items: CompletionItem[] = [];
     for (const code of eslintRules) {
       if (!abbrevMatch(code, prefix) && !code.startsWith(prefix)) continue;
@@ -42,10 +42,10 @@ function recalcCompletions() {
   const uriDiags = languages.getDiagnostics();
   for (const [, diags] of uriDiags)
     for (const diag of diags) {
-      if (diag.source === 'eslint' && typeof diag.code === 'string')
+      if (diag.source === "eslint" && typeof diag.code === "string")
         eslintRules.add(diag.code);
     }
-  for (const word of ['off', 'error']) eslintRules.add(word);
+  for (const word of ["off", "error"]) eslintRules.add(word);
 }
 
 function onDidChangeDiagnostics(_: DiagnosticChangeEvent) {
@@ -56,9 +56,9 @@ function activate(context: ExtensionContext) {
   recalcCompletions();
   context.subscriptions.push(
     languages.registerCompletionItemProvider(
-      { pattern: '**/.eslintrc.*' },
+      { pattern: "**/.eslintrc.*" },
       CompletionsFromDiagnosticsProvider,
-      ...'\'"-/@abcdefghijklmnopqrstuvwxyz',
+      ..."'\"-/@abcdefghijklmnopqrstuvwxyz",
     ),
     listenWrapped(languages.onDidChangeDiagnostics, onDidChangeDiagnostics),
   );

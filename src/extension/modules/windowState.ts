@@ -1,14 +1,14 @@
-import type { ExtensionContext, WindowState } from 'vscode';
-import { window } from 'vscode';
-import { log } from '../../library/logging';
-import { asyncWait } from '../../library/nodeUtils';
+import type { ExtensionContext, WindowState } from "vscode";
+import { window } from "vscode";
+import { log } from "../../library/logging";
+import { asyncWait } from "../../library/nodeUtils";
 import {
   handleAsyncStd,
   listenWrapped,
   registerCommandWrapped,
-} from './exception';
-import { Modules } from './module';
-import { runSubprocessSync } from './subprocess';
+} from "./exception";
+import { Modules } from "./module";
+import { runSubprocessSync } from "./subprocess";
 
 // eslint-disable-next-line @typescript-eslint/require-await
 async function callHammerspoon(
@@ -17,22 +17,22 @@ async function callHammerspoon(
 ) {
   const params = args
     .map((x) => {
-      if (typeof x === 'number') return x.toString();
+      if (typeof x === "number") return x.toString();
       return JSON.stringify(x);
     })
-    .join(', ');
+    .join(", ");
   const callExpr = `${funcName}(${params})`;
   // XXX: for some reason calling async makes `hs` command stuck
-  return runSubprocessSync(['hs', '-c', callExpr]);
+  return runSubprocessSync(["hs", "-c", callExpr]);
 }
 
 export async function focusWindow() {
   if (!windowId) {
-    log.warn('Window ID not set yet, can not focus');
+    log.warn("Window ID not set yet, can not focus");
     return;
   }
-  log.info('Focusing current window');
-  await callHammerspoon('ipcFocusWindow', windowId);
+  log.info("Focusing current window");
+  await callHammerspoon("ipcFocusWindow", windowId);
   handleAsyncStd(
     asyncWait(
       `window ${windowId} to be focused`,
@@ -53,13 +53,13 @@ export function isWindowFocused() {
 let windowId: number | undefined;
 
 async function tryGetActiveWindowId() {
-  const result = await callHammerspoon('ipcGetWindowId');
+  const result = await callHammerspoon("ipcGetWindowId");
   return Number(result.stdout);
 }
 
 function windowStateChanged(state: WindowState) {
   currentState = state;
-  const msg = state.focused ? 'Focused' : 'Unfocused';
+  const msg = state.focused ? "Focused" : "Unfocused";
   log.trace(msg);
 }
 
@@ -77,7 +77,7 @@ function activate(context: ExtensionContext) {
 
   context.subscriptions.push(
     listenWrapped(window.onDidChangeWindowState, windowStateChanged),
-    registerCommandWrapped('qcfg.window.focus', async () => {
+    registerCommandWrapped("qcfg.window.focus", async () => {
       await focusWindow();
     }),
   );

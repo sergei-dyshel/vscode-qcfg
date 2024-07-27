@@ -9,7 +9,7 @@ import type {
   Range,
   TextDocument,
   Uri,
-} from 'vscode';
+} from "vscode";
 import {
   CallHierarchyIncomingCall,
   CallHierarchyItem,
@@ -22,25 +22,25 @@ import {
   TreeItemCollapsibleState,
   window,
   workspace,
-} from 'vscode';
-import { baseName } from '../../library/pathUtils';
+} from "vscode";
+import { baseName } from "../../library/pathUtils";
 import {
   concatArrays,
   filterNonNull,
   normalizeArray,
-} from '../../library/tsUtils';
-import { CclsCallHierarchyProvider } from '../utils/ccls';
-import { PersistentRecordQuickPick } from '../utils/quickPickPersistent';
-import { getContainingSymbol, qualifiedName } from '../utils/symbol';
-import { mapAsync } from './async';
-import { getCachedDocumentSymbols } from './documentSymbolsCache';
-import { handleAsyncStd, registerAsyncCommandWrapped } from './exception';
-import { cclsWrapper } from './langClient';
-import { Modules } from './module';
-import { executeDefinitionProvider, findProperReferences } from './search';
-import type { TreeNode, TreeProvider } from './treeView';
-import { QcfgTreeView } from './treeView';
-import { getActiveTextEditor } from './utils';
+} from "../../library/tsUtils";
+import { CclsCallHierarchyProvider } from "../utils/ccls";
+import { PersistentRecordQuickPick } from "../utils/quickPickPersistent";
+import { getContainingSymbol, qualifiedName } from "../utils/symbol";
+import { mapAsync } from "./async";
+import { getCachedDocumentSymbols } from "./documentSymbolsCache";
+import { handleAsyncStd, registerAsyncCommandWrapped } from "./exception";
+import { cclsWrapper } from "./langClient";
+import { Modules } from "./module";
+import { executeDefinitionProvider, findProperReferences } from "./search";
+import type { TreeNode, TreeProvider } from "./treeView";
+import { QcfgTreeView } from "./treeView";
+import { getActiveTextEditor } from "./utils";
 
 class SymbolCallHierarchyItem extends CallHierarchyItem {
   constructor(uri: Uri, symbol: DocumentSymbol, languageId: string) {
@@ -48,7 +48,7 @@ class SymbolCallHierarchyItem extends CallHierarchyItem {
     const name = symbol.name;
     const detail = symbol.parent
       ? qualifiedName(symbol.parent, languageId)
-      : '';
+      : "";
     super(symbol.kind, name, detail, uri, symbol.range, symbol.selectionRange);
   }
 }
@@ -130,7 +130,7 @@ class GlobalCallHierarchyProvider implements CallHierarchyProvider {
     _token: CancellationToken,
   ) =>
     commands.executeCommand<CallHierarchyItem[]>(
-      'vscode.prepareCallHierarchy',
+      "vscode.prepareCallHierarchy",
       document.uri,
       position,
     );
@@ -140,7 +140,7 @@ class GlobalCallHierarchyProvider implements CallHierarchyProvider {
     _token: CancellationToken,
   ) =>
     commands.executeCommand<ProviderResult<CallHierarchyIncomingCall[]>>(
-      'vscode.provideIncomingCalls',
+      "vscode.provideIncomingCalls",
       item,
     );
 
@@ -149,7 +149,7 @@ class GlobalCallHierarchyProvider implements CallHierarchyProvider {
     _token: CancellationToken,
   ) =>
     commands.executeCommand<ProviderResult<CallHierarchyOutgoingCall[]>>(
-      'vscode.provideIncomingCalls',
+      "vscode.provideIncomingCalls",
       item,
     );
 }
@@ -170,16 +170,16 @@ class CallTreeNode implements TreeNode {
       TreeItemCollapsibleState.Collapsed,
     );
     item.description = [
-      this.call.detail ?? '',
-      '-',
+      this.call.detail ?? "",
+      "-",
       baseName(this.call.uri.fsPath),
-    ].join(' ');
+    ].join(" ");
     item.tooltip = workspace.asRelativePath(this.call.uri);
     item.iconPath = SymbolKind.themeIcon(this.call.kind);
 
     // prevents expanding/collapsing when item is clicked
     // see: https://github.com/microsoft/vscode/issues/34130#issuecomment-398296698
-    item.command = { title: 'noop', command: 'noop' };
+    item.command = { title: "noop", command: "noop" };
     return item;
   }
 
@@ -233,7 +233,7 @@ class CallTreeProvider implements TreeProvider {
     return `Call tree for "${word}"`;
   }
 
-  getTitle = () => 'call tree';
+  getTitle = () => "call tree";
 
   onDidChangeSelection = (nodes: readonly TreeNode[]) => {
     if (!nodes.isEmpty)
@@ -248,8 +248,8 @@ async function showCallTree() {
     ccls: new CclsCallHierarchyProvider(() => cclsWrapper.client),
   };
   const editor = getActiveTextEditor();
-  const qp = new PersistentRecordQuickPick('qcfgCallTree', providers);
-  qp.options.title = 'Select call hierarchy provider';
+  const qp = new PersistentRecordQuickPick("qcfgCallTree", providers);
+  qp.options.title = "Select call hierarchy provider";
   const provider = await qp.selectValue();
   if (!provider) return;
   QcfgTreeView.setProvider(
@@ -260,8 +260,8 @@ async function showCallTree() {
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
-    languages.registerCallHierarchyProvider('*', adhocCallHierarchyProvider),
-    registerAsyncCommandWrapped('qcfg.showCallHierarchyInPanel', showCallTree),
+    languages.registerCallHierarchyProvider("*", adhocCallHierarchyProvider),
+    registerAsyncCommandWrapped("qcfg.showCallHierarchyInPanel", showCallTree),
   );
 }
 

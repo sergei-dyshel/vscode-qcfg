@@ -1,15 +1,15 @@
-import type { ExtensionContext } from 'vscode';
-import { RelativePattern, Uri, window, workspace } from 'vscode';
-import { assertNotNull } from '../../library/exception';
-import * as nodejs from '../../library/nodejs';
-import { baseNameNoExt, stripExt } from '../../library/pathUtils';
-import { getConfiguration } from '../utils/configuration';
-import { getDocumentWorkspaceFolder } from '../utils/document';
-import { GenericQuickPick } from '../utils/quickPick';
-import { registerAsyncCommandWrapped } from './exception';
-import { Modules } from './module';
-import { getActiveTextEditor } from './utils';
-import { fileExists } from '../../library/fileUtils';
+import type { ExtensionContext } from "vscode";
+import { RelativePattern, Uri, window, workspace } from "vscode";
+import { assertNotNull } from "../../library/exception";
+import { fileExists } from "../../library/fileUtils";
+import * as nodejs from "../../library/nodejs";
+import { baseNameNoExt, stripExt } from "../../library/pathUtils";
+import { getConfiguration } from "../utils/configuration";
+import { getDocumentWorkspaceFolder } from "../utils/document";
+import { GenericQuickPick } from "../utils/quickPick";
+import { registerAsyncCommandWrapped } from "./exception";
+import { Modules } from "./module";
+import { getActiveTextEditor } from "./utils";
 
 async function switchToAlternate() {
   const editor = getActiveTextEditor();
@@ -17,7 +17,7 @@ async function switchToAlternate() {
   const filePath = document.fileName;
   const relPath = workspace.asRelativePath(document.fileName);
   const ext = nodejs.path.extname(filePath);
-  const mapping = getConfiguration().getNotNull('qcfg.alternate.mapping');
+  const mapping = getConfiguration().getNotNull("qcfg.alternate.mapping");
   const altExts = mapping[ext];
   assertNotNull(altExts, `No alternate mapping configured for ${ext}`);
   const altFiles = altExts.map((altExt) => stripExt(filePath) + altExt);
@@ -33,7 +33,7 @@ async function switchToAlternate() {
     const shortName = baseNameNoExt(filePath) + altExt;
     const folder = getDocumentWorkspaceFolder(filePath);
     assertNotNull(folder);
-    const pattern = new RelativePattern(folder, '**/' + shortName);
+    const pattern = new RelativePattern(folder, "**/" + shortName);
     const files = await workspace.findFiles(pattern);
     if (files.length === 0) {
       continue;
@@ -65,7 +65,7 @@ async function switchToAlternate() {
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
-    registerAsyncCommandWrapped('qcfg.alternate.switch', switchToAlternate),
+    registerAsyncCommandWrapped("qcfg.alternate.switch", switchToAlternate),
   );
 }
 

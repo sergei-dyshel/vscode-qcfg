@@ -1,22 +1,23 @@
-import lodash from 'lodash';
-import { assert } from '../../library/exception';
-import { MessageDialog } from './messageDialog';
-import type { PersistentStorage } from './persistentState';
-import { PersistentState } from './persistentState';
-import type { BaseQuickPickItem, QuickPickValue } from './quickPick';
+import lodash from "lodash";
+import { assert } from "../../library/exception";
+import { MessageDialog } from "./messageDialog";
+import type { PersistentStorage } from "./persistentState";
+import { PersistentState } from "./persistentState";
+import type { BaseQuickPickItem, QuickPickValue } from "./quickPick";
 import {
   GenericQuickPick,
   QuickPickButtons,
   QuickPickSeparator,
   QuickPickWrapper,
   StringQuickPick,
-} from './quickPick';
+} from "./quickPick";
 
 /**
- * Specialization of {@link QuickPickWrapper} which persists selected items
- * and preselects them on next invokation.
+ * Specialization of {@link QuickPickWrapper} which persists selected items and
+ * preselects them on next invokation.
  *
  * The behaviour is differnt depending on `canSelectMany`:
+ *
  * - When `false` see {@link PersistentQuickPickWrapper.select}
  * - When `true` see {@link PersistentQuickPickWrapper.selectMany}
  *
@@ -39,7 +40,8 @@ export class PersistentQuickPickWrapper<
   }
 
   /**
-   * Save MRU history of selected items and sort items in MRU order before selecting.
+   * Save MRU history of selected items and sort items in MRU order before
+   * selecting.
    *
    * NOTE: Separators are unsupported
    */
@@ -49,7 +51,7 @@ export class PersistentQuickPickWrapper<
     const mruItems = items.map((item, origIndex) => {
       assert(
         !(item instanceof QuickPickSeparator),
-        'Separators unsupported for single-select with because of MRU',
+        "Separators unsupported for single-select with because of MRU",
       );
       let index = labels.indexOf(this.toPersistentLabel(item));
       if (index === -1) index = origIndex + labels.length;
@@ -88,8 +90,8 @@ export class PersistentQuickPickWrapper<
 }
 
 /**
- * Works similarly to {@link GenericQuickPick} but uses persistent storage
- * as described in {@link PersistentQuickPickWrapper}.
+ * Works similarly to {@link GenericQuickPick} but uses persistent storage as
+ * described in {@link PersistentQuickPickWrapper}.
  */
 export class PersistentGenericQuickPick<T> extends PersistentQuickPickWrapper<
   T,
@@ -100,8 +102,8 @@ export class PersistentGenericQuickPick<T> extends PersistentQuickPickWrapper<
     toPersistentLabel: (value: T) => string,
     persistentKey: string,
     /**
-     * sometimes its convenient to pass list of items as parameter to allow vscode
-     * auto-infer QuickPick type
+     * Sometimes its convenient to pass list of items as parameter to allow
+     * vscode auto-infer QuickPick type
      */
     items?: ReadonlyArray<T | QuickPickSeparator>,
   ) {
@@ -133,8 +135,8 @@ export class PersistentStringQuickPick extends PersistentQuickPickWrapper<
 }
 
 /**
- * QuickPick that allows to input value and shows MRU history of
- * previously inputted values.
+ * QuickPick that allows to input value and shows MRU history of previously
+ * inputted values.
  */
 export class PersistentInputHistoryQuickPick extends PersistentStringQuickPick {
   constructor(persistentKey: string) {
@@ -167,11 +169,11 @@ export class PersistentInputHistoryQuickPick extends PersistentStringQuickPick {
   private async onDidTriggerClearAll() {
     const confirmed = await MessageDialog.showModal(
       MessageDialog.WARNING,
-      ['Clear all items?', 'Operation is not reversible'],
-      ['No', 'Yes'] as const,
-      'No',
+      ["Clear all items?", "Operation is not reversible"],
+      ["No", "Yes"] as const,
+      "No",
     );
-    if (confirmed === 'No') return;
+    if (confirmed === "No") return;
     this.origItems.clear();
     this.onDidChangeValueImpl(this.qp.value);
   }
@@ -184,13 +186,13 @@ export class PersistentInputHistoryQuickPick extends PersistentStringQuickPick {
   }
 
   private onDidChangeValueImpl(value: string) {
-    if (value === '' || this.origItems.includes(value)) {
+    if (value === "" || this.origItems.includes(value)) {
       super.items = this.origItems;
       return;
     }
     this.qp.items = [
       // puting newline in `detail` adds space between top (new) item and rest of item
-      { label: this.qp.value, detail: '\n' },
+      { label: this.qp.value, detail: "\n" },
       ...this.origItems.map(this.wrap),
     ];
   }
@@ -201,7 +203,8 @@ export class PersistentInputHistoryQuickPick extends PersistentStringQuickPick {
 /**
  * Wrapper to select a record from object with persistence.
  *
- * Use {@link PersistentGenericQuickPick.selectValue} to return only value part of the record.
+ * Use {@link PersistentGenericQuickPick.selectValue} to return only value part
+ * of the record.
  */
 export class PersistentRecordQuickPick<T> extends PersistentGenericQuickPick<
   [key: string, value: T]

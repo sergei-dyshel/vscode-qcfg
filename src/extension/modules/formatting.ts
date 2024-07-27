@@ -1,8 +1,8 @@
-import type { ExtensionContext, SourceControlResourceState, Uri } from 'vscode';
-import { commands, window } from 'vscode';
-import { log } from '../../library/logging';
-import { registerAsyncCommandWrapped } from './exception';
-import { Modules } from './module';
+import type { ExtensionContext, SourceControlResourceState, Uri } from "vscode";
+import { commands, window } from "vscode";
+import { log } from "../../library/logging";
+import { registerAsyncCommandWrapped } from "./exception";
+import { Modules } from "./module";
 
 // inspired by https://github.com/lacroixdavid1/vscode-format-context-menu
 
@@ -34,7 +34,7 @@ async function formatFilesInScm(
   ...selectedFiles: SourceControlResourceState[]
 ) {
   return execCommandOnDocuments(
-    'editor.action.formatDocument',
+    "editor.action.formatDocument",
     selectedFiles.map((x) => x.resourceUri),
   );
 }
@@ -42,14 +42,14 @@ async function formatFilesInScm(
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
     registerAsyncCommandWrapped(
-      'qcfg.explorer.format',
-      execCommandOnSelectedInExplorer('editor.action.formatDocument'),
+      "qcfg.explorer.format",
+      execCommandOnSelectedInExplorer("editor.action.formatDocument"),
     ),
     registerAsyncCommandWrapped(
-      'qcfg.explorer.organizeImports',
-      execCommandOnSelectedInExplorer('editor.action.organizeImports'),
+      "qcfg.explorer.organizeImports",
+      execCommandOnSelectedInExplorer("editor.action.organizeImports"),
     ),
-    registerAsyncCommandWrapped('qcfg.scm.format', formatFilesInScm),
+    registerAsyncCommandWrapped("qcfg.scm.format", formatFilesInScm),
   );
 }
 

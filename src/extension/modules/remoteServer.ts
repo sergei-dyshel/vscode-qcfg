@@ -1,22 +1,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import * as jayson from 'jayson/promise';
-import type { ExtensionContext } from 'vscode';
-import { commands, Position, Uri, window, workspace } from 'vscode';
-import { log } from '../../library/logging';
-import { PORT_RANGE } from '../../library/remoteClient';
-import { stringify } from '../../library/stringify';
-import { mapObjectValues } from '../../library/tsUtils';
-import { openFolder } from '../utils/window';
-import { ConfigSectionWatcher } from './configWatcher';
+import * as jayson from "jayson/promise";
+import type { ExtensionContext } from "vscode";
+import { commands, Position, Uri, window, workspace } from "vscode";
+import { log } from "../../library/logging";
+import { PORT_RANGE } from "../../library/remoteClient";
+import { stringify } from "../../library/stringify";
+import { mapObjectValues } from "../../library/tsUtils";
+import { openFolder } from "../utils/window";
+import { ConfigSectionWatcher } from "./configWatcher";
 import {
   handleAsyncStd,
   handleErrors,
   registerSyncCommandWrapped,
-} from './exception';
-import { Modules } from './module';
-import { openRemoteFileViaSsh } from './sshFs';
-import { focusWindow } from './windowState';
-import { getWorkspaceFile, getWorkspaceName } from './workspaceHistory';
+} from "./exception";
+import { Modules } from "./module";
+import { openRemoteFileViaSsh } from "./sshFs";
+import { focusWindow } from "./windowState";
+import { getWorkspaceFile, getWorkspaceName } from "./workspaceHistory";
 
 export type RemoteProtocol = typeof protocol;
 
@@ -75,7 +75,7 @@ const protocol = {
   // eslint-disable-next-line @typescript-eslint/require-await
   async reloadWindow(_: Record<string, unknown>) {
     setTimeout(() => {
-      handleAsyncStd(commands.executeCommand('workbench.action.reloadWindow'));
+      handleAsyncStd(commands.executeCommand("workbench.action.reloadWindow"));
     }, 1000);
   },
 };
@@ -102,32 +102,32 @@ function activate(context: ExtensionContext) {
   const server = new jayson.Server(loggedProtocol);
   const tcpServer = server.tcp();
   port = PORT_RANGE[0];
-  tcpServer.listen(port, '127.0.0.1');
-  tcpServer.on('listening', () => {
+  tcpServer.listen(port, "127.0.0.1");
+  tcpServer.on("listening", () => {
     log.info(`TCP server started on port ${port}`);
   });
-  tcpServer.on('error', (err) => {
+  tcpServer.on("error", (err) => {
     const error = err as NodeJS.ErrnoException;
-    if (error.code === 'EADDRINUSE') {
+    if (error.code === "EADDRINUSE") {
       log.debug(`Port ${port} already in use`);
       port += 1;
       if (!PORT_RANGE.includes(port)) {
         port = 0;
-        log.error('Remote server port out of range');
+        log.error("Remote server port out of range");
       }
-      tcpServer.listen(port, '127.0.0.1');
+      tcpServer.listen(port, "127.0.0.1");
     } else {
       log.info(`Error listening on port ${port}: ${error.message}`);
     }
   });
 
-  const watcher = new ConfigSectionWatcher('qcfg.remote.setDefault', () => {
+  const watcher = new ConfigSectionWatcher("qcfg.remote.setDefault", () => {
     if (watcher.value) setDefaultServer();
     else lastSetDefaultTimestamp = 0;
   });
   context.subscriptions.push(
     // eslint-disable-next-line sonarjs/no-duplicate-string
-    registerSyncCommandWrapped('qcfg.remote.setDefault', setDefaultServer),
+    registerSyncCommandWrapped("qcfg.remote.setDefault", setDefaultServer),
     watcher.register(),
   );
 }

@@ -1,9 +1,9 @@
-import type { Range, TextEditor, WorkspaceFolder } from 'vscode';
-import { commands, Location, window } from 'vscode';
-import { assertNotNull } from '../../library/exception';
-import type { VoidFunction } from '../../library/templateTypes';
-import { getDocumentWorkspaceFolder } from '../utils/document';
-import { registerSyncCommandWrapped } from './exception';
+import type { Range, TextEditor, WorkspaceFolder } from "vscode";
+import { commands, Location, window } from "vscode";
+import { assertNotNull } from "../../library/exception";
+import type { VoidFunction } from "../../library/templateTypes";
+import { getDocumentWorkspaceFolder } from "../utils/document";
+import { registerSyncCommandWrapped } from "./exception";
 
 // XXX: currently unused
 export namespace WhenContext {
@@ -22,7 +22,7 @@ export namespace WhenContext {
   }
 
   async function setOrClear(name: string, value: boolean) {
-    await commands.executeCommand('setContext', name, value);
+    await commands.executeCommand("setContext", name, value);
     if (value) contexts.add(name);
     else contexts.delete(name);
   }
@@ -43,7 +43,7 @@ let tempCmdCounter = 0;
 
 export function getActiveTextEditor(): TextEditor {
   const editor = window.activeTextEditor;
-  assertNotNull(editor, 'No active text editor');
+  assertNotNull(editor, "No active text editor");
   return editor;
 }
 

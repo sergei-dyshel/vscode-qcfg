@@ -1,17 +1,20 @@
 // Borrowed from https://github.com/jacobdufault/vscode-fuzzy-search by Jacob Dufault
 
-import * as vscode from 'vscode';
-import { handleErrors, registerSyncCommandWrapped } from './exception';
-import { Modules } from './module';
-import { getActiveTextEditor } from './utils';
+import * as vscode from "vscode";
+import { handleErrors, registerSyncCommandWrapped } from "./exception";
+import { Modules } from "./module";
+import { getActiveTextEditor } from "./utils";
 
 class Item implements vscode.QuickPickItem {
-  constructor(public label: string, public line: number) {
+  constructor(
+    public label: string,
+    public line: number,
+  ) {
     this.label = label.trim();
   }
 }
 
-let valueFromPreviousInvocation = '';
+let valueFromPreviousInvocation = "";
 let lastSelected: Item | undefined;
 
 function showFuzzySearch() {
@@ -31,7 +34,7 @@ function showFuzzySearch() {
       continue;
     }
     quickPickEntries.push(
-      new Item(line.slice(0, 58) + '…', i + 1),
+      new Item(line.slice(0, 58) + "…", i + 1),
       new Item(
         `${(i + 1).toString()}: …${line_
           .trim()
@@ -124,7 +127,7 @@ function showFuzzySearch() {
 
 function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
-    registerSyncCommandWrapped('qcfg.fuzzySearch', () => {
+    registerSyncCommandWrapped("qcfg.fuzzySearch", () => {
       showFuzzySearch();
     }),
   );

@@ -1,14 +1,14 @@
-import type { ExtensionContext, Position, Range, TextDocument } from 'vscode';
-import { languages, SelectionRange } from 'vscode';
-import { assertNotNull } from '../../library/exception';
-import { log } from '../../library/logging';
-import { handleErrors } from './exception';
-import { Modules } from './module';
-import { SyntaxTrees } from './syntaxTree';
-import { trimInner } from './textUtils';
-import { findContainingNode } from './treeSitter';
-import type { SyntaxNode, SyntaxTree } from '../../library/treeSitter';
-import { TreeSitter } from '../../library/treeSitter';
+import type { ExtensionContext, Position, Range, TextDocument } from "vscode";
+import { languages, SelectionRange } from "vscode";
+import { assertNotNull } from "../../library/exception";
+import { log } from "../../library/logging";
+import type { SyntaxNode, SyntaxTree } from "../../library/treeSitter";
+import { TreeSitter } from "../../library/treeSitter";
+import { handleErrors } from "./exception";
+import { Modules } from "./module";
+import { SyntaxTrees } from "./syntaxTree";
+import { trimInner } from "./textUtils";
+import { findContainingNode } from "./treeSitter";
 
 function computeSelectionRange(
   document: TextDocument,

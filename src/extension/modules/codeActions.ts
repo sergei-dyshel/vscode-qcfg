@@ -6,7 +6,7 @@ import type {
   Selection,
   TextEdit,
   Uri,
-} from 'vscode';
+} from "vscode";
 import {
   CodeActionKind,
   commands,
@@ -14,25 +14,25 @@ import {
   window,
   workspace,
   WorkspaceEdit,
-} from 'vscode';
+} from "vscode";
 import {
   concatArrays,
   concatNonNullArrays,
   DefaultMap,
   mapNonNull,
-} from '../../library/tsUtils';
-import { GenericQuickPick } from '../utils/quickPick';
-import { mapAsync } from './async';
-import { ConfigRules } from './configRules';
+} from "../../library/tsUtils";
+import { GenericQuickPick } from "../utils/quickPick";
+import { mapAsync } from "./async";
+import { ConfigRules } from "./configRules";
 import {
   handleAsyncStd,
   registerAsyncCommandWrapped,
   registerCommandWrapped,
-} from './exception';
-import { Modules } from './module';
-import { showNotificationMessage } from './notificationMessage';
-import { getActiveTextEditor } from './utils';
-import { preserveActiveLocation } from './windowUtils';
+} from "./exception";
+import { Modules } from "./module";
+import { showNotificationMessage } from "./notificationMessage";
+import { getActiveTextEditor } from "./utils";
+import { preserveActiveLocation } from "./windowUtils";
 
 const DEFAULT_PRIORITY = 5;
 
@@ -51,7 +51,7 @@ async function executeCodeActionProvider(
 ): Promise<CodeAction[]> {
   // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
   return commands.executeCommand<CodeAction[]>(
-    'vscode.executeCodeActionProvider',
+    "vscode.executeCodeActionProvider",
     uri,
     range,
     kind,
@@ -59,20 +59,20 @@ async function executeCodeActionProvider(
   );
 }
 
-/** filter through config rules, sort by priority */
+/** Filter through config rules, sort by priority */
 function filterByConfig(
   uri: Uri,
   actions: Array<{ action: CodeAction; uri: Uri; range: Range }>,
 ) {
   const configRules = new ConfigRules(uri);
   const rules = concatNonNullArrays(
-    ...configRules.allDefined('quickFixCodeActions'),
+    ...configRules.allDefined("quickFixCodeActions"),
   );
 
   // extract priority or apply default priority
   const fullRules = rules.map((rule) => {
-    const pattern = typeof rule === 'string' ? rule : rule[0];
-    const priority = typeof rule === 'string' ? DEFAULT_PRIORITY : rule[1];
+    const pattern = typeof rule === "string" ? rule : rule[0];
+    const priority = typeof rule === "string" ? DEFAULT_PRIORITY : rule[1];
     const regex = new RegExp(pattern);
     return { regex, priority };
   });
@@ -110,7 +110,7 @@ function workspaceEditConflicts(wse1: WorkspaceEdit, wse2: WorkspaceEdit) {
   return false;
 }
 
-/** workspace edits are equal if they apply same edits to same documents */
+/** Workspace edits are equal if they apply same edits to same documents */
 function workspaceEditsEqual(wse1: WorkspaceEdit, wse2: WorkspaceEdit) {
   const entries1 = wse1.entries().sort((e1, e2) => e1[0].compare(e2[0]));
   const entries2 = wse2.entries().sort((e1, e2) => e1[0].compare(e2[0]));
@@ -142,7 +142,7 @@ async function getFileCodeActions(uri: Uri): Promise<DiagnosticWithActions[]> {
   }));
 }
 
-/** get all quickfix actions for file */
+/** Get all quickfix actions for file */
 async function getFileFixes(uri: Uri) {
   const actionsByDiag = await getFileCodeActions(uri);
   // filter only quick fix type, augument with additional data
@@ -177,7 +177,7 @@ async function getFileFixes(uri: Uri) {
   return filteredActions;
 }
 
-/** filter only quickfix category */
+/** Filter only quickfix category */
 function filterQuickFixActions(diag: DiagnosticWithActions) {
   return diag.actions.filter((action) => {
     if (!action.edit) return false;
@@ -189,7 +189,7 @@ function filterQuickFixActions(diag: DiagnosticWithActions) {
   });
 }
 
-/** extract code actions from all files in workspace */
+/** Extract code actions from all files in workspace */
 async function getWorkspaceFixes() {
   const uris = languages.getDiagnostics().map(([uri, _]) => uri);
   return concatArrays(
@@ -197,7 +197,7 @@ async function getWorkspaceFixes() {
   );
 }
 
-/** select with quick pick */
+/** Select with quick pick */
 async function chooseFixes(actions: QuickFixAction[], showFilenames: boolean) {
   const qp = new GenericQuickPick(
     (action) => ({
@@ -210,7 +210,7 @@ async function chooseFixes(actions: QuickFixAction[], showFilenames: boolean) {
     actions,
   );
   qp.options.matchOnDescription = true;
-  qp.options.placeholder = 'Select quick fix code actions to apply';
+  qp.options.placeholder = "Select quick fix code actions to apply";
   qp.onDidActivateItem = (action) => {
     handleAsyncStd(
       window.showTextDocument(action.uri, {
@@ -235,7 +235,7 @@ async function quickFixWorkspace() {
   return chooseAndApplyFixes(actions, true /* showFilenames */);
 }
 
-/** choose with quick pick and apply to workspace */
+/** Choose with quick pick and apply to workspace */
 async function chooseAndApplyFixes(
   actions: QuickFixAction[],
   showFilenames: boolean,
@@ -250,7 +250,7 @@ async function chooseAndApplyFixes(
   await applyCodeActions(codeActions);
 }
 
-/** apply multiple code actions as single action (undoable) */
+/** Apply multiple code actions as single action (undoable) */
 async function applyCodeActions(actions: CodeAction[]) {
   const editsByUri = new DefaultMap<Uri, TextEdit[]>((_) => []);
   for (const action of actions)
@@ -267,17 +267,17 @@ async function dumpFileCodeActions() {
   const editor = getActiveTextEditor();
   const actions = await getFileCodeActions(editor.document.uri);
   console.log(actions);
-  showNotificationMessage('Now look in dev tools console or debug console');
+  showNotificationMessage("Now look in dev tools console or debug console");
 }
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
-    registerAsyncCommandWrapped('qcfg.codeActions.autoFixFile', quickFixFile),
+    registerAsyncCommandWrapped("qcfg.codeActions.autoFixFile", quickFixFile),
     registerAsyncCommandWrapped(
-      'qcfg.codeActions.autoFixWorkspace',
+      "qcfg.codeActions.autoFixWorkspace",
       quickFixWorkspace,
     ),
-    registerCommandWrapped('qcfg.codeActions.dumpFile', dumpFileCodeActions),
+    registerCommandWrapped("qcfg.codeActions.dumpFile", dumpFileCodeActions),
   );
 }
 

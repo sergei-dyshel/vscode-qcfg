@@ -1,9 +1,9 @@
-import type { ExtensionContext } from 'vscode';
-import { handleAsyncStd, registerCommandWrapped } from './exception';
-import { Modules } from './module';
-import { executeSubprocess } from './subprocess';
-import { focusWindow, isWindowFocused } from './windowState';
-import { getWorkspaceName } from './workspaceHistory';
+import type { ExtensionContext } from "vscode";
+import { handleAsyncStd, registerCommandWrapped } from "./exception";
+import { Modules } from "./module";
+import { executeSubprocess } from "./subprocess";
+import { focusWindow, isWindowFocused } from "./windowState";
+import { getWorkspaceName } from "./workspaceHistory";
 
 const DEFAULT_TIMEOUT_SEC = 5;
 
@@ -16,21 +16,23 @@ interface MacOsNotificationOptions {
 /** Type of action that happens on MacOs notification */
 export enum MacOsNotificationAction {
   /** Notification timed out {@link MacOsNotificationOptions.timeoutSec} */
-  TIMEOUT = 'timeout',
+  TIMEOUT = "timeout",
   /** Notification dismissed or closed (by clicking close action) */
-  CLOSED = 'closed',
+  CLOSED = "closed",
   /** User clicked anywhere on notification banner */
-  CONTENTS_CLICKED = 'contentsClicked',
-  /** User clicked *Show* action */
-  SHOW_CLICKED = 'showClicked',
+  CONTENTS_CLICKED = "contentsClicked",
+  /** User clicked _Show_ action */
+  SHOW_CLICKED = "showClicked",
 }
 
 /**
  * Show notification on MacOs using `alerter` program
  *
- * `alerter` must be configured to show *Alerts*, not *Banners* in System Preferences
+ * `alerter` must be configured to show _Alerts_, not _Banners_ in System
+ * Preferences
  *
- * When using actions *alerter* will still add `Show` action, clicking on which will crash.
+ * When using actions _alerter_ will still add `Show` action, clicking on which
+ * will crash.
  */
 async function showMacOsNotification(
   message: string,
@@ -47,31 +49,31 @@ async function showMacOsNotification<A extends string>(
   options?: MacOsNotificationOptions & { actions?: A[] },
 ): Promise<MacOsNotificationAction | A> {
   const cmd = [
-    'alerter',
-    '-json',
-    '-sender',
-    'com.visualstudio.code.oss',
-    '-message',
+    "alerter",
+    "-json",
+    "-sender",
+    "com.visualstudio.code.oss",
+    "-message",
     message,
-    '-timeout',
+    "-timeout",
     (options?.timeoutSec ?? DEFAULT_TIMEOUT_SEC).toString(),
   ];
-  if (options?.title) cmd.push('-title', options.title);
-  if (options?.subtitle) cmd.push('-subtitle', options.subtitle);
+  if (options?.title) cmd.push("-title", options.title);
+  if (options?.subtitle) cmd.push("-subtitle", options.subtitle);
   const res = await executeSubprocess(cmd);
   const resJson = JSON.parse(res.stdout) as {
-    activationType: MacOsNotificationAction | 'actionClicked';
+    activationType: MacOsNotificationAction | "actionClicked";
     activationValue?: string;
   };
-  if (resJson.activationType === 'actionClicked') {
-    if (resJson.activationValue !== '') return resJson.activationValue! as A;
+  if (resJson.activationType === "actionClicked") {
+    if (resJson.activationValue !== "") return resJson.activationValue! as A;
     return MacOsNotificationAction.SHOW_CLICKED;
   }
   return resJson.activationType;
 }
 
 export interface OsNotificationOptions
-  extends Omit<MacOsNotificationOptions, 'title' | 'subtitle'> {
+  extends Omit<MacOsNotificationOptions, "title" | "subtitle"> {
   /** Only show when not focused */
   unfocusedOnly?: boolean;
 }
@@ -94,7 +96,7 @@ async function showOsNotificationAsync(
 ) {
   if (options?.unfocusedOnly && isWindowFocused()) return;
   const action = await showMacOsNotification(message, {
-    title: getWorkspaceName() ?? '',
+    title: getWorkspaceName() ?? "",
     ...options,
   });
   if (
@@ -107,8 +109,8 @@ async function showOsNotificationAsync(
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
-    registerCommandWrapped('qcfg.test.osNotification', () => {
-      showOsNotification('second line', {
+    registerCommandWrapped("qcfg.test.osNotification", () => {
+      showOsNotification("second line", {
         timeoutSec: 0,
       });
     }),

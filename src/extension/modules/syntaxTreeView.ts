@@ -4,22 +4,22 @@ import type {
   TextDocument,
   TextEditorSelectionChangeEvent,
   TreeItemLabel,
-} from 'vscode';
-import { window } from 'vscode';
-import { assert } from '../../library/exception';
-import { stringify as str } from '../../library/stringify';
-import { ellipsize } from '../../library/stringUtils';
+} from "vscode";
+import { window } from "vscode";
+import { assert } from "../../library/exception";
+import { stringify as str } from "../../library/stringify";
+import { ellipsize } from "../../library/stringUtils";
+import type { SyntaxNode } from "../../library/treeSitter";
 import {
   listenAsyncWrapped,
   listenWrapped,
   registerAsyncCommandWrapped,
-} from './exception';
-import { Modules } from './module';
-import type { SyntaxTreeUpdatedEvent } from './syntaxTree';
-import { onSyntaxTreeUpdated, SyntaxTrees } from './syntaxTree';
-import type { TreeNode, TreeProvider } from './treeView';
-import { QcfgTreeView, StaticTreeNode } from './treeView';
-import type { SyntaxNode } from '../../library/treeSitter';
+} from "./exception";
+import { Modules } from "./module";
+import type { SyntaxTreeUpdatedEvent } from "./syntaxTree";
+import { onSyntaxTreeUpdated, SyntaxTrees } from "./syntaxTree";
+import type { TreeNode, TreeProvider } from "./treeView";
+import { QcfgTreeView, StaticTreeNode } from "./treeView";
 
 const ELLIPSIZE_LEN = 20;
 
@@ -44,14 +44,14 @@ const treeProvider: TreeProvider = {
   },
   getMessage() {
     const editor = window.activeTextEditor;
-    if (!editor) return 'No editor opened';
+    if (!editor) return "No editor opened";
     const document = editor.document;
     if (!SyntaxTrees.isDocumentSupported(document))
       return `Language ${document.languageId} is not supported`;
-    return '';
+    return "";
   },
   getTitle() {
-    return 'syntax';
+    return "syntax";
   },
   onDidChangeSelection(nodes_: readonly TreeNode[]) {
     const nodes = nodes_ as SyntaxTreeViewNode[];
@@ -84,53 +84,53 @@ function buildNodeName(
   document: TextDocument,
 ): string | undefined {
   const lang = document.languageId;
-  if (lang === 'python') {
+  if (lang === "python") {
     if (
-      node.nodeType === 'decorated_definition' &&
+      node.nodeType === "decorated_definition" &&
       node.lastNamedChild &&
-      node.lastNamedChild.nodeType === 'function_definition'
+      node.lastNamedChild.nodeType === "function_definition"
     )
       return buildNodeName(node.lastNamedChild, document);
     if (
-      (node.nodeType === 'function_definition' ||
-        node.nodeType === 'class_definition') &&
+      (node.nodeType === "function_definition" ||
+        node.nodeType === "class_definition") &&
       node.firstNamedChild &&
-      node.firstNamedChild.nodeType === 'identifier'
+      node.firstNamedChild.nodeType === "identifier"
     ) {
       return node.firstNamedChild.text;
     }
   }
-  if (lang === 'c' || lang === 'cpp') {
+  if (lang === "c" || lang === "cpp") {
     switch (node.nodeType) {
-      case 'system_lib_string':
+      case "system_lib_string":
         return node.text;
-      case 'preproc_include':
+      case "preproc_include":
         if (node.firstNamedChild)
           return buildNodeName(node.firstNamedChild, document);
         break;
-      case 'function_definition':
-      case 'declaration':
+      case "function_definition":
+      case "declaration":
         if (
           node.firstNamedChild &&
-          node.firstNamedChild.nodeType === 'function_declarator'
+          node.firstNamedChild.nodeType === "function_declarator"
         )
           return buildNodeName(node.firstNamedChild, document);
         if (
           node.namedChildCount >= 2 &&
-          node.namedChild(1)!.nodeType === 'function_declarator'
+          node.namedChild(1)!.nodeType === "function_declarator"
         )
           return buildNodeName(node.namedChild(1)!, document);
         if (
           node.namedChildCount >= 3 &&
-          node.namedChild(2)!.nodeType === 'function_declarator'
+          node.namedChild(2)!.nodeType === "function_declarator"
         )
           return buildNodeName(node.namedChild(2)!, document);
         break;
-      case 'function_declarator':
+      case "function_declarator":
         if (
           node.firstNamedChild &&
-          (node.firstNamedChild.nodeType === 'scoped_identifier' ||
-            node.firstNamedChild.nodeType === 'identifier')
+          (node.firstNamedChild.nodeType === "scoped_identifier" ||
+            node.firstNamedChild.nodeType === "identifier")
         )
           return buildNodeName(node.firstNamedChild, document);
         break;
@@ -139,20 +139,20 @@ function buildNodeName(
     }
   }
   switch (node.nodeType) {
-    case 'string_literal':
+    case "string_literal":
       return ellipsize(node.text, ELLIPSIZE_LEN);
-    case 'identifier':
-    case 'namespace_identifier':
-    case 'number_literal':
-    case 'type_qualifier':
-    case 'type_identifier':
-    case 'primitive_type':
-    case 'type_descriptor':
-    case 'storage_class_specifier':
+    case "identifier":
+    case "namespace_identifier":
+    case "number_literal":
+    case "type_qualifier":
+    case "type_identifier":
+    case "primitive_type":
+    case "type_descriptor":
+    case "storage_class_specifier":
       return node.text;
-    case 'scoped_identifier':
-    case 'template_type':
-    case 'scoped_type_identifier':
+    case "scoped_identifier":
+    case "template_type":
+    case "scoped_type_identifier":
       return ellipsize(node.text, ELLIPSIZE_LEN);
     default:
       return undefined;
@@ -172,7 +172,7 @@ class SyntaxTreeViewNode extends StaticTreeNode {
 
   private calcId(): string {
     const editor = window.activeTextEditor;
-    if (!editor) return '';
+    if (!editor) return "";
     const document = editor.document;
     const range = this.syntaxNode.range;
     const obj = {
@@ -247,7 +247,7 @@ function findContainingNode(
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
-    registerAsyncCommandWrapped('qcfg.syntaxTree.show', showTree),
+    registerAsyncCommandWrapped("qcfg.syntaxTree.show", showTree),
     listenWrapped(window.onDidChangeActiveTextEditor, onTextEditorChanged),
     listenAsyncWrapped(
       window.onDidChangeTextEditorSelection,

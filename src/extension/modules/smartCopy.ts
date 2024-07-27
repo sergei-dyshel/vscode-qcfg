@@ -1,13 +1,13 @@
-import type { ExtensionContext, TextEditor } from 'vscode';
-import { commands, env, Range, ThemeColor, workspace } from 'vscode';
-import { check } from '../../library/exception';
-import { lazyValue } from '../../library/tsUtils';
-import { RangeDecorator } from '../utils/decoration';
-import { expandSelectionLinewise, replaceText } from './editing';
-import { listenWrapped, registerAsyncCommandWrapped } from './exception';
-import { Modules } from './module';
-import { swapRanges, trimWhitespace } from './textUtils';
-import { getActiveTextEditor } from './utils';
+import type { ExtensionContext, TextEditor } from "vscode";
+import { commands, env, Range, ThemeColor, workspace } from "vscode";
+import { check } from "../../library/exception";
+import { lazyValue } from "../../library/tsUtils";
+import { RangeDecorator } from "../utils/decoration";
+import { expandSelectionLinewise, replaceText } from "./editing";
+import { listenWrapped, registerAsyncCommandWrapped } from "./exception";
+import { Modules } from "./module";
+import { swapRanges, trimWhitespace } from "./textUtils";
+import { getActiveTextEditor } from "./utils";
 
 let mark:
   | undefined
@@ -21,20 +21,20 @@ const decorator = lazyValue(
   () =>
     new RangeDecorator(
       {
-        borderWidth: '0px 0px 0px 4px',
+        borderWidth: "0px 0px 0px 4px",
       },
       {
-        borderWidth: '0px 4px 0px 0px',
+        borderWidth: "0px 4px 0px 0px",
       },
       {
-        borderStyle: 'solid',
-        borderColor: new ThemeColor('editor.selectionBackground'),
+        borderStyle: "solid",
+        borderColor: new ThemeColor("editor.selectionBackground"),
       },
     ),
 );
 
 async function normalCopy() {
-  return commands.executeCommand('editor.action.clipboardCopyAction');
+  return commands.executeCommand("editor.action.clipboardCopyAction");
 }
 
 async function markAndCopy(editor: TextEditor, range: Range) {
@@ -88,7 +88,7 @@ async function smartCopy() {
       return;
     }
     if (await isMarked(editor, selection.expandLinewise())) {
-      await commands.executeCommand('editor.action.smartSelect.expand');
+      await commands.executeCommand("editor.action.smartSelect.expand");
       return markAndCopySelection();
     }
     return markAndCopy(editor, selection.expandLinewise());
@@ -106,7 +106,7 @@ async function smartCopy() {
   }
 
   if (selection.isSingleLine) {
-    await commands.executeCommand('editor.action.smartSelect.expand');
+    await commands.executeCommand("editor.action.smartSelect.expand");
     return markAndCopySelection();
   }
   editor.selection = selection
@@ -116,7 +116,7 @@ async function smartCopy() {
 }
 
 async function normalPaste() {
-  await commands.executeCommand('editor.action.clipboardPasteAction');
+  await commands.executeCommand("editor.action.clipboardPasteAction");
 }
 
 async function pasteAndMark(editor: TextEditor, text: string) {
@@ -132,7 +132,7 @@ async function smartPaste() {
     return normalPaste();
   }
   const text = await env.clipboard.readText();
-  if (!text.endsWith('\n')) {
+  if (!text.endsWith("\n")) {
     return pasteAndMark(editor, text);
   }
 
@@ -150,8 +150,8 @@ async function smartPaste() {
 
 async function swapWithMark() {
   const editor = getActiveTextEditor();
-  check(mark !== undefined && (await isMarkValid()), 'No text marked');
-  check(editor.selections.length === 1, 'Multiple ranges selected');
+  check(mark !== undefined && (await isMarkValid()), "No text marked");
+  check(editor.selections.length === 1, "Multiple ranges selected");
 
   if (mark.editor.document === editor.document) {
     await swapRanges(
@@ -172,9 +172,9 @@ function invalidateMark() {
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
-    registerAsyncCommandWrapped('qcfg.smartCopy', smartCopy),
-    registerAsyncCommandWrapped('qcfg.smartPaste', smartPaste),
-    registerAsyncCommandWrapped('qcfg.swapWithMark', swapWithMark),
+    registerAsyncCommandWrapped("qcfg.smartCopy", smartCopy),
+    registerAsyncCommandWrapped("qcfg.smartPaste", smartPaste),
+    registerAsyncCommandWrapped("qcfg.swapWithMark", swapWithMark),
     listenWrapped(workspace.onDidChangeTextDocument, invalidateMark),
   );
 }

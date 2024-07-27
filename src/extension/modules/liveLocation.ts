@@ -6,15 +6,15 @@ import type {
   TextDocumentChangeEvent,
   TextDocumentContentChangeEvent,
   TextEditor,
-} from 'vscode';
-import { Location, workspace } from 'vscode';
-import type { DisposableLike } from '../../library/disposable';
-import { assert } from '../../library/exception';
-import { DefaultMap } from '../../library/tsUtils';
-import { NumRange, offsetToRange } from './documentUtils';
-import { listenWrapped } from './exception';
-import { Modules } from './module';
-import { getActiveTextEditor } from './utils';
+} from "vscode";
+import { Location, workspace } from "vscode";
+import type { DisposableLike } from "../../library/disposable";
+import { assert } from "../../library/exception";
+import { DefaultMap } from "../../library/tsUtils";
+import { NumRange, offsetToRange } from "./documentUtils";
+import { listenWrapped } from "./exception";
+import { Modules } from "./module";
+import { getActiveTextEditor } from "./utils";
 
 export abstract class LiveLocation extends Location implements DisposableLike {
   private registered = false;
@@ -43,15 +43,15 @@ export abstract class LiveLocation extends Location implements DisposableLike {
   /**
    * Register live location to be ajusted on text document changes.
    *
-   * `onInvalidated` - caalled when location was (partially) overwritten
-   * by edit operation and is not longer valid.
+   * `onInvalidated` - caalled when location was (partially) overwritten by edit
+   * operation and is not longer valid.
    *
-   * `mergeOnReplace` - when part of location range is replaced,
-   * merge replaced text in instead of cutting
+   * `mergeOnReplace` - when part of location range is replaced, merge replaced
+   * text in instead of cutting
    */
   register(onInvalidated: () => void, mergeOnReplace = false) {
-    assert(!this.registered, 'Already registered');
-    assert(this.valid, 'Can not register an invalid LiveLocation');
+    assert(!this.registered, "Already registered");
+    assert(this.valid, "Can not register an invalid LiveLocation");
     this.registered = true;
     this.onInvalidated = onInvalidated;
     this.mergeOnReplace = mergeOnReplace;
@@ -83,7 +83,7 @@ export abstract class LiveLocation extends Location implements DisposableLike {
 
   protected invalidate() {
     if (!this.valid)
-      throw new Error('Can not invalidate already invalid LiveLocation');
+      throw new Error("Can not invalidate already invalid LiveLocation");
     this.valid = false;
     this.registered = false;
     this.onInvalidated!();
@@ -142,7 +142,7 @@ export class LiveRange extends LiveLocation {
 
   constructor(document: TextDocument, range: Range) {
     super(document, range);
-    if (range.isEmpty) throw new Error('LiveRange range must be non-empty');
+    if (range.isEmpty) throw new Error("LiveRange range must be non-empty");
     this.start = document.offsetAt(range.start);
     this.end = document.offsetAt(range.end);
   }
@@ -278,12 +278,12 @@ const allLocations = new DefaultMap<string, LiveLocation[]>(() => []);
 function onDidChangeTextDocument(event: TextDocumentChangeEvent) {
   const document = event.document;
   const changes = event.contentChanges;
-  if (document.fileName.startsWith('extension-output')) return;
+  if (document.fileName.startsWith("extension-output")) return;
   // TODO: exit if no changes for current document
   // make sure changes are sorted in descending order by offset
   for (const [x, y] of changes.pairIter()) {
     if (y.rangeOffset + y.rangeLength > x.rangeOffset)
-      throw new Error('TextDocumentChange-s are not sorted properly');
+      throw new Error("TextDocumentChange-s are not sorted properly");
   }
   if (!allLocations.has(document.fileName)) return;
   const locations = allLocations.get(document.fileName);

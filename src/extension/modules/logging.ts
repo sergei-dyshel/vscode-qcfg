@@ -4,7 +4,7 @@ import type {
   TextDocument,
   TextDocumentContentChangeEvent,
   TextEditor,
-} from 'vscode';
+} from "vscode";
 import {
   Location,
   Position,
@@ -13,25 +13,25 @@ import {
   Uri,
   window,
   workspace,
-} from 'vscode';
+} from "vscode";
 import {
   log,
   LogLevel,
   LogLevels,
   registerLogHandler,
   TextLogHandler,
-} from '../../library/logging';
-import { FileHandler } from '../../library/loggingHandlers';
-import * as nodejs from '../../library/nodejs';
-import { registerStringifier, stringify as str } from '../../library/stringify';
-import { GenericQuickPick } from '../utils/quickPick';
+} from "../../library/logging";
+import { FileHandler } from "../../library/loggingHandlers";
+import * as nodejs from "../../library/nodejs";
+import { registerStringifier, stringify as str } from "../../library/stringify";
+import type { SyntaxNode, TreeSitter } from "../../library/treeSitter";
+import { extensionDebug } from "../utils/extensionContext";
+import { GenericQuickPick } from "../utils/quickPick";
 import {
   registerAsyncCommandWrapped,
   registerSyncCommandWrapped,
-} from './exception';
-import { Modules } from './module';
-import type { SyntaxNode, TreeSitter } from '../../library/treeSitter';
-import { extensionDebug } from '../utils/extensionContext';
+} from "./exception";
+import { Modules } from "./module";
 
 /**
  * Show log output panel
@@ -54,16 +54,16 @@ function stringifyTextEditor(editor: TextEditor) {
 // eslint-disable-next-line @typescript-eslint/ban-types
 function stringifyVscode(x: object): string | undefined {
   if (x instanceof Uri) {
-    if (x.scheme === 'file') return workspace.asRelativePath(x);
+    if (x.scheme === "file") return workspace.asRelativePath(x);
     return x.toString(true /* skip encoding */);
   }
-  if ('fileName' in x && 'uri' in x) {
+  if ("fileName" in x && "uri" in x) {
     // TextDocument
     const doc = x as TextDocument;
     const relpath = stringifyVscode(doc.uri);
     return `<${relpath}>`;
   }
-  if ('document' in x && 'viewColumn' in x) {
+  if ("document" in x && "viewColumn" in x) {
     // TextEditor
     return stringifyTextEditor(x as TextEditor);
   }
@@ -84,18 +84,18 @@ function stringifyVscode(x: object): string | undefined {
     if (x.start.isEqual(x.end)) return stringifyVscode(x.start);
     return `[${str(x.start)}..${str(x.end)}]`;
   }
-  if ('range' in x && 'rangeOffset' in x && 'rangeLength' in x && 'text' in x) {
+  if ("range" in x && "rangeOffset" in x && "rangeLength" in x && "text" in x) {
     const event = x as TextDocumentContentChangeEvent;
     return `${str(event.range)},${event.rangeOffset},${
       event.rangeLength
     }:${JSON.stringify(event.text)}`;
   }
-  if ('row' in x && 'column' in x) {
+  if ("row" in x && "column" in x) {
     // treeSitter.Point
     const point = x as TreeSitter.Point;
     return `(${point.row},${point.column})`;
   }
-  if ('type' in x && 'startPosition' in x && 'endPosition' in x) {
+  if ("type" in x && "startPosition" in x && "endPosition" in x) {
     // treeSitter.SyntaxNode
     const node = x as SyntaxNode;
     return `<${node.type} ${str(node.range)}>`;
@@ -127,17 +127,17 @@ async function promptForLevel(handler: TextLogHandler) {
 
 class OutputChannelHandler extends TextLogHandler {
   constructor() {
-    super('OutputPanel');
+    super("OutputPanel");
     const envLevel = LogLevels.fromString(
-      process.env['VSCODE_QCFG_LOGLEVEL'] ?? 'info',
+      process.env["VSCODE_QCFG_LOGLEVEL"] ?? "info",
     );
     this.level = envLevel === undefined ? LogLevel.INFO : envLevel;
     /// #if DEBUG
     this.level = LogLevel.DEBUG;
     /// #endif
-    this.outputChannel = window.createOutputChannel('qcfg', 'qcfg-log');
+    this.outputChannel = window.createOutputChannel("qcfg", "qcfg-log");
     for (const editor of window.visibleTextEditors) {
-      if (editor.document.fileName.startsWith('extension-output'))
+      if (editor.document.fileName.startsWith("extension-output"))
         this.show(true /* preserveFocus */);
     }
   }
@@ -154,7 +154,7 @@ class OutputChannelHandler extends TextLogHandler {
 }
 
 function getLogFileName() {
-  const EXT = 'vscode-qcfg.log';
+  const EXT = "vscode-qcfg.log";
   const wsFile = workspace.workspaceFile;
   if (wsFile && nodejs.fs.existsSync(wsFile.fsPath)) {
     const data = nodejs.path.parse(wsFile.fsPath);
@@ -164,7 +164,7 @@ function getLogFileName() {
     const wsFolder = workspace.workspaceFolders[0].uri.fsPath;
     return `${wsFolder}/.${EXT}`;
   }
-  return '/tmp/' + EXT;
+  return "/tmp/" + EXT;
 }
 
 let outputHandler: OutputChannelHandler;
@@ -176,13 +176,13 @@ function activate(context: ExtensionContext) {
   registerLogHandler(fileHandler);
 
   context.subscriptions.push(
-    registerSyncCommandWrapped('qcfg.log.show', () => {
+    registerSyncCommandWrapped("qcfg.log.show", () => {
       showLog();
     }),
-    registerAsyncCommandWrapped('qcfg.log.setHandlerLevel.output', async () =>
+    registerAsyncCommandWrapped("qcfg.log.setHandlerLevel.output", async () =>
       promptForLevel(outputHandler),
     ),
-    registerAsyncCommandWrapped('qcfg.log.setHandlerLevel.file', async () =>
+    registerAsyncCommandWrapped("qcfg.log.setHandlerLevel.file", async () =>
       promptForLevel(fileHandler),
     ),
   );
@@ -194,7 +194,7 @@ function activate(context: ExtensionContext) {
       outputHandler.level,
     )} level`,
   );
-  log.info('Logging to file', fileHandler.fileName);
+  log.info("Logging to file", fileHandler.fileName);
 }
 
 Modules.register(activate);

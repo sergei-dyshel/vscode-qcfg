@@ -3,21 +3,21 @@ import type {
   ConfigurationScope,
   ExtensionContext,
   WorkspaceFolder,
-} from 'vscode';
-import { Uri, workspace } from 'vscode';
-import type { DisposableLike } from '../../library/disposable';
-import { ArrayOfDisposables } from '../../library/disposable';
-import { assert } from '../../library/exception';
-import { log } from '../../library/logging';
-import { DefaultMap } from '../../library/tsUtils';
+} from "vscode";
+import { Uri, workspace } from "vscode";
+import type { DisposableLike } from "../../library/disposable";
+import { ArrayOfDisposables } from "../../library/disposable";
+import { assert } from "../../library/exception";
+import { log } from "../../library/logging";
+import { DefaultMap } from "../../library/tsUtils";
 import type {
   ConfigSection,
   Configuration,
   ConfigValue,
-} from '../utils/configuration';
-import { getConfiguration } from '../utils/configuration';
-import { handleAsyncStd, listenWrapped } from './exception';
-import { Modules } from './module';
+} from "../utils/configuration";
+import { getConfiguration } from "../utils/configuration";
+import { handleAsyncStd, listenWrapped } from "./exception";
+import { Modules } from "./module";
 
 /**
  * Watch and cache configuration for given sections.
@@ -46,11 +46,11 @@ export class ConfigurationWatcher<S extends ConfigSection> {
   /**
    * Retrieve configuration of watched sections for given scope.
    *
-   * If no configuration changes were made affecting watched sections then
-   * uses cached value.
+   * If no configuration changes were made affecting watched sections then uses
+   * cached value.
    */
   getConfiguration(scope?: ConfigurationScope): Configuration<S> {
-    assert(this.registered, 'Attemt to use unregistered watcher');
+    assert(this.registered, "Attemt to use unregistered watcher");
 
     if (!scope) {
       this.global ??= getConfiguration();
@@ -62,17 +62,17 @@ export class ConfigurationWatcher<S extends ConfigSection> {
     }
 
     // TextDocument
-    if ('uri' in scope && 'fileName' in scope) {
+    if ("uri" in scope && "fileName" in scope) {
       return this.fileMap.get(scope.uri.toString());
     }
 
     // Workspace folder
-    if ('uri' in scope && 'name' in scope) {
+    if ("uri" in scope && "name" in scope) {
       return this.folderMap.get(scope);
     }
 
     // { uri?: Uri, languageId: string}
-    if ('languageId' in scope) {
+    if ("languageId" in scope) {
       return this.languageMap.get(scope.languageId);
     }
 
@@ -143,9 +143,11 @@ export class ConfigSectionWatcher<
         const config = this.getConfiguration();
         this.oldValue = this.value;
         this.value = config.get(section);
-        if (this.initialized)
-          {log.info(`${section}: value changed to`, this.value);}
-        else {log.info(`${section}: initial value is`, this.value);}
+        if (this.initialized) {
+          log.info(`${section}: value changed to`, this.value);
+        } else {
+          log.info(`${section}: initial value is`, this.value);
+        }
         if (callback) return callback();
       },
       { noLogChange: true, ...options },

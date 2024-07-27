@@ -1,38 +1,37 @@
-import type { ExtensionContext, Position, Range, TextDocument } from 'vscode';
-import { window } from 'vscode';
-import { commands, extensions, languages, Location, Uri } from 'vscode';
-import * as client from 'vscode-languageclient';
-import { assert, assertNotNull, check } from '../../library/exception';
-import { log, Logger } from '../../library/logging';
-import * as nodejs from '../../library/nodejs';
-import { diffArrays } from '../../library/tsUtils';
-import { UserCommands } from '../../library/userCommands';
+import type { ExtensionContext, Position, Range, TextDocument } from "vscode";
+import { commands, extensions, languages, Location, Uri, window } from "vscode";
+import * as client from "vscode-languageclient";
+import { assert, assertNotNull, check } from "../../library/exception";
+import { log, Logger } from "../../library/logging";
+import * as nodejs from "../../library/nodejs";
+import { diffArrays } from "../../library/tsUtils";
+import { UserCommands } from "../../library/userCommands";
 import {
   Ccls,
   CclsCallHierarchyProvider,
   CclsTypeHierarchyProvider,
-} from '../utils/ccls';
-import type { Clangd } from '../utils/clangd';
-import { ClangdTypeHierarchyProvider } from '../utils/clangd';
-import { getConfiguration } from '../utils/configuration';
-import { ConditionalResource } from '../utils/disposable';
+} from "../utils/ccls";
+import type { Clangd } from "../utils/clangd";
+import { ClangdTypeHierarchyProvider } from "../utils/clangd";
+import { getConfiguration } from "../utils/configuration";
+import { ConditionalResource } from "../utils/disposable";
 import {
   c2pConverter,
   c2pTextDocument,
   c2pTextDocumentPosition,
   p2cAnyLocations,
   p2cConverter,
-} from '../utils/langClientConv';
-import { PersistentStringQuickPick } from '../utils/quickPickPersistent';
-import { mapAsync } from './async';
-import { touchDocument } from './editing';
-import { registerAsyncCommandWrapped } from './exception';
-import type { LocationGroup } from './locationTree';
-import { setPanelLocationGroups } from './locationTree';
-import { Modules } from './module';
-import { searchWithCommand } from './search';
-import { executeSubprocess } from './subprocess';
-import { currentWorkspaceFolder, getActiveTextEditor } from './utils';
+} from "../utils/langClientConv";
+import { PersistentStringQuickPick } from "../utils/quickPickPersistent";
+import { mapAsync } from "./async";
+import { touchDocument } from "./editing";
+import { registerAsyncCommandWrapped } from "./exception";
+import type { LocationGroup } from "./locationTree";
+import { setPanelLocationGroups } from "./locationTree";
+import { Modules } from "./module";
+import { searchWithCommand } from "./search";
+import { executeSubprocess } from "./subprocess";
+import { currentWorkspaceFolder, getActiveTextEditor } from "./utils";
 
 export function isAnyLangClientRunning(): boolean {
   return ALL_CLIENTS.map((wrapper) => wrapper.isClientRunning).some(Boolean);
@@ -54,9 +53,12 @@ interface LanguageClientAPI {
 abstract class LanguageClientWrapper {
   private readonly log: Logger;
 
-  constructor(public name: string, readonly extentsionId: string) {
+  constructor(
+    public name: string,
+    readonly extentsionId: string,
+  ) {
     this.log = new Logger({
-      name: 'LanguageClient',
+      name: "LanguageClient",
       instance: name,
       parent: log,
     });
@@ -101,7 +103,7 @@ abstract class LanguageClientWrapper {
       client.DidSaveTextDocumentNotification.method,
       params,
     );
-    this.log.debug('Sent didSave', document);
+    this.log.debug("Sent didSave", document);
   }
 
   async getReferences(
@@ -158,8 +160,8 @@ abstract class LanguageClientWrapper {
     if (!rsp) return;
     return rsp.map((sym) => {
       assert(
-        'range' in sym,
-        'Document symbol provider returned SymbolInformation',
+        "range" in sym,
+        "Document symbol provider returned SymbolInformation",
       );
       return p2cConverter.asDocumentSymbol(sym);
     });
@@ -167,12 +169,12 @@ abstract class LanguageClientWrapper {
 
   async restart() {
     if (this.isExtensionActive) return this.runRestartCmd();
-    this.log.info('Extension not active');
+    this.log.info("Extension not active");
   }
 
   async refresh() {
     if (this.isClientRunning) return this.runRefreshCmd();
-    this.log.info('Language client not running');
+    this.log.info("Language client not running");
   }
 
   async refreshOrRestart() {
@@ -200,17 +202,17 @@ abstract class LanguageClientWrapper {
 
 class CclsWrapper extends LanguageClientWrapper {
   constructor() {
-    super('ccls', 'ccls-project.ccls-qcfg');
+    super("ccls", "ccls-project.ccls-qcfg");
   }
 
   // eslint-disable-next-line class-methods-use-this
   override async runRefreshCmd() {
-    return commands.executeCommand('ccls.reload').ignoreResult();
+    return commands.executeCommand("ccls.reload").ignoreResult();
   }
 
   // eslint-disable-next-line class-methods-use-this
   override async runRestartCmd() {
-    return commands.executeCommand('ccls.restart').ignoreResult();
+    return commands.executeCommand("ccls.restart").ignoreResult();
   }
 
   async searchAssignments(uri: Uri, position: Position) {
@@ -219,17 +221,17 @@ class CclsWrapper extends LanguageClientWrapper {
 
   // eslint-disable-next-line class-methods-use-this
   protected override getClearCacheCmd() {
-    return getConfiguration().get('qcfg.ccls.clearCacheCommand', [
-      'rm',
-      '-rf',
-      '.ccls-cache',
+    return getConfiguration().get("qcfg.ccls.clearCacheCommand", [
+      "rm",
+      "-rf",
+      ".ccls-cache",
     ]);
   }
 }
 
 class ClangdWrapper extends LanguageClientWrapper {
   constructor() {
-    super('clangd', 'llvm-vs-code-extensions.vscode-clangd-qcfg');
+    super("clangd", "llvm-vs-code-extensions.vscode-clangd-qcfg");
   }
 
   override async refreshOrRestart() {
@@ -237,7 +239,7 @@ class ClangdWrapper extends LanguageClientWrapper {
   }
 
   protected override async runRefreshCmd() {
-    const cmd = getConfiguration().get('qcfg.clangd.restartCommand');
+    const cmd = getConfiguration().get("qcfg.clangd.restartCommand");
     if (cmd) {
       return executeSubprocess(cmd, {
         cwd: currentWorkspaceFolder()?.uri.fsPath,
@@ -248,21 +250,21 @@ class ClangdWrapper extends LanguageClientWrapper {
 
   // eslint-disable-next-line class-methods-use-this
   protected override async runRestartCmd() {
-    return commands.executeCommand('clangd.restart').ignoreResult();
+    return commands.executeCommand("clangd.restart").ignoreResult();
   }
 
   // eslint-disable-next-line class-methods-use-this
   protected override getClearCacheCmd() {
     // no -rf - we want command to fail if directory not present
-    return getConfiguration().get('qcfg.clangd.clearCacheCommand', [
-      'rm',
-      '-r',
-      '.cache/clangd',
+    return getConfiguration().get("qcfg.clangd.clearCacheCommand", [
+      "rm",
+      "-r",
+      ".cache/clangd",
     ]);
   }
 
   async getAST(uri: Uri, range: Range) {
-    return this.client?.sendRequest<Clangd.ASTNode>('textDocument/ast', {
+    return this.client?.sendRequest<Clangd.ASTNode>("textDocument/ast", {
       textDocument: c2pTextDocument(uri),
       range: c2pConverter.asRange(range),
     });
@@ -363,21 +365,21 @@ async function compareLangClients() {
   const groups: LocationGroup[] = [];
 
   groups.push(
-    ...(await compareOnType('Definitions', async (wrapper, uri, pos) =>
+    ...(await compareOnType("Definitions", async (wrapper, uri, pos) =>
       wrapper.getDefinitions(uri, pos),
     )),
-    ...(await compareOnType('Declarations', async (wrapper, uri, pos) =>
+    ...(await compareOnType("Declarations", async (wrapper, uri, pos) =>
       wrapper.getDeclarations(uri, pos),
     )),
-    ...(await compareOnType('Implementations', async (wrapper, uri, pos) =>
+    ...(await compareOnType("Implementations", async (wrapper, uri, pos) =>
       wrapper.getImplementations(uri, pos),
     )),
-    ...(await compareOnType('References', async (wrapper, uri, pos) =>
+    ...(await compareOnType("References", async (wrapper, uri, pos) =>
       wrapper.getReferences(uri, pos),
     )),
   );
 
-  await setPanelLocationGroups('Language client result diff', groups);
+  await setPanelLocationGroups("Language client result diff", groups);
 }
 
 async function clangdShowAST() {
@@ -386,23 +388,23 @@ async function clangdShowAST() {
   log.info(
     JSON.stringify(
       ast,
-      ['arcana', 'kind', 'role', 'detail', 'children'],
-      '  ' /* space*/,
+      ["arcana", "kind", "role", "detail", "children"],
+      "  " /* space*/,
     ),
   );
   console.log(ast);
 }
 
 async function cclsSearchSpecificRefs(uri: Uri, position: Position) {
-  const BASE_TYPES = 'base types';
-  const qp = new PersistentStringQuickPick('cclsRefs', [
+  const BASE_TYPES = "base types";
+  const qp = new PersistentStringQuickPick("cclsRefs", [
     BASE_TYPES,
     ...Ccls.allRefRoles,
   ]);
-  qp.options.title = 'Select types of references to search';
+  qp.options.title = "Select types of references to search";
   qp.options.canSelectMany = true;
   const selected = await qp.selectMany();
-  check(selected !== undefined, 'Canceled ccls ref search');
+  check(selected !== undefined, "Canceled ccls ref search");
   const base = selected.includes(BASE_TYPES);
   let role = 0;
   for (const roleStr of selected) {
@@ -414,59 +416,59 @@ async function cclsSearchSpecificRefs(uri: Uri, position: Position) {
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
-    registerAsyncCommandWrapped('qcfg.langClient.restart', restartLangClients),
-    registerAsyncCommandWrapped('qcfg.langClient.refresh', refreshLangClients),
+    registerAsyncCommandWrapped("qcfg.langClient.restart", restartLangClients),
+    registerAsyncCommandWrapped("qcfg.langClient.refresh", refreshLangClients),
     registerAsyncCommandWrapped(
-      'qcfg.langClient.refreshOrRestart',
+      "qcfg.langClient.refreshOrRestart",
       refreshOrRestartLangClients,
     ),
-    registerAsyncCommandWrapped('qcfg.langClient.stop', stopLangClients),
-    registerAsyncCommandWrapped('qcfg.langClient.compare', compareLangClients),
-    registerAsyncCommandWrapped('qcfg.clangd.dumpAST', clangdShowAST),
-    registerAsyncCommandWrapped('qcfg.ccls.assignments', async () =>
+    registerAsyncCommandWrapped("qcfg.langClient.stop", stopLangClients),
+    registerAsyncCommandWrapped("qcfg.langClient.compare", compareLangClients),
+    registerAsyncCommandWrapped("qcfg.clangd.dumpAST", clangdShowAST),
+    registerAsyncCommandWrapped("qcfg.ccls.assignments", async () =>
       searchWithCommand(
-        'Assignments',
+        "Assignments",
         cclsWrapper.searchAssignments.bind(cclsWrapper),
       ),
     ),
-    registerAsyncCommandWrapped('qcfg.ccls.specificRefs', async () =>
-      searchWithCommand('Ccls specific refs', cclsSearchSpecificRefs),
+    registerAsyncCommandWrapped("qcfg.ccls.specificRefs", async () =>
+      searchWithCommand("Ccls specific refs", cclsSearchSpecificRefs),
     ),
 
     new ConditionalResource(
-      'ClangdTypeHierarchy',
+      "ClangdTypeHierarchy",
       () =>
         languages.registerTypeHierarchyProvider(
-          ['c', 'cpp'],
+          ["c", "cpp"],
           new ClangdTypeHierarchyProvider(() => clangdWrapper.client),
         ),
       {
         extensionId: clangdWrapper.extentsionId,
-        configSection: 'qcfg.clangd.typeHierarchy',
+        configSection: "qcfg.clangd.typeHierarchy",
       },
     ),
     new ConditionalResource(
-      'CclsTypeHierarchy',
+      "CclsTypeHierarchy",
       () =>
         languages.registerTypeHierarchyProvider(
-          ['c', 'cpp'],
+          ["c", "cpp"],
           new CclsTypeHierarchyProvider(() => cclsWrapper.client),
         ),
       {
         extensionId: cclsWrapper.extentsionId,
-        configSection: 'qcfg.ccls.typeHierarchy',
+        configSection: "qcfg.ccls.typeHierarchy",
       },
     ),
     new ConditionalResource(
-      'CclsCallHierarchy',
+      "CclsCallHierarchy",
       () =>
         languages.registerCallHierarchyProvider(
-          ['c', 'cpp'],
+          ["c", "cpp"],
           new CclsCallHierarchyProvider(() => cclsWrapper.client),
         ),
       {
         extensionId: cclsWrapper.extentsionId,
-        configSection: 'qcfg.ccls.callHierarchy',
+        configSection: "qcfg.ccls.callHierarchy",
       },
     ),
   );
@@ -474,21 +476,21 @@ function activate(context: ExtensionContext) {
 
 UserCommands.register(
   {
-    command: 'qcfg.clangd.refresh',
-    title: 'Refresh clangd',
+    command: "qcfg.clangd.refresh",
+    title: "Refresh clangd",
     callback: async () => clangdWrapper.refresh(),
   },
   {
-    command: 'qcfg.langClient.rebuildIndex',
-    title: 'Rebuild index for language clients',
+    command: "qcfg.langClient.rebuildIndex",
+    title: "Rebuild index for language clients",
     callback: async () =>
       mapAsync(ALL_CLIENTS, async (wrapper) =>
         wrapper.rebuildIndex(),
       ).ignoreResult(),
   },
   {
-    command: 'qcfg.langClient.reindexVisibleFiles',
-    title: 'C/C++ language servers - reindex visible files',
+    command: "qcfg.langClient.reindexVisibleFiles",
+    title: "C/C++ language servers - reindex visible files",
     callback: async () => {
       const visibleDocuments = new Map(
         window.visibleTextEditors.map((editor) => [editor.document, editor]),

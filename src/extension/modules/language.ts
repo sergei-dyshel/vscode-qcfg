@@ -1,9 +1,9 @@
-import * as vscode from 'vscode';
-import type { ExtensionJSON } from '../../library/extensionManifest';
-import { log } from '../../library/logging';
-import * as nodejs from '../../library/nodejs';
-import { parseJsonFileSync } from './json';
-import { Modules } from './module';
+import * as vscode from "vscode";
+import type { ExtensionJSON } from "../../library/extensionManifest";
+import { log } from "../../library/logging";
+import * as nodejs from "../../library/nodejs";
+import { parseJsonFileSync } from "./json";
+import { Modules } from "./module";
 
 export const colorThemeFiles: Record<string, string | undefined> = {};
 
@@ -46,12 +46,12 @@ function fetchLangConfigs() {
   }
 
   // for some reason """ is configured is block comment
-  if (langConfigs['python']?.comments) {
-    langConfigs['python'].comments.blockComment = undefined;
+  if (langConfigs["python"]?.comments) {
+    langConfigs["python"].comments.blockComment = undefined;
   }
 
-  log.info('Got language configs for', Object.keys(langConfigs));
-  log.info('Found color theme files for', Object.keys(colorThemeFiles));
+  log.info("Got language configs for", Object.keys(langConfigs));
+  log.info("Found color theme files for", Object.keys(colorThemeFiles));
 }
 
 /* TODO: move extension parsing to separate file */

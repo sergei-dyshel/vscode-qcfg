@@ -1,22 +1,27 @@
-import type { ExtensionContext, TextEditor } from 'vscode';
-import { Selection } from 'vscode';
-import { TabInputTextDiff } from 'vscode';
-import { commands, Uri, window, workspace } from 'vscode';
-import { log } from '../../library/logging';
-import * as nodejs from '../../library/nodejs';
-import { getDocumentRootThrowing } from '../utils/document';
-import { PersistentStringQuickPick } from '../utils/quickPickPersistent';
+import type { ExtensionContext, TextEditor } from "vscode";
+import {
+  commands,
+  Selection,
+  TabInputTextDiff,
+  Uri,
+  window,
+  workspace,
+} from "vscode";
+import { realPath } from "../../library/fileUtils";
+import { log } from "../../library/logging";
+import * as nodejs from "../../library/nodejs";
+import { setTimeoutPromise } from "../../library/nodeUtils";
+import { UserCommands } from "../../library/userCommands";
+import { getDocumentRootThrowing } from "../utils/document";
+import { PersistentStringQuickPick } from "../utils/quickPickPersistent";
 import {
   listenAsyncWrapped,
   registerAsyncCommandWrapped,
   registerSyncCommandWrapped,
-} from './exception';
-import { Modules } from './module';
-import { executeSubprocess } from './subprocess';
-import { getActiveTextEditor } from './utils';
-import { realPath } from '../../library/fileUtils';
-import { setTimeoutPromise } from '../../library/nodeUtils';
-import { UserCommands } from '../../library/userCommands';
+} from "./exception";
+import { Modules } from "./module";
+import { executeSubprocess } from "./subprocess";
+import { getActiveTextEditor } from "./utils";
 
 function openOrCreateTerminal(name: string, cwd: string) {
   for (const term of window.terminals) {
@@ -46,7 +51,7 @@ function terminalInFileFolder() {
 
 async function runCommand() {
   const allCommands = await commands.getCommands();
-  const qp = new PersistentStringQuickPick('qcfg.runCommand', allCommands);
+  const qp = new PersistentStringQuickPick("qcfg.runCommand", allCommands);
   const cmd = await qp.select();
   if (cmd) {
     log.info(`Running command ${cmd}`);
@@ -60,12 +65,12 @@ async function runCommand() {
 
 async function openInExternalApp() {
   const curFile = getActiveTextEditor().document.fileName;
-  return executeSubprocess(['open', curFile]);
+  return executeSubprocess(["open", curFile]);
 }
 
 async function showInFileManager() {
   const curFile = getActiveTextEditor().document.fileName;
-  return executeSubprocess(['open', '--reveal', curFile]);
+  return executeSubprocess(["open", "--reveal", curFile]);
 }
 
 async function openRealPath() {
@@ -79,7 +84,7 @@ async function openRealPath() {
 async function autoOpenRealPath(editor: TextEditor | undefined) {
   if (!editor) return;
   const uri = editor.document.uri;
-  if (uri.scheme !== 'file') return;
+  if (uri.scheme !== "file") return;
   if (
     window.tabGroups.activeTabGroup.activeTab?.input instanceof TabInputTextDiff
   )
@@ -95,7 +100,7 @@ async function autoOpenRealPath(editor: TextEditor | undefined) {
 
 function checkSpawnTime() {
   const start = Date.now();
-  nodejs.child_process.spawn('ls', ['.']);
+  nodejs.child_process.spawn("ls", ["."]);
   log.info(`spawn sync time: ${Date.now() - start}`);
 }
 
@@ -103,29 +108,29 @@ function activate(context: ExtensionContext) {
   checkSpawnTime();
   context.subscriptions.push(
     registerSyncCommandWrapped(
-      'qcfg.terminal.inWorkspaceFolder',
+      "qcfg.terminal.inWorkspaceFolder",
       terminalInWorkspaceFolder,
     ),
     registerSyncCommandWrapped(
-      'qcfg.terminal.inFileFolder',
+      "qcfg.terminal.inFileFolder",
       terminalInFileFolder,
     ),
     listenAsyncWrapped(window.onDidChangeActiveTextEditor, autoOpenRealPath),
-    registerAsyncCommandWrapped('qcfg.runCommand', runCommand),
-    registerAsyncCommandWrapped('qcfg.openInExternalApp', openInExternalApp),
-    registerAsyncCommandWrapped('qcfg.showInFileManager', showInFileManager),
-    registerAsyncCommandWrapped('qcfg.openRealPath', openRealPath),
+    registerAsyncCommandWrapped("qcfg.runCommand", runCommand),
+    registerAsyncCommandWrapped("qcfg.openInExternalApp", openInExternalApp),
+    registerAsyncCommandWrapped("qcfg.showInFileManager", showInFileManager),
+    registerAsyncCommandWrapped("qcfg.openRealPath", openRealPath),
   );
 }
 
 async function goToCharacterPosition() {
   const editor = getActiveTextEditor();
   const offset = await window.showInputBox({
-    title: 'Enter character offset',
-    prompt: 'Enter number',
+    title: "Enter character offset",
+    prompt: "Enter number",
     validateInput: (value) =>
       Number.isNaN(Number.parseInt(value))
-        ? 'Value is not a number'
+        ? "Value is not a number"
         : undefined,
   });
   if (!offset) return;
@@ -135,8 +140,8 @@ async function goToCharacterPosition() {
 }
 
 UserCommands.register({
-  command: 'qcfg.goToCharacterPosition',
-  title: 'Go to character position',
+  command: "qcfg.goToCharacterPosition",
+  title: "Go to character position",
   callback: goToCharacterPosition,
 });
 

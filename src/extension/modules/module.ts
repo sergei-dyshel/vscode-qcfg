@@ -1,7 +1,7 @@
 // Must not import any modules
-import type { ExtensionContext } from 'vscode';
-import * as nodejs from '../../library/nodejs';
-import { getCallsite } from '../../library/sourceMap';
+import type { ExtensionContext } from "vscode";
+import * as nodejs from "../../library/nodejs";
+import { getCallsite } from "../../library/sourceMap";
 
 declare global {
   // eslint-disable-next-line vars-on-top, no-var

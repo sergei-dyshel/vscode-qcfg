@@ -1,6 +1,6 @@
-import { Uri } from 'vscode';
+import { Uri } from "vscode";
 
-declare module 'vscode' {
+declare module "vscode" {
   export interface Uri {
     equals: (other: Uri) => boolean;
     compare: (other: Uri) => number;

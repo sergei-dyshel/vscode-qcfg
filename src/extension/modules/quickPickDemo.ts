@@ -1,52 +1,52 @@
-import type { ExtensionContext } from 'vscode';
-import { window } from 'vscode';
-import { Logger } from '../../library/logging';
+import type { ExtensionContext } from "vscode";
+import { window } from "vscode";
+import { Logger } from "../../library/logging";
 import {
   createSeparatedQuickPickItems,
   GenericQuickPick,
-} from '../utils/quickPick';
+} from "../utils/quickPick";
 import {
   PersistentInputHistoryQuickPick,
   PersistentStringQuickPick,
-} from '../utils/quickPickPersistent';
+} from "../utils/quickPickPersistent";
 import {
   registerAsyncCommandWrapped,
   registerSyncCommandWrapped,
-} from './exception';
-import { showLog } from './logging';
-import { Modules } from './module';
+} from "./exception";
+import { showLog } from "./logging";
+import { Modules } from "./module";
 
-const log = new Logger({ name: 'quickPickDemo' });
+const log = new Logger({ name: "quickPickDemo" });
 
 async function demoOrigShowQuickPick() {
   showLog();
-  const selected = await window.showQuickPick(['one', 'two', 'three'], {
+  const selected = await window.showQuickPick(["one", "two", "three"], {
     // canPickMany: true,
     onDidSelectItem: (item: string) => {
       log.debug(`onDidSelect ${item}`);
     },
   });
   if (selected) log.debug(`Selected ${selected}`);
-  else log.debug('cancelled');
+  else log.debug("cancelled");
 }
 
 async function demoPersistentStringQuickPick() {
-  const qp = new PersistentStringQuickPick('demoPersistentStringQuickPick', [
-    'one',
-    'two',
-    'three',
-    'four',
+  const qp = new PersistentStringQuickPick("demoPersistentStringQuickPick", [
+    "one",
+    "two",
+    "three",
+    "four",
   ]);
   const selected = await qp.select();
-  log.debug('selected', selected);
+  log.debug("selected", selected);
 }
 
 function demoOrigQuickPick() {
   showLog();
   const qp = window.createQuickPick();
   qp.items = createSeparatedQuickPickItems({
-    small: ['one', 'two', 'tree'].map((label) => ({ label })),
-    big: ['eleven', 'twelve', 'thirteen', 'twenty one', 'twenty'].map(
+    small: ["one", "two", "tree"].map((label) => ({ label })),
+    big: ["eleven", "twelve", "thirteen", "twenty one", "twenty"].map(
       (label) => ({ label }),
     ),
   });
@@ -57,23 +57,23 @@ function demoOrigQuickPick() {
   qp.enabled = false;
   // qp.canSelectMany = true;
   qp.onDidChangeActive((active) => {
-    log.debug('active', active);
+    log.debug("active", active);
   });
   qp.onDidChangeSelection((selection) => {
-    log.debug('selection', selection);
+    log.debug("selection", selection);
   });
   qp.onDidAccept(() => {
     log.debug(
-      'accepted active:',
+      "accepted active:",
       qp.activeItems,
-      'selected:',
+      "selected:",
       qp.selectedItems,
-      'value:',
+      "value:",
       qp.value,
     );
   });
   qp.onDidHide(() => {
-    log.debug('hidden');
+    log.debug("hidden");
   });
   qp.show();
 }
@@ -84,43 +84,46 @@ async function demoGenericQuickPick() {
       label: value,
       detail: value,
     }),
-    ['one', 'two', 'three'],
+    ["one", "two", "three"],
   );
-  qp.selectedItems = ['two'];
-  qp.selectedItem = 'two';
-  qp.activeItem = 'two';
+  qp.selectedItems = ["two"];
+  qp.selectedItem = "two";
+  qp.activeItem = "two";
   qp.onDidActivateItem = (val) => {
-    log.debug('activated', val);
+    log.debug("activated", val);
   };
   const selected = await qp.select();
-  if (selected) {log.debug('selected', selected);}
-  else {log.debug('cancelled');}
+  if (selected) {
+    log.debug("selected", selected);
+  } else {
+    log.debug("cancelled");
+  }
 }
 
 async function demoStringHistory() {
-  const qp = new PersistentInputHistoryQuickPick('demoStringHistory');
+  const qp = new PersistentInputHistoryQuickPick("demoStringHistory");
   const selected = await qp.select();
-  if (selected) log.debug('selected', selected);
-  else log.debug('cancelled');
+  if (selected) log.debug("selected", selected);
+  else log.debug("cancelled");
 }
 
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
     registerAsyncCommandWrapped(
-      'qcfg.demo.origShowQuickPick',
+      "qcfg.demo.origShowQuickPick",
       demoOrigShowQuickPick,
     ),
-    registerSyncCommandWrapped('qcfg.demo.origQuickPick', demoOrigQuickPick),
+    registerSyncCommandWrapped("qcfg.demo.origQuickPick", demoOrigQuickPick),
     registerAsyncCommandWrapped(
-      'qcfg.demo.genericQuickPick',
+      "qcfg.demo.genericQuickPick",
       demoGenericQuickPick,
     ),
     registerAsyncCommandWrapped(
-      'qcfg.demo.stringHistoryQuickPick',
+      "qcfg.demo.stringHistoryQuickPick",
       demoStringHistory,
     ),
     registerAsyncCommandWrapped(
-      'qcfg.demo.demoPersistentStringQuickPick',
+      "qcfg.demo.demoPersistentStringQuickPick",
       demoPersistentStringQuickPick,
     ),
   );

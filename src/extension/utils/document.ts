@@ -1,16 +1,17 @@
-import type { LocationLink, TextDocument } from 'vscode';
-import { Location, Range, Uri, workspace } from 'vscode';
-import { assertNotNull } from '../../library/exception';
-import { offsetPosition } from '../modules/textUtils';
+import type { LocationLink, TextDocument } from "vscode";
+import { Location, Range, Uri, workspace } from "vscode";
+import { assertNotNull } from "../../library/exception";
+import { offsetPosition } from "../modules/textUtils";
 
 /**
- * Convert Location/LocationLink union, as returned by some functions, to Location
+ * Convert Location/LocationLink union, as returned by some functions, to
+ * Location
  */
 export function resolveLocationLinks(
   locations: Array<Location | LocationLink>,
 ): Location[] {
   return locations.map((loc) => {
-    if ('targetRange' in loc) {
+    if ("targetRange" in loc) {
       const range = loc.targetSelectionRange ?? loc.targetRange;
       return new Location(loc.targetUri, range);
     }
@@ -21,10 +22,12 @@ export function resolveLocationLinks(
 /**
  * Generate text preview range with some text before and after the range.
  *
- * Produces result similiar to preview texts in Peek dialog.
- * See `FilePreview.preview` in VScode's repo for original algo.
- * If {@param suffixLen} is not specified preview will be until the end of string.
- * @return preview text and offsets of the range inside the preview (usefull for highlights)
+ * Produces result similiar to preview texts in Peek dialog. See
+ * `FilePreview.preview` in VScode's repo for original algo. If {@param
+ * suffixLen} is not specified preview will be until the end of string.
+ *
+ * @returns Preview text and offsets of the range inside the preview (usefull
+ *   for highlights)
  */
 export function documentRangePreview(
   document: TextDocument,

@@ -1,6 +1,6 @@
-import * as vscode from 'vscode';
-import { log, Logger, LogLevel } from '../../library/logging';
-import * as nodejs from '../../library/nodejs';
+import * as vscode from "vscode";
+import { log, Logger, LogLevel } from "../../library/logging";
+import * as nodejs from "../../library/nodejs";
 
 const DEFAULT_LOG_LEVEL = LogLevel.TRACE;
 
@@ -10,10 +10,10 @@ export class ExecResult extends Error {
     public stdout: string,
     public stderr: string,
   ) {
-    super('');
-    this.name = 'ExecResult';
+    super("");
+    this.name = "ExecResult";
     this.code = 0;
-    this.signal = '';
+    this.signal = "";
     this.updateMessage();
   }
 
@@ -47,14 +47,14 @@ export function runSubprocessSync(
   options?: SubprocessOptions,
 ): ExecResult {
   const returns: nodejs.child_process.SpawnSyncReturns<string> =
-    typeof command === 'string'
+    typeof command === "string"
       ? nodejs.child_process.spawnSync(command, [], {
           shell: true,
-          encoding: 'utf8',
+          encoding: "utf8",
           ...options,
         })
       : nodejs.child_process.spawnSync(command[0], command.slice(1), {
-          encoding: 'utf8',
+          encoding: "utf8",
           ...options,
         });
 
@@ -73,7 +73,7 @@ export class Subprocess {
     this.waitingContext = { resolve: (_) => {}, reject: (_) => {} };
     this.logLevel = options?.logLevel ?? DEFAULT_LOG_LEVEL;
     this.process =
-      typeof command === 'string'
+      typeof command === "string"
         ? nodejs.child_process.exec(
             command,
             options ?? {},
@@ -96,7 +96,7 @@ export class Subprocess {
     });
     if (this.options?.statusBarMessage) {
       this.status = vscode.window.createStatusBarItem();
-      this.status.text = '$(tool) ' + this.options.statusBarMessage;
+      this.status.text = "$(tool) " + this.options.statusBarMessage;
       this.status.show();
     }
   }
@@ -105,8 +105,8 @@ export class Subprocess {
     return this.promise;
   }
 
-  kill(signal: NodeJS.Signals = 'SIGTERM') {
-    this.log.log(this.logLevel, 'killing with {}', signal);
+  kill(signal: NodeJS.Signals = "SIGTERM") {
+    this.log.log(this.logLevel, "killing with {}", signal);
     this.process.kill(signal);
   }
 
@@ -116,7 +116,7 @@ export class Subprocess {
     if (error) {
       const err = error as unknown as { code?: number; signal?: string };
       this.result.code = err.code ?? 0;
-      this.result.signal = err.signal ?? '';
+      this.result.signal = err.signal ?? "";
       this.log.log(
         this.logLevel,
         `finished with code ${this.result.code} signal ${this.result.signal}`,
@@ -127,7 +127,7 @@ export class Subprocess {
         this.waitingContext.reject(this.result);
       }
     } else {
-      this.log.log(this.logLevel, 'finished sucessfully');
+      this.log.log(this.logLevel, "finished sucessfully");
       this.waitingContext.resolve(this.result);
     }
   }

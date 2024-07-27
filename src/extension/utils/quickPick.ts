@@ -3,7 +3,7 @@ import type {
   QuickPick,
   QuickPickItem,
   QuickPickItemButtonEvent,
-} from 'vscode';
+} from "vscode";
 import {
   Disposable,
   Location,
@@ -11,18 +11,19 @@ import {
   ThemeIcon,
   window,
   workspace,
-} from 'vscode';
-import { DisposableCollection } from '../../library/disposable';
-import { assert, assertNotNull, notNull } from '../../library/exception';
-import { listenWrapped } from '../modules/exception';
-import { getActiveTextEditor } from '../modules/utils';
-import { showTextDocument } from './window';
+} from "vscode";
+import { DisposableCollection } from "../../library/disposable";
+import { assert, assertNotNull, notNull } from "../../library/exception";
+import { listenWrapped } from "../modules/exception";
+import { getActiveTextEditor } from "../modules/utils";
+import { showTextDocument } from "./window";
 
 export namespace QuickPickButtons {
   /**
    * Create button with {@link ThemeIcon}.
    *
-   * Takes built-in icon ID, see https://code.visualstudio.com/api/references/icons-in-labels#icon-listing
+   * Takes built-in icon ID, see
+   * https://code.visualstudio.com/api/references/icons-in-labels#icon-listing
    * for full list.
    */
   export function create(
@@ -35,15 +36,17 @@ export namespace QuickPickButtons {
     };
   }
 
-  export const REMOVE = create('trash', 'Delete');
-  export const CLEAR_ALL = create('clear-all', 'Clear all');
-  export const EDIT = create('edit', 'Edit');
+  export const REMOVE = create("trash", "Delete");
+  export const CLEAR_ALL = create("clear-all", "Clear all");
+  export const EDIT = create("edit", "Edit");
 }
 
 /**
- * Create list of items to be used with {@link QuickPickWrapper} or {@link QuickPick}.
+ * Create list of items to be used with {@link QuickPickWrapper} or
+ * {@link QuickPick}.
  *
  * Must be in form of:
+ *
  * ```js
  * {
  *   separator_1: [items],
@@ -71,7 +74,8 @@ export interface QuickPickValue<T> extends QuickPickItem {
 }
 
 /**
- * Subset of {@link QuickPickItem} that is used in APIs based on {@link QuickPickWrapper}
+ * Subset of {@link QuickPickItem} that is used in APIs based on
+ * {@link QuickPickWrapper}
  */
 export interface BaseQuickPickItem {
   label: string;
@@ -85,13 +89,14 @@ export interface BaseQuickPickItem {
 /**
  * Universal wrapper for {@link QuickPick}.
  *
- * Instead of requiring item type to extend {@link QuickPickItem} it can use
- * any type by providing converters.
+ * Instead of requiring item type to extend {@link QuickPickItem} it can use any
+ * type by providing converters.
  *
- * Unlike original `QuickPick` sets {@link QuickPick.sortByLabel} to `false` by default.
+ * Unlike original `QuickPick` sets {@link QuickPick.sortByLabel} to `false` by
+ * default.
  *
- * NOTE: Manipulation with items uses boxing/unboxing and iteration
- * so the implementation is not suitable for QuickPicks with large number of items.
+ * NOTE: Manipulation with items uses boxing/unboxing and iteration so the
+ * implementation is not suitable for QuickPicks with large number of items.
  */
 export class QuickPickWrapper<
   T,
@@ -172,8 +177,8 @@ export class QuickPickWrapper<
   /**
    * Add common per-item button to all items
    *
-   * Must be called before setting `items`.
-   * These buttons will be shown after {@link BaseQuickPickItem.itemButtons}
+   * Must be called before setting `items`. These buttons will be shown after
+   * {@link BaseQuickPickItem.itemButtons}
    */
   addCommonItemButton(
     button: QuickInputButton,
@@ -181,13 +186,14 @@ export class QuickPickWrapper<
   ) {
     assert(
       this.qp.items.isEmpty,
-      'Adding item button after setting `items` - probably bug',
+      "Adding item button after setting `items` - probably bug",
     );
     this.commonItemButtons.set(button, cb);
   }
 
   /**
-   * Callback called when another item is activated, either by moving cursor or by ticking checkbox.
+   * Callback called when another item is activated, either by moving cursor or
+   * by ticking checkbox.
    */
   set onDidActivateItem(cb: (value: T) => void | Promise<void>) {
     this.disposables.push(
@@ -195,7 +201,7 @@ export class QuickPickWrapper<
         if (activeItems.isEmpty) return;
         assert(
           activeItems.length === 1,
-          'multiple items are activated in QuickPick',
+          "multiple items are activated in QuickPick",
         );
         return cb(this.unwrap(activeItems[0] as Q));
       }),
@@ -209,7 +215,8 @@ export class QuickPickWrapper<
   /**
    * Get or set quickpick items.
    *
-   * Acts as proxy to internal {@link QuickPick.items}, applies adapter functions.
+   * Acts as proxy to internal {@link QuickPick.items}, applies adapter
+   * functions.
    */
   set items(values: ReadonlyArray<T | QuickPickSeparator>) {
     this.qp.items = values.map((value) => {
@@ -282,9 +289,10 @@ export class QuickPickWrapper<
 
   /**
    * Show QuickPick and let user select one item.
-   * @returns selected item or *undefined* otherwise
    *
-   * Only works when `canSelectMany = false`.
+   * @returns Selected item or _undefined_ otherwise
+   *
+   *   Only works when `canSelectMany = false`.
    */
   async select(): Promise<T | undefined> {
     this.assertCanSelectMany(false);
@@ -295,9 +303,10 @@ export class QuickPickWrapper<
 
   /**
    * Show QuickPick and let user select multiple items.
-   * @returns selected items or *undefined* otherwise
    *
-   * Only works when `canSelectMany = true`.
+   * @returns Selected items or _undefined_ otherwise
+   *
+   *   Only works when `canSelectMany = true`.
    */
   async selectMany(): Promise<readonly T[] | undefined> {
     this.assertCanSelectMany(true);
@@ -305,8 +314,8 @@ export class QuickPickWrapper<
   }
 
   /**
-   * Just show the QuickPick and run supplied callback when user accepts an item,
-   * without closing the QuickPick.
+   * Just show the QuickPick and run supplied callback when user accepts an
+   * item, without closing the QuickPick.
    */
   async showOnly(
     onDidAcceptItem: (item: T) => void | Promise<void>,
@@ -365,8 +374,9 @@ export class QuickPickWrapper<
   }
 
   /**
-   * @param onDidAcceptItem When given, run when user accepts item (presses ENTER or selects with mouse)
-   * without hiding QuickPick,  only allow closing by pressing ESC
+   * @param onDidAcceptItem When given, run when user accepts item (presses
+   *   ENTER or selects with mouse) without hiding QuickPick, only allow closing
+   *   by pressing ESC
    */
   private async selectImpl(
     onDidAcceptItem?: (item: T) => void | Promise<void>,
@@ -435,8 +445,8 @@ export class GenericQuickPick<T> extends QuickPickWrapper<
   constructor(
     toQuickPickItem: (value: T) => BaseQuickPickItem,
     /**
-     * sometimes its convenient to pass list of items as parameter to allow vscode
-     * auto-infer QuickPick type
+     * Sometimes its convenient to pass list of items as parameter to allow
+     * vscode auto-infer QuickPick type
      */
     items?: ReadonlyArray<T | QuickPickSeparator>,
   ) {
@@ -484,8 +494,7 @@ export class QuickPickLocations<T> extends QuickPickWrapper<
   }
 
   /**
-   * Set items.
-   * Groups locations by file.
+   * Set items. Groups locations by file.
    */
   setAndGroupItems(items: readonly T[]) {
     this.items = items; // will store locations
@@ -507,8 +516,8 @@ export class QuickPickLocations<T> extends QuickPickWrapper<
   }
 
   /**
-   * Choose active item to be near current editor location.
-   * If no editor active does nothing.
+   * Choose active item to be near current editor location. If no editor active
+   * does nothing.
    */
   adjustActiveItem() {
     const editor = window.activeTextEditor;

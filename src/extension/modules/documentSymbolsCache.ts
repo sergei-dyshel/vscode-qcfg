@@ -3,11 +3,11 @@ import type {
   ExtensionContext,
   TextDocumentChangeEvent,
   Uri,
-} from 'vscode';
-import { workspace } from 'vscode';
-import { retrieveDocumentSymbols } from '../utils/symbol';
-import { listenWrapped } from './exception';
-import { Modules } from './module';
+} from "vscode";
+import { workspace } from "vscode";
+import { retrieveDocumentSymbols } from "../utils/symbol";
+import { listenWrapped } from "./exception";
+import { Modules } from "./module";
 
 const documentSymbolsCache = new Map<string, DocumentSymbol[]>();
 

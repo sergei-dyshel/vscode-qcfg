@@ -3,18 +3,18 @@ import type {
   TextDocumentChangeEvent,
   TextEditor,
   ViewColumn,
-} from 'vscode';
-import { commands, window, workspace } from 'vscode';
-import { assert, assertNotNull, check } from '../../library/exception';
-import { log, Logger } from '../../library/logging';
-import type { AsyncFunction, PromiseType } from '../../library/templateTypes';
-import { DefaultMap, propagateUndefined } from '../../library/tsUtils';
-import { getBesideViewColumn } from '../utils/window';
-import { listenWrapped, registerAsyncCommandWrapped } from './exception';
-import { LiveLocationArray, LivePosition } from './liveLocation';
-import { Modules } from './module';
-import { getActiveTextEditor } from './utils';
-import { getVisibleEditor } from './windowUtils';
+} from "vscode";
+import { commands, window, workspace } from "vscode";
+import { assert, assertNotNull, check } from "../../library/exception";
+import { log, Logger } from "../../library/logging";
+import type { AsyncFunction, PromiseType } from "../../library/templateTypes";
+import { DefaultMap, propagateUndefined } from "../../library/tsUtils";
+import { getBesideViewColumn } from "../utils/window";
+import { listenWrapped, registerAsyncCommandWrapped } from "./exception";
+import { LiveLocationArray, LivePosition } from "./liveLocation";
+import { Modules } from "./module";
+import { getActiveTextEditor } from "./utils";
+import { getVisibleEditor } from "./windowUtils";
 
 const MAX_HISTORY_SIZE = 20;
 
@@ -71,7 +71,7 @@ export function wrapWithHistoryUpdate<T extends AsyncFunction>(
 function getActiveColumn() {
   const editor = getActiveTextEditor();
   const viewCol = editor.viewColumn;
-  assertNotNull(viewCol, 'Current text editor has no view column');
+  assertNotNull(viewCol, "Current text editor has no view column");
   return viewCol;
 }
 
@@ -90,7 +90,7 @@ class History {
     const editor = getVisibleEditor(viewColumn);
     assertNotNull(editor);
     this.log = new Logger({
-      name: 'viewColumnHistory',
+      name: "viewColumnHistory",
       parent: log,
       instance: viewColumn.toString(),
     });
@@ -101,10 +101,10 @@ class History {
     assert(editor.viewColumn === this.viewColumn);
     const cur = LivePosition.fromEditor(editor);
     let prev = this.backward.pop();
-    check(prev !== undefined, 'No backward history');
+    check(prev !== undefined, "No backward history");
     if (prev.equals(cur)) {
       prev = this.backward.pop();
-      check(prev !== undefined, 'No backward history');
+      check(prev !== undefined, "No backward history");
     }
     this.forward.push(cur);
     this.log.debug(`Going backward to ${prev}`);
@@ -119,7 +119,7 @@ class History {
     assert(editor.viewColumn === this.viewColumn);
     const cur = LivePosition.fromEditor(editor);
     const next = this.forward.pop();
-    check(next !== undefined, 'No forward history');
+    check(next !== undefined, "No forward history");
     this.backward.push(cur);
     this.log.debug(`Going forward to ${next}`);
     await this.show(next.asPosition);
@@ -178,11 +178,11 @@ function onDidChangeTextDocument(event: TextDocumentChangeEvent) {
 }
 
 async function peekOpenReference() {
-  return updateHistory(commands.executeCommand('openReference'));
+  return updateHistory(commands.executeCommand("openReference"));
 }
 
 async function peekOpenReferenceToSide() {
-  return updateHistory(commands.executeCommand('openReferenceToSide'), {
+  return updateHistory(commands.executeCommand("openReferenceToSide"), {
     column: getBesideViewColumn(),
   });
 }
@@ -191,12 +191,12 @@ function activate(context: ExtensionContext) {
   context.subscriptions.push(
     listenWrapped(workspace.onDidChangeTextDocument, onDidChangeTextDocument),
 
-    registerAsyncCommandWrapped('qcfg.history.wrapCmd', updateHistoryOnCommand),
-    registerAsyncCommandWrapped('qcfg.history.backward', goBackward),
-    registerAsyncCommandWrapped('qcfg.history.forward', goForward),
-    registerAsyncCommandWrapped('qcfg.peek.openReference', peekOpenReference),
+    registerAsyncCommandWrapped("qcfg.history.wrapCmd", updateHistoryOnCommand),
+    registerAsyncCommandWrapped("qcfg.history.backward", goBackward),
+    registerAsyncCommandWrapped("qcfg.history.forward", goForward),
+    registerAsyncCommandWrapped("qcfg.peek.openReference", peekOpenReference),
     registerAsyncCommandWrapped(
-      'qcfg.peek.openReferenceToSide',
+      "qcfg.peek.openReferenceToSide",
       peekOpenReferenceToSide,
     ),
   );

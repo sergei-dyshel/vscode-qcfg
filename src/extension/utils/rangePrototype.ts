@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-import { Position, Range, Selection } from 'vscode';
+import { Position, Range, Selection } from "vscode";
 
-declare module 'vscode' {
+declare module "vscode" {
   // eslint-disable-next-line @typescript-eslint/no-shadow
   export interface Range {
     compareTo: (that: Range) => number;
@@ -37,7 +37,7 @@ Range.prototype.strictlyContains = function (this: Range, that: Range) {
   return this.contains(that) && !this.isEqual(that);
 };
 
-Object.defineProperty(Range.prototype, 'isLinewise', {
+Object.defineProperty(Range.prototype, "isLinewise", {
   get() {
     return (
       this.start.character === 0 && this.end.character === 0 && !this.isEmpty

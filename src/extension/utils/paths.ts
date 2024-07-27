@@ -1,15 +1,15 @@
-import type { WorkspaceFolder } from 'vscode';
-import * as nodejs from '../../library/nodejs';
-import { extensionContext } from './extensionContext';
+import type { WorkspaceFolder } from "vscode";
+import * as nodejs from "../../library/nodejs";
+import { extensionContext } from "./extensionContext";
 
 function getUserDir() {
   // taken from https://github.com/shanalikhan/code-settings-sync/blob/master/src/environmentPath.ts
   return nodejs.path.resolve(
     extensionContext().globalStorageUri.fsPath,
-    '..',
-    '..',
-    '..',
-    'User',
+    "..",
+    "..",
+    "..",
+    "User",
   );
 }
 
@@ -18,7 +18,7 @@ export function getGlobalSettingsPath() {
 }
 
 export function getFolderSettingsPath(folder: WorkspaceFolder) {
-  return nodejs.path.resolve(folder.uri.fsPath, '.vscode', SETTINGS_JSON);
+  return nodejs.path.resolve(folder.uri.fsPath, ".vscode", SETTINGS_JSON);
 }
 
-const SETTINGS_JSON = 'settings.json';
+const SETTINGS_JSON = "settings.json";

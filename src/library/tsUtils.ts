@@ -331,8 +331,7 @@ declare global {
     /**
      * Maximum element of array.
      *
-     * @param cmd Returns negative if `x < y`, 0 if `x === y` and positive if `x
-     *   > Y`
+     * @param cmd Returns negative if `x < y`, 0 if `x === y` and positive if `x  > Y`
      */
     max: (cmp?: (x: T, y: T) => number) => T | undefined;
     equals: (that: T[], eq?: (x: T, y: T) => boolean) => boolean;

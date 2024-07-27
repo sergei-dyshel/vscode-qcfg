@@ -3,16 +3,16 @@ import type {
   TextDocumentShowOptions,
   TextEditor,
   ViewColumn,
-} from 'vscode';
-import { commands, Uri, window } from 'vscode';
+} from "vscode";
+import { commands, Uri, window } from "vscode";
 
 export async function FocusProblemsView() {
-  return commands.executeCommand('workbench.action.problems.focus');
+  return commands.executeCommand("workbench.action.problems.focus");
 }
 
 export async function openFolder(path: string, newWindow: boolean) {
   return commands.executeCommand(
-    'vscode.openFolder',
+    "vscode.openFolder",
     Uri.file(path),
     newWindow,
   );
@@ -31,10 +31,10 @@ let showTextDocumentGen = 0;
 /**
  * Safe version of {@link window.showTextDocument}.
  *
- * When function is called repeately with overlapping invokation, the call may fail
- * because another editor is being open at the same time.
- * If older invokation (not the most recent one) failed we just abort (return `undefined`).
- * If newest invokation failed, we retry.
+ * When function is called repeately with overlapping invokation, the call may
+ * fail because another editor is being open at the same time. If older
+ * invokation (not the most recent one) failed we just abort (return
+ * `undefined`). If newest invokation failed, we retry.
  */
 export async function showTextDocument(
   docOrUri: TextDocument | Uri,
@@ -49,7 +49,7 @@ export async function showTextDocument(
       return await window.showTextDocument(docOrUri, options);
     return await window.showTextDocument(docOrUri, options);
   } catch (err: unknown) {
-    if (err instanceof Error && err.message.includes('Could NOT open editor')) {
+    if (err instanceof Error && err.message.includes("Could NOT open editor")) {
       if (gen !== showTextDocumentGen) return undefined;
       return showTextDocument(docOrUri, options);
     }

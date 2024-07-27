@@ -1,12 +1,12 @@
-import type { ExtensionContext, TextEditor, ViewColumn } from 'vscode';
-import { commands, window } from 'vscode';
-import { log } from '../../library/logging';
-import { ConfigurationWatcher } from './configWatcher';
-import { listenAsyncWrapped, registerAsyncCommandWrapped } from './exception';
-import { Modules } from './module';
+import type { ExtensionContext, TextEditor, ViewColumn } from "vscode";
+import { commands, window } from "vscode";
+import { log } from "../../library/logging";
+import { ConfigurationWatcher } from "./configWatcher";
+import { listenAsyncWrapped, registerAsyncCommandWrapped } from "./exception";
+import { Modules } from "./module";
 
 const configWatcher = new ConfigurationWatcher(
-  ['qcfg.autoResize.steps', 'qcfg.autoResize.enabled'] as const,
+  ["qcfg.autoResize.steps", "qcfg.autoResize.enabled"] as const,
   async () => updateEnabled(),
 );
 
@@ -14,15 +14,15 @@ let featureEnabled: boolean | undefined;
 let prevActiveViewColumn: ViewColumn | undefined;
 
 async function evenEditorWidths() {
-  return commands.executeCommand('workbench.action.evenEditorWidths');
+  return commands.executeCommand("workbench.action.evenEditorWidths");
 }
 
 async function updateEnabled(enabled?: boolean) {
   if (enabled === undefined)
-    enabled = configWatcher.getConfiguration().get('qcfg.autoResize.enabled');
+    enabled = configWatcher.getConfiguration().get("qcfg.autoResize.enabled");
   if (featureEnabled !== !!enabled) {
     featureEnabled = !!enabled;
-    log.info('Auto-resize', featureEnabled ? 'enabled' : 'disabled');
+    log.info("Auto-resize", featureEnabled ? "enabled" : "disabled");
   }
   await (featureEnabled ? doAutoResize() : evenEditorWidths());
 }
@@ -32,10 +32,10 @@ async function doAutoResize() {
     await evenEditorWidths();
     for (
       let i = 0;
-      i < configWatcher.getConfiguration().getNotNull('qcfg.autoResize.steps');
+      i < configWatcher.getConfiguration().getNotNull("qcfg.autoResize.steps");
       i++
     )
-      await commands.executeCommand('workbench.action.increaseViewWidth');
+      await commands.executeCommand("workbench.action.increaseViewWidth");
   }
 }
 
@@ -59,7 +59,7 @@ function activate(context: ExtensionContext) {
       onDidChangeActiveTextEditor,
     ),
     configWatcher.register(),
-    registerAsyncCommandWrapped('qcfg.autoResize.toggle', async () =>
+    registerAsyncCommandWrapped("qcfg.autoResize.toggle", async () =>
       updateEnabled(!featureEnabled),
     ),
   );

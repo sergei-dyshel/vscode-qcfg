@@ -1,5 +1,5 @@
-import type { Position, TextDocument, TextEditor } from 'vscode';
-import { Range } from 'vscode';
+import type { Position, TextDocument, TextEditor } from "vscode";
+import { Range } from "vscode";
 
 // TODO: add as property to position class
 export function offsetPosition(
@@ -94,14 +94,14 @@ export function swapRanges(
 }
 
 const BRACKETS: Array<[string, string]> = [
-  ['[', ']'],
-  ['(', ')'],
-  ['{', '}'],
+  ["[", "]"],
+  ["(", ")"],
+  ["{", "}"],
   ['"""', '"""'],
   ["'''", "'''"],
   ['"', '"'],
   ["'", "'"],
-  ['<', '>'],
-  ['/*', '*/'],
-  ['', ';'], // statements
+  ["<", ">"],
+  ["/*", "*/"],
+  ["", ";"], // statements
 ];

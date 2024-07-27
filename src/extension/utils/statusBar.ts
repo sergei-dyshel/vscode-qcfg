@@ -1,23 +1,23 @@
-import type { StatusBarItem } from 'vscode';
-import { ThemeColor } from 'vscode';
+import type { StatusBarItem } from "vscode";
+import { ThemeColor } from "vscode";
 
 export function setStatusBarErrorBackground(status: StatusBarItem) {
-  status.backgroundColor = new ThemeColor('statusBarItem.errorBackground');
+  status.backgroundColor = new ThemeColor("statusBarItem.errorBackground");
 }
 
 export function setStatusBarWarningBackground(status: StatusBarItem) {
-  status.backgroundColor = new ThemeColor('statusBarItem.warningBackground');
+  status.backgroundColor = new ThemeColor("statusBarItem.warningBackground");
 }
 
 export function setStatusBarBackground(
   status: StatusBarItem,
-  backgroud: 'error' | 'warning' | undefined,
+  backgroud: "error" | "warning" | undefined,
 ) {
   switch (backgroud) {
-    case 'error':
+    case "error":
       setStatusBarErrorBackground(status);
       break;
-    case 'warning':
+    case "warning":
       setStatusBarWarningBackground(status);
       break;
     case undefined:

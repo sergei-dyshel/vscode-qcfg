@@ -1,21 +1,21 @@
-import { type ExtensionContext, type Location, type Uri } from 'vscode';
-import { DisposableHolder } from '../../library/disposable';
-import { check, checkNotNull } from '../../library/exception';
-import { QuickPickLocations } from '../utils/quickPick';
-import { mapAsync } from './async';
+import { type ExtensionContext, type Location, type Uri } from "vscode";
+import { DisposableHolder } from "../../library/disposable";
+import { check, checkNotNull } from "../../library/exception";
+import { log } from "../../library/logging";
+import { stringify as str } from "../../library/stringify";
+import { QuickPickLocations } from "../utils/quickPick";
+import { workspaceResolveSymlink } from "../utils/workspace";
+import { mapAsync } from "./async";
 import {
   registerAsyncCommandWrapped,
   registerSyncCommandWrapped,
-} from './exception';
-import { peekLocations, quickPickLocations } from './fileUtils';
-import { updateHistory } from './history';
-import { LiveLocation, LiveLocationArray } from './liveLocation';
-import { setPanelLocations } from './locationTree';
-import { Modules } from './module';
-import { getActiveTextEditor, getCurrentLocation } from './utils';
-import { log } from '../../library/logging';
-import { stringify as str } from '../../library/stringify';
-import { workspaceResolveSymlink } from '../utils/workspace';
+} from "./exception";
+import { peekLocations, quickPickLocations } from "./fileUtils";
+import { updateHistory } from "./history";
+import { LiveLocation, LiveLocationArray } from "./liveLocation";
+import { setPanelLocations } from "./locationTree";
+import { Modules } from "./module";
+import { getActiveTextEditor, getCurrentLocation } from "./utils";
 
 const MAX_SAVED_SEARCHES = 20;
 
@@ -95,7 +95,7 @@ interface SavedSearch {
 
 async function showLastLocationsInPanel() {
   if (!lastName) {
-    throw new Error('No search was issued yet');
+    throw new Error("No search was issued yet");
   }
   return updateHistory(
     setPanelLocations(lastName, lastLocations.get()!.locations()),
@@ -104,7 +104,7 @@ async function showLastLocationsInPanel() {
 
 async function quickPickLastLocations() {
   if (!lastName) {
-    throw new Error('No search was issued yet');
+    throw new Error("No search was issued yet");
   }
   return updateHistory(quickPickLocations(lastLocations.get()!.locations()));
 }
@@ -112,12 +112,12 @@ async function quickPickLastLocations() {
 function selectLastLocationsInCurrentEditor() {
   const editor = getActiveTextEditor();
   const lastLoc = lastLocations.get();
-  checkNotNull(lastLoc, 'No last locations');
+  checkNotNull(lastLoc, "No last locations");
   const selections = lastLoc
     .locations()
     .filter((loc) => loc.uri.equals(editor.document.uri))
     .map((loc) => loc.range.asSelection());
-  check(!selections.isEmpty, 'No results in current file');
+  check(!selections.isEmpty, "No results in current file");
   editor.selections = selections;
   editor.revealRange(selections[0]);
 }
@@ -144,7 +144,7 @@ async function rerunPreviousSearch() {
 
 async function rerunLastSearch() {
   const prevSearch = savedSearches[0];
-  checkNotNull(prevSearch, 'No saved searches');
+  checkNotNull(prevSearch, "No saved searches");
   savedSearches.shift();
   await saveAndPeekSearch(
     prevSearch.name,
@@ -161,20 +161,20 @@ const lastLocations = new DisposableHolder<LiveLocationArray>();
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
     registerAsyncCommandWrapped(
-      'qcfg.showLastLocationsInPanel',
+      "qcfg.showLastLocationsInPanel",
       showLastLocationsInPanel,
     ),
     registerAsyncCommandWrapped(
-      'qcfg.quickPickLastLocations',
+      "qcfg.quickPickLastLocations",
       quickPickLastLocations,
     ),
     registerSyncCommandWrapped(
-      'qcfg.selectLastLocations',
+      "qcfg.selectLastLocations",
       selectLastLocationsInCurrentEditor,
     ),
-    registerAsyncCommandWrapped('qcfg.rerunLastSearch', rerunLastSearch),
+    registerAsyncCommandWrapped("qcfg.rerunLastSearch", rerunLastSearch),
     registerAsyncCommandWrapped(
-      'qcfg.rerunPreviousSearch',
+      "qcfg.rerunPreviousSearch",
       rerunPreviousSearch,
     ),
   );
