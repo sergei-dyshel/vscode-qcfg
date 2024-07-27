@@ -3,6 +3,7 @@ import { assertNotNull } from "../../library/exception";
 import { log, Logger } from "../../library/logging";
 import type { AsyncFunction, PromiseType } from "../../library/templateTypes";
 import { concatArrays, izip, zipArrays } from "../../library/tsUtils";
+import { extensionDebug } from "../utils/extensionContext";
 import { Modules } from "./module";
 
 type Callback = () => Promise<void>;
@@ -21,9 +22,7 @@ export class PromiseQueue {
 
   async add(cb: Callback, name: string): Promise<void> {
     return new Promise((resolve: Resolve, reject: Reject) => {
-      /// #if DEBUG
       this.log.trace(`enqueing "${name}"`);
-      /// #endif
       this.queue.push({ cb, resolve, reject, name });
       this.runNext();
     });
@@ -40,34 +39,26 @@ export class PromiseQueue {
     if (this.queue.isEmpty || this.busy) return;
     const entry = this.queue.shift();
     assertNotNull(entry);
-    /// #if DEBUG
     this.log.trace(`starting "${entry.name}`);
-    /// #endif
     this.busy = true;
     try {
       entry.cb().then(
         () => {
           this.busy = false;
-          /// #if DEBUG
           this.log.trace(`finished "${entry.name}"`);
-          /// #endif
           entry.resolve();
           this.runNext();
         },
         (err: unknown) => {
           this.busy = false;
-          /// #if DEBUG
           this.log.trace(`failed "${entry.name}"`);
-          /// #endif
           entry.reject(err);
           this.runNext();
         },
       );
     } catch (err: unknown) {
       this.busy = false;
-      /// #if DEBUG
       this.log.trace(`failed synchronously "${entry.name}"`);
-      /// #endif
       entry.reject(err);
       this.runNext();
     }
@@ -242,9 +233,7 @@ export function asyncRetry<T extends AsyncFunction>(
 let sequentialAsyncByDefault = false;
 
 function activate(_: ExtensionContext) {
-  /// #if DEBUG
-  sequentialAsyncByDefault = true;
-  /// #endif
+  if (extensionDebug()) sequentialAsyncByDefault = true;
   const seqStr = sequentialAsyncByDefault ? "SEQUENTIAL" : "PARALLEL";
   log.info(`Async mapping is ${seqStr} by default`);
 }

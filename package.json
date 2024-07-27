@@ -103,7 +103,6 @@
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-sonarjs": "^0.18.0",
     "eslint-plugin-unicorn": "^54.0.0",
-    "ifdef-loader": "^2.1.5",
     "ts-loader": "^9.3.0",
     "ts-node": "^10.9.2",
     "ts-prune": "^0.8.4",

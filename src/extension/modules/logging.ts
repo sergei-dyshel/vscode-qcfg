@@ -128,13 +128,7 @@ async function promptForLevel(handler: TextLogHandler) {
 class OutputChannelHandler extends TextLogHandler {
   constructor() {
     super("OutputPanel");
-    const envLevel = LogLevels.fromString(
-      process.env["VSCODE_QCFG_LOGLEVEL"] ?? "info",
-    );
-    this.level = envLevel === undefined ? LogLevel.INFO : envLevel;
-    /// #if DEBUG
-    this.level = LogLevel.DEBUG;
-    /// #endif
+    this.level = extensionDebug() ? LogLevel.DEBUG : LogLevel.INFO;
     this.outputChannel = window.createOutputChannel("qcfg", "qcfg-log");
     for (const editor of window.visibleTextEditors) {
       if (editor.document.fileName.startsWith("extension-output"))

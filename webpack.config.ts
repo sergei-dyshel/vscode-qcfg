@@ -9,7 +9,7 @@ import type webpack from "webpack";
 import { DefinePlugin } from "webpack";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function generateConfig(env: any): webpack.Configuration {
+function generateConfig(_: any): webpack.Configuration {
   return {
     target: "node", // vscode extensions run in a Node.js-context 📖 ->
     // https://webpack.js.org/configuration/node/
@@ -84,7 +84,6 @@ function generateConfig(env: any): webpack.Configuration {
                 },
               },
             },
-            { loader: "ifdef-loader", options: { DEBUG: env?.DEBUG } },
           ],
         },
       ],
