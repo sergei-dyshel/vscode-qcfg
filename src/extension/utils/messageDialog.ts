@@ -11,8 +11,10 @@ export namespace MessageDialog {
   export const WARNING = Severity.WARNING;
   export const ERROR = Severity.ERROR;
 
-  /** Either title or tuple of [title, detail] (_detail_ is rendered less
-prominent) */
+  /**
+   * Either title or tuple of [title, detail] (_detail_ is rendered less
+   * prominent)
+   */
   type Message = string | [message: string, detail: string];
 
   /**

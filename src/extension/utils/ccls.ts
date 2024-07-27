@@ -192,8 +192,10 @@ interface TypeHierarchyNode extends HierarchyNode {
   children: TypeHierarchyNode[];
   kind: number;
 
-  /** If true and children need to be expanded derived will be used, otherwise
-base will be used. */
+  /**
+   * If true and children need to be expanded derived will be used, otherwise
+   * base will be used.
+   */
   wantsDerived: boolean;
   isBaseLabel?: boolean;
 }
