@@ -16,7 +16,6 @@ import * as nodejs from "../library/nodejs";
 import type { IdentifiedClient } from "../library/remoteClient";
 import { MultiClient } from "../library/remoteClient";
 import { parseNumber } from "../library/stringUtils";
-import "./webpackDefines";
 
 /** Logic to select server for running command */
 enum Instance {
@@ -312,7 +311,7 @@ class Cli extends CommandLineParser {
   constructor() {
     super({
       toolFilename: "q-vscode-cli",
-      toolDescription: `Control vscode remotely, version: ${globalThis.PACKAGE_VERSION}`,
+      toolDescription: "Control vscode remotely",
     });
     this.verbose = this.defineIntegerParameter({
       parameterLongName: "--verbose",

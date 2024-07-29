@@ -24,25 +24,23 @@
     "onStartupFinished"
   ],
   "license": "MIT",
-  "main": "./dist/extension",
+  "main": "./dist/extension/extension",
   "scripts": {
     "update-package-json-ts-node": "node --enable-source-maps -r ts-node/register -r @sergei-dyshel/vscode/mock-register src/tools/updatePackageJson.ts",
     "update-package-json": "npx build-cmd -v -r --vscode-mock src/tools/updatePackageJson.ts",
     "vscode:prepublish": "npm run build",
     "watch": "tsc --watch --noEmit",
     "compile": "tsc --noEmit",
-    "webpack-watch": "webpack --mode none --watch",
     "lint": "qcfg-eslint",
     "dpdm": "qcfg-dpdm",
-    "build": "npm run build-common && webpack --mode production && npm run check-tools",
+    "build": "npm run build-common && build-cmd -v --vscode-ext src/extension/extension.ts && build-cmd -v src/tools/remoteCli.ts src/tools/syntaxDump.ts",
     "package": "npm run patch-version && vsce package",
     "copy-tree-sitter-wasm": "cp -u $(qcfg-resolve-package web-tree-sitter)/tree-sitter.wasm ./tree-sitter/",
     "package-and-install": "npm run package && code --install-extension $(ls vscode-qcfg-*.vsix | sort --version-sort | tail -n1)",
     "build-common": "npm run update-package-json && npm run copy-tree-sitter-wasm",
-    "build-dev": "npm run build-common && webpack --mode none --env DEBUG && npm run check-tools",
-    "check-tools": "node dist/remoteCli.js -h >/dev/null",
     "package-dev": "NO_VERSION=1 vsce package 0.0.0-dev --no-update-package-json --no-git-tag-version",
     "uninstall": "code --uninstall-extension QyRoN.vscode-qcfg",
+    "install": "npm run uninstall && code --install-extension $$(ls vscode-qcfg-*.vsix | sort --version-sort | tail -n1)",
     "install-dev": "npm run package-dev && npm run uninstall && code --install-extension vscode-qcfg-0.0.0-dev.vsix",
     "update-proposed": "npx vscode-dts dev",
     "format-check": "qcfg-prettier",
@@ -90,7 +88,6 @@
     "@types/source-map-support": "^0.5.3",
     "@types/sprintf-js": "^1.1.2",
     "@types/vscode": "^1.71.0",
-    "@types/webpack-env": "^1.17.0",
     "@typescript-eslint/eslint-plugin": "^7.16.0",
     "@typescript-eslint/parser": "^7.16.0",
     "circular-dependency-plugin": "^5.2.2",
@@ -108,9 +105,7 @@
     "ts-prune": "^0.8.4",
     "ts-unused-exports": "^6.2.4",
     "tsconfig-paths": "^4.0.0",
-    "vscode-languageserver": "^6.1.1",
-    "webpack": "^5.93.0",
-    "webpack-cli": "^5.1.4"
+    "vscode-languageserver": "^6.1.1"
   },
   "contributes": {
     "problemMatchers": [

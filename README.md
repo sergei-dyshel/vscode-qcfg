@@ -173,6 +173,8 @@ TODO: Write this section.
 
 ## Format, Lint, Build
 
+TODO: Update with `esbuild`.
+
 Webpack is a MUST for such a big codebase. I use a pretty standard webpack
 [config](webpack.config.ts) with some quirks needed for support of
 native-compiled Node modules. The code is auto-formatted with Prettier
