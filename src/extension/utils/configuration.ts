@@ -32,9 +32,12 @@ export class Configuration<S extends ConfigSection = ConfigSection> {
   }
 
   /** Similar to {@link WorkspaceConfiguration.get} */
-  get<K extends S>(section: K, defaultValue: ConfigValue<K>): ConfigValue<K>;
+  get<K extends S>(
+    section: K,
+    defaultValue: NonNullable<ConfigValue<K>>,
+  ): NonNullable<ConfigValue<K>>;
 
-  get<K extends S>(section: K): ConfigValue<K> | undefined;
+  get<K extends S>(section: K): ConfigValue<K>;
 
   get<K extends S>(section: K, defaultValue?: ConfigValue<K>) {
     if (defaultValue)

@@ -395,6 +395,12 @@ export namespace Config {
       .array(zod.string())
       .default([])
       .describe("List of TODO keywords"),
+    "qcfg.just.command": zod
+      .union([zod.string(), zod.array(zod.string())])
+      .default("just")
+      .describe(
+        "Command to run just.\n\nCan be either excutable or array of executable and arguments.",
+      ),
   });
 
   export type All = zod.infer<typeof allSchema>;

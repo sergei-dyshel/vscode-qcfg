@@ -25,7 +25,7 @@ export class ExecResult extends Error {
   }
 }
 
-interface SubprocessOptions {
+export interface SubprocessOptions {
   cwd?: string;
   env?: Record<string, string>;
   maxBuffer?: number;

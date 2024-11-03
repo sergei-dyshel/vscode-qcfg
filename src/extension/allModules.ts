@@ -30,6 +30,7 @@ import "./modules/gtags";
 import "./modules/history";
 import "./modules/historyWrap";
 import "./modules/json";
+import "./modules/just";
 import "./modules/langClient";
 import "./modules/language";
 import "./modules/liveLocation";

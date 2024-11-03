@@ -108,6 +108,20 @@
     "vscode-languageserver": "^6.1.1"
   },
   "contributes": {
+    "taskDefinitions": [
+      {
+        "type": "just",
+        "required": [
+          "recipe"
+        ],
+        "properties": {
+          "recipe": {
+            "type": "string",
+            "description": "Just recipe name"
+          }
+        }
+      }
+    ],
     "problemMatchers": [
       {
         "name": "gcc-relative",
@@ -2590,6 +2604,21 @@
           "type": "boolean",
           "default": false,
           "description": "Use gtags as workspace symbols provider"
+        },
+        "qcfg.just.command": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ],
+          "default": "just",
+          "description": "Command to run just.\n\nCan be either excutable or array of executable and arguments."
         },
         "qcfg.langClient.remote": {
           "type": "boolean",
