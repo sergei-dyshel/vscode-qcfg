@@ -31,8 +31,6 @@
     "vscode:prepublish": "npm run build",
     "watch": "tsc --watch --noEmit",
     "compile": "tsc --noEmit",
-    "lint": "qcfg-eslint",
-    "dpdm": "qcfg-dpdm",
     "build": "npm run build-common && build-cmd --vscode-ext src/extension/extension.ts && build-cmd src/tools/remoteCli.ts src/tools/syntaxDump.ts",
     "package": "npm run patch-version && vsce package",
     "copy-tree-sitter-wasm": "cp -u $(qcfg-resolve-package web-tree-sitter)/tree-sitter.wasm ./tree-sitter/",
@@ -43,8 +41,6 @@
     "install-vsix": "npm run uninstall && code --install-extension $$(ls vscode-qcfg-*.vsix | sort --version-sort | tail -n1)",
     "install-dev": "npm run package-dev && npm run uninstall && code --install-extension vscode-qcfg-0.0.0-dev.vsix",
     "update-proposed": "npx vscode-dts dev",
-    "format-check": "qcfg-prettier",
-    "format-write": "qcfg-prettier-write",
     "patch-version": "[[ -z \"$NO_VERSION\" ]] && npm version patch --allow-same-version || true",
     "generate-module-imports": "./scripts/generate-module-imports.sh src/extension/modules src/extension/allModules.ts"
   },
