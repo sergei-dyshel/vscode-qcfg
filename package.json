@@ -28,7 +28,6 @@
   "scripts": {
     "vscode:prepublish": "npm run build",
     "watch": "tsc --watch --noEmit",
-    "compile": "tsc --noEmit",
     "build": "just build",
     "update-proposed": "npx vscode-dts dev",
     "generate-module-imports": "./scripts/generate-module-imports.sh src/extension/modules src/extension/allModules.ts"
