@@ -40,7 +40,7 @@
     "build-common": "npm run update-package-json && npm run copy-tree-sitter-wasm",
     "package-dev": "NO_VERSION=1 vsce package 0.0.0-dev --no-update-package-json --no-git-tag-version",
     "uninstall": "code --uninstall-extension QyRoN.vscode-qcfg",
-    "install": "npm run uninstall && code --install-extension $$(ls vscode-qcfg-*.vsix | sort --version-sort | tail -n1)",
+    "install-vsix": "npm run uninstall && code --install-extension $$(ls vscode-qcfg-*.vsix | sort --version-sort | tail -n1)",
     "install-dev": "npm run package-dev && npm run uninstall && code --install-extension vscode-qcfg-0.0.0-dev.vsix",
     "update-proposed": "npx vscode-dts dev",
     "format-check": "qcfg-prettier",
