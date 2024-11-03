@@ -26,22 +26,11 @@
   "license": "MIT",
   "main": "./dist/extension/extension",
   "scripts": {
-    "update-package-json-ts-node": "node --enable-source-maps -r ts-node/register -r @sergei-dyshel/vscode/mock-register src/tools/updatePackageJson.ts",
-    "update-package-json": "npx build-cmd --run-if-built --vscode-mock src/tools/updatePackageJson.ts",
     "vscode:prepublish": "npm run build",
     "watch": "tsc --watch --noEmit",
     "compile": "tsc --noEmit",
-    "build": "npm run build-common && build-cmd --vscode-ext src/extension/extension.ts && build-cmd src/tools/remoteCli.ts src/tools/syntaxDump.ts",
-    "package": "npm run patch-version && vsce package",
-    "copy-tree-sitter-wasm": "cp -u $(qcfg-resolve-package web-tree-sitter)/tree-sitter.wasm ./tree-sitter/",
-    "package-and-install": "npm run package && code --install-extension $(ls vscode-qcfg-*.vsix | sort --version-sort | tail -n1)",
-    "build-common": "npm run update-package-json && npm run copy-tree-sitter-wasm",
-    "package-dev": "NO_VERSION=1 vsce package 0.0.0-dev --no-update-package-json --no-git-tag-version",
-    "uninstall": "code --uninstall-extension QyRoN.vscode-qcfg",
-    "install-vsix": "npm run uninstall && code --install-extension $$(ls vscode-qcfg-*.vsix | sort --version-sort | tail -n1)",
-    "install-dev": "npm run package-dev && npm run uninstall && code --install-extension vscode-qcfg-0.0.0-dev.vsix",
+    "build": "just build",
     "update-proposed": "npx vscode-dts dev",
-    "patch-version": "[[ -z \"$NO_VERSION\" ]] && npm version patch --allow-same-version || true",
     "generate-module-imports": "./scripts/generate-module-imports.sh src/extension/modules src/extension/allModules.ts"
   },
   "dependencies": {
