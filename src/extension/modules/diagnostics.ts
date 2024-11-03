@@ -61,7 +61,7 @@ function countDiags(document: TextDocument) {
     config.getNotNull("qcfg.fileDiagnostics.excludeMessage"),
   );
   const excludeSource = new RegExp(
-    config.get("qcfg.fileDiagnostics.excludeSource")!,
+    config.get("qcfg.fileDiagnostics.excludeSource"),
   );
   const excludeCodes = config.get("qcfg.fileDiagnostics.excludeCodes", []);
 
