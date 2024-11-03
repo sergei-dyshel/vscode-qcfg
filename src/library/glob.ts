@@ -1,9 +1,9 @@
-import * as minimatch from "minimatch";
+import { minimatch, MinimatchOptions } from "minimatch";
 
 export function fileMatch(
   filename: string,
   pattern: string,
-  options?: minimatch.MinimatchOptions,
+  options?: MinimatchOptions,
 ): boolean {
-  return minimatch.minimatch(filename, pattern, options);
+  return minimatch(filename, pattern, options);
 }
