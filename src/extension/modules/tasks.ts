@@ -336,6 +336,8 @@ async function showTasks() {
     "tasks",
     allTasks,
   );
+  qp.options.matchOnDetail = true;
+  qp.options.matchOnDescription = true;
   const anyTask = await qp.select();
   if (!anyTask) return;
   if (anyTask.isBuild()) lastBuildTask = anyTask;
