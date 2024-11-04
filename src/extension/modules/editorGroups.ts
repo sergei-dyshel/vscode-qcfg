@@ -5,12 +5,13 @@ import { Modules } from "./module";
 import { getActiveTextEditor } from "./utils";
 
 async function focusEditorBeside(syncPosition: boolean) {
-  switch (window.tabGroups.all.length) {
+  const tabGroups = window.tabGroups;
+  switch (tabGroups.all.length) {
     case 0:
       throw new Error("No tab groups opened");
     case 1:
       await splitEditorToDirection("right");
-      break;
+      return;
     case 2:
       break;
     default:
@@ -18,16 +19,19 @@ async function focusEditorBeside(syncPosition: boolean) {
   }
   if (!syncPosition) {
     await commands.executeCommand("workbench.action.focusNextGroup");
+    return;
   }
-  const tabGroup = (() => {
-    for (const group of window.tabGroups.all) {
-      if (group !== window.tabGroups.activeTabGroup) return group;
+
+  // open current editor position in beside tab group
+  const besideTabGroup = (() => {
+    for (const group of tabGroups.all) {
+      if (group !== tabGroups.activeTabGroup) return group;
     }
     throw new Error("Shouldn't get here");
   })();
   const editor = getActiveTextEditor();
   await window.showTextDocument(getActiveTextEditor().document, {
-    viewColumn: tabGroup.viewColumn,
+    viewColumn: besideTabGroup.viewColumn,
     selection: editor.selection,
   });
 }
