@@ -15,12 +15,12 @@ import {
   Task,
   TaskProvider,
   tasks,
+  window,
   workspace,
   WorkspaceFolder,
 } from "vscode";
 import { fileExists } from "../../library/fileUtils";
 import { getConfiguration } from "../utils/configuration";
-import { handleErrors } from "./exception";
 import { Modules } from "./module";
 import { runSubprocessAndWait, SubprocessOptions } from "./subprocess";
 
@@ -60,19 +60,24 @@ class JustTaskProvider implements TaskProvider {
       // eslint-disable-next-line unicorn/no-await-expression-member
       .some(Boolean);
     if (!folderHasJustfile) return [];
-    const result = await runJust(["--dump-format", "json", "--dump"], {
-      cwd: folder.uri.fsPath,
-    });
-    const justFile = await handleErrors(async () => {
+    try {
+      const result = await runJust(["--dump-format", "json", "--dump"], {
+        cwd: folder.uri.fsPath,
+      });
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const json = JSON.parse(result.stdout);
-      return await justSchema.parseAsync(json);
-    })();
-    return filterNonNull(
-      Object.values(justFile.recipes).map((recipe) =>
-        this.recipeToTask(recipe, folder),
-      ),
-    );
+      const justFile = await justSchema.parseAsync(json);
+      return filterNonNull(
+        Object.values(justFile.recipes).map((recipe) =>
+          this.recipeToTask(recipe, folder),
+        ),
+      );
+    } catch (err) {
+      void window.showErrorMessage(
+        `Failed to get Just tasks in ${folder.name}: ${err}`,
+      );
+      return [];
+    }
   }
 
   recipeToTask(
