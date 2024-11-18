@@ -66,7 +66,7 @@ async function onSaveAll(docs: saveAll.DocumentsInFolder) {
 
   const paths = docPaths.join(" ");
   const cmd = command.includes("{}")
-    ? command.replace("{}", paths)
+    ? command.replaceAll("{}", paths)
     : `${command} ${paths}`;
   log.debug("Running ", cmd);
   try {
