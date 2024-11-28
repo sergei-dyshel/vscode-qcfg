@@ -2656,6 +2656,10 @@
                           "fileMatches": {
                             "type": "string",
                             "description": "Current file matches glob pattern"
+                          },
+                          "fileExistsInParent": {
+                            "type": "string",
+                            "description": "File exists in current or parent directories and matches given glob pattern"
                           }
                         },
                         "additionalProperties": false
@@ -2818,6 +2822,10 @@
                           "fileMatches": {
                             "type": "string",
                             "description": "Current file matches glob pattern"
+                          },
+                          "fileExistsInParent": {
+                            "type": "string",
+                            "description": "File exists in current or parent directories and matches given glob pattern"
                           }
                         },
                         "additionalProperties": false
@@ -2913,6 +2921,10 @@
                           "fileMatches": {
                             "type": "string",
                             "description": "Current file matches glob pattern"
+                          },
+                          "fileExistsInParent": {
+                            "type": "string",
+                            "description": "File exists in current or parent directories and matches given glob pattern"
                           }
                         },
                         "additionalProperties": false

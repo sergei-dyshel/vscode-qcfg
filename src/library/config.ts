@@ -161,6 +161,12 @@ export namespace Config {
         .string()
         .optional()
         .describe("Current file matches glob pattern"),
+      fileExistsInParent: zod
+        .string()
+        .optional()
+        .describe(
+          "File exists in current or parent directories and matches given glob pattern",
+        ),
     });
 
     const baseTaskParamsSchema = zod.object({

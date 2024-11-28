@@ -1,3 +1,4 @@
+import { dirname } from "node:path";
 import type { ExtensionContext, Task, WorkspaceFolder } from "vscode";
 import { commands, TaskGroup, tasks as vstasks, workspace } from "vscode";
 import { Config } from "../../library/config";
@@ -95,6 +96,29 @@ async function checkCondition(
       !matches.isEmpty,
       `Globbing for ${when.fileExists} returned no matches`,
     );
+  }
+
+  if (when.fileExistsInParent) {
+    assertCondition(
+      context.workspaceFolder,
+      '"fileExists" can only be checked in context of workspace folder',
+    );
+    let cwd = context.workspaceFolder.uri.path;
+    while (true) {
+      const matches = await globAsync(when.fileExistsInParent, {
+        cwd,
+        // it does not make sense to glob for patterns with ** in parent directories
+        noglobstar: true,
+      });
+      if (!matches.isEmpty) {
+        break;
+      }
+      assertCondition(
+        cwd !== "/",
+        `Globbing for ${when.fileMatches} in current or parent directories returned no matches`,
+      );
+      cwd = dirname(cwd);
+    }
   }
 
   if (when.fileMatches) {
