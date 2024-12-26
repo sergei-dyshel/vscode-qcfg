@@ -156,8 +156,3 @@ export function expandTemplateLiteral(
     throw err;
   }
 }
-
-export {
-  camelCase as convCamelCase,
-  kebabCase as convKebabCase,
-} from "case-anything";

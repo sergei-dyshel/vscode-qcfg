@@ -1,4 +1,5 @@
 import { enumUtil } from "@sergei-dyshel/typescript/enum";
+import { camelCase, kebabCase } from "@sergei-dyshel/typescript/string";
 import type { StringKeyOf } from "@sergei-dyshel/typescript/types";
 import type { Range, SymbolInformation, Uri } from "vscode";
 import {
@@ -9,7 +10,6 @@ import {
   commands,
 } from "vscode";
 import { assert } from "../../library/exception";
-import { convCamelCase, convKebabCase } from "../../library/stringUtils";
 
 const symbolKindUtil = enumUtil(
   SymbolKind as unknown as Record<StringKeyOf<SymbolKind>, number>,
@@ -32,14 +32,14 @@ SymbolKind.stringKey = function (kind: SymbolKind) {
 SymbolKind.themeIcon = function (kind: SymbolKind) {
   const key = SymbolKind.stringKey(kind);
   return new ThemeIcon(
-    `symbol-${convKebabCase(key)}`,
-    new ThemeColor(`symbolIcon.${convCamelCase(key)}Foreground`),
+    `symbol-${kebabCase(key)}`,
+    new ThemeColor(`symbolIcon.${camelCase(key)}Foreground`),
   );
 };
 
 SymbolKind.labelIcon = function (kind: SymbolKind) {
   const key = SymbolKind.stringKey(kind);
-  return `$(symbol-${convKebabCase(key)})`;
+  return `$(symbol-${kebabCase(key)})`;
 };
 
 /**

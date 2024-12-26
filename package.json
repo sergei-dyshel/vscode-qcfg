@@ -39,7 +39,6 @@
     "@sergei-dyshel/node": "*",
     "@sergei-dyshel/vscode": "*",
     "callsites": "^3.1.0",
-    "case-anything": "^2.1.10",
     "glob": "^7.1.6",
     "jayson": "^3.3.4",
     "jsonc-parser": "^2.3.1",
