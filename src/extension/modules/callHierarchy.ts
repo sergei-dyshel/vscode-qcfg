@@ -1,3 +1,4 @@
+import { normalizeArray } from "@sergei-dyshel/typescript/array";
 import type {
   CallHierarchyOutgoingCall,
   CallHierarchyProvider,
@@ -24,11 +25,7 @@ import {
   workspace,
 } from "vscode";
 import { baseName } from "../../library/pathUtils";
-import {
-  concatArrays,
-  filterNonNull,
-  normalizeArray,
-} from "../../library/tsUtils";
+import { concatArrays, filterNonNull } from "../../library/tsUtils";
 import { CclsCallHierarchyProvider } from "../utils/ccls";
 import { PersistentRecordQuickPick } from "../utils/quickPickPersistent";
 import { getContainingSymbol, qualifiedName } from "../utils/symbol";

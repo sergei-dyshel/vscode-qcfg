@@ -39,12 +39,6 @@ export type NotArray = (
   length?: never;
 };
 
-/** Convert scalar to array if needed */
-export function normalizeArray<T>(x: T | T[]): T[] {
-  if (Array.isArray(x)) return x;
-  return [x];
-}
-
 /** Convert union of arrays into array of unions */
 export function unionizeArrays<T, Q>(x: T[] | Q[]): Array<T | Q> {
   return x;

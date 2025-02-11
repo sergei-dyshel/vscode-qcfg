@@ -1,3 +1,4 @@
+import { normalizeArray } from "@sergei-dyshel/typescript/array";
 import type {
   CancellationToken,
   Position,
@@ -8,7 +9,6 @@ import { TypeHierarchyItem } from "vscode";
 import * as vsclc from "vscode-languageclient";
 import { assert } from "../../library/exception";
 import { log } from "../../library/logging";
-import { normalizeArray } from "../../library/tsUtils";
 import { handleErrorsAsync } from "../modules/exception";
 import { BaseLangClientProvider } from "./langClientCommon";
 import { c2pConverter, p2cConverter } from "./langClientConv";
