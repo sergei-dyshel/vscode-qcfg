@@ -433,15 +433,22 @@ export class TerminalTask extends BaseQcfgTask {
 }
 
 export class TerminalMultiTask extends BaseQcfgTask {
+  protected declare readonly params: Cfg.TerminalTaskParams;
   private readonly folderTasks: TerminalTask[];
+
   constructor(
     params: Cfg.TerminalTaskParams,
     info: FetchInfo,
     folderContexts: TaskContext[],
   ) {
     super(params, info);
+    // prevent restaring lang servers on each folder task
+    const flags =
+      params.flags && params.flags.includes(Cfg.Flag.REINDEX)
+        ? params.flags.filter((flag) => flag != Cfg.Flag.REINDEX)
+        : params.flags;
     this.folderTasks = folderContexts.map(
-      (context) => new TerminalTask(params, info, context),
+      (context) => new TerminalTask({ ...params, flags }, info, context),
     );
     this.folderText = folderContexts
       .map((context) => context.workspaceFolder!.name)
@@ -449,9 +456,13 @@ export class TerminalMultiTask extends BaseQcfgTask {
   }
 
   async run() {
-    return mapAsyncSequential(this.folderTasks, async (task) =>
+    await mapAsyncSequential(this.folderTasks, async (task) =>
       task.run(),
     ).ignoreResult();
+    if (this.params.flags && this.params.flags.includes(Cfg.Flag.REINDEX)) {
+      // avoid circular dependency
+      executeCommandHandled("qcfg.langClient.refresh");
+    }
   }
 }
 
