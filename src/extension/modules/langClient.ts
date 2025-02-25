@@ -240,7 +240,7 @@ class ClangdWrapper extends LanguageClientWrapper {
 
   protected override async runRefreshCmd() {
     const cmd = getConfiguration().get("qcfg.clangd.restartCommand");
-    if (cmd) {
+    if (cmd && cmd.length > 0) {
       return executeSubprocess(cmd, {
         cwd: currentWorkspaceFolder()?.uri.fsPath,
       }).ignoreResult();
