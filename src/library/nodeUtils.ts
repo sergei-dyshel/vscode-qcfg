@@ -33,7 +33,7 @@ export class Timer {
     return this.timer !== undefined;
   }
 
-  private timer?: NodeJS.Timer;
+  private timer?: NodeJS.Timeout;
   private type?: TimerType;
 }
 
