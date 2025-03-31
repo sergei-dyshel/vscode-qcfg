@@ -3,6 +3,7 @@ import { DisposableHolder } from "../../library/disposable";
 import { check, checkNotNull } from "../../library/exception";
 import { log } from "../../library/logging";
 import { stringify as str } from "../../library/stringify";
+import { arrayIter } from "../../library/tsUtils";
 import { QuickPickLocations } from "../utils/quickPick";
 import { workspaceResolveSymlink } from "../utils/workspace";
 import { mapAsync } from "./async";
@@ -79,7 +80,7 @@ async function setLastLocations(locations: Location[]) {
 }
 
 function calcNumFiles(locations: Location[]): number {
-  const set = new Set<Uri>(locations.map((loc) => loc.uri).iter());
+  const set = new Set<Uri>(arrayIter(locations.map((loc) => loc.uri)));
   return set.size;
 }
 

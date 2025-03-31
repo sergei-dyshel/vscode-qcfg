@@ -3,8 +3,8 @@ import "../extension/utils/locationPrototype";
 import "../extension/utils/positionPrototype";
 import "../extension/utils/rangePrototype";
 import "../extension/utils/uriPrototype";
+import "../library/arrayPrototype";
 import "../library/stringPrototype";
-import "../library/tsUtils";
 
 import { defaultCompare } from "../library/compare";
 import type { ExtensionJSON } from "../library/extensionManifest";

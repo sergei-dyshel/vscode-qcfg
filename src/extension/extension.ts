@@ -1,6 +1,6 @@
 // these modify prototypes of bultin classes, must be imported first
+import "../library/arrayPrototype";
 import "../library/stringPrototype";
-import "../library/tsUtils";
 import "./utils/locationPrototype";
 import "./utils/positionPrototype";
 import "./utils/rangePrototype";
