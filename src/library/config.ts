@@ -66,6 +66,7 @@ export namespace Config {
       CLEAR = "clear",
       AUTO_RESTART = "autoRestart",
       REINDEX = "reindex",
+      BACKGROUND = "background",
 
       /**
        * Build task.
@@ -123,6 +124,7 @@ export namespace Config {
       zod.literal(Flag.CLEAR),
       zod.literal(Flag.AUTO_RESTART),
       zod.literal(Flag.REINDEX),
+      zod.literal(Flag.BACKGROUND),
       flagBuildSchema,
       zod.literal(Flag.MULTI).describe(dedent`
         Multi-folder task.
@@ -227,6 +229,7 @@ export namespace Config {
             zod.literal(Flag.DEDICATED_PANEL),
             zod.literal(Flag.REINDEX),
             zod.literal(Flag.AUTO_RESTART),
+            zod.literal(Flag.BACKGROUND),
             flagNotifyOnFailureSchema,
           ]),
         )

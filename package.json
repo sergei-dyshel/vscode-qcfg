@@ -2700,6 +2700,10 @@
                             },
                             {
                               "type": "string",
+                              "const": "background"
+                            },
+                            {
+                              "type": "string",
                               "const": "notifyOnFailure",
                               "description": "Notify on failure"
                             }

@@ -356,6 +356,7 @@ export class TerminalTask extends BaseQcfgTask {
         : TaskPanelKind.Shared,
       clear: flags.includes(Cfg.Flag.CLEAR) || flags.includes(Cfg.Flag.BUILD),
     };
+    if (flags.includes(Cfg.Flag.BACKGROUND)) this.task.isBackground = true;
     if (flags.includes(Cfg.Flag.BUILD)) this.task.group = TaskGroup.Build;
   }
 
