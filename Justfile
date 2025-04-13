@@ -14,7 +14,7 @@ update-package-json-ts-node:
     node --enable-source-maps -r ts-node/register -r @sergei-dyshel/vscode/mock-register src/tools/updatePackageJson.ts
 
 update-package-json:
-    build-cmd --run-if-built --vscode-mock src/tools/updatePackageJson.ts
+    qcfg-build run --if-built --vscode-mock src/tools/updatePackageJson.ts
 
 copy-tree-sitter-wasm:
     cp -u $(qcfg-resolve-package web-tree-sitter)/tree-sitter.wasm ./tree-sitter/
@@ -22,8 +22,8 @@ copy-tree-sitter-wasm:
 build-common: update-package-json copy-tree-sitter-wasm
 
 build: build-common
-    build-cmd --vscode-ext src/extension/extension.ts
-    build-cmd src/tools/remoteCli.ts src/tools/syntaxDump.ts
+    qcfg-build build --vscode-ext src/extension/extension.ts
+    qcfg-build build src/tools/remoteCli.ts src/tools/syntaxDump.ts
 
 package:
     npm version patch
