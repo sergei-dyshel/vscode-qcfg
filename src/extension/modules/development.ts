@@ -1,3 +1,4 @@
+import { Extensions } from "@sergei-dyshel/vscode";
 import type { ExtensionContext } from "vscode";
 import { TabInputText, TabInputTextDiff, window } from "vscode";
 import { log } from "../../library/logging";
@@ -31,9 +32,17 @@ function dumpContext() {
   showLog();
 }
 
+async function dumpExtensions() {
+  const installedExtensions = await Extensions.listInstalled();
+  for (const { id, extensionPath, version, time } of installedExtensions)
+    log.info(`Extension: `, { id, extensionPath, version, time });
+  showLog();
+}
+
 function activate(context: ExtensionContext) {
   context.subscriptions.push(
     registerCommandWrapped("qcfg.dumpContext", dumpContext),
+    registerCommandWrapped("qcfg.dumpExtensions", dumpExtensions),
   );
 }
 

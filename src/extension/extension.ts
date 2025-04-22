@@ -10,7 +10,7 @@ import "./utils/uriPrototype";
 // must be imported first
 import "./modules/logging";
 
-import type { ExtensionContext } from "vscode";
+import type { ExtensionContext as VscodeExtensionContext } from "vscode";
 import { log } from "../library/logging";
 import * as nodejs from "../library/nodejs";
 import { stringify as str } from "../library/stringify";
@@ -19,12 +19,14 @@ import { Modules } from "./modules/module";
 import { registerAllCommands } from "./utils/commands";
 import { setExtensionContext } from "./utils/extensionContext";
 
+import { ExtensionContext } from "@sergei-dyshel/vscode";
 import "./allModules";
 
-export async function activate(context: ExtensionContext) {
+export async function activate(context: VscodeExtensionContext) {
   console.log("Extension activating");
 
   setExtensionContext(context);
+  ExtensionContext.set(context);
 
   await TreeSitter.init(
     nodejs.path.join(context.extensionPath, "tree-sitter"),
