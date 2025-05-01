@@ -5,6 +5,7 @@ import { Config } from "../../library/config";
 import { globAsync } from "../../library/fileUtils";
 import { fileMatch } from "../../library/glob";
 import { log } from "../../library/logging";
+import { perfTimerify, perfTimerifyMethod } from "../../library/performance";
 import { concatArrays, mapObjectToArray } from "../../library/tsUtils";
 import { UserCommands } from "../../library/userCommands";
 import { getConfiguration } from "../utils/configuration";
@@ -170,6 +171,7 @@ class TaskGenerator<P extends Cfg.BaseTaskParams> {
     private readonly info: FetchInfo,
   ) {}
 
+  @perfTimerifyMethod
   async generateAll(
     currentContext: TaskContext,
     folderContexts: TaskContext[],
@@ -216,11 +218,14 @@ class TaskGenerator<P extends Cfg.BaseTaskParams> {
     if (validContexts.length === 1)
       tasks.push(await this.createTask(validContexts[0]));
     else {
-      for (const context of validContexts) {
-        const srcFolder = this.info.source.folder;
-        if (!srcFolder || srcFolder === context.workspaceFolder)
-          tasks.push(await this.createTask(context));
-      }
+      tasks.push(
+        ...(await mapSomeAsync(validContexts, async (context) => {
+          const srcFolder = this.info.source.folder;
+          if (!srcFolder || srcFolder === context.workspaceFolder)
+            return await this.createTask(context);
+          return MAP_UNDEFINED;
+        })),
+      );
       if (this.params.flags?.includes(Cfg.Flag.MULTI)) {
         // eslint-disable-next-line new-cap
         tasks.push(new this.multi(this.params, this.info, validContexts));
@@ -311,6 +316,8 @@ async function fetchQcfgTasks(options?: FetchOptions): Promise<BaseQcfgTask[]> {
   return concatArrays(...tasks);
 }
 
+const fetchQcfgTasksTimed = perfTimerify(fetchQcfgTasks);
+
 let lastBuildTask: BaseTask | undefined;
 
 async function runDefaultBuildTask() {
@@ -347,10 +354,12 @@ async function fetchVscodeTasksChecked(): Promise<Task[]> {
   }
 }
 
+const fetchVscodeTasksCheckedTimed = perfTimerify(fetchVscodeTasksChecked);
+
 async function showTasks() {
   const [qcfgTasks, rawVscodeTasks] = await Promise.all([
-    fetchQcfgTasks(),
-    fetchVscodeTasksChecked(),
+    fetchQcfgTasksTimed(),
+    fetchVscodeTasksCheckedTimed(),
   ]);
   const vscodeTasks = rawVscodeTasks.map((task) => new VscodeTask(task));
   const allTasks = [...qcfgTasks, ...vscodeTasks];
