@@ -515,6 +515,16 @@
         "title": "Dump performance histograms"
       },
       {
+        "command": "qcfg.perf.resetHistograms",
+        "category": "qcfg",
+        "title": "Reset performance histograms"
+      },
+      {
+        "command": "qcfg.perf.startObserver",
+        "category": "qcfg",
+        "title": "Start performance observer"
+      },
+      {
         "command": "qcfg.persistent.backupGlobal",
         "title": "qcfg: Backup GLOBAL persistent state"
       },
