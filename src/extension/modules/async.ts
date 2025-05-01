@@ -233,7 +233,7 @@ export function asyncRetry<T extends AsyncFunction>(
 let sequentialAsyncByDefault = false;
 
 function activate(_: ExtensionContext) {
-  if (extensionDebug()) sequentialAsyncByDefault = true;
+  if (extensionDebug()) sequentialAsyncByDefault = false;
   const seqStr = sequentialAsyncByDefault ? "SEQUENTIAL" : "PARALLEL";
   log.info(`Async mapping is ${seqStr} by default`);
 }
