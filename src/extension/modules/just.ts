@@ -4,6 +4,7 @@
  *   command runner..
  */
 
+import { AsyncCache } from "@sergei-dyshel/typescript";
 import { filterNonNull, mapAsync } from "@sergei-dyshel/typescript/array";
 import { zod } from "@sergei-dyshel/typescript/zod";
 import path from "node:path";
@@ -20,6 +21,7 @@ import {
   WorkspaceFolder,
 } from "vscode";
 import { fileExists } from "../../library/fileUtils";
+import { perfTimerifyMethod } from "../../library/performance";
 import { getConfiguration } from "../utils/configuration";
 import { Modules } from "./module";
 import { runSubprocessAndWait, SubprocessOptions } from "./subprocess";
@@ -39,7 +41,18 @@ const justSchema = zod.object({
   recipes: zod.record(zod.string(), recipeSchema),
 });
 
+type JustFile = zod.infer<typeof justSchema>;
+
 class JustTaskProvider implements TaskProvider {
+  private jsonCache: AsyncCache<string, JustFile>;
+
+  constructor() {
+    this.jsonCache = new AsyncCache(async (cwd) => this.parseJustJson(cwd), {
+      timeoutMs: 5000,
+    });
+  }
+
+  @perfTimerifyMethod
   async provideTasks(_token: CancellationToken) {
     if (!workspace.workspaceFolders) return;
     const tasksByFolder = await mapAsync(
@@ -50,6 +63,16 @@ class JustTaskProvider implements TaskProvider {
     return allTasks;
   }
 
+  @perfTimerifyMethod
+  async parseJustJson(cwd: string) {
+    const result = await runJust(["--dump-format", "json", "--dump"], { cwd });
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const json = JSON.parse(result.stdout);
+    const justFile = await justSchema.parseAsync(json);
+    return justFile;
+  }
+
+  @perfTimerifyMethod
   async getFolderTasks(folder: WorkspaceFolder): Promise<Task[]> {
     const folderHasJustfile = (
       await mapAsync(
@@ -61,12 +84,7 @@ class JustTaskProvider implements TaskProvider {
       .some(Boolean);
     if (!folderHasJustfile) return [];
     try {
-      const result = await runJust(["--dump-format", "json", "--dump"], {
-        cwd: folder.uri.fsPath,
-      });
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const json = JSON.parse(result.stdout);
-      const justFile = await justSchema.parseAsync(json);
+      const justFile = await this.jsonCache.get(folder.uri.fsPath);
       return filterNonNull(
         Object.values(justFile.recipes).map((recipe) =>
           this.recipeToTask(recipe, folder),
