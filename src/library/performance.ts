@@ -1,3 +1,4 @@
+import { assert, assertNotNull } from "@sergei-dyshel/typescript/error";
 import { log } from "./logging";
 import * as nodejs from "./nodejs";
 import type { AnyFunction } from "./templateTypes";
@@ -10,6 +11,27 @@ export function perfTimerify<T extends AnyFunction>(fn: T): T {
   const histogram = nodejs.perf_hooks.createHistogram();
   histograms[func.name] = histogram;
   return nodejs.perf_hooks.performance.timerify(fn, { histogram });
+}
+
+export function perfTimerifyMethod(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  target: any,
+  property: string,
+  descriptor?: PropertyDescriptor,
+) {
+  assertNotNull(descriptor);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const func = descriptor.value;
+  assert(typeof func === "function");
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const className: string = target.constructor.name;
+  const methodName = property;
+  const histogram = nodejs.perf_hooks.createHistogram();
+  histograms[`${className}.${methodName}`] = histogram;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  descriptor.value = nodejs.perf_hooks.performance.timerify(func, {
+    histogram,
+  });
 }
 
 export function startPerfObserver() {
@@ -26,13 +48,26 @@ export function dumpPerfHistograms() {
   for (const name in histograms) {
     const histogram = histograms[name];
     const data = Object.entries({
-      p50: histogram.mean,
+      count: histogram.count,
+      avg: histogram.mean,
+      min: histogram.min,
+      p50: histogram.percentile(50),
       p90: histogram.percentile(90),
       p99: histogram.percentile(99),
       p100: histogram.max,
     } as const)
-      .map(([key, value]) => `${key} ${(value / 1000000).toFixed(2)} ms`)
+      .map(([key, value]) =>
+        key === "count"
+          ? `${key} ${value}`
+          : `${key} ${(value / 1000000).toFixed(2)} ms`,
+      )
       .join(", ");
     log.info(`${name}: ${data}`);
+  }
+}
+
+export function resetPerfHistograms() {
+  for (const histogram of Object.values(histograms)) {
+    histogram.reset();
   }
 }
