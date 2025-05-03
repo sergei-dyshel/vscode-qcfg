@@ -14,7 +14,7 @@ update-package-json-ts-node:
     node --enable-source-maps -r ts-node/register -r @sergei-dyshel/vscode/mock-register src/tools/updatePackageJson.ts
 
 update-package-json:
-    qcfg-build run --if-built --vscode-mock src/tools/updatePackageJson.ts
+    qcfg-build run --if-built --delete-if-fails --vscode-mock src/tools/updatePackageJson.ts
 
 copy-tree-sitter-wasm:
     cp -u $(qcfg-resolve-package web-tree-sitter)/tree-sitter.wasm ./tree-sitter/
