@@ -27,7 +27,7 @@
   ],
   "typescript.tsdk": "node_modules/typescript/lib",
   "qcfg.tasks": {
-    "Reload all windows": "q-vscode-cli -i all reload"
+    "Reload all windows": "vscode-qcfg-cli -i all reload"
   },
   "task.allowAutomaticTasks": "on",
   "window.autoDetectColorScheme": true,

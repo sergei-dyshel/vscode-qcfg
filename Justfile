@@ -23,7 +23,7 @@ build-common: update-package-json copy-tree-sitter-wasm
 
 build: build-common
     qcfg-build build --vscode-ext src/extension/extension.ts
-    qcfg-build build src/tools/remoteCli.ts src/tools/syntaxDump.ts
+    qcfg-build build src/tools/vscode-qcfg-cli.ts src/tools/syntaxDump.ts
 
 package:
     npm version patch
