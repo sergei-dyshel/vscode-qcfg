@@ -56,6 +56,7 @@ export async function activate(context: VscodeExtensionContext) {
       "sessionId",
       "remoteName",
       "uiKind",
+      "remoteAuthority",
     ),
   );
 

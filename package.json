@@ -14,7 +14,8 @@
   "enabledApiProposals": [
     "textSearchProvider",
     "findTextInFiles",
-    "quickPickSortByLabel"
+    "quickPickSortByLabel",
+    "resolvers"
   ],
   "categories": [
     "Other"
