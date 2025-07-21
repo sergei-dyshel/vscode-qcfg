@@ -10,7 +10,7 @@ import "./utils/uriPrototype";
 // must be imported first
 import "./modules/logging";
 
-import type { ExtensionContext as VscodeExtensionContext } from "vscode";
+import { env, type ExtensionContext as VscodeExtensionContext } from "vscode";
 import { log } from "../library/logging";
 import * as nodejs from "../library/nodejs";
 import { stringify as str } from "../library/stringify";
@@ -19,6 +19,7 @@ import { Modules } from "./modules/module";
 import { registerAllCommands } from "./utils/commands";
 import { setExtensionContext } from "./utils/extensionContext";
 
+import { pick } from "@sergei-dyshel/typescript/object";
 import { ExtensionContext } from "@sergei-dyshel/vscode";
 import "./allModules";
 
@@ -43,6 +44,20 @@ export async function activate(context: VscodeExtensionContext) {
   log.info("Global storage path", context.globalStorageUri.fsPath);
   if (context.storageUri)
     log.info("Workspace storage path", context.storageUri.fsPath);
+
+  log.info(
+    "Extension environment",
+    pick(
+      env,
+      "appHost",
+      "appName",
+      "appRoot",
+      "machineId",
+      "sessionId",
+      "remoteName",
+      "uiKind",
+    ),
+  );
 
   // history.activate(context);
 }
