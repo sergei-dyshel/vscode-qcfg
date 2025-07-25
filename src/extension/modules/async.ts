@@ -3,8 +3,9 @@ import { assertNotNull } from "../../library/exception";
 import { log, Logger } from "../../library/logging";
 import type { AsyncFunction, PromiseType } from "../../library/templateTypes";
 import { concatArrays, izip, zipArrays } from "../../library/tsUtils";
-import { extensionDebug } from "../utils/extensionContext";
+import { UserCommands } from "../../library/userCommands";
 import { Modules } from "./module";
+import { WhenContext } from "./utils";
 
 type Callback = () => Promise<void>;
 type Resolve = () => void;
@@ -231,11 +232,32 @@ export function asyncRetry<T extends AsyncFunction>(
 }
 
 let sequentialAsyncByDefault = false;
+const ASYNC_IS_SEQUENTIAL = "qcfgAsyncIsSequential";
 
 function activate(_: ExtensionContext) {
-  if (extensionDebug()) sequentialAsyncByDefault = false;
   const seqStr = sequentialAsyncByDefault ? "SEQUENTIAL" : "PARALLEL";
   log.info(`Async mapping is ${seqStr} by default`);
 }
+
+UserCommands.register(
+  {
+    command: "qcfg.debug.sequentialAsyncOn",
+    title: "Make mapAsync SEQUENTIAL",
+    enablement: `!${ASYNC_IS_SEQUENTIAL}`,
+    callback: async () => {
+      sequentialAsyncByDefault = true;
+      await WhenContext.set(ASYNC_IS_SEQUENTIAL);
+    },
+  },
+  {
+    command: "qcfg.debug.sequentialAsyncOf",
+    title: "Make mapAsync PARALLEL",
+    enablement: `${ASYNC_IS_SEQUENTIAL}`,
+    callback: async () => {
+      sequentialAsyncByDefault = false;
+      await WhenContext.clear(ASYNC_IS_SEQUENTIAL);
+    },
+  },
+);
 
 Modules.register(activate);

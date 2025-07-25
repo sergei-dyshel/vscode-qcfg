@@ -303,6 +303,18 @@
         "title": "qcfg: Select workspace color theme"
       },
       {
+        "category": "qcfg",
+        "command": "qcfg.debug.sequentialAsyncOf",
+        "title": "Make mapAsync PARALLEL",
+        "enablement": "qcfgAsyncIsSequential"
+      },
+      {
+        "category": "qcfg",
+        "command": "qcfg.debug.sequentialAsyncOn",
+        "title": "Make mapAsync SEQUENTIAL",
+        "enablement": "!qcfgAsyncIsSequential"
+      },
+      {
         "command": "qcfg.edit.lastLocation",
         "title": "qcfg: Go to last edit location"
       },
