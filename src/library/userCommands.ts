@@ -1,3 +1,4 @@
+import { omit } from "@sergei-dyshel/typescript/object";
 import type { ExtensionJSON } from "./extensionManifest";
 
 export namespace UserCommands {
@@ -12,6 +13,7 @@ export namespace UserCommands {
     command: string;
     title: string;
     keybinding?: Keybinding;
+    enablement?: string;
     callback: () => void | Promise<void>;
   }
 
@@ -31,9 +33,8 @@ export namespace UserCommands {
 
     for (const cmd of all) {
       json.contributes!.commands!.push({
-        command: cmd.command,
         category: "qcfg",
-        title: cmd.title,
+        ...omit(cmd, "keybinding", "callback"),
       });
       if (cmd.keybinding) {
         json.contributes!.keybindings!.push({

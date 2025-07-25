@@ -270,8 +270,8 @@
         "title": "qcfg: Clangd - dump AST"
       },
       {
-        "command": "qcfg.clangd.refresh",
         "category": "qcfg",
+        "command": "qcfg.clangd.refresh",
         "title": "Refresh clangd"
       },
       {
@@ -315,13 +315,13 @@
         "title": "qcfg: Select previous text edit"
       },
       {
-        "command": "qcfg.editor.revealAtTop",
         "category": "qcfg",
+        "command": "qcfg.editor.revealAtTop",
         "title": "Reveal selection at top"
       },
       {
-        "command": "qcfg.editor.revealInCenter",
         "category": "qcfg",
+        "command": "qcfg.editor.revealInCenter",
         "title": "Reveal selection in center"
       },
       {
@@ -359,8 +359,8 @@
         "title": "qcfg: Git - Web links"
       },
       {
-        "command": "qcfg.goToCharacterPosition",
         "category": "qcfg",
+        "command": "qcfg.goToCharacterPosition",
         "title": "Go to character position"
       },
       {
@@ -388,23 +388,23 @@
         "title": "qcfg: Update history after running command (passed as argument)"
       },
       {
-        "command": "qcfg.historyWrap.gotoSymbol",
         "category": "qcfg",
+        "command": "qcfg.historyWrap.gotoSymbol",
         "title": "Go to Symbol in File..."
       },
       {
-        "command": "qcfg.historyWrap.openPreviousEditorFromHistory",
         "category": "qcfg",
+        "command": "qcfg.historyWrap.openPreviousEditorFromHistory",
         "title": "Quick Open Previous Editor from History"
       },
       {
-        "command": "qcfg.historyWrap.quickOpen",
         "category": "qcfg",
+        "command": "qcfg.historyWrap.quickOpen",
         "title": "Go to file..."
       },
       {
-        "command": "qcfg.historyWrap.showAllSymbols",
         "category": "qcfg",
+        "command": "qcfg.historyWrap.showAllSymbols",
         "title": "Go to Symbol in Workspace..."
       },
       {
@@ -412,8 +412,8 @@
         "title": "qcfg: Show open file dialog and insert resulting path"
       },
       {
-        "command": "qcfg.jump2line",
         "category": "qcfg",
+        "command": "qcfg.jump2line",
         "title": "Jump to line"
       },
       {
@@ -421,8 +421,8 @@
         "title": "qcfg: Compare language clients on current symbol"
       },
       {
-        "command": "qcfg.langClient.rebuildIndex",
         "category": "qcfg",
+        "command": "qcfg.langClient.rebuildIndex",
         "title": "Rebuild index for language clients"
       },
       {
@@ -434,8 +434,8 @@
         "title": "qcfg: Refresh or restart language clients"
       },
       {
-        "command": "qcfg.langClient.reindexVisibleFiles",
         "category": "qcfg",
+        "command": "qcfg.langClient.reindexVisibleFiles",
         "title": "C/C++ language servers - reindex visible files"
       },
       {
@@ -511,18 +511,18 @@
         "title": "qcfg: Peek references"
       },
       {
-        "command": "qcfg.perf.dumpHistograms",
         "category": "qcfg",
+        "command": "qcfg.perf.dumpHistograms",
         "title": "Dump performance histograms"
       },
       {
-        "command": "qcfg.perf.resetHistograms",
         "category": "qcfg",
+        "command": "qcfg.perf.resetHistograms",
         "title": "Reset performance histograms"
       },
       {
-        "command": "qcfg.perf.startObserver",
         "category": "qcfg",
+        "command": "qcfg.perf.startObserver",
         "title": "Start performance observer"
       },
       {
@@ -694,8 +694,8 @@
         "title": "qcfg: Swap selection and marked text"
       },
       {
-        "command": "qcfg.syg",
         "category": "qcfg",
+        "command": "qcfg.syg",
         "title": "Syg"
       },
       {
@@ -707,23 +707,23 @@
         "title": "qcfg: Show syntax tree in side panel"
       },
       {
-        "command": "qcfg.syntaxTree.verify",
         "category": "qcfg",
+        "command": "qcfg.syntaxTree.verify",
         "title": "Verify syntax tree"
       },
       {
-        "command": "qcfg.tasks.build.default",
         "category": "qcfg",
+        "command": "qcfg.tasks.build.default",
         "title": "Run default build task"
       },
       {
-        "command": "qcfg.tasks.build.last",
         "category": "qcfg",
+        "command": "qcfg.tasks.build.last",
         "title": "Run last build task"
       },
       {
-        "command": "qcfg.tasks.show",
         "category": "qcfg",
+        "command": "qcfg.tasks.show",
         "title": "Show list of tasks"
       },
       {
