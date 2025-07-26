@@ -1,9 +1,9 @@
+import { getWindowTitle } from "@sergei-dyshel/vscode";
 import type { ExtensionContext } from "vscode";
 import { handleAsyncStd, registerCommandWrapped } from "./exception";
 import { Modules } from "./module";
 import { executeSubprocess } from "./subprocess";
 import { focusWindow, isWindowFocused } from "./windowState";
-import { getWorkspaceName } from "./workspaceHistory";
 
 const DEFAULT_TIMEOUT_SEC = 5;
 
@@ -96,7 +96,7 @@ async function showOsNotificationAsync(
 ) {
   if (options?.unfocusedOnly && isWindowFocused()) return;
   const action = await showMacOsNotification(message, {
-    title: getWorkspaceName() ?? "",
+    title: getWindowTitle() ?? "",
     ...options,
   });
   if (

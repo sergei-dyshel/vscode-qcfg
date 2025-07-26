@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { getWindowTitle, getWorkspaceRoot } from "@sergei-dyshel/vscode";
 import * as jayson from "jayson/promise";
 import type { ExtensionContext } from "vscode";
 import { commands, Position, Uri, window, workspace } from "vscode";
@@ -16,7 +17,6 @@ import {
 import { Modules } from "./module";
 import { openRemoteFileViaSsh } from "./sshFs";
 import { focusWindow } from "./windowState";
-import { getWorkspaceFile, getWorkspaceName } from "./workspaceHistory";
 
 export type RemoteProtocol = typeof protocol;
 
@@ -33,8 +33,8 @@ const protocol = {
   // eslint-disable-next-line @typescript-eslint/require-await
   async identify(_: Record<string, unknown>) {
     return {
-      workspaceFile: getWorkspaceFile(),
-      workspaceName: getWorkspaceName(),
+      workspaceFile: getWorkspaceRoot(),
+      workspaceName: getWindowTitle(),
       workspaceFolders: workspace.workspaceFolders?.map(
         (folder) => folder.uri.fsPath,
       ),

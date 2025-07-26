@@ -1,159 +1,91 @@
+import {
+  getWindowTitle,
+  getWorkspaceRoot,
+  getWorkspaceRootName,
+  PersistentState,
+  RemoteEnv,
+} from "@sergei-dyshel/vscode";
+import { BuiltinIcon } from "@sergei-dyshel/vscode/icon";
 import type { ExtensionContext } from "vscode";
-import { FileType, Uri, workspace } from "vscode";
-import { assert } from "../../library/exception";
-import { fileExists } from "../../library/fileUtils";
+import { workspace } from "vscode";
 import { Logger } from "../../library/logging";
-import * as nodejs from "../../library/nodejs";
-import { expandTemplate } from "../../library/stringUtils";
 import { MessageDialog } from "../utils/messageDialog";
-import { PersistentState } from "../utils/persistentState";
 import { GenericQuickPick, QuickPickButtons } from "../utils/quickPick";
 import { openFolder } from "../utils/window";
-import { mapAsyncNoThrow } from "./async";
-import { registerAsyncCommandWrapped } from "./exception";
-import { parseJsonFileAsync } from "./json";
+import { listenWrapped, registerAsyncCommandWrapped } from "./exception";
 import { Modules } from "./module";
 
-const persistentState = new PersistentState<string[]>("workspaceHistory", []);
+interface HistoryEntry {
+  /** Path to workspace file or single folder */
+  root: string;
+
+  /** Custom title if present in `workspace.title` */
+  title?: string;
+
+  /** Remove environment in which workspace is opened */
+  remote?: RemoteEnv;
+}
+
+const persistentState = new PersistentState<HistoryEntry[]>(
+  "workspaceHistory.v2",
+  [],
+);
 
 const log = new Logger({ name: "workspaceHistory" });
 
 const WINDOW_TITLE = "window.title";
-/**
- * Workspace file path or folder path if single folder is opened, `undefined`
- * otherwise
- */
-export function getWorkspaceFile(): string | undefined {
-  if (workspace.workspaceFile) {
-    if (workspace.workspaceFile.scheme === "untitled") {
-      log.debug("Opened untitled project");
-      return undefined;
-    }
-    log.debug("Opened workspace", workspace.workspaceFile.fsPath);
-    return workspace.workspaceFile.fsPath;
-  }
-  if (workspace.workspaceFolders) {
-    assert(workspace.workspaceFolders.length === 1);
-    log.debug(
-      "Opened workspace folder",
-      workspace.workspaceFolders[0].uri.fsPath,
-    );
-    return workspace.workspaceFolders[0].uri.fsPath;
-  }
-  return undefined;
+
+const WORKSPACE_FILE_EXTENSION = ".code-workspace";
+
+/** History with given entry, ignores title when comparing */
+function filterOutEntry(history: HistoryEntry[], entry?: HistoryEntry) {
+  if (!entry) return [...history];
+  return history.filter(
+    (otherEntry) =>
+      otherEntry.root !== entry.root ||
+      !RemoteEnv.equal(otherEntry.remote, entry.remote),
+  );
 }
 
-export function getWorkspaceName(): string | undefined {
-  const wsFile = getWorkspaceFile();
-  if (!wsFile) return undefined;
-  const title = workspace.getConfiguration().get<string>(WINDOW_TITLE);
-  if (!title) return undefined;
-  return expandTitle(wsFile, title);
-}
-
-function expandTitle(root: string, title: string): string {
-  const isWorkspace = nodejs.path.extname(root) === ".code-workspace";
-  const rootBase = nodejs.path.basename(root, ".code-workspace");
-  const rootDir1 = nodejs.path.basename(nodejs.path.dirname(root));
-  const folderName = isWorkspace ? rootDir1 : rootBase;
-  try {
-    return expandTemplate(title, { folderName }, true);
-  } catch {
-    return "";
-  }
-}
-
-function getDefaultTitle() {
-  const config = workspace.getConfiguration();
-  const data = config.inspect(WINDOW_TITLE)!;
-  return (data.globalValue ?? data.defaultValue) as string;
-}
-
-async function parseFolderTitle(root: string) {
-  const filePath = nodejs.path.join(root, ".vscode", "settings.json");
-  if (!(await fileExists(filePath))) {
-    return nodejs.path.basename(root);
-  }
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const settings = await parseJsonFileAsync(filePath);
-    return expandTitle(
-      root,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ((settings as any)[WINDOW_TITLE] ?? getDefaultTitle()) as string,
-    );
-  } catch (err: unknown) {
-    log.debug(`Error parsing ${filePath}: ${err}`);
-    return nodejs.path.basename(root);
-  }
-}
-
-async function parseWorkspaceTitle(root: string) {
-  try {
-    const settings = await parseJsonFileAsync(root);
-    return expandTitle(
-      root,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (settings as any).settings[WINDOW_TITLE] as string,
-    );
-  } catch (err: unknown) {
-    log.debug(`Error parsing ${root}: ${err}`);
-    return nodejs.path.basename(nodejs.path.dirname(root));
-  }
-}
-
-async function parseTitle(path: string) {
-  const stat = await workspace.fs.stat(Uri.file(path));
-  switch (stat.type) {
-    case FileType.Directory:
-      return {
-        title: await parseFolderTitle(path),
-        isWorkspace: false,
-      };
-    case FileType.File:
-    case FileType.SymbolicLink:
-      return { title: await parseWorkspaceTitle(path), isWorkspace: true };
-    default:
-      throw new Error("Workspace is not workspace folder nor .code-workspace");
-  }
-}
-
-async function toItem(path: string) {
-  const { title, isWorkspace } = await parseTitle(path);
-  const icon = isWorkspace ? "folder-library" : "folder";
-  const label = `$(${icon}) ${title}`;
-  return [path, label] as const;
+/** History entry for current workspace/folder, or `undefined` for untitled */
+function getCurrentEntry(): HistoryEntry | undefined {
+  const root = getWorkspaceRoot();
+  if (!root) return undefined;
+  return {
+    root,
+    remote: RemoteEnv.current(),
+    title: getWindowTitle(),
+  };
 }
 
 async function openFromHistory(newWindow: boolean) {
   const history = persistentState.get();
-  const removedItems: string[] = [];
-  const current = getWorkspaceFile();
-  const allItems = await mapAsyncNoThrow(history, toItem);
-  if (allItems.length < history.length) {
-    await persistentState.update(allItems.map(([path, _label]) => path));
-    log.info(`Removed ${history.length - allItems.length} items`);
-  }
-  const items = allItems.filter(([path, _label]) => path !== current);
+  const removedItems: HistoryEntry[] = [];
+  const filteredHistory = filterOutEntry(history, getCurrentEntry());
 
-  const qp = new GenericQuickPick<readonly [path: string, label: string]>(
-    ([path, label]) => ({ label, description: path }),
-  );
-  qp.options.matchOnDescription = true;
+  const qp = new GenericQuickPick<HistoryEntry>((entry) => ({
+    iconPath: (entry.root.endsWith(WORKSPACE_FILE_EXTENSION)
+      ? BuiltinIcon.FOLDER_LIBRARY
+      : BuiltinIcon.FOLDER
+    ).themeIcon,
+    label:
+      (entry.title ?? getWorkspaceRootName(entry.root)) +
+      (entry.remote ? ` (${entry.remote.name})` : ""),
+    description: entry.root,
+  }));
   qp.options.placeholder = newWindow
     ? "Open in NEW window"
     : "Open in SAME window";
-  qp.addCommonItemButton(QuickPickButtons.REMOVE, ([path, _label]) => {
-    log.debug(`Removing ${path} from folders/workspaces history`);
-    history.removeFirst(path);
-    removedItems.push(path);
-    qp.items = qp
-      .itemsWithoutSeparators()
-      .filter(([path1, _label1]) => path1 !== path);
+  qp.addCommonItemButton(QuickPickButtons.REMOVE, (entry) => {
+    log.debug(`Removing ${entry.root} from folders/workspaces history`);
+    filteredHistory.removeFirst(entry);
+    history.removeFirst(entry);
+    removedItems.push(entry);
+    qp.items = filteredHistory;
   });
-  qp.items = items;
+  qp.items = filteredHistory;
 
-  const selected = await qp.select();
+  const entry = await qp.select();
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (!removedItems.isEmpty) {
     const ok = await MessageDialog.showModal(
@@ -165,9 +97,26 @@ async function openFromHistory(newWindow: boolean) {
       await persistentState.update(history);
     }
   }
-  if (selected) {
-    await openFolder(selected[0], newWindow);
+
+  if (entry) {
+    const remote = entry.remote;
+    await (remote
+      ? openFolder(RemoteEnv.toRemoteUri(entry.root, remote), newWindow)
+      : openFolder(entry.root, {
+          forceNewWindow: newWindow,
+          forceLocalWindow: true,
+        }));
   }
+}
+
+async function updateHistory() {
+  const curEntry = getCurrentEntry();
+  if (!curEntry) return;
+
+  log.info("Pushing item to top of workspace history", curEntry);
+  const history = filterOutEntry(persistentState.get(), curEntry);
+  history.unshift(curEntry);
+  await persistentState.update(history);
 }
 
 async function activate(context: ExtensionContext) {
@@ -178,14 +127,15 @@ async function activate(context: ExtensionContext) {
     registerAsyncCommandWrapped("qcfg.openRecent.newWindow", async () =>
       openFromHistory(true),
     ),
+    listenWrapped(workspace.onDidChangeConfiguration, async (event) => {
+      if (event.affectsConfiguration(WINDOW_TITLE)) {
+        log.info("Window title updated");
+        await updateHistory();
+      }
+    }),
   );
 
-  const wsFile = getWorkspaceFile();
-  if (!wsFile) return;
-  const history = persistentState.get();
-  history.removeFirst(wsFile);
-  history.unshift(wsFile);
-  await persistentState.update(history);
+  await updateHistory();
 }
 
 // eslint-disable-next-line @typescript-eslint/no-misused-promises

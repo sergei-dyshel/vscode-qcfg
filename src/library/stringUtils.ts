@@ -99,7 +99,7 @@ export function expandTemplate(
 ): string {
   return text.replaceAll(/\${([a-zA-Z\d]+)}/g, (_, varname: string) => {
     const sub = substitute[varname];
-    if (!sub) {
+    if (sub === undefined) {
       if (throwWhenNotExist)
         throw new TemplateError(`Could not substitute var "${varname}"`);
       return "";

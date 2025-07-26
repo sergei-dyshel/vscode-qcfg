@@ -10,12 +10,28 @@ export async function FocusProblemsView() {
   return commands.executeCommand("workbench.action.problems.focus");
 }
 
-export async function openFolder(path: string, newWindow: boolean) {
-  return commands.executeCommand(
-    "vscode.openFolder",
-    Uri.file(path),
-    newWindow,
-  );
+/**
+ * Open workspace/folder
+ *
+ * See
+ * {@link https://github.com/sergei-dyshel/vscode/blob/78a1c2301661c322bac61f1db87d7c950705bedb/src/vs/workbench/browser/actions/workspaceCommands.ts#L167}
+ * for details
+ */
+export async function openFolder(
+  path: string | Uri,
+  newWindow?:
+    | boolean
+    | {
+        forceNewWindow?: boolean;
+        forceReuseWindow?: boolean;
+        noRecentEntry?: boolean;
+        forceLocalWindow?: boolean;
+        forceProfile?: string;
+        forceTempProfile?: boolean;
+      },
+) {
+  const uri = typeof path === "string" ? Uri.file(path) : path;
+  return commands.executeCommand("vscode.openFolder", uri, newWindow);
 }
 
 export function getBesideViewColumn(): ViewColumn | undefined {

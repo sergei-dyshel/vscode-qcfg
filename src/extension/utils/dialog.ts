@@ -1,6 +1,6 @@
+import { PersistentState } from "@sergei-dyshel/vscode";
 import type { OpenDialogOptions, SaveDialogOptions } from "vscode";
 import { Uri, window } from "vscode";
-import { PersistentState } from "./persistentState";
 
 export async function showPersistentOpenDialog(
   persistentKey: string,

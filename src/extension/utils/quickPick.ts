@@ -77,14 +77,13 @@ export interface QuickPickValue<T> extends QuickPickItem {
  * Subset of {@link QuickPickItem} that is used in APIs based on
  * {@link QuickPickWrapper}
  */
-export interface BaseQuickPickItem {
-  label: string;
-  description?: string;
-  detail?: string;
-
+export type BaseQuickPickItem = Pick<
+  QuickPickItem,
+  "label" | "description" | "detail" | "iconPath"
+> & {
   /** Map from buttons to handlers */
   itemButtons?: Map<QuickInputButton, () => void | Promise<void>>;
-}
+};
 
 /**
  * Universal wrapper for {@link QuickPick}.

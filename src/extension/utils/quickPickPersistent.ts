@@ -1,8 +1,8 @@
+import type { PersistentStorage } from "@sergei-dyshel/vscode";
+import { PersistentState } from "@sergei-dyshel/vscode";
 import lodash from "lodash";
 import { assert } from "../../library/exception";
 import { MessageDialog } from "./messageDialog";
-import type { PersistentStorage } from "./persistentState";
-import { PersistentState } from "./persistentState";
 import type { BaseQuickPickItem, QuickPickValue } from "./quickPick";
 import {
   GenericQuickPick,

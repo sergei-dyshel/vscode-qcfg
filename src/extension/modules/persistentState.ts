@@ -1,3 +1,8 @@
+import {
+  getMemento,
+  getStoragePath,
+  PersistentScope,
+} from "@sergei-dyshel/vscode";
 import type { ExtensionContext } from "vscode";
 import { env, FileType, Uri, window, workspace } from "vscode";
 import { assertNotNull } from "../../library/exception";
@@ -6,11 +11,6 @@ import type { JsonTypes } from "../../library/json";
 import { log } from "../../library/logging";
 import * as nodejs from "../../library/nodejs";
 import { numberCompare } from "../../library/tsUtils";
-import {
-  getMemento,
-  getStoragePath,
-  PersistentScope,
-} from "../utils/persistentState";
 import { StringQuickPick } from "../utils/quickPick";
 import { PersistentStringQuickPick } from "../utils/quickPickPersistent";
 import { mapAsync, mapSomeAsyncAndZip } from "./async";
