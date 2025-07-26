@@ -1,3 +1,4 @@
+import { getActiveTextEditor } from "@sergei-dyshel/vscode";
 import type {
   DocumentSymbol,
   ExtensionContext,
@@ -10,7 +11,6 @@ import { qualifiedName, retrieveDocumentSymbols } from "../utils/symbol";
 import { registerAsyncCommandWrapped } from "./exception";
 import { updateHistory } from "./history";
 import { Modules } from "./module";
-import { getActiveTextEditor } from "./utils";
 
 const minLinesInBlock = 10;
 

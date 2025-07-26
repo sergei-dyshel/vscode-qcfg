@@ -1,4 +1,5 @@
 import type { DisposableLike } from "@sergei-dyshel/vscode";
+import { getActiveTextEditor } from "@sergei-dyshel/vscode";
 import * as tempy from "tempy";
 import type { Location, Uri, ViewColumn, WorkspaceFolder } from "vscode";
 import {
@@ -17,7 +18,6 @@ import * as nodejs from "../../library/nodejs";
 import { documentRangePreview } from "../utils/document";
 import { QuickPickLocations } from "../utils/quickPick";
 import { setMapAsync } from "./async";
-import { getActiveTextEditor } from "./utils";
 
 // exported from watcher/dist/types
 type WatcherOptions = {

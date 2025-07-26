@@ -1,9 +1,9 @@
 // Borrowed from https://github.com/jacobdufault/vscode-fuzzy-search by Jacob Dufault
 
+import { getActiveTextEditor } from "@sergei-dyshel/vscode";
 import * as vscode from "vscode";
 import { handleErrors, registerSyncCommandWrapped } from "./exception";
 import { Modules } from "./module";
-import { getActiveTextEditor } from "./utils";
 
 class Item implements vscode.QuickPickItem {
   constructor(

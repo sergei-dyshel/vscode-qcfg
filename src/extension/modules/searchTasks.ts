@@ -1,10 +1,11 @@
+import { getActiveTextEditor } from "@sergei-dyshel/vscode";
 import type { ExtensionContext } from "vscode";
 import { Config } from "../../library/config";
 import { CheckError } from "../../library/exception";
 import { registerAsyncCommandWrapped } from "./exception";
 import { Modules } from "./module";
 import { runTask } from "./tasks";
-import { getActiveTextEditor, getCursorWordContext } from "./utils";
+import { getCursorWordContext } from "./utils";
 
 async function searchWordUnderCursor(allFolders: boolean) {
   if (!getCursorWordContext()) {

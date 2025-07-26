@@ -1,3 +1,4 @@
+import { getActiveTextEditor } from "@sergei-dyshel/vscode";
 import * as readline from "node:readline";
 import * as shellQuote from "shell-quote";
 import type {
@@ -47,7 +48,6 @@ import { Modules } from "./module";
 import * as saveAll from "./saveAll";
 import * as subprocess from "./subprocess";
 import { runTaskAndGetLocations } from "./tasks";
-import { getActiveTextEditor } from "./utils";
 
 const GTAGS_CHECK = "gtags check";
 

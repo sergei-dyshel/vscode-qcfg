@@ -1,3 +1,4 @@
+import { getActiveTextEditor } from "@sergei-dyshel/vscode";
 import type {
   ExtensionContext,
   TextDocumentChangeEvent,
@@ -13,7 +14,6 @@ import { getBesideViewColumn } from "../utils/window";
 import { listenWrapped, registerAsyncCommandWrapped } from "./exception";
 import { LiveLocationArray, LivePosition } from "./liveLocation";
 import { Modules } from "./module";
-import { getActiveTextEditor } from "./utils";
 import { getVisibleEditor } from "./windowUtils";
 
 const MAX_HISTORY_SIZE = 20;

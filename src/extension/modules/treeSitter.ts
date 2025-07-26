@@ -1,3 +1,4 @@
+import { getActiveTextEditor } from "@sergei-dyshel/vscode";
 import type {
   ExtensionContext,
   Selection,
@@ -26,7 +27,7 @@ import {
 import { Modules } from "./module";
 import { SyntaxTrees } from "./syntaxTree";
 import { revealSelection, swapRanges } from "./textUtils";
-import { getActiveTextEditor, WhenContext } from "./utils";
+import { WhenContext } from "./utils";
 
 const WHEN_CLAUSE = "qcfgTreeMode";
 

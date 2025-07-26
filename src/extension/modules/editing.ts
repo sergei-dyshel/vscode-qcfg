@@ -1,5 +1,6 @@
 // noinspection JSUnusedAssignment
 
+import { getActiveTextEditor } from "@sergei-dyshel/vscode";
 import type {
   CompletionList,
   ExtensionContext,
@@ -35,7 +36,7 @@ import {
   trimBrackets,
   trimWhitespace,
 } from "./textUtils";
-import { getActiveTextEditor, getCursorWordContext } from "./utils";
+import { getCursorWordContext } from "./utils";
 
 export function expandSelectionLinewise() {
   const editor = getActiveTextEditor();

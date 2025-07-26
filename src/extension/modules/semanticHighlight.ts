@@ -1,3 +1,4 @@
+import { getActiveTextEditor } from "@sergei-dyshel/vscode";
 import type {
   ExtensionContext,
   SemanticTokens,
@@ -11,7 +12,6 @@ import { arraySlice, numberToBitArray } from "../../library/tsUtils";
 import { registerAsyncCommandWrapped } from "./exception";
 import { showLog } from "./logging";
 import { Modules } from "./module";
-import { getActiveTextEditor } from "./utils";
 
 async function provideDocumentSemanticTokensLegend(uri: Uri) {
   return commands.executeCommand<SemanticTokensLegend>(

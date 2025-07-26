@@ -1,3 +1,4 @@
+import { getActiveTextEditor } from "@sergei-dyshel/vscode";
 import type {
   CodeAction,
   Diagnostic,
@@ -31,7 +32,6 @@ import {
 } from "./exception";
 import { Modules } from "./module";
 import { showNotificationMessage } from "./notificationMessage";
-import { getActiveTextEditor } from "./utils";
 import { preserveActiveLocation } from "./windowUtils";
 
 const DEFAULT_PRIORITY = 5;

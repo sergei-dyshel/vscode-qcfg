@@ -1,8 +1,8 @@
+import { getActiveTextEditor } from "@sergei-dyshel/vscode";
 import type { ExtensionContext } from "vscode";
 import { commands, Selection, TextEditorRevealType, window } from "vscode";
 import { registerAsyncCommandWrapped } from "./exception";
 import { Modules } from "./module";
-import { getActiveTextEditor } from "./utils";
 
 async function focusEditorBeside(syncPosition: boolean) {
   const tabGroups = window.tabGroups;

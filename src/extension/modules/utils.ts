@@ -1,6 +1,6 @@
+import { getActiveTextEditor } from "@sergei-dyshel/vscode";
 import type { Range, TextEditor, WorkspaceFolder } from "vscode";
 import { commands, Location, window } from "vscode";
-import { assertNotNull } from "../../library/exception";
 import type { VoidFunction } from "../../library/templateTypes";
 import { getDocumentWorkspaceFolder } from "../utils/document";
 import { registerSyncCommandWrapped } from "./exception";
@@ -40,12 +40,6 @@ export function registerSyncTemporaryCommand(
 }
 
 let tempCmdCounter = 0;
-
-export function getActiveTextEditor(): TextEditor {
-  const editor = window.activeTextEditor;
-  assertNotNull(editor, "No active text editor");
-  return editor;
-}
 
 export function getCurrentLocation() {
   const editor = getActiveTextEditor();

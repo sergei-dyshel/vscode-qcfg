@@ -1,4 +1,5 @@
 import type { DisposableLike } from "@sergei-dyshel/vscode";
+import { getActiveTextEditor } from "@sergei-dyshel/vscode";
 import type {
   ExtensionContext,
   Position,
@@ -14,7 +15,6 @@ import { DefaultMap } from "../../library/tsUtils";
 import { NumRange, offsetToRange } from "./documentUtils";
 import { listenWrapped } from "./exception";
 import { Modules } from "./module";
-import { getActiveTextEditor } from "./utils";
 
 export abstract class LiveLocation extends Location implements DisposableLike {
   private registered = false;

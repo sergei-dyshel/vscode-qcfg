@@ -1,3 +1,4 @@
+import { getActiveTextEditor } from "@sergei-dyshel/vscode";
 import type * as vscode from "vscode";
 import type {
   Event,
@@ -23,7 +24,6 @@ import { mapAsync } from "./async";
 import { NumRange } from "./documentUtils";
 import { handleErrors, handleStd, listenWrapped } from "./exception";
 import { Modules } from "./module";
-import { getActiveTextEditor } from "./utils";
 
 const UPDATE_DELAY_MS = 1000;
 

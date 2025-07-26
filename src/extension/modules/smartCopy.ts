@@ -1,3 +1,4 @@
+import { getActiveTextEditor } from "@sergei-dyshel/vscode";
 import type { ExtensionContext, TextEditor } from "vscode";
 import { commands, env, Range, ThemeColor, workspace } from "vscode";
 import { check } from "../../library/exception";
@@ -7,7 +8,6 @@ import { expandSelectionLinewise, replaceText } from "./editing";
 import { listenWrapped, registerAsyncCommandWrapped } from "./exception";
 import { Modules } from "./module";
 import { swapRanges, trimWhitespace } from "./textUtils";
-import { getActiveTextEditor } from "./utils";
 
 let mark:
   | undefined

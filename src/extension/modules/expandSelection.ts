@@ -1,9 +1,9 @@
+import { getActiveTextEditor } from "@sergei-dyshel/vscode";
 import type { ExtensionContext } from "vscode";
 import { commands } from "vscode";
 import { registerAsyncCommandWrapped } from "./exception";
 import { Modules } from "./module";
 import { trimBrackets, trimWhitespace } from "./textUtils";
-import { getActiveTextEditor } from "./utils";
 
 async function smartSelectExpand() {
   return commands.executeCommand("editor.action.smartSelect.expand");

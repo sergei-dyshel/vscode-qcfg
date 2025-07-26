@@ -1,3 +1,4 @@
+import { getActiveTextEditor } from "@sergei-dyshel/vscode";
 import type {
   ExtensionContext,
   StatusBarItem,
@@ -24,7 +25,6 @@ import { listenWrapped, registerSyncCommandWrapped } from "./exception";
 import { LiveRange } from "./liveLocation";
 import { Modules } from "./module";
 import { offsetPosition } from "./textUtils";
-import { getActiveTextEditor } from "./utils";
 
 const HISTORY_SIZE = 20;
 

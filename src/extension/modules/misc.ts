@@ -1,3 +1,4 @@
+import { getActiveTextEditor } from "@sergei-dyshel/vscode";
 import type { ExtensionContext, TextEditor } from "vscode";
 import {
   commands,
@@ -21,7 +22,6 @@ import {
 } from "./exception";
 import { Modules } from "./module";
 import { executeSubprocess } from "./subprocess";
-import { getActiveTextEditor } from "./utils";
 
 function openOrCreateTerminal(name: string, cwd: string) {
   for (const term of window.terminals) {

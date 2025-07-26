@@ -1,4 +1,7 @@
-import { DisposableCollection } from "@sergei-dyshel/vscode";
+import {
+  DisposableCollection,
+  getActiveTextEditor,
+} from "@sergei-dyshel/vscode";
 import type {
   QuickInputButton,
   QuickPick,
@@ -15,7 +18,6 @@ import {
 } from "vscode";
 import { assert, assertNotNull, notNull } from "../../library/exception";
 import { listenWrapped } from "../modules/exception";
-import { getActiveTextEditor } from "../modules/utils";
 import { showTextDocument } from "./window";
 
 export namespace QuickPickButtons {

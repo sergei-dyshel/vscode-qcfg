@@ -1,4 +1,5 @@
 import { normalizeArray } from "@sergei-dyshel/typescript/array";
+import { getActiveTextEditor } from "@sergei-dyshel/vscode";
 import type {
   CallHierarchyOutgoingCall,
   CallHierarchyProvider,
@@ -37,7 +38,6 @@ import { Modules } from "./module";
 import { executeDefinitionProvider, findProperReferences } from "./search";
 import type { TreeNode, TreeProvider } from "./treeView";
 import { QcfgTreeView } from "./treeView";
-import { getActiveTextEditor } from "./utils";
 
 class SymbolCallHierarchyItem extends CallHierarchyItem {
   constructor(uri: Uri, symbol: DocumentSymbol, languageId: string) {

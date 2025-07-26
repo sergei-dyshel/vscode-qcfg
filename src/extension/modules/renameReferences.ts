@@ -1,3 +1,4 @@
+import { getActiveTextEditor } from "@sergei-dyshel/vscode";
 import type { ExtensionContext } from "vscode";
 import { window, workspace, WorkspaceEdit } from "vscode";
 import { assert, assertNotNull, check } from "../../library/exception";
@@ -8,7 +9,6 @@ import { Modules } from "./module";
 import { dedupeLocations, resolveLocations } from "./savedSearch";
 import { executeReferenceProvider } from "./search";
 import { revealSelection } from "./textUtils";
-import { getActiveTextEditor } from "./utils";
 
 async function renameReferences(needsConfirmation: boolean) {
   const editor = getActiveTextEditor();

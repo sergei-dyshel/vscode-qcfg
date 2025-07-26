@@ -1,4 +1,4 @@
-import { DisposableHolder } from "@sergei-dyshel/vscode";
+import { DisposableHolder, getActiveTextEditor } from "@sergei-dyshel/vscode";
 import { type ExtensionContext, type Location, type Uri } from "vscode";
 import { check, checkNotNull } from "../../library/exception";
 import { log } from "../../library/logging";
@@ -16,7 +16,7 @@ import { updateHistory } from "./history";
 import { LiveLocation, LiveLocationArray } from "./liveLocation";
 import { setPanelLocations } from "./locationTree";
 import { Modules } from "./module";
-import { getActiveTextEditor, getCurrentLocation } from "./utils";
+import { getCurrentLocation } from "./utils";
 
 const MAX_SAVED_SEARCHES = 20;
 

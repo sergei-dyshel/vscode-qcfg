@@ -1,3 +1,4 @@
+import { getActiveTextEditor } from "@sergei-dyshel/vscode";
 import type {
   ExtensionContext,
   TextEditor,
@@ -13,7 +14,7 @@ import {
   registerSyncCommandWrapped,
 } from "./exception";
 import { Modules } from "./module";
-import { getActiveTextEditor, WhenContext } from "./utils";
+import { WhenContext } from "./utils";
 
 const CONTEXT = "qcfgMultipleSelectionsMarker";
 

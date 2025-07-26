@@ -1,3 +1,4 @@
+import { getActiveTextEditor } from "@sergei-dyshel/vscode";
 import type { SimpleGit } from "simple-git";
 import simpleGit from "simple-git";
 import type { ExtensionContext, TextEditor } from "vscode";
@@ -12,7 +13,6 @@ import { getConfiguration } from "../utils/configuration";
 import { PersistentGenericQuickPick } from "../utils/quickPickPersistent";
 import { registerAsyncCommandWrapped } from "./exception";
 import { Modules } from "./module";
-import { getActiveTextEditor } from "./utils";
 
 const SHORT_SHA_LEN = 7;
 

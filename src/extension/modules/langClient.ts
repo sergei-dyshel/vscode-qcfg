@@ -1,3 +1,4 @@
+import { getActiveTextEditor } from "@sergei-dyshel/vscode";
 import type { ExtensionContext, Position, Range, TextDocument } from "vscode";
 import { commands, extensions, languages, Location, Uri, window } from "vscode";
 import * as client from "vscode-languageclient";
@@ -31,7 +32,7 @@ import { setPanelLocationGroups } from "./locationTree";
 import { Modules } from "./module";
 import { searchWithCommand } from "./search";
 import { executeSubprocess } from "./subprocess";
-import { currentWorkspaceFolder, getActiveTextEditor } from "./utils";
+import { currentWorkspaceFolder } from "./utils";
 
 export function isAnyLangClientRunning(): boolean {
   return ALL_CLIENTS.map((wrapper) => wrapper.isClientRunning).some(Boolean);
