@@ -1,4 +1,4 @@
-import { getActiveTextEditor } from "@sergei-dyshel/vscode";
+import { GenericQuickPick, getActiveTextEditor } from "@sergei-dyshel/vscode";
 import type { ExtensionContext } from "vscode";
 import { RelativePattern, Uri, window, workspace } from "vscode";
 import { assertNotNull } from "../../library/exception";
@@ -7,7 +7,6 @@ import * as nodejs from "../../library/nodejs";
 import { baseNameNoExt, stripExt } from "../../library/pathUtils";
 import { getConfiguration } from "../utils/configuration";
 import { getDocumentWorkspaceFolder } from "../utils/document";
-import { GenericQuickPick } from "../utils/quickPick";
 import { registerAsyncCommandWrapped } from "./exception";
 import { Modules } from "./module";
 

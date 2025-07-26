@@ -1,5 +1,8 @@
 import { normalizeArray } from "@sergei-dyshel/typescript/array";
-import { getActiveTextEditor } from "@sergei-dyshel/vscode";
+import {
+  getActiveTextEditor,
+  PersistentRecordQuickPick,
+} from "@sergei-dyshel/vscode";
 import type {
   CallHierarchyOutgoingCall,
   CallHierarchyProvider,
@@ -28,7 +31,6 @@ import {
 import { baseName } from "../../library/pathUtils";
 import { concatArrays, filterNonNull } from "../../library/tsUtils";
 import { CclsCallHierarchyProvider } from "../utils/ccls";
-import { PersistentRecordQuickPick } from "../utils/quickPickPersistent";
 import { getContainingSymbol, qualifiedName } from "../utils/symbol";
 import { mapAsync } from "./async";
 import { getCachedDocumentSymbols } from "./documentSymbolsCache";

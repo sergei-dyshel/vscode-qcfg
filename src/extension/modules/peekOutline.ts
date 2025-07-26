@@ -1,4 +1,4 @@
-import { getActiveTextEditor } from "@sergei-dyshel/vscode";
+import { getActiveTextEditor, QuickPickLocations } from "@sergei-dyshel/vscode";
 import type {
   DocumentSymbol,
   ExtensionContext,
@@ -6,7 +6,6 @@ import type {
   TextDocument,
 } from "vscode";
 import { Location, SymbolKind } from "vscode";
-import { QuickPickLocations } from "../utils/quickPick";
 import { qualifiedName, retrieveDocumentSymbols } from "../utils/symbol";
 import { registerAsyncCommandWrapped } from "./exception";
 import { updateHistory } from "./history";

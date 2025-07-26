@@ -1,3 +1,4 @@
+import { GenericQuickPick } from "@sergei-dyshel/vscode";
 import type {
   ExtensionContext,
   OutputChannel,
@@ -26,7 +27,6 @@ import * as nodejs from "../../library/nodejs";
 import { registerStringifier, stringify as str } from "../../library/stringify";
 import type { SyntaxNode, TreeSitter } from "../../library/treeSitter";
 import { extensionDebug } from "../utils/extensionContext";
-import { GenericQuickPick } from "../utils/quickPick";
 import {
   registerAsyncCommandWrapped,
   registerSyncCommandWrapped,

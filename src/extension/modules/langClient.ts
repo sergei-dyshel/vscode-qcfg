@@ -1,4 +1,7 @@
-import { getActiveTextEditor } from "@sergei-dyshel/vscode";
+import {
+  getActiveTextEditor,
+  PersistentStringQuickPick,
+} from "@sergei-dyshel/vscode";
 import type { ExtensionContext, Position, Range, TextDocument } from "vscode";
 import { commands, extensions, languages, Location, Uri, window } from "vscode";
 import * as client from "vscode-languageclient";
@@ -23,7 +26,6 @@ import {
   p2cAnyLocations,
   p2cConverter,
 } from "../utils/langClientConv";
-import { PersistentStringQuickPick } from "../utils/quickPickPersistent";
 import { mapAsync } from "./async";
 import { touchDocument } from "./editing";
 import { registerAsyncCommandWrapped } from "./exception";

@@ -1,14 +1,12 @@
-import type { ExtensionContext } from "vscode";
-import { window } from "vscode";
-import { Logger } from "../../library/logging";
 import {
   createSeparatedQuickPickItems,
   GenericQuickPick,
-} from "../utils/quickPick";
-import {
   PersistentInputHistoryQuickPick,
   PersistentStringQuickPick,
-} from "../utils/quickPickPersistent";
+} from "@sergei-dyshel/vscode";
+import type { ExtensionContext } from "vscode";
+import { window } from "vscode";
+import { Logger } from "../../library/logging";
 import {
   registerAsyncCommandWrapped,
   registerSyncCommandWrapped,

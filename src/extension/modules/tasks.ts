@@ -1,3 +1,4 @@
+import { PersistentGenericQuickPick } from "@sergei-dyshel/vscode";
 import { dirname } from "node:path";
 import type { ExtensionContext, Task, WorkspaceFolder } from "vscode";
 import { commands, TaskGroup, tasks as vstasks, workspace } from "vscode";
@@ -9,7 +10,6 @@ import { perfTimerify, perfTimerifyMethod } from "../../library/performance";
 import { concatArrays, mapObjectToArray } from "../../library/tsUtils";
 import { UserCommands } from "../../library/userCommands";
 import { getConfiguration } from "../utils/configuration";
-import { PersistentGenericQuickPick } from "../utils/quickPickPersistent";
 import { getValidWorkspaceFolders } from "../utils/workspace";
 import { filterAsync, MAP_UNDEFINED, mapSomeAsync } from "./async";
 import { Modules } from "./module";

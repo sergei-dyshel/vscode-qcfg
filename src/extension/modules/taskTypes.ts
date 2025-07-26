@@ -1,3 +1,5 @@
+import type { BaseQuickPickItem } from "@sergei-dyshel/vscode";
+import { QuickPickButtons } from "@sergei-dyshel/vscode";
 import type {
   FindTextInFilesOptions,
   Location,
@@ -28,8 +30,6 @@ import {
 import { concatArrays } from "../../library/tsUtils";
 import { getDocumentWorkspaceFolder } from "../utils/document";
 import { getFolderSettingsPath, getGlobalSettingsPath } from "../utils/paths";
-import type { BaseQuickPickItem } from "../utils/quickPick";
-import { QuickPickButtons } from "../utils/quickPick";
 import { isMultiFolderWorkspace } from "../utils/workspace";
 import { mapAsync, mapAsyncSequential } from "./async";
 import { executeCommandHandled } from "./exception";

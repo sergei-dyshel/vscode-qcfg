@@ -1,8 +1,8 @@
+import { StringQuickPick } from "@sergei-dyshel/vscode";
 import type { ExtensionContext } from "vscode";
 import { commands, ConfigurationTarget, Uri, window, workspace } from "vscode";
 import { assert } from "../../library/exception";
 import { log } from "../../library/logging";
-import { StringQuickPick } from "../utils/quickPick";
 import {
   handleAsyncStd,
   listenAsyncWrapped,

@@ -1,8 +1,10 @@
 import {
+  GenericQuickPick,
   getWindowTitle,
   getWorkspaceRoot,
   getWorkspaceRootName,
   PersistentState,
+  QuickPickButtons,
   RemoteEnv,
 } from "@sergei-dyshel/vscode";
 import { BuiltinIcon } from "@sergei-dyshel/vscode/icon";
@@ -10,7 +12,6 @@ import type { ExtensionContext } from "vscode";
 import { workspace } from "vscode";
 import { Logger } from "../../library/logging";
 import { MessageDialog } from "../utils/messageDialog";
-import { GenericQuickPick, QuickPickButtons } from "../utils/quickPick";
 import { openFolder } from "../utils/window";
 import { listenWrapped, registerAsyncCommandWrapped } from "./exception";
 import { Modules } from "./module";

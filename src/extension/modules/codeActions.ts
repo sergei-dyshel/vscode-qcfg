@@ -1,4 +1,4 @@
-import { getActiveTextEditor } from "@sergei-dyshel/vscode";
+import { GenericQuickPick, getActiveTextEditor } from "@sergei-dyshel/vscode";
 import type {
   CodeAction,
   Diagnostic,
@@ -22,7 +22,6 @@ import {
   DefaultMap,
   mapNonNull,
 } from "../../library/tsUtils";
-import { GenericQuickPick } from "../utils/quickPick";
 import { mapAsync } from "./async";
 import { ConfigRules } from "./configRules";
 import {

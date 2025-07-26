@@ -1,4 +1,7 @@
-import { getActiveTextEditor } from "@sergei-dyshel/vscode";
+import {
+  getActiveTextEditor,
+  PersistentStringQuickPick,
+} from "@sergei-dyshel/vscode";
 import type { ExtensionContext, TextEditor } from "vscode";
 import {
   commands,
@@ -14,7 +17,6 @@ import * as nodejs from "../../library/nodejs";
 import { setTimeoutPromise } from "../../library/nodeUtils";
 import { UserCommands } from "../../library/userCommands";
 import { getDocumentRootThrowing } from "../utils/document";
-import { PersistentStringQuickPick } from "../utils/quickPickPersistent";
 import {
   listenAsyncWrapped,
   registerAsyncCommandWrapped,

@@ -1,4 +1,7 @@
-import { getActiveTextEditor } from "@sergei-dyshel/vscode";
+import {
+  getActiveTextEditor,
+  PersistentGenericQuickPick,
+} from "@sergei-dyshel/vscode";
 import type { SimpleGit } from "simple-git";
 import simpleGit from "simple-git";
 import type { ExtensionContext, TextEditor } from "vscode";
@@ -10,7 +13,6 @@ import * as nodejs from "../../library/nodejs";
 import { dirName, isSubPath } from "../../library/pathUtils";
 import { expandTemplate, splitWithRemainder } from "../../library/stringUtils";
 import { getConfiguration } from "../utils/configuration";
-import { PersistentGenericQuickPick } from "../utils/quickPickPersistent";
 import { registerAsyncCommandWrapped } from "./exception";
 import { Modules } from "./module";
 

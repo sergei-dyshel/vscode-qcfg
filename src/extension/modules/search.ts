@@ -1,3 +1,4 @@
+import { PersistentStringQuickPick } from "@sergei-dyshel/vscode";
 import type {
   CancellationToken,
   CompletionContext,
@@ -27,7 +28,6 @@ import { log } from "../../library/logging";
 import { abbrevMatch } from "../../library/stringUtils";
 import { getConfiguration } from "../utils/configuration";
 import { resolveLocationLinks } from "../utils/document";
-import { PersistentStringQuickPick } from "../utils/quickPickPersistent";
 import { getCompletionPrefix } from "./documentUtils";
 import { registerAsyncCommandWrapped } from "./exception";
 import { updateHistory } from "./history";

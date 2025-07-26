@@ -1,10 +1,13 @@
-import { DisposableHolder, getActiveTextEditor } from "@sergei-dyshel/vscode";
+import {
+  DisposableHolder,
+  getActiveTextEditor,
+  QuickPickLocations,
+} from "@sergei-dyshel/vscode";
 import { type ExtensionContext, type Location, type Uri } from "vscode";
 import { check, checkNotNull } from "../../library/exception";
 import { log } from "../../library/logging";
 import { stringify as str } from "../../library/stringify";
 import { arrayIter } from "../../library/tsUtils";
-import { QuickPickLocations } from "../utils/quickPick";
 import { workspaceResolveSymlink } from "../utils/workspace";
 import { mapAsync } from "./async";
 import {
