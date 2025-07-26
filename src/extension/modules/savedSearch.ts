@@ -1,5 +1,5 @@
+import { DisposableHolder } from "@sergei-dyshel/vscode";
 import { type ExtensionContext, type Location, type Uri } from "vscode";
-import { DisposableHolder } from "../../library/disposable";
 import { check, checkNotNull } from "../../library/exception";
 import { log } from "../../library/logging";
 import { stringify as str } from "../../library/stringify";

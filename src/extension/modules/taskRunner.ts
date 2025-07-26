@@ -1,4 +1,5 @@
 import { Dictionary } from "@buzz-dee/typescript-collections";
+import type { DisposableLike } from "@sergei-dyshel/vscode";
 import type {
   ExtensionContext,
   StatusBarItem,
@@ -10,7 +11,6 @@ import type {
   Terminal,
 } from "vscode";
 import { tasks, TaskScope, window } from "vscode";
-import type { DisposableLike } from "../../library/disposable";
 import { assert } from "../../library/exception";
 import { log, Logger } from "../../library/logging";
 import { MessageDialog } from "../utils/messageDialog";

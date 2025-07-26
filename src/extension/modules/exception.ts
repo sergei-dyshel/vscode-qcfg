@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import type { DisposableLike } from "@sergei-dyshel/vscode";
 import type {
   Event,
   ExtensionContext,
@@ -7,7 +8,6 @@ import type {
   TextEditorEdit,
 } from "vscode";
 import { commands, window } from "vscode";
-import type { DisposableLike } from "../../library/disposable";
 import { CheckError, wrapWithErrorHandler } from "../../library/exception";
 import { log } from "../../library/logging";
 import { replaceAll } from "../../library/stringUtils";

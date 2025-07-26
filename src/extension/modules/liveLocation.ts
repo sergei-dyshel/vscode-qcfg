@@ -1,3 +1,4 @@
+import type { DisposableLike } from "@sergei-dyshel/vscode";
 import type {
   ExtensionContext,
   Position,
@@ -8,7 +9,6 @@ import type {
   TextEditor,
 } from "vscode";
 import { Location, workspace } from "vscode";
-import type { DisposableLike } from "../../library/disposable";
 import { assert } from "../../library/exception";
 import { DefaultMap } from "../../library/tsUtils";
 import { NumRange, offsetToRange } from "./documentUtils";

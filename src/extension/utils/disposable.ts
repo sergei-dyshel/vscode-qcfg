@@ -1,5 +1,5 @@
+import type { DisposableLike } from "@sergei-dyshel/vscode";
 import { extensions, workspace } from "vscode";
-import type { DisposableLike } from "../../library/disposable";
 import { Logger } from "../../library/logging";
 import { listenWrapped } from "../modules/exception";
 import type { ConfigSection } from "./configuration";

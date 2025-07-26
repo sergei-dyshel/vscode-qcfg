@@ -1,6 +1,6 @@
+import type { DisposableLike } from "@sergei-dyshel/vscode";
 import type { ExtensionContext, Progress } from "vscode";
 import { commands, ProgressLocation, window } from "vscode";
-import type { DisposableLike } from "../../library/disposable";
 import { setTimeoutPromise } from "../../library/nodeUtils";
 import { getConfiguration } from "../utils/configuration";
 import { Modules } from "./module";

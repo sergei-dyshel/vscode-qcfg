@@ -1,3 +1,5 @@
+import type { DisposableLike } from "@sergei-dyshel/vscode";
+import { ArrayOfDisposables } from "@sergei-dyshel/vscode";
 import type {
   ConfigurationChangeEvent,
   ConfigurationScope,
@@ -5,8 +7,6 @@ import type {
   WorkspaceFolder,
 } from "vscode";
 import { Uri, workspace } from "vscode";
-import type { DisposableLike } from "../../library/disposable";
-import { ArrayOfDisposables } from "../../library/disposable";
 import { assert } from "../../library/exception";
 import { log } from "../../library/logging";
 import { DefaultMap } from "../../library/tsUtils";

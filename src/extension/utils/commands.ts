@@ -1,5 +1,5 @@
+import type { DisposableLike } from "@sergei-dyshel/vscode";
 import { commands } from "vscode";
-import type { DisposableLike } from "../../library/disposable";
 import { UserCommands } from "../../library/userCommands";
 
 export function registerAllCommands(): DisposableLike[] {

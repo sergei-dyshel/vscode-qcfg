@@ -1,3 +1,4 @@
+import type { DisposableLike } from "@sergei-dyshel/vscode";
 import * as tempy from "tempy";
 import type { Location, Uri, ViewColumn, WorkspaceFolder } from "vscode";
 import {
@@ -9,7 +10,6 @@ import {
   workspace,
 } from "vscode";
 import type { default as Watcher } from "watcher" with { "resolution-mode": "require" };
-import type { DisposableLike } from "../../library/disposable";
 import { assertNotNull, assertNull } from "../../library/exception";
 import { fileExists } from "../../library/fileUtils";
 import { log } from "../../library/logging";
