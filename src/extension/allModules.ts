@@ -70,7 +70,6 @@ import "./modules/textUtils";
 import "./modules/treeSelectionRanges";
 import "./modules/treeSitter";
 import "./modules/treeView";
-import "./modules/updateChecker";
 import "./modules/utils";
 import "./modules/windowState";
 import "./modules/windowUtils";

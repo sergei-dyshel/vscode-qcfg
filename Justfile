@@ -25,7 +25,7 @@ copy-tree-sitter-wasm:
 generate-module-imports:
     ./scripts/generate-module-imports.sh src/extension/modules src/extension/allModules.ts
 
-build-common: update-package-json copy-tree-sitter-wasm generate-module-imports
+build-common: generate-module-imports update-package-json copy-tree-sitter-wasm
 
 build: build-common
     qcfg-build build --vscode-ext src/extension/extension.ts

@@ -20,7 +20,10 @@ import { registerAllCommands } from "./utils/commands";
 import { setExtensionContext } from "./utils/extensionContext";
 
 import { pick } from "@sergei-dyshel/typescript/object";
-import { ExtensionContext } from "@sergei-dyshel/vscode";
+import {
+  ExtensionContext,
+  ExtensionUpdateChecker,
+} from "@sergei-dyshel/vscode";
 import "./allModules";
 
 export async function activate(context: VscodeExtensionContext) {
@@ -59,6 +62,9 @@ export async function activate(context: VscodeExtensionContext) {
       "remoteAuthority",
     ),
   );
+
+  if (!ExtensionContext.inDevelopmentMode())
+    await ExtensionUpdateChecker.register();
 
   // history.activate(context);
 }
