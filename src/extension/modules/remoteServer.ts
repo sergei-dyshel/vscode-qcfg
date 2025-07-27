@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getWindowTitle, getWorkspaceRoot } from "@sergei-dyshel/vscode";
+import { openFolder } from "@sergei-dyshel/vscode/builtin-commands";
 import * as jayson from "jayson/promise";
 import type { ExtensionContext } from "vscode";
 import { commands, Position, Uri, window, workspace } from "vscode";
@@ -7,7 +8,6 @@ import { log } from "../../library/logging";
 import { PORT_RANGE } from "../../library/remoteClient";
 import { stringify } from "../../library/stringify";
 import { mapObjectValues } from "../../library/tsUtils";
-import { openFolder } from "../utils/window";
 import { ConfigSectionWatcher } from "./configWatcher";
 import {
   handleAsyncStd,
@@ -68,7 +68,7 @@ const protocol = {
     return commands.executeCommand(args.name);
   },
 
-  async openFolder(args: { path: string }): Promise<void> {
+  openFolder(args: { path: string }): Promise<void> {
     return openFolder(args.path, true /* newWindow */).ignoreResult();
   },
 

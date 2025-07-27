@@ -29,9 +29,7 @@
   "scripts": {
     "vscode:prepublish": "npm run build",
     "watch": "tsc --watch --noEmit",
-    "build": "just build",
-    "update-proposed": "npx vscode-dts dev",
-    "generate-module-imports": "./scripts/generate-module-imports.sh src/extension/modules src/extension/allModules.ts"
+    "build": "just build"
   },
   "dependencies": {
     "@buzz-dee/typescript-collections": "^2.0.3",
@@ -505,14 +503,6 @@
       {
         "command": "qcfg.openRealPath",
         "title": "qcfg: Open current file with its real path"
-      },
-      {
-        "command": "qcfg.openRecent.newWindow",
-        "title": "qcfg: Open recent workspace (NEW window)"
-      },
-      {
-        "command": "qcfg.openRecent.sameWindow",
-        "title": "qcfg: Open recent workspace (SAME window)"
       },
       {
         "command": "qcfg.peekFlatOutline",

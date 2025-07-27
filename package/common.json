@@ -82,14 +82,6 @@
         "title": "qcfg: Go to last edit location"
       },
       {
-        "command": "qcfg.openRecent.sameWindow",
-        "title": "qcfg: Open recent workspace (SAME window)"
-      },
-      {
-        "command": "qcfg.openRecent.newWindow",
-        "title": "qcfg: Open recent workspace (NEW window)"
-      },
-      {
         "command": "qcfg.window.focus",
         "title": "qcfg: Focus window"
       },
